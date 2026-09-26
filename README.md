@@ -1,0 +1,194 @@
+# Textalonia
+
+An independent, native rich text editor for **Avalonia 12** and **.NET 8+**, distributed as one NuGet package.
+
+**Status: 0.1.0-preview.1.** This repository contains a working editor, desktop demo, tests, and local NuGet packaging. It is not a feature-complete or API-compatible replacement for Avalonia's commercial editor. See [the feature matrix and roadmap](docs/ROADMAP.md) before adopting it.
+
+## Run the demo
+
+Install a .NET 8 or newer SDK, then open `Textalonia.sln` in Visual Studio/Rider, or run:
+
+```sh
+dotnet restore Textalonia.sln --configfile NuGet.Config
+dotnet run --project samples/Textalonia.Demo
+```
+
+The demo includes editable sample content, light/dark themes, read-only mode, search, tables, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
+
+## Build, test, and pack
+
+```sh
+dotnet build Textalonia.sln -c Release --no-restore
+dotnet test tests/Textalonia.Tests -c Release --no-build
+dotnet pack src/Textalonia -c Release --no-build -o artifacts/packages
+```
+
+Verify the packed artifact through an independent consumer (after packing):
+
+```sh
+dotnet restore tests/Textalonia.PackageSmoke --configfile tests/Textalonia.PackageSmoke/NuGet.Config
+dotnet run --project tests/Textalonia.PackageSmoke -c Release --no-restore
+```
+
+Output: `artifacts/packages/Textalonia.0.1.0-preview.1.nupkg`, plus a symbols package. Nothing is published automatically. The library's Avalonia dependency is bounded to **[12.1.3, 13.0.0)**. The demo and tests use 12.1.3, configured centrally in `Directory.Build.props`.
+
+## Use the package in another app
+
+Add the package output folder as a NuGet source alongside nuget.org, for example in your application's `NuGet.Config`:
+
+```xml
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="TextaloniaLocal" value="C:/path/to/Textalonia/artifacts/packages" />
+  </packageSources>
+</configuration>
+```
+
+Then, from your Avalonia 12 application directory:
+
+```sh
+dotnet add package Textalonia --version 0.1.0-preview.1
+```
+
+This preview has **not** been published to nuget.org. The command above requires the local feed.
+
+Add the control theme after your application theme in `App.axaml`:
+
+```xml
+<Application.Styles>
+  <FluentTheme />
+  <StyleInclude Source="avares://Textalonia/Themes/Generic.axaml" />
+</Application.Styles>
+```
+
+Drop the editor into a window:
+
+```xml
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:text="using:Textalonia.Controls">
+  <text:TextaloniaEditor Text="Start writing here..."
+                       ShowToolbar="True"
+                       MinHeight="300" />
+</Window>
+```
+
+The package contains no desktop platform dependency or application entry point. The host application chooses its Avalonia backend and theme.
+
+## Structured documents and MVVM
+
+`Document` supports two-way binding to a `FlowDocument` property on your view model:
+
+```xml
+<text:TextaloniaEditor Document="{Binding Document, Mode=TwoWay}" />
+```
+
+With compiled bindings enabled, set `x:DataType` on the enclosing view as usual.
+
+```csharp
+using Textalonia.Model;
+
+var document = new FlowDocument([
+    new Paragraph([
+        new RichRun("Hello "),
+        new RichRun("Avalonia", TextStyle.Default with { Bold = true }),
+        new RichRun("!")
+    ]),
+    new Paragraph("A second paragraph")
+]);
+
+editor.Document = document;
+```
+
+Documents and their arrays are immutable snapshots. An edit publishes a new `Document`; unchanged paragraph objects and run strings can be shared with prior snapshots. In-place collection mutation is intentionally unsupported. Public records permit `with` expressions; use `Validate()` when constructing documents from external data. Each block and cell must have a unique nonempty ID.
+
+`Text` is a plain-text convenience binding: **assigning Text replaces all document structure and formatting**. Bind either `Document` or `Text`, rather than both to competing sources.
+
+## Editing API
+
+```csharp
+editor.Session.Select(0, 5); // UTF-16 anchor and active/caret offsets
+editor.ApplyStyle(s => s with { Bold = true, Foreground = "#356FBA" });
+editor.Session.ToggleList(ListKind.Bullet);
+editor.InsertTable(rows: 3, columns: 3);
+editor.Undo();
+editor.Redo();
+
+editor.Session.UndoLimit = 100;
+editor.FindNext("Avalonia");
+editor.ReplaceAll("old", "new");
+
+// Application-defined immutable changes participate in undo:
+editor.Session.Execute(document => document with { /* replace Blocks here */ });
+```
+
+Available commands: `BoldCommand`, `ItalicCommand`, `UnderlineCommand`, `StrikethroughCommand`, `UndoCommand`, `RedoCommand`, `CutCommand`, `CopyCommand`, `PasteCommand`, and `SelectAllCommand`. Set `ShowToolbar="False"` to supply your own toolbar.
+
+`EditorSession` can be used without creating any UI. `DocumentChanged`, `SelectionChanged`, and `Session.Changed` expose change notifications. UI controls and their sessions must be accessed on the UI thread; immutable documents can be passed to worker threads.
+
+Selection uses UTF-16 offsets in `Document.Text`, with one LF between visible paragraphs. Caret navigation and deletion respect .NET grapheme boundaries. A soft line break is U+2028. Drag, double-click word selection, triple-click paragraph selection, Shift selection, and standard Ctrl/Cmd editing shortcuts are supported. Shift+Enter inserts a soft break; Enter splits a paragraph. Tab moves between table cells or inserts a tab when `AcceptsTab` is enabled.
+
+## Save and load
+
+```csharp
+using Textalonia.Serialization;
+
+await using (var output = File.Create("notes.textalonia"))
+    await editor.SaveAsync(output, DocumentFormats.Json);
+
+await using (var input = File.OpenRead("notes.docx"))
+    await editor.LoadAsync(input, DocumentFormats.Docx);
+
+// Or operate directly on an immutable document without a control:
+await DocumentFormats.Html.SaveAsync(document, outputStream);
+```
+
+Streams remain owned by the caller. Encoding/parsing runs on a worker thread; asynchronous stream I/O observes cancellation. A canceled operation may have written part of its output, so use a temporary file and rename for application-level atomic saves. Loading through the control rejects a result if the user edited while the file was being read.
+
+| Format | Supported interchange |
+| --- | --- |
+| Textalonia / JSON | Versioned, lossless native model, including section styling and merge backups |
+| Plain text | Visible text and paragraph separators |
+| HTML | Styled runs, headings, simple lists, safe links, sections, tables and spans; a whitelist of inline CSS |
+| RTF | Unicode text, fonts, emphasis, size/colors, baseline, paragraph alignment/spacing/direction; tables and sections flatten, list semantics and link targets are not retained |
+| DOCX | Paragraphs, common inline formatting, headings, links, lists, tables and spans; styled sections flatten |
+
+HTML import never executes scripts or loads remote images/styles. Image alt text is imported as text. DOCX parsing prohibits XML DTDs/external entities and limits package sizes. Only http, https, and mailto link targets are accepted. These converters do not guarantee arbitrary Word/browser document fidelity.
+
+Implement `IDocumentFormat` to add a format and pass your instance to `LoadAsync`/`SaveAsync`. The native `.textalonia` format is a versioned JSON schema, **not Avalonia XAML**. The `.json` and legacy `.art` extensions remain supported.
+
+## Viewer, themes, highlights, and links
+
+Use `TextaloniaViewer` for an initially read-only, selectable display without a toolbar, or set `IsReadOnly="True"` on an editor.
+
+The theme uses `TextaloniaBackground`, `TextaloniaForeground`, `TextaloniaToolbarBackground`, and `TextaloniaBorder` resources with light/dark variants. The visual template and optional `TextaloniaToolbar` can be replaced. Text colors that are null inherit the theme; explicit document colors remain explicit.
+
+```csharp
+editor.Highlights.Add(new TextHighlight(0, 5, Brushes.Gold));
+editor.HyperlinkActivated += (_, e) => ShowLinkInYourApplication(e.Uri);
+editor.OperationFailed += (_, e) => ShowError(e.Exception.Message);
+```
+
+Highlights use snapshot offsets: update or clear them after edits. Ctrl/Cmd-click activates links in editable mode; ordinary clicks activate them in read-only mode. The host decides how to open a link. Asynchronous command failures raise `OperationFailed` and set `LastError`.
+
+## Table behavior
+
+Table text participates in normal selection, formatting, and undo. Insert/delete rows and columns, merge/split cells, and change cell backgrounds through the toolbar or model APIs. Row/column structure changes require unmerged cells.
+
+Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited paragraphs in the anchor cell and restores the other original cells. Undo always restores the exact previous state.
+
+Cross-cell text replacement preserves table structure; selecting and replacing the entire document clears its structure. Rich clipboard fragments preserve paragraph/run formatting but flatten tables/sections. Use native document save/load to retain full structure.
+
+## Repository and release status
+
+- `src/Textalonia`: packable control, model, editing, serializers, theme.
+- `samples/Textalonia.Demo`: desktop application.
+- `tests/Textalonia.Tests`: model, serializer, binding, headless input and rendering tests.
+- `tests/Textalonia.PackageSmoke`: separate consumer that references the generated NuGet package.
+- `docs/ARCHITECTURE.md`: design and extension points.
+- `docs/ROADMAP.md`: remaining work toward the reference editor's feature set.
+- `.github/workflows/ci.yml`: build/test/pack and consumer checks; no publishing.
+
+Before public release, finalize ownership metadata, the repository URL, and a project license, and confirm availability of the Textalonia package ID on nuget.org. Dependency licenses remain their respective owners' terms. No project redistribution license has been selected here.

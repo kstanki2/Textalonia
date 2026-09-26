@@ -1,0 +1,7 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:text="using:Textalonia.Controls"
+        x:Class="Textalonia.PackageSmoke.SmokeWindow"
+        Width="640" Height="360">
+  <text:TextaloniaEditor x:Name="Editor" Text="Package consumer" />
+</Window>

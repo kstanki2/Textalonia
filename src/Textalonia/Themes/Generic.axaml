@@ -1,0 +1,54 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Textalonia.Controls">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+          <SolidColorBrush x:Key="TextaloniaBackground">#FFFFFF</SolidColorBrush>
+          <SolidColorBrush x:Key="TextaloniaForeground">#202C40</SolidColorBrush>
+          <SolidColorBrush x:Key="TextaloniaToolbarBackground">#F5F7FA</SolidColorBrush>
+          <SolidColorBrush x:Key="TextaloniaBorder">#D6DEE9</SolidColorBrush>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="TextaloniaBackground">#20252E</SolidColorBrush>
+          <SolidColorBrush x:Key="TextaloniaForeground">#E4E9F0</SolidColorBrush>
+          <SolidColorBrush x:Key="TextaloniaToolbarBackground">#282F3B</SolidColorBrush>
+          <SolidColorBrush x:Key="TextaloniaBorder">#465264</SolidColorBrush>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <ControlTheme x:Key="{x:Type local:TextaloniaEditor}" TargetType="local:TextaloniaEditor">
+        <Setter Property="Background" Value="{DynamicResource TextaloniaBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextaloniaForeground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextaloniaBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="MinHeight" Value="120" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}"
+                    ClipToBounds="True">
+              <Grid RowDefinitions="Auto,*">
+                <Border Grid.Row="0"
+                        IsVisible="{TemplateBinding ShowToolbar}"
+                        Background="{DynamicResource TextaloniaToolbarBackground}"
+                        BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,0,0,1">
+                  <local:TextaloniaToolbar x:Name="PART_Toolbar" />
+                </Border>
+                <ScrollViewer Grid.Row="1" x:Name="PART_ScrollViewer"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                  <local:DocumentSurface x:Name="PART_Surface" />
+                </ScrollViewer>
+              </Grid>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+    </ResourceDictionary>
+  </Styles.Resources>
+</Styles>
