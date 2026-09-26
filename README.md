@@ -191,4 +191,12 @@ Cross-cell text replacement preserves table structure; selecting and replacing t
 - `docs/ROADMAP.md`: remaining work toward the reference editor's feature set.
 - `.github/workflows/ci.yml`: build/test/pack and consumer checks; no publishing.
 
+Phase 1 evidence is indexed in [the baseline report](docs/BASELINE-REPORT.md), with
+[qualification targets](docs/QUALIFICATION.md), [compatibility rules](docs/COMPATIBILITY.md),
+[native procedures](docs/NATIVE-BASELINES.md), and [performance budgets](docs/PERFORMANCE.md).
+Run the complete verification route with `pwsh -File scripts/Invoke-Baselines.ps1`.
+Add `-LongCorpus` for 2,000 operations per seed and `-Performance` for full control benchmarks.
+The bounded suite runs on every change; `.github/workflows/baselines.yml` schedules the
+longer corpus and performance captures separately. Native pending records remain visible in CI artifacts.
+
 Before public release, finalize ownership metadata, the repository URL, and a project license, and confirm availability of the Textalonia package ID on nuget.org. Dependency licenses remain their respective owners' terms. No project redistribution license has been selected here.

@@ -38,3 +38,9 @@ The keyboard/mouse implementation is currently in DocumentSurface; a swappable i
 Tests cover formatting-preserving edits, Unicode graphemes, newline semantics, selection restoration, history, readonly behavior, search, random replacements against a string reference, table merges, codecs, invalid documents, and XML entity rejection. Avalonia headless tests exercise bindings, real keyboard/pointer dispatch, clipboard, composition and Skia rendering.
 
 Screenshots are generated under artifacts when tests run. CI is configured for Windows, Linux, and macOS; local verification only demonstrates the environment on which it actually ran. Native operating-system clipboard/IME/touch/screen-reader behavior still needs platform testing.
+
+Phase 1 adds a deterministic corpus, a frozen v1 file/public API snapshot, replayable edit sequences,
+and full-control performance measurements. See [the baseline report](BASELINE-REPORT.md),
+[compatibility rules](COMPATIBILITY.md), and [performance budgets](PERFORMANCE.md) before changing
+storage, indexing, layout or binding behavior. [Native procedures](NATIVE-BASELINES.md) and their
+pending evidence remain separate from automated passes.
