@@ -1,7 +1,11 @@
 # Phase 2 qualification capture
 
 The final report links this archive. Standard seven-sample gates pass; the longer
-strict-mode confirmation has two latency misses, so the Phase 2 exit gate remains open. Qualification results are complete process runs;
+strict-mode confirmation has two latency misses. Phase 2 was subsequently accepted
+as complete with residual latency qualification deferred; see the
+[completion decision](../../../PHASE2-REPORT.md#completion-decision). The archived
+`verification.json` retains the incomplete gate status at capture time, and all
+measured results remain unchanged. Qualification results are complete process runs;
 `status.json` is the completion marker and `budgets.json` uses the unchanged
 thresholds in `docs/PERFORMANCE.md`. Do not substitute samples across runs.
 

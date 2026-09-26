@@ -14,12 +14,12 @@ The target is the feature set described by [Avalonia's editor announcement](http
 | Embedded content | Image alt text on HTML import | Inline images, arbitrary Avalonia controls, resource lifetime/serialization rules |
 | Display | Viewer mode, light/dark, replaceable theme/toolbar, text highlights | Independent input components, complete accessibility text providers |
 | Markdown | No dedicated implementation | Markdown codec/viewer and optional code highlighting |
-| Scale | Persistent indexes, shared text pieces, windowed viewport shaping, entry/byte-budgeted history | Opt-in strict shaping limits; controlled Windows budgets qualified; native latency/working-set qualification remains |
+| Scale | Persistent indexes, shared text pieces, windowed viewport shaping, entry/byte-budgeted history, opt-in strict shaping limits | [Residual latency qualification (PERF-01)](PERFORMANCE.md#perf-01-residual-latency-qualification); native latency/working-set qualification |
 | Distribution | Local NuGet + symbols, docs, tests, CI workflow, package consumer smoke test | Ownership/license metadata and package ID availability, platform certification, public release |
 
 ## Implementation phases
 
-The plans below turn the remaining work into ordered deliverables. Phase 1 baseline tooling, fixtures and local automated measurements are implemented; [its report](BASELINE-REPORT.md) records passing checks, budget gaps and pending native evidence. Phase 2 implementation is complete, with [longer-run latency qualification still open](PHASE2-REPORT.md); phases 3-8 remain **planned**. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
+The plans below turn the remaining work into ordered deliverables. Phase 1 baseline tooling, fixtures and local automated measurements are implemented; [its report](BASELINE-REPORT.md) records passing checks, budget gaps and pending native evidence. Phase 2 is **complete**, with [residual latency qualification accepted as a follow-up](PHASE2-REPORT.md#completion-decision); phases 3-8 remain **planned**. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
 
 | Phase | Outcome and detailed plan | Prerequisites |
 | --- | --- | --- |

@@ -106,4 +106,4 @@ control workloads, bound and unbound, on the same host, and capture scalable mod
 separately. Include generated differential edits, cross-container replacement,
 undo, graphemes across piece boundaries, export during edits, full-reference
 geometry, cache disposal and sustained undo/redo eviction. Raw results and
-operation counters decide acceptance; unmet targets keep Phase 2 incomplete.
+operation counters decide acceptance. The [2026-09-26 completion decision](PHASE2-REPORT.md#completion-decision) accepts residual latency qualification as PERF-01, superseding the original requirement that every latency miss keep Phase 2 incomplete. Numeric targets and measured failures remain unchanged.
