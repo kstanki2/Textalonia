@@ -185,62 +185,45 @@ public sealed class EditorSession
         throw new ArgumentException("The inline descriptor does not exist in the visible document.", nameof(id));
     }
 
-    public void InsertDocument(FlowDocument fragment)
+    /// <summary>Inserts a document as one undoable structured fragment in the active block container.</summary>
+    public void InsertDocument(FlowDocument fragment) => InsertFragment(new DocumentFragment { Document = fragment, StartsInsideParagraph = true, EndsInsideParagraph = true });
+
+    /// <summary>Preserves containers and resources and gives every pasted element and list fresh identities.</summary>
+    public void InsertFragment(DocumentFragment fragment)
     {
+        ArgumentNullException.ThrowIfNull(fragment);
         if (IsReadOnly) return;
         fragment.Validate();
-        // Imported resources keep stable keys unless they collide with different destination data.
-        var resources = Document.Resources;
-        var resourceIds = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var run in new DocumentIndex(fragment).Paragraphs.SelectMany(p => p.Paragraph.Runs))
+        var prepared = DocumentFragments.Prepare(fragment.Document, Document);
+        FlowDocument document; int caret;
+        if (Selection.Start == 0 && Selection.End == Index.Length &&
+            (!Selection.IsEmpty || Document.Blocks is [Paragraph { Length: 0 }]))
         {
-            if (run.Inline?.Payload is not ImageInlinePayload image || resourceIds.ContainsKey(image.ResourceId)) continue;
-            fragment.Resources.TryGetValue(image.ResourceId, out var incoming);
-            var target = image.ResourceId;
-            if (resources.TryGetValue(target, out var existing) && existing != incoming) target = "resource-" + Guid.NewGuid().ToString("N");
-            resourceIds.Add(image.ResourceId, target);
-            if (incoming is not null) resources = resources.SetItem(target, incoming);
+            document = prepared.PruneUnusedResources();
+            caret = new DocumentIndex(document).Length;
         }
-        // Pasting starts independent lists. Equal source identities stay equal inside the fragment.
-        var identities = new Dictionary<Guid, Guid>();
-        var paragraphs = new DocumentIndex(fragment).Paragraphs.Select(p =>
+        else
         {
-            var style = p.Paragraph.Style;
-            if (style.ListId is { } source)
-            {
-                if (!identities.TryGetValue(source, out var target)) identities.Add(source, target = Guid.NewGuid());
-                style = style with { ListId = target };
-            }
-            return p.Paragraph with { Id = Guid.NewGuid(), Style = style, Runs = p.Paragraph.Runs.Select(run => run.Inline is not { } inline ? run :
-                run with { Inline = inline with { Id = Guid.NewGuid(), Payload = inline.Payload is ImageInlinePayload image ?
-                    image with { ResourceId = resourceIds[image.ResourceId] } : inline.Payload } }).ToImmutableArray() };
-        }).ToImmutableArray();
-        var (document, caret) = ReplaceRange(Document with { Resources = resources }, Selection, paragraphs);
-        document = document.PruneUnusedResources();
+            var destination = Document;
+            var offset = Selection.Start;
+            if (!Selection.IsEmpty)
+                (destination, offset) = ReplaceRange(destination, Selection, [new Paragraph()]);
+            (document, caret) = DocumentFragments.Insert(destination, offset, prepared, fragment.StartsInsideParagraph, fragment.EndsInsideParagraph);
+            document = document.PruneUnusedResources();
+        }
         document.Validate();
         Commit(document, new(caret, caret), editedRange: Selection);
     }
 
-    public FlowDocument CopySelection()
-    {
-        if (Selection.IsEmpty) return new();
-        var result = new List<Block>();
-        foreach (var entry in Index.Enumerate(Selection.Start, Selection.End))
-        {
-            if (entry.Start > Selection.End || entry.End < Selection.Start) continue;
-            if (entry.Start == Selection.End && entry.Start != Selection.Start) break;
-            var start = Math.Max(0, Selection.Start - entry.Start);
-            var end = Math.Min(entry.Paragraph.Length, Selection.End - entry.Start);
-            result.Add(entry.Paragraph with
-            {
-                Id = Guid.NewGuid(), Runs = entry.Paragraph.Slice(start, Math.Max(0, end - start))
-            });
-        }
-        // Preserve a selected trailing paragraph separator.
-        if (Selection.End > 0 && Index.CharAt(Selection.End - 1) == '\n') result.Add(new Paragraph());
-        return (new FlowDocument(result) { Resources = Document.Resources }).PruneUnusedResources();
-    }
+    /// <summary>Copies the selected text, retaining enclosing sections and intersected table geometry.</summary>
+    public FlowDocument CopySelection() => CopyFragment().Document;
 
+    /// <summary>Clips paragraph boundaries and retains container formatting. Partial merge backups are discarded.</summary>
+    public DocumentFragment CopyFragment() => DocumentFragments.Extract(Document, Index, Selection);
+
+    /// <summary>Copies a rectangular cell range, expanding its edges to include every intersected merged cell.</summary>
+    public DocumentFragment CopyCells(Guid tableId, int row, int column, int rowCount, int columnCount) =>
+        DocumentFragments.ExtractCells(Document, tableId, row, column, rowCount, columnCount);
     public void DeleteBackward(bool word = false)
     {
         if (IsReadOnly) return;

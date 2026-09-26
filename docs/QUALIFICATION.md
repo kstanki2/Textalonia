@@ -42,3 +42,22 @@ Roles identify responsibility, not a claimed assignment to a named person. Maint
 | D07 | Freeze exact native OS patches, source-app/IME/reader versions in each execution record; supply unavailable hosts and human operators. | Platform QA leads | Inventory before P1.4 execution; all advertised scope evidence by P6.6/P8.2 |
 
 Release identity was checked on 2026-09-26: local project metadata and `git remote -v` were inspected. Read-only requests to the [NuGet version endpoint](https://api.nuget.org/v3-flatcontainer/textalonia/index.json) returned 404; the [GitHub repository API](https://api.github.com/repos/kstanki2/Textalonia) returned 200 with public repository `kstanki2/Textalonia`, default branch `main`, and no detected license. The dated [identity record](baselines/release-identity.json) preserves these results. This does not prove that a package ID is free or determine legal ownership. D05/D06 remain open; the release maintainer must recheck while authenticated as the intended owner. No license was chosen and nothing was published in Phase 1.
+
+## Phase 5 interchange qualification
+
+Automated codec and clipboard-adapter evidence is recorded in
+[Phase 5](PHASE5-REPORT.md). The locally authored corpus records null source
+application versions and is not an application export claim. These pairs remain
+explicitly **unqualified in both directions**, including opening exported DOCX
+without repair and application-rendered visual comparison:
+
+| Platform | Application pairs | Evidence still required |
+| --- | --- | --- |
+| Windows | Textalonia ↔ Textalonia, Edge, Microsoft Word, LibreOffice Writer, Notepad | Exact installed builds, N06 native/HTML/text transfer, Unicode CF_HTML, images/resources, rejected-native fallback and atomic cut/paste undo |
+| macOS | Textalonia ↔ Textalonia, Safari, Microsoft Word, LibreOffice Writer, TextEdit | Exact installed builds and native clipboard flavors; same bidirectional scenarios |
+| Linux/X11 | Textalonia ↔ Textalonia, Firefox, LibreOffice Writer, plain-text editor | Exact distribution/desktop/application builds and native clipboard ownership; same scenarios |
+
+Synthetic WordprocessingML/RTF/HTML specimens and headless clipboard tests protect
+the supported model subset. They do not certify any of these applications or
+platform pairs. P5.2 application-export corpus expansion and P5.6 native execution
+remain tracked until those records and rendered comparisons are collected.

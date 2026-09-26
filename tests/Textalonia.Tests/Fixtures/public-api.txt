@@ -4,6 +4,9 @@ type CompiledAvaloniaXaml.!AvaloniaResources : System.Object
 type CompiledAvaloniaXaml.!XamlLoader : System.Object
   method public static System.Object TryLoad(System.IServiceProvider , System.String )
   method public static System.Object TryLoad(System.String )
+type Textalonia.Controls.ConversionCompletedEventArgs : System.EventArgs sealed
+  ctor public (Textalonia.Serialization.ConversionReport report)
+  property Textalonia.Serialization.ConversionReport Report { public get; }
 type Textalonia.Controls.DefaultCaretComponent : Textalonia.Controls.DocumentInputComponent
   interface Textalonia.Controls.ICaretComponent
   interface Textalonia.Controls.IDocumentInputComponent
@@ -271,6 +274,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   event System.EventHandler DocumentChanged
   event System.EventHandler FindRequested
   event System.EventHandler SelectionChanged
+  event System.EventHandler<Textalonia.Controls.ConversionCompletedEventArgs> ConversionCompleted
   event System.EventHandler<Textalonia.Controls.EditorErrorEventArgs> OperationFailed
   event System.EventHandler<Textalonia.Controls.HyperlinkEventArgs> HyperlinkActivated
   field Avalonia.DirectProperty<Textalonia.Controls.TextaloniaEditor,Textalonia.Controls.ShapingLimitExceededException> LayoutErrorProperty static readonly
@@ -302,6 +306,8 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Threading.Tasks.Task LoadAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task PasteAsync()
   method public System.Threading.Tasks.Task SaveAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, System.Threading.CancellationToken cancellationToken = )
+  method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult> LoadWithReportAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = )
+  method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentSaveResult> SaveWithReportAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = )
   method public System.Void ApplyStyle(System.Func<Textalonia.Model.TextStyle,Textalonia.Model.TextStyle> change)
   method public System.Void FocusDocument()
   method public System.Void InsertInline(Textalonia.Model.InlineDescriptor descriptor, Textalonia.Model.DocumentResource resource = )
@@ -346,6 +352,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property Textalonia.Controls.ShapingLimitExceededException LayoutError { public get; }
   property Textalonia.Editing.EditorSession Session { public get; }
   property Textalonia.Model.FlowDocument Document { public get; public set; }
+  property Textalonia.Serialization.ConversionReport LastConversionReport { public get; }
 type Textalonia.Controls.TextaloniaToolbar : Avalonia.Controls.WrapPanel
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.Visual>
@@ -393,6 +400,20 @@ type Textalonia.Controls.TextaloniaViewer : Textalonia.Controls.TextaloniaEditor
   interface System.ComponentModel.ISupportInitialize
   ctor public ()
   property System.Type StyleKeyOverride { protected get; }
+type Textalonia.Editing.DocumentFragment : System.Object sealed
+  interface System.IEquatable<Textalonia.Editing.DocumentFragment>
+  ctor public ()
+  field System.Int32 CurrentVersion static = 1
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Editing.DocumentFragment other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Validate()
+  method public Textalonia.Editing.DocumentFragment <Clone>$()
+  property System.Boolean EndsInsideParagraph { public get; public set; }
+  property System.Boolean StartsInsideParagraph { public get; public set; }
+  property System.Int32 Version { public get; public set; }
+  property Textalonia.Model.FlowDocument Document { public get; public set; }
 type Textalonia.Editing.DocumentPosition : System.ValueType sealed
   interface System.IEquatable<Textalonia.Editing.DocumentPosition>
   ctor public (System.Int32 Revision, System.Guid ParagraphId, System.Int32 Offset)
@@ -428,6 +449,7 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Void Execute(System.Func<Textalonia.Model.FlowDocument,Textalonia.Model.FlowDocument> operation)
   method public System.Void IndentList(System.Int32 levels = 1)
   method public System.Void InsertDocument(Textalonia.Model.FlowDocument fragment)
+  method public System.Void InsertFragment(Textalonia.Editing.DocumentFragment fragment)
   method public System.Void InsertInline(Textalonia.Model.InlineDescriptor descriptor, Textalonia.Model.DocumentResource resource = )
   method public System.Void InsertParagraph()
   method public System.Void InsertTable(System.Int32 rows = 2, System.Int32 columns = 3)
@@ -447,6 +469,8 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Void Undo()
   method public System.Void UpdateCurrentTable(System.Func<Textalonia.Model.Table,System.Int32,System.Int32,Textalonia.Model.Table> update)
   method public System.Void UpdateInline(System.Guid id, System.Func<Textalonia.Model.InlineDescriptor,Textalonia.Model.InlineDescriptor> update)
+  method public Textalonia.Editing.DocumentFragment CopyCells(System.Guid tableId, System.Int32 row, System.Int32 column, System.Int32 rowCount, System.Int32 columnCount)
+  method public Textalonia.Editing.DocumentFragment CopyFragment()
   method public Textalonia.Editing.DocumentPosition CreatePosition(System.Int32 offset)
   method public Textalonia.Model.FlowDocument CopySelection()
   property System.Boolean CanRedo { public get; }
@@ -929,6 +953,60 @@ type Textalonia.Model.TextStyle : System.Object sealed
   property System.String Hyperlink { public get; public set; }
   property Textalonia.Model.Baseline Baseline { public get; public set; }
   property Textalonia.Model.TextStyle Default { public static get; }
+type Textalonia.Serialization.ConversionDiagnostic : System.Object sealed
+  interface System.IEquatable<Textalonia.Serialization.ConversionDiagnostic>
+  ctor public (System.String Code, Textalonia.Serialization.ConversionDiagnosticSeverity Severity, System.String UnsupportedFeature, System.String Fallback, System.Nullable<System.Guid> ModelId = , System.String SourceLocation = )
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Serialization.ConversionDiagnostic other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Code, Textalonia.Serialization.ConversionDiagnosticSeverity& Severity, System.String& UnsupportedFeature, System.String& Fallback, System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& ModelId, System.String& SourceLocation)
+  method public Textalonia.Serialization.ConversionDiagnostic <Clone>$()
+  property System.Nullable<System.Guid> ModelId { public get; public set; }
+  property System.String Code { public get; public set; }
+  property System.String Fallback { public get; public set; }
+  property System.String SourceLocation { public get; public set; }
+  property System.String UnsupportedFeature { public get; public set; }
+  property Textalonia.Serialization.ConversionDiagnosticSeverity Severity { public get; public set; }
+type Textalonia.Serialization.ConversionDiagnosticSeverity : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Serialization.ConversionDiagnosticSeverity Error static = 2
+  field Textalonia.Serialization.ConversionDiagnosticSeverity Information static = 0
+  field Textalonia.Serialization.ConversionDiagnosticSeverity Warning static = 1
+type Textalonia.Serialization.ConversionMode : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Serialization.ConversionMode Strict static = 1
+  field Textalonia.Serialization.ConversionMode Tolerant static = 0
+type Textalonia.Serialization.ConversionOptions : System.Object sealed
+  interface System.IEquatable<Textalonia.Serialization.ConversionOptions>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Serialization.ConversionOptions other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Serialization.ConversionOptions <Clone>$()
+  property System.Boolean PlainTextOnly { public get; public set; }
+  property Textalonia.Serialization.ConversionMode Mode { public get; public set; }
+type Textalonia.Serialization.ConversionReport : System.Object sealed
+  ctor public (System.Collections.Generic.IEnumerable<Textalonia.Serialization.ConversionDiagnostic> diagnostics)
+  property System.Boolean HasLoss { public get; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Serialization.ConversionDiagnostic> Diagnostics { public get; }
+  property Textalonia.Serialization.ConversionReport Empty { public static get; }
+type Textalonia.Serialization.DocumentConversionException : System.InvalidOperationException sealed
+  interface System.Runtime.Serialization.ISerializable
+  ctor public (Textalonia.Serialization.ConversionReport report)
+  property Textalonia.Serialization.ConversionReport Report { public get; }
+type Textalonia.Serialization.DocumentFormatExtensions : System.Object sealed abstract
+  method public static System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult> LoadWithReportAsync(Textalonia.Serialization.IDocumentFormat format, System.IO.Stream stream, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = )
+  method public static System.Threading.Tasks.Task<Textalonia.Serialization.DocumentSaveResult> SaveWithReportAsync(Textalonia.Serialization.IDocumentFormat format, Textalonia.Model.FlowDocument document, System.IO.Stream stream, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = )
 type Textalonia.Serialization.DocumentFormats : System.Object sealed abstract
   method public static Textalonia.Serialization.IDocumentFormat ForPath(System.String path)
   property System.Collections.Generic.IReadOnlyList<Textalonia.Serialization.IDocumentFormat> BuiltIn { public static get; }
@@ -937,6 +1015,27 @@ type Textalonia.Serialization.DocumentFormats : System.Object sealed abstract
   property Textalonia.Serialization.JsonDocumentFormat Json { public static get; }
   property Textalonia.Serialization.PlainTextDocumentFormat PlainText { public static get; }
   property Textalonia.Serialization.RtfDocumentFormat Rtf { public static get; }
+type Textalonia.Serialization.DocumentLoadResult : System.Object sealed
+  interface System.IEquatable<Textalonia.Serialization.DocumentLoadResult>
+  ctor public (Textalonia.Model.FlowDocument Document, Textalonia.Serialization.ConversionReport Report)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Serialization.DocumentLoadResult other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(Textalonia.Model.FlowDocument& Document, Textalonia.Serialization.ConversionReport& Report)
+  method public Textalonia.Serialization.DocumentLoadResult <Clone>$()
+  property Textalonia.Model.FlowDocument Document { public get; public set; }
+  property Textalonia.Serialization.ConversionReport Report { public get; public set; }
+type Textalonia.Serialization.DocumentSaveResult : System.Object sealed
+  interface System.IEquatable<Textalonia.Serialization.DocumentSaveResult>
+  ctor public (Textalonia.Serialization.ConversionReport Report)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Serialization.DocumentSaveResult other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(Textalonia.Serialization.ConversionReport& Report)
+  method public Textalonia.Serialization.DocumentSaveResult <Clone>$()
+  property Textalonia.Serialization.ConversionReport Report { public get; public set; }
 type Textalonia.Serialization.DocxDocumentFormat : System.Object sealed
   interface Textalonia.Serialization.IDocumentFormat
   ctor public ()
@@ -956,6 +1055,10 @@ type Textalonia.Serialization.IDocumentFormat : none abstract
   method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
   property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
   property System.String Name { public get; }
+type Textalonia.Serialization.IReportingDocumentFormat : none abstract
+  interface Textalonia.Serialization.IDocumentFormat
+  method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult> LoadWithReportAsync(System.IO.Stream stream, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = ) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentSaveResult> SaveWithReportAsync(Textalonia.Model.FlowDocument document, System.IO.Stream stream, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = ) virtual
 type Textalonia.Serialization.JsonDocumentFormat : Textalonia.Serialization.TextDocumentFormat sealed
   interface Textalonia.Serialization.IDocumentFormat
   ctor public ()

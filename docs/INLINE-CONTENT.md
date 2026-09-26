@@ -34,8 +34,7 @@ and deletion are atomic. Alt text is descriptive data, not searchable indexed te
 `FlowDocument.PlainText`, `DocumentIndex.ReadPlainText`, `SelectedText`, plain-text
 clipboard data and text export replace each object with its alt text. These output
 strings can have different lengths; their offsets must not be used as document
-positions. Native clipboard data preserves descriptors/resources. HTML/RTF/DOCX
-currently export alt text; image interchange fidelity belongs to Phase 5.
+positions. Native clipboard data preserves descriptors/resources. HTML and DOCX transfer supported embedded raster images; RTF transfers embedded PNG/JPEG. Unsupported encodings, host controls and unavailable or external images degrade to alternative text with conversion diagnostics. See [interchange contracts](INTERCHANGE.md).
 
 ## Encoded data
 

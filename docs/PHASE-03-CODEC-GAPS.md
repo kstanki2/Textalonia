@@ -1,5 +1,7 @@
 # Phase 3 codec gaps
 
+> Historical Phase 3 snapshot. Phase 4 advanced native storage to schema 3; Phase 5 adds reporting and broader mappings. See the current [interchange contracts](INTERCHANGE.md) and [support matrix](PHASE5-REPORT.md).
+
 Native JSON is the lossless format for the Phase 3 model. The writer emits schema 2; the reader supports schema 1 through an explicit, strict migration and supports schema 2 directly. External conversion improvements and structured clipboard diagnostics remain Phase 5 work.
 
 | Model feature | Native JSON v2 | Current external formats / clipboard |

@@ -61,6 +61,31 @@ public class LoadBaselineTests(UiFixture fixture) : IClassFixture<UiFixture>
         return true;
     }, CancellationToken.None);
 
+    [Fact]
+    public Task Reporting_load_rejects_stale_results_before_publishing_or_replacing() => fixture.Session.Dispatch(async () =>
+    {
+        var editor = new TextaloniaEditor { Text = "before" };
+        var reports = 0;
+        editor.ConversionCompleted += (_, _) => reports++;
+        using var stream = new MemoryStream();
+        var format = new ControlledFormat();
+        var pending = editor.LoadWithReportAsync(stream, format);
+        editor.InsertText("X");
+        format.Complete("stale");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => pending);
+        Assert.Equal("Xbefore", editor.Text);
+        Assert.Empty(editor.LastConversionReport.Diagnostics);
+        Assert.Equal(0, reports);
+        format = new ControlledFormat();
+        pending = editor.LoadWithReportAsync(stream, format);
+        format.Complete("accepted");
+        var result = await pending;
+        Assert.Equal("accepted", editor.Text);
+        Assert.Same(result.Report, editor.LastConversionReport);
+        Assert.Equal(1, reports);
+        Assert.Contains(result.Report.Diagnostics, d => d.Code == "conversion.diagnostics-unavailable");
+        return true;
+    }, CancellationToken.None);
     private sealed class ControlledFormat : IDocumentFormat
     {
         private readonly TaskCompletionSource<FlowDocument> _completion = new(TaskCreationOptions.RunContinuationsAsynchronously);

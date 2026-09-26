@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Text;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
@@ -18,6 +17,7 @@ namespace Textalonia.Controls;
 public sealed record TextHighlight(int Start, int Length, IBrush Brush);
 public sealed class HyperlinkEventArgs(string uri) : EventArgs { public string Uri { get; } = uri; }
 public sealed class EditorErrorEventArgs(Exception exception) : EventArgs { public Exception Exception { get; } = exception; }
+public sealed class ConversionCompletedEventArgs(ConversionReport report) : EventArgs { public ConversionReport Report { get; } = report; }
 
 [TemplatePart("PART_Surface", typeof(DocumentSurface), IsRequired = true)]
 [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer), IsRequired = true)]
@@ -47,6 +47,7 @@ public partial class TextaloniaEditor : TemplatedControl
         AvaloniaProperty.Register<TextaloniaEditor, int>(nameof(SelectionEnd), defaultBindingMode: BindingMode.TwoWay);
     public static readonly StyledProperty<Thickness> DocumentPaddingProperty =
         AvaloniaProperty.Register<TextaloniaEditor, Thickness>(nameof(DocumentPadding), new Thickness(28));
+    private static readonly DataFormat<string> FragmentClipboardFormat = DataFormat.CreateStringApplicationFormat("org.textalonia.fragment");
     private static readonly DataFormat<string> NativeClipboardFormat = DataFormat.CreateStringApplicationFormat("org.textalonia.document");
     private static readonly DataFormat<byte[]> WindowsHtmlFormat = DataFormat.CreateBytesPlatformFormat("HTML Format");
     private static readonly DataFormat<string> HtmlClipboardFormat = DataFormat.CreateStringPlatformFormat(OperatingSystem.IsMacOS() ? "public.html" : "text/html");
@@ -96,6 +97,7 @@ public partial class TextaloniaEditor : TemplatedControl
     public Thickness DocumentPadding { get => GetValue(DocumentPaddingProperty); set => SetValue(DocumentPaddingProperty, value); }
     public string SelectedText => Session.SelectedText;
     public Exception? LastError { get; private set; }
+    public ConversionReport LastConversionReport { get; private set; } = ConversionReport.Empty;
 
     public ICommand BoldCommand { get; }
     public ICommand ItalicCommand { get; }
@@ -112,6 +114,7 @@ public partial class TextaloniaEditor : TemplatedControl
     public event EventHandler<HyperlinkEventArgs>? HyperlinkActivated;
     public event EventHandler<EditorErrorEventArgs>? OperationFailed;
     public event EventHandler? FindRequested;
+    public event EventHandler<ConversionCompletedEventArgs>? ConversionCompleted;
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -190,21 +193,63 @@ public partial class TextaloniaEditor : TemplatedControl
     public Task SaveAsync(Stream stream, IDocumentFormat format, CancellationToken cancellationToken = default) =>
         format.SaveAsync(Session.Document, stream, cancellationToken);
 
+    public async Task<DocumentLoadResult> LoadWithReportAsync(Stream stream, IDocumentFormat format,
+        ConversionOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var revision = Session.Revision;
+        var result = await format.LoadWithReportAsync(stream, options, cancellationToken);
+        if (Session.Revision != revision) throw new InvalidOperationException("The document changed while the file was loading.");
+        Document = result.Document;
+        PublishConversion(result.Report);
+        return result;
+    }
+
+    public async Task<DocumentSaveResult> SaveWithReportAsync(Stream stream, IDocumentFormat format,
+        ConversionOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var result = await format.SaveWithReportAsync(Session.Document, stream, options, cancellationToken);
+        PublishConversion(result.Report);
+        return result;
+    }
+
+    private void PublishConversion(ConversionReport report)
+    {
+        LastConversionReport = report;
+        ConversionCompleted?.Invoke(this, new(report));
+    }
+
+    // An injectable adapter lets delayed/failed clipboard operations be exercised without changing platform ownership.
+    internal Func<IEditorClipboard?>? ClipboardProvider { get; set; }
+    private IEditorClipboard? Clipboard => ClipboardProvider is { } provider ? provider() :
+        TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard ? new PlatformEditorClipboard(clipboard) : null;
+
     public async Task CopyAsync() => await CopyCoreAsync();
     private async Task<bool> CopyCoreAsync()
     {
-        if (Session.Selection.IsEmpty || TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard) return false;
-        var fragment = Session.CopySelection();
+        if (Session.Selection.IsEmpty || Clipboard is not { } clipboard) return false;
+        using var diagnostics = ConversionDiagnostics.Begin();
+        var fragment = Session.CopyFragment();
         var data = new DataTransfer();
         var item = new DataTransferItem();
         item.SetText(Session.SelectedText);
-        item.Set(NativeClipboardFormat, DocumentFormats.Json.Serialize(fragment));
-        var html = DocumentFormats.Html.Serialize(fragment);
-        if (OperatingSystem.IsWindows()) item.Set(WindowsHtmlFormat, WindowsHtml(html));
+        item.Set(FragmentClipboardFormat, ClipboardInterchange.Serialize(fragment));
+        // Keep the older native document flavor available to older Textalonia builds.
+        item.Set(NativeClipboardFormat, DocumentFormats.Json.Serialize(fragment.Document));
+        // Clipboard commands finish preparing all flavors before yielding to platform access.
+        // A worker dispatch here would let an immediately following paste overtake the copy.
+        string html;
+        using (var htmlDiagnostics = ConversionDiagnostics.Begin())
+        {
+            DocumentFormatExtensions.ReportExportLosses(DocumentFormats.Html, fragment.Document);
+            html = DocumentFormats.Html.Serialize(fragment.Document);
+            diagnostics.AddRange(htmlDiagnostics.ToReport().Diagnostics.Select(d => d with { Fallback = "HTML fallback: " + d.Fallback }));
+        }
+        if (OperatingSystem.IsWindows()) item.Set(WindowsHtmlFormat, ClipboardInterchange.EncodeWindowsHtml(html));
         else item.Set(HtmlClipboardFormat, html);
         data.Add(item);
-        // Ownership transfers to the clipboard; do not dispose data here.
+        // Ownership transfers to the clipboard; do not dispose data after a successful transfer.
         await clipboard.SetDataAsync(data);
+        PublishConversion(diagnostics.ToReport());
         return true;
     }
 
@@ -219,51 +264,46 @@ public partial class TextaloniaEditor : TemplatedControl
 
     public async Task PasteAsync()
     {
-        if (IsReadOnly || TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard) return;
+        if (IsReadOnly || Clipboard is not { } clipboard) return;
         var revision = Session.Revision;
         var selection = Session.Selection;
+        using var diagnostics = ConversionDiagnostics.Begin();
         using var data = await clipboard.TryGetDataAsync();
         if (data is null) return;
-        FlowDocument? fragment = null;
-        var native = await data.TryGetValueAsync(NativeClipboardFormat);
-        if (native is not null)
+        DocumentFragment? fragment = null;
+        // Preference order is versioned native, legacy native, HTML, then plain text.
+        foreach (var format in new[] { FragmentClipboardFormat, NativeClipboardFormat })
         {
-            try { fragment = DocumentFormats.Json.Parse(native); }
-            catch (Exception ex) when (ex is FormatException or System.Text.Json.JsonException or NotSupportedException) { }
+            var native = await data.TryGetValueAsync(format);
+            if (native is null) continue;
+            try { fragment = ClipboardInterchange.Parse(native); break; }
+            catch (Exception ex) when (ex is FormatException or System.Text.Json.JsonException or NotSupportedException)
+            {
+                ConversionDiagnostics.Report("clipboard.native-rejected", "Invalid or unsupported native clipboard payload",
+                    "Try the next native flavor, then HTML, then plain text.");
+            }
         }
         if (fragment is null)
         {
-            var html = OperatingSystem.IsWindows()
-                ? (await data.TryGetValueAsync(WindowsHtmlFormat) is { } bytes ? Encoding.UTF8.GetString(bytes).TrimEnd('\0') : null)
-                : await data.TryGetValueAsync(HtmlClipboardFormat);
-            if (html is not null)
+            try
             {
-                var start = html.IndexOf("<!--StartFragment-->", StringComparison.OrdinalIgnoreCase);
-                var end = html.IndexOf("<!--EndFragment-->", StringComparison.OrdinalIgnoreCase);
-                if (start >= 0 && end > start) html = html[(start + 20)..end];
-                try { fragment = DocumentFormats.Html.Parse(html); }
-                catch (FormatException) { }
+                var html = OperatingSystem.IsWindows()
+                    ? (await data.TryGetValueAsync(WindowsHtmlFormat) is { } bytes ? ClipboardInterchange.DecodeWindowsHtml(bytes) : null)
+                    : await data.TryGetValueAsync(HtmlClipboardFormat);
+                if (html is not null)
+                    fragment = new() { Document = DocumentFormats.Html.Parse(ClipboardInterchange.ExtractHtmlFragment(html)) };
+            }
+            catch (Exception ex) when (ex is FormatException or System.Text.Json.JsonException or NotSupportedException)
+            {
+                ConversionDiagnostics.Report("clipboard.html-rejected", "Invalid or unsupported HTML clipboard payload", "Try plain text.");
             }
         }
         var text = fragment is null ? await data.TryGetTextAsync() : null;
         if (IsReadOnly || revision != Session.Revision || Session.Selection != selection) return;
-        if (fragment is not null) Session.InsertDocument(fragment);
+        if (fragment is not null) Session.InsertFragment(fragment);
         else if (text is not null) Session.InsertText(text);
+        PublishConversion(diagnostics.ToReport());
     }
-
-    private static byte[] WindowsHtml(string html)
-    {
-        var fragment = html[(html.IndexOf("<body>", StringComparison.Ordinal) + 6)..html.LastIndexOf("</body>", StringComparison.Ordinal)];
-        const string prefix = "<html><body><!--StartFragment-->";
-        const string suffix = "<!--EndFragment--></body></html>";
-        const string template = "Version:1.0\r\nStartHTML:{0:0000000000}\r\nEndHTML:{1:0000000000}\r\nStartFragment:{2:0000000000}\r\nEndFragment:{3:0000000000}\r\n";
-        var headerLength = Encoding.UTF8.GetByteCount(string.Format(System.Globalization.CultureInfo.InvariantCulture, template, 0, 0, 0, 0));
-        var start = headerLength + Encoding.UTF8.GetByteCount(prefix);
-        var end = start + Encoding.UTF8.GetByteCount(fragment);
-        var header = string.Format(System.Globalization.CultureInfo.InvariantCulture, template, headerLength, end + Encoding.UTF8.GetByteCount(suffix), start, end);
-        return Encoding.UTF8.GetBytes(header + prefix + fragment + suffix);
-    }
-
     internal void OpenLink(string uri) => HyperlinkActivated?.Invoke(this, new(uri));
     internal void RequestFind()
     {
@@ -321,4 +361,18 @@ public class TextaloniaViewer : TextaloniaEditor
 {
     protected override Type StyleKeyOverride => typeof(TextaloniaEditor);
     public TextaloniaViewer() { IsReadOnly = true; ShowToolbar = false; }
+}
+
+
+
+internal interface IEditorClipboard
+{
+    Task SetDataAsync(DataTransfer data);
+    Task<IAsyncDataTransfer?> TryGetDataAsync();
+}
+
+internal sealed class PlatformEditorClipboard(IClipboard clipboard) : IEditorClipboard
+{
+    public Task SetDataAsync(DataTransfer data) => clipboard.SetDataAsync(data);
+    public Task<IAsyncDataTransfer?> TryGetDataAsync() => clipboard.TryGetDataAsync();
 }

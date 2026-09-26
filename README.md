@@ -172,12 +172,21 @@ Streams remain owned by the caller. Encoding/parsing runs on a worker thread; as
 | --- | --- |
 | Textalonia / JSON | Versioned, lossless native model, including section styling and merge backups |
 | Plain text | Visible text and paragraph separators |
-| HTML | Styled runs, headings, simple lists, safe links, sections, tables and spans; a whitelist of inline CSS |
-| RTF | Unicode text, fonts, emphasis, size/colors, baseline, paragraph alignment/spacing/direction; tables and sections flatten, list semantics and link targets are not retained |
-| DOCX | Paragraphs, common inline formatting, headings, links, lists, tables and spans; styled sections flatten |
+| HTML | Identified/nested lists, start/restart, rich typography, safe links, styled sections, nested tables/spans/sizing, embedded raster images and a bounded inline CSS subset |
+| RTF | Unicode and common typography, numbered/bullet lists, safe link fields, flow sections, rectangular tables/merges/sizing, embedded PNG/JPEG; nested tables and section/cell decoration have diagnosed losses |
+| DOCX | Numbering definitions/restarts, inherited styles, safe links, nested tables/merge geometry/sizing/edges, section content groups and embedded raster images; page layout/revisions and section decoration have diagnosed losses |
 
-HTML import never executes scripts or loads remote images/styles. Image alt text is imported as text. DOCX parsing prohibits XML DTDs/external entities and limits package sizes. Only http, https, and mailto link targets are accepted. These converters do not guarantee arbitrary Word/browser document fidelity.
+HTML import never executes scripts or loads remote images/styles. Supported embedded images retain their data; unavailable images degrade to alternative text with diagnostics. DOCX parsing prohibits XML DTDs/external entities and limits package sizes. Only http, https, and mailto link targets are accepted. These converters do not guarantee arbitrary Word/browser document fidelity.
 
+Use `format.LoadWithReportAsync` / `SaveWithReportAsync` (also available on the
+editor) to receive stable diagnostic codes, severity, model/source locations and
+the fallback taken. `ConversionOptions.Mode = ConversionMode.Strict` rejects
+reported loss before writing export bytes; `PlainTextOnly = true` explicitly
+requests text degradation. The original API remains compatible. Legacy custom
+codecs report unknown fidelity; implement `IReportingDocumentFormat` to supply
+reports. The demo displays reports and offers a **Conversion report** button for
+clipboard notices. See [the full support and stream contracts](docs/INTERCHANGE.md)
+and [Phase 5 evidence and remaining qualification](docs/PHASE5-REPORT.md).
 Implement `IDocumentFormat` to add a format and pass your instance to `LoadAsync`/`SaveAsync`. The native `.textalonia` format is a versioned JSON schema, **not Avalonia XAML**. The `.json` and legacy `.art` extensions remain supported.
 
 ## Viewer, themes, highlights, and links
@@ -200,7 +209,7 @@ Table text participates in normal selection, formatting, and undo. Insert/delete
 
 Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited blocks in the anchor cell and restores the other original cells. Undo always restores the exact previous state. See [document semantics](docs/DOCUMENT-MODEL.md) for structural deletion rules, schema v1-to-v2 migration, list restart/continuation, mixed-selection state and typography APIs.
 
-Cross-cell text replacement preserves table structure; selecting and replacing the entire document clears its structure. Rich clipboard fragments preserve paragraph/run formatting but flatten tables/sections. Use native document save/load to retain full structure.
+Cross-cell text replacement preserves table structure; selecting and replacing the entire document clears its structure. Versioned rich clipboard fragments preserve sections, nested/merged tables and inline resources. Repeated paste remaps object/list identities and colliding resource keys; partial table selections clip unselected content. See [conversion and clipboard contracts](docs/INTERCHANGE.md) for boundary and destination merging rules.
 
 ## Repository and release status
 
