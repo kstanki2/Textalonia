@@ -14,7 +14,7 @@ The target is the feature set described by [Avalonia's editor announcement](http
 | Embedded content | Image alt text on HTML import | Inline images, arbitrary Avalonia controls, resource lifetime/serialization rules |
 | Display | Viewer mode, light/dark, replaceable theme/toolbar, text highlights | Independent input components, complete accessibility text providers |
 | Markdown | No dedicated implementation | Markdown codec/viewer and optional code highlighting |
-| Scale | Persistent indexes, shared text pieces, viewport shaping, entry/byte-budgeted history | Long-paragraph shaping and the remaining Phase 2 performance exit gate |
+| Scale | Persistent indexes, shared text pieces, windowed viewport shaping, entry/byte-budgeted history | Bidi/indivisible-line shaping bounds and the remaining Phase 2 performance exit gate |
 | Distribution | Local NuGet + symbols, docs, tests, CI workflow, package consumer smoke test | Ownership/license metadata and package ID availability, platform certification, public release |
 
 ## Implementation phases
@@ -36,7 +36,7 @@ The default implementation order is 1 through 8. Dependencies permit earlier cor
 
 ## Review findings that determine the order
 
-- **Measure the complete editing path.** Phase 1 exposed whole-document indexes, grapheme scans, eager text synchronization and complete shaping. Phase 2 adds persistent indexing/storage and viewport measurement while keeping eager `Text` compatibility explicit. Both compatibility and opt-in document modes have full-control measurements; long-paragraph shaping still prevents budget acceptance.
+- **Measure the complete editing path.** Phase 1 exposed whole-document indexes, grapheme scans, eager text synchronization and complete shaping. Phase 2 adds persistent indexing/storage and windowed viewport measurement while keeping eager `Text` compatibility explicit. Both compatibility and opt-in document modes have full-control measurements; the remaining shaping fallbacks and measured budget misses keep the phase open.
 - **Decide schema evolution before extending the model.** The version-1 JSON reader rejects unknown members and other versions. Lists, cell blocks, typography, and resources need explicit reader migration, writer-version, and old-file fixtures. Existing native files must remain readable; older readers must not silently misread newer files.
 - **Finish structural semantics before expanding codecs.** Cells currently contain paragraphs only, row/column edits reject all merged tables, and rich fragments flatten structure. Nesting, merge transformations, and inline resource descriptors belong in the model before interchange code can preserve them.
 - **Extract input behind existing behavior tests.** `DocumentSurface` currently owns keyboard, pointer, caret, IME, and value-only automation behavior. Splitting it without a baseline would make regressions difficult to distinguish from new behavior.

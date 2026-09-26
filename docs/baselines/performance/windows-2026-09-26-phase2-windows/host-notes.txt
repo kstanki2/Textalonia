@@ -1,0 +1,10 @@
+﻿Same Windows x64 host as P1 and the initial Phase 2 capture; environment.json records CPU, OS, SDK and runtime.
+Release; Avalonia.Headless + Skia software drawing; Inter; 800 x 500 DIP; scale 1; Fluent Light.
+Two warmups and seven measured repetitions per case. Compatibility and document captures ran sequentially, after tests completed.
+Power plan and unrelated host activity were not pinned/audited. Seven-sample p95 is descriptive (the maximum), not a robust tail estimate.
+All 138 compatibility and 90 document cases are preserved. No workload or adopted budget changed.
+Counters now include shaped UTF-16 units, largest shaping input, resident windows and estimated shape bytes; timing boundaries are unchanged.
+The archive is the final source capture. Exploratory captures remain under artifacts/phase2-completion and were not substituted for individual slow cases.
+Build used -m:1 -nodeReuse:false -p:UsedAvaloniaProducts= -p:UseSharedCompilation=false to avoid restricted telemetry/shared-build-server writes.
+Package restore used a new workspace cache, an offline feed of the new nupkg and cached dependencies, and process-local APPDATA/DOTNET_CLI_HOME. The loaded, packed and built library SHA256 values match.
+No native compositor, IME, clipboard, accessibility, Linux or macOS qualification is claimed.

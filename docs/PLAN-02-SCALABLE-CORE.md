@@ -36,9 +36,13 @@
 - P2.4: paragraph shaping and prefix heights are separate. Table row dependencies,
   shared caret/selection/hit-test/IME geometry, and a frozen full-measure oracle are covered.
 - P2.5: viewport/overscan measurement, distant targets, cache eviction/disposal and
-  scroll anchors are implemented. **This task remains open for long-paragraph work:**
-  one Avalonia TextLayout still shapes the complete paragraph, so visible work and
-  cache retention can exceed the desired bounds for a single large paragraph or cell.
+  scroll anchors are implemented. Long paragraphs now use bounded text windows,
+  retained line-break checkpoints, suffix reuse and visible-line rendering. Large
+  cells propagate viewport limits. **This task remains open for strict bounds:**
+  paragraph-wide bidi context uses full shaping, an indivisible grapheme/visual
+  line may exceed the normal window size, and pinned working content can exceed
+  the reusable cache budget. First-time exact distant targets discover intervening
+  line breaks. The report records the remaining unchanged-budget failures.
 - P2.6: history has entry and byte limits, shared ownership accounting (including
   typing styles, covered cells and merge backups), oversized-entry eviction, redo
   accounting and deterministic coalescing-boundary tests.

@@ -51,16 +51,38 @@ rows, including spans; height redistribution uses the original row-major span ru
 Unspanned cell height changes update only their row maximum and following row
 offsets; spanning cells redistribute row heights through the full span dependency
 set, without reshaping unrelated cells. Per-row dependency lists find intersecting
-cells without scanning the whole table on every viewport pass. Width, font or foreground changes reset shaping. A paragraph anchor
-compensates for height corrections above the viewport.
+cells without scanning the whole table on every viewport pass. Cells pass the
+viewport limits through to their contents, even when a tall cell intersects many
+rows. Width, font or foreground changes reset shaping. A text-line anchor
+compensates for height corrections above and within the visible paragraph.
 
-The reusable shape cache is limited to 256 paragraphs and an estimated 16 MiB
-(256 + 32 times UTF-16 length per shape). The current viewport, up to 400 DIP of
-overscan on each side, and required target/row dependencies are pinned until the
-next build and may exceed those limits. Eviction and detach dispose layouts.
-One paragraph is still an indivisible Avalonia TextLayout shaping unit: long
-paragraphs remain the outstanding latency/allocation bottleneck. The shape byte
-estimate is not a native-memory bound or a measured process-working-set guarantee.
+Long paragraphs use windows of normally at most 2,048 UTF-16 units. Each window
+ends at a grapheme boundary and commits complete Avalonia lines; its incomplete
+last line is lookahead for wrapping and justification. Rendering, selection,
+hit-testing, Home/End and IME coordinates share these window offsets. Only visible
+lines are drawn. Line-break checkpoints retain offsets/heights without glyphs and
+use binary search for measured text/height targets. Their memory grows with the
+measured prefix (one record per window), separately from the shaped-layout budget.
+Single-style edits retain the unchanged prefix and rejoin a measured suffix when
+line boundaries agree. Mixed-style/paragraph-format changes invalidate checkpoints
+conservatively. Exact first visits to distant offsets/heights discover intervening
+line breaks, disposing or reusing glyphs as they go. Repeated identical windows
+can reuse one discarded shape when all formatting agrees.
+
+The reusable cache is limited to 256 paragraph checkpoint sets, 256 shaped windows
+and an estimated 16 MiB (256 + 32 times input UTF-16 length per shape, including
+lookahead and the discarded-window reuse slot). Cache accounting/eviction enumerates
+resident shapes, not every measured checkpoint. The current viewport, up to 400 DIP
+of overscan on each side, and explicit target dependencies are pinned until the next
+build and may exceed those limits. Eviction and detach dispose layouts.
+
+Paragraph-wide bidirectional text still uses the exact full Avalonia shaping path.
+The rope maintains a conservative summary for RTL scripts and directional controls,
+so ordinary local edits do not scan the complete text merely to choose the path.
+A single enormous grapheme or visual line can also exceed the normal window size.
+These fallbacks and the pinned working set prevent a universal hard shaping bound;
+P2.5 remains open for those cases. The shape byte estimate is not a native-memory
+bound or a measured process-working-set guarantee.
 
 History defaults to 100 entries and 64 MiB. `HistoryByteLimit` bounds
 `RetainedHistoryBytes`, an estimate of storage owned exclusively by undo/redo.

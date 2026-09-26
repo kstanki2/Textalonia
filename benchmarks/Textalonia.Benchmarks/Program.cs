@@ -43,7 +43,8 @@ internal static class Program
 {
     private static readonly string[] Workloads = ["paragraphs-100", "paragraphs-1000", "paragraphs-10000", "long-paragraph", "table-heavy", "run-heavy"];
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-    private sealed record Counters(int ShapedParagraphs, int CachedParagraphs, int UpdatedIndexNodes, long RetainedHistoryBytes);
+    private sealed record Counters(int ShapedParagraphs, int CachedParagraphs, int UpdatedIndexNodes, long RetainedHistoryBytes,
+        long ShapedCharacters, int LargestShapingWindow, int CachedLayouts, long CachedLayoutBytes);
     private sealed record Sample(double Milliseconds, long AllocatedBytes, long? RetainedUndoBytes, Counters? Counters);
     private sealed record Result(string Workload, string Operation, int Paragraphs, int Utf16Length, int NativeBytes,
         double MedianMs, double P95Ms, long MedianAllocatedBytes, long? MedianRetainedUndoBytes, double? BudgetMs, bool? WithinLatencyBudget, List<Sample> Samples);
@@ -254,6 +255,7 @@ internal static class Program
         {
             var after = host.Observe();
             return after with { ShapedParagraphs = after.ShapedParagraphs - before.ShapedParagraphs,
+                ShapedCharacters = after.ShapedCharacters - before.ShapedCharacters,
                 UpdatedIndexNodes = revision == host.Editor.Session.Revision ? 0 : after.UpdatedIndexNodes };
         });
     }
@@ -286,7 +288,8 @@ internal static class Program
         public Counters Observe()
         {
             var layout = Editor.GetVisualDescendants().OfType<DocumentSurface>().Single().Layout;
-            return new(layout.ShapedParagraphs, layout.CachedParagraphs, Editor.Session.Index.Tree.UpdatedNodes, Editor.Session.RetainedHistoryBytes);
+            return new(layout.ShapedParagraphs, layout.CachedParagraphs, Editor.Session.Index.Tree.UpdatedNodes, Editor.Session.RetainedHistoryBytes,
+                layout.ShapedCharacters, layout.LargestShapingWindow, layout.CachedLayouts, layout.CachedLayoutBytes);
         }
         public void Frame()
         {

@@ -118,7 +118,8 @@ explicitly for complete current text, or `Session.Index.ReadText(start, length)`
 for a range. Re-enabling synchronization immediately updates `Text`. The default
 mode preserves existing text bindings and their linear materialization cost.
 See [the engine decision](docs/ADR-002-SCALABLE-CORE.md) and
-[performance limits](docs/PERFORMANCE.md), including long-paragraph shaping.
+[performance limits](docs/PERFORMANCE.md), including windowed long paragraphs and
+the remaining bidirectional shaping fallback.
 
 
 ## Editing API
