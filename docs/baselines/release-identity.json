@@ -1,0 +1,15 @@
+﻿{
+    "checkedUtc":  "2026-09-26T15:54:01.3973971+00:00",
+    "packageId":  "Textalonia",
+    "nugetEndpoint":  "https://api.nuget.org/v3-flatcontainer/textalonia/index.json",
+    "nugetStatus":  404,
+    "packageDisposition":  "No versions found at public flat-container endpoint; reservation/ownership remains a maintainer decision",
+    "repositoryEndpoint":  "https://api.github.com/repos/kstanki2/Textalonia",
+    "repositoryStatus":  200,
+    "repositoryUrl":  "https://github.com/kstanki2/Textalonia",
+    "fullName":  "kstanki2/Textalonia",
+    "visibility":  "public",
+    "defaultBranch":  "main",
+    "license":  null,
+    "ownershipDisposition":  "Public repository identity confirmed; legal ownership and canonical package metadata still require maintainer selection"
+}

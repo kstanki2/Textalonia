@@ -1,0 +1,30 @@
+﻿[
+    {
+        "path":  "benchmarks/Textalonia.Benchmarks/Program.cs",
+        "sha256":  "11C2E0501A23C6B393B93139BA1A768E7883FF8DC48FFD2917CC3B84298451C5"
+    },
+    {
+        "path":  "tests/Textalonia.Tests/Fixtures/BaselineDocuments.cs",
+        "sha256":  "81863C8C8B7A2DDA77CAE786DA79079DED7DAC5B3EAC50A0BBCAC155B6D0F559"
+    },
+    {
+        "path":  "Directory.Build.props",
+        "sha256":  "3D3C5D4071DEAA4BFEC8FF3ECEB8FCA19DA371D4CB7BD94E538912C588F697A4"
+    },
+    {
+        "path":  "src/Textalonia/Editing/EditorSession.cs",
+        "sha256":  "C5DC3193ED51EA021DAFD15D796A05995BD51643AB0408DF10E9CEE8AFAEBB2A"
+    },
+    {
+        "path":  "src/Textalonia/Controls/TextaloniaEditor.cs",
+        "sha256":  "D8564B23C20ABB8E527347A8B7D24B03F716B15576B968BF716DF6631F28321E"
+    },
+    {
+        "path":  "src/Textalonia/Controls/DocumentSurface.cs",
+        "sha256":  "9EA54952828E0C4062D6CB68A28CE34CFAB656CFFDBC9AAF78BE370E20203184"
+    },
+    {
+        "path":  "src/Textalonia/Controls/DocumentLayout.cs",
+        "sha256":  "152F081E2CFDB882575BEA817C1589761E5105CD77DF540E9891A8D214BC9E08"
+    }
+]

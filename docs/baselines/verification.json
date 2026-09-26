@@ -1,0 +1,84 @@
+﻿{
+    "recordedUtc":  "2026-09-26T16:07:24.1967039+00:00",
+    "baseRevision":  "050c7adff2c612acb6de2a9e226ad6020720f7fe",
+    "sourceState":  "Phase 1 working tree, engine unchanged",
+    "os":  "Windows 10.0.26100 x64",
+    "sdk":  "10.0.204",
+    "runtime":  ".NET 8.0.31",
+    "build":  {
+                  "configuration":  "Release",
+                  "status":  "pass",
+                  "errors":  0,
+                  "warnings":  0
+              },
+    "fullSuite":  {
+                      "trx":  "artifacts/baselines/tests/JackBauer_DESKTOP-0GDCOSC_2026-09-26_12_03_52.trx",
+                      "failed":  0,
+                      "sha256":  "F4E01539664DA5D50F811EB4BD64B96022C002A4B450CE312215463C848BFC27",
+                      "total":  60,
+                      "passed":  60
+                  },
+    "longCorpus":  {
+                       "trx":  "artifacts/baselines/long-corpus/JackBauer_DESKTOP-0GDCOSC_2026-09-26_12_04_50.trx",
+                       "passed":  11,
+                       "sha256":  "F26D2379C85E7D5EF4C41BE732B6BC7DF7DEFA470C91A3E65F2DA7F4487520AA",
+                       "modes":  [
+                                     "text",
+                                     "structured"
+                                 ],
+                       "operations":  12000,
+                       "failed":  0,
+                       "seeds":  [
+                                     7401,
+                                     1729,
+                                     8675309
+                                 ],
+                       "total":  11
+                   },
+    "package":  {
+                    "librarySha256":  "8A3D30FF4A4FE1E80FB4D777377FA16E55E70DBE23ADA8022FE326F4DFE8F46B",
+                    "status":  "pass",
+                    "path":  "artifacts/packages/Textalonia.0.1.0-preview.1.nupkg",
+                    "sha256":  "AC27AC5CD6EB5DEAF516DF878C31D33B171B92D719F83C2D602CEF57BCFACB96",
+                    "symbols":  "artifacts/packages/Textalonia.0.1.0-preview.1.snupkg"
+                },
+    "independentConsumer":  {
+                                "exactPackageHashVerified":  true,
+                                "output":  "Package consumer passed: compiled XAML, theme resources, native input, formatting, JSON, and rendering.",
+                                "projectReference":  false,
+                                "freshCache":  "artifacts/p1-consumer-cache",
+                                "status":  "pass",
+                                "caveat":  "Input and rendering used Avalonia.Headless/Skia, not native desktop qualification."
+                            },
+    "benchmark":  {
+                      "repetitions":  7,
+                      "warmups":  2,
+                      "latencyBudgetMisses":  75,
+                      "historyBudgetMisses":  0,
+                      "status":  "complete",
+                      "cases":  138,
+                      "allocationBudgetMisses":  27,
+                      "raw":  "performance/windows-2026-09-26/results.json"
+                  },
+    "native":  {
+                   "status":  "pending",
+                   "targets":  [
+                                   "windows",
+                                   "macos",
+                                   "linux"
+                               ],
+                   "desktopCases":  21
+               },
+    "replayRoute":  {
+                        "status":  "pass",
+                        "details":  "Structured split/merge/native roundtrip/insert/format replayed through TEXTALONIA_REPLAY.",
+                        "fixture":  "artifacts/baselines/replay-check.json",
+                        "operations":  5
+                    },
+    "budgetEnforcement":  {
+                              "status":  "pass",
+                              "expectedExitCode":  1,
+                              "exceededChecks":  102,
+                              "log":  "artifacts/baselines/enforced-budgets.txt"
+                          }
+}

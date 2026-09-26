@@ -19,7 +19,7 @@ The target is the feature set described by [Avalonia's editor announcement](http
 
 ## Implementation phases
 
-The plans below turn the remaining work into ordered deliverables. All tasks are **planned**, not implemented or verified by this review. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
+The plans below turn the remaining work into ordered deliverables. Phase 1 baseline tooling, fixtures and local automated measurements are implemented; [its report](BASELINE-REPORT.md) records passing checks, budget gaps and pending native evidence. Phases 2-8 remain **planned**. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
 
 | Phase | Outcome and detailed plan | Prerequisites |
 | --- | --- | --- |

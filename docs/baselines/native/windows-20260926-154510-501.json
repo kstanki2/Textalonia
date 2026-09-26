@@ -1,0 +1,95 @@
+﻿{
+    "schemaVersion":  1,
+    "createdUtc":  "2026-09-26T15:45:10.2570562+00:00",
+    "target":  "windows",
+    "owner":  "Windows QA maintainer",
+    "revision":  "050c7adff2c612acb6de2a9e226ad6020720f7fe + Phase 1 working tree",
+    "osBuild":  "Windows 11 24H2 / 10.0.26100; native input not exercised",
+    "backend":  "Target: Avalonia Win32/Skia 12.1.3; automated run used Headless/Skia",
+    "imeAndVersion":  "",
+    "sourceApplications":  "",
+    "screenReaderAndVersion":  "",
+    "font":  "Inter 16 DIP; record fallback fonts",
+    "dpi":  "96 and 144 on Windows; record native scaling on other targets",
+    "theme":  "Light and Dark",
+    "window":  "1000 x 700 DIP; repeat candidate geometry at 700 x 500",
+    "results":  [
+                    {
+                        "case":  "N01",
+                        "name":  "CJK commit",
+                        "status":  "pending",
+                        "reason":  "Windows host is present, but this session has no native desktop input/screen-reader operator or automation. Headless tests are separate evidence.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P4.2/P6.6",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N02",
+                        "name":  "Composition cancellation",
+                        "status":  "pending",
+                        "reason":  "Windows host is present, but this session has no native desktop input/screen-reader operator or automation. Headless tests are separate evidence.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P4.2/P6.6",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N03",
+                        "name":  "Candidate position after scroll",
+                        "status":  "pending",
+                        "reason":  "Windows host is present, but this session has no native desktop input/screen-reader operator or automation. Headless tests are separate evidence.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P2.4/P6.6",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N04",
+                        "name":  "Dead keys",
+                        "status":  "pending",
+                        "reason":  "Windows host is present, but this session has no native desktop input/screen-reader operator or automation. Headless tests are separate evidence.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P6.6",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N05",
+                        "name":  "Mixed bidi navigation",
+                        "status":  "pending",
+                        "reason":  "Windows host is present, but this session has no native desktop input/screen-reader operator or automation. Headless tests are separate evidence.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P6.1",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N06",
+                        "name":  "Rich clipboard",
+                        "status":  "pending",
+                        "reason":  "Windows host is present, but this session has no native desktop input/screen-reader operator or automation. Headless tests are separate evidence.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P5.5/P5.6",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N07",
+                        "name":  "Screen-reader value and selection",
+                        "status":  "pending",
+                        "reason":  "Windows host is present, but this session has no native desktop input/screen-reader operator or automation. Headless tests are separate evidence.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P4.6",
+                        "executedUtc":  null
+                    }
+                ]
+}

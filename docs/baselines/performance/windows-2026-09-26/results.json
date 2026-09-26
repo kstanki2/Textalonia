@@ -1,0 +1,6902 @@
+[
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "first-viewport",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 80.5477,
+    "P95Ms": 91.8391,
+    "MedianAllocatedBytes": 15512296,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 250,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 79.335,
+        "AllocatedBytes": 15520520,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 83.3717,
+        "AllocatedBytes": 15517152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 86.3853,
+        "AllocatedBytes": 15533768,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 80.5477,
+        "AllocatedBytes": 15512296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 91.8391,
+        "AllocatedBytes": 11758896,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 46.8084,
+        "AllocatedBytes": 4222736,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 35.8017,
+        "AllocatedBytes": 2995320,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-start-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 4.0878,
+    "P95Ms": 11.4688,
+    "MedianAllocatedBytes": 251720,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 11.4688,
+        "AllocatedBytes": 253680,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.8938,
+        "AllocatedBytes": 254928,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3272,
+        "AllocatedBytes": 251720,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.0878,
+        "AllocatedBytes": 251720,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.7409,
+        "AllocatedBytes": 251720,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.0171,
+        "AllocatedBytes": 251720,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.1373,
+        "AllocatedBytes": 251720,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-start-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 4.4647,
+    "P95Ms": 6.6463,
+    "MedianAllocatedBytes": 289360,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 4.4647,
+        "AllocatedBytes": 289360,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.6463,
+        "AllocatedBytes": 294904,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.337,
+        "AllocatedBytes": 289360,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.6081,
+        "AllocatedBytes": 289360,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.3612,
+        "AllocatedBytes": 289360,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3192,
+        "AllocatedBytes": 289360,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4538,
+        "AllocatedBytes": 289360,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-middle-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 6.1712,
+    "P95Ms": 6.7341,
+    "MedianAllocatedBytes": 300912,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 6.2112,
+        "AllocatedBytes": 300912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.962,
+        "AllocatedBytes": 300912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.7341,
+        "AllocatedBytes": 300912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.4093,
+        "AllocatedBytes": 300912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.1111,
+        "AllocatedBytes": 300912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.1712,
+        "AllocatedBytes": 300912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.9975,
+        "AllocatedBytes": 300912,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-middle-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 3.9654,
+    "P95Ms": 4.7118,
+    "MedianAllocatedBytes": 290960,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 3.8803,
+        "AllocatedBytes": 290960,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9654,
+        "AllocatedBytes": 290960,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.8349,
+        "AllocatedBytes": 290960,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9645,
+        "AllocatedBytes": 290960,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.7118,
+        "AllocatedBytes": 290960,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4263,
+        "AllocatedBytes": 290960,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4586,
+        "AllocatedBytes": 290960,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-end-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 6.4838,
+    "P95Ms": 7.3129,
+    "MedianAllocatedBytes": 305928,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 6.7231,
+        "AllocatedBytes": 305928,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.3257,
+        "AllocatedBytes": 305928,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.4282,
+        "AllocatedBytes": 305928,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.6407,
+        "AllocatedBytes": 305928,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.3129,
+        "AllocatedBytes": 305928,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.3579,
+        "AllocatedBytes": 305928,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.4838,
+        "AllocatedBytes": 305928,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-end-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 4.169,
+    "P95Ms": 4.2956,
+    "MedianAllocatedBytes": 293392,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 3.8058,
+        "AllocatedBytes": 293392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.2956,
+        "AllocatedBytes": 293392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.2465,
+        "AllocatedBytes": 293392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.2199,
+        "AllocatedBytes": 293392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.0659,
+        "AllocatedBytes": 293392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.169,
+        "AllocatedBytes": 293392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.098,
+        "AllocatedBytes": 293392,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "caret-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 3.7723,
+    "P95Ms": 5.8942,
+    "MedianAllocatedBytes": 216840,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 3.8306,
+        "AllocatedBytes": 216840,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.6975,
+        "AllocatedBytes": 216840,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.8243,
+        "AllocatedBytes": 216840,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.7723,
+        "AllocatedBytes": 216840,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.8942,
+        "AllocatedBytes": 223704,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.5959,
+        "AllocatedBytes": 216840,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.6445,
+        "AllocatedBytes": 216840,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "text-update-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 10.7206,
+    "P95Ms": 16.8751,
+    "MedianAllocatedBytes": 903424,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 11.2253,
+        "AllocatedBytes": 895464,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 12.5365,
+        "AllocatedBytes": 901072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.7206,
+        "AllocatedBytes": 895464,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.4642,
+        "AllocatedBytes": 903424,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 16.8751,
+        "AllocatedBytes": 907264,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.0926,
+        "AllocatedBytes": 903848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 9.6593,
+        "AllocatedBytes": 906272,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-start-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 3.8909,
+    "P95Ms": 5.6079,
+    "MedianAllocatedBytes": 249472,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 3.8909,
+        "AllocatedBytes": 249472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.4701,
+        "AllocatedBytes": 249472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.519,
+        "AllocatedBytes": 249472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.535,
+        "AllocatedBytes": 249472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.5637,
+        "AllocatedBytes": 249472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.042,
+        "AllocatedBytes": 259120,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.6079,
+        "AllocatedBytes": 263536,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-start-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 3.9828,
+    "P95Ms": 4.9763,
+    "MedianAllocatedBytes": 289472,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 4.4756,
+        "AllocatedBytes": 287112,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.5478,
+        "AllocatedBytes": 287112,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9705,
+        "AllocatedBytes": 289472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.9763,
+        "AllocatedBytes": 294088,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4919,
+        "AllocatedBytes": 287112,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9828,
+        "AllocatedBytes": 294128,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9776,
+        "AllocatedBytes": 294088,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-middle-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 5.9856,
+    "P95Ms": 7.6001,
+    "MedianAllocatedBytes": 301184,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 5.548,
+        "AllocatedBytes": 301184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.0976,
+        "AllocatedBytes": 301184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.0059,
+        "AllocatedBytes": 301184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.9856,
+        "AllocatedBytes": 301184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.1793,
+        "AllocatedBytes": 301184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.368,
+        "AllocatedBytes": 301184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.6001,
+        "AllocatedBytes": 301024,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-middle-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 4.3345,
+    "P95Ms": 12.8922,
+    "MedianAllocatedBytes": 291072,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 3.9439,
+        "AllocatedBytes": 291072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.9499,
+        "AllocatedBytes": 302656,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.8068,
+        "AllocatedBytes": 291072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.6485,
+        "AllocatedBytes": 291072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.3924,
+        "AllocatedBytes": 300992,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 12.8922,
+        "AllocatedBytes": 296016,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3345,
+        "AllocatedBytes": 291072,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-end-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 5.1387,
+    "P95Ms": 6.7096,
+    "MedianAllocatedBytes": 306040,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 5.1387,
+        "AllocatedBytes": 306040,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.8621,
+        "AllocatedBytes": 306200,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.073,
+        "AllocatedBytes": 306040,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.9259,
+        "AllocatedBytes": 306200,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.2586,
+        "AllocatedBytes": 305936,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.7096,
+        "AllocatedBytes": 305936,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2071,
+        "AllocatedBytes": 305776,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-end-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 4.2639,
+    "P95Ms": 6.9345,
+    "MedianAllocatedBytes": 293312,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 6.9345,
+        "AllocatedBytes": 293312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.8416,
+        "AllocatedBytes": 293312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.5854,
+        "AllocatedBytes": 293312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.2639,
+        "AllocatedBytes": 293312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4592,
+        "AllocatedBytes": 293312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.5277,
+        "AllocatedBytes": 293312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.0642,
+        "AllocatedBytes": 290952,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "caret-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 4.4443,
+    "P95Ms": 6.3809,
+    "MedianAllocatedBytes": 216672,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 4.86,
+        "AllocatedBytes": 223240,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.4075,
+        "AllocatedBytes": 223240,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.1181,
+        "AllocatedBytes": 216672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.1484,
+        "AllocatedBytes": 216672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.2944,
+        "AllocatedBytes": 216672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4443,
+        "AllocatedBytes": 216672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.3809,
+        "AllocatedBytes": 226208,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "text-update-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 9.1892,
+    "P95Ms": 9.8799,
+    "MedianAllocatedBytes": 900176,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 9.6563,
+        "AllocatedBytes": 902248,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 8.801,
+        "AllocatedBytes": 901272,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 8.4473,
+        "AllocatedBytes": 892328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 9.1892,
+        "AllocatedBytes": 899728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 9.8226,
+        "AllocatedBytes": 900176,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 9.8799,
+        "AllocatedBytes": 905096,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 9.1179,
+        "AllocatedBytes": 892328,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "scroll",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 3.3042,
+    "P95Ms": 4.8568,
+    "MedianAllocatedBytes": 85128,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 3.3042,
+        "AllocatedBytes": 85128,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2.8718,
+        "AllocatedBytes": 80312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.8568,
+        "AllocatedBytes": 85152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2.77,
+        "AllocatedBytes": 80472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.2908,
+        "AllocatedBytes": 85128,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.348,
+        "AllocatedBytes": 80312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.0651,
+        "AllocatedBytes": 85128,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "resize",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 30.1912,
+    "P95Ms": 37.526,
+    "MedianAllocatedBytes": 2623056,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 30.1912,
+        "AllocatedBytes": 2626440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 34.9001,
+        "AllocatedBytes": 2616888,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 22.1849,
+        "AllocatedBytes": 2623056,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 37.526,
+        "AllocatedBytes": 2622280,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 35.9734,
+        "AllocatedBytes": 2623104,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 22.3963,
+        "AllocatedBytes": 2621680,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 26.8272,
+        "AllocatedBytes": 2627256,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "replace-all",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 3.3194,
+    "P95Ms": 4.3925,
+    "MedianAllocatedBytes": 327384,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 4.0231,
+        "AllocatedBytes": 333168,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2.677,
+        "AllocatedBytes": 327384,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3925,
+        "AllocatedBytes": 339936,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9743,
+        "AllocatedBytes": 327384,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.1038,
+        "AllocatedBytes": 327384,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.1116,
+        "AllocatedBytes": 327384,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.3194,
+        "AllocatedBytes": 327384,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "native-save",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 0.8784,
+    "P95Ms": 0.9952,
+    "MedianAllocatedBytes": 551352,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 0.9952,
+        "AllocatedBytes": 551984,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.8784,
+        "AllocatedBytes": 551352,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.9257,
+        "AllocatedBytes": 551352,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.8298,
+        "AllocatedBytes": 551352,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.8619,
+        "AllocatedBytes": 551352,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.7841,
+        "AllocatedBytes": 551352,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.9223,
+        "AllocatedBytes": 551352,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "native-load",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 1.6579,
+    "P95Ms": 3.2976,
+    "MedianAllocatedBytes": 1082528,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 3.2976,
+        "AllocatedBytes": 1101864,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1.6579,
+        "AllocatedBytes": 1082528,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2.194,
+        "AllocatedBytes": 1082528,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1.7416,
+        "AllocatedBytes": 1082528,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1.6275,
+        "AllocatedBytes": 1082528,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1.6312,
+        "AllocatedBytes": 1082528,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1.6546,
+        "AllocatedBytes": 1082528,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "history-100",
+    "Paragraphs": 100,
+    "Utf16Length": 9706,
+    "NativeBytes": 127973,
+    "MedianMs": 28.8036,
+    "P95Ms": 41.0399,
+    "MedianAllocatedBytes": 16102784,
+    "MedianRetainedUndoBytes": 124336,
+    "BudgetMs": null,
+    "WithinLatencyBudget": null,
+    "Samples": [
+      {
+        "Milliseconds": 41.0055,
+        "AllocatedBytes": 16102784,
+        "RetainedUndoBytes": 124336
+      },
+      {
+        "Milliseconds": 41.0399,
+        "AllocatedBytes": 16102784,
+        "RetainedUndoBytes": 124336
+      },
+      {
+        "Milliseconds": 37.933,
+        "AllocatedBytes": 16102784,
+        "RetainedUndoBytes": 124336
+      },
+      {
+        "Milliseconds": 28.8036,
+        "AllocatedBytes": 16102784,
+        "RetainedUndoBytes": 124336
+      },
+      {
+        "Milliseconds": 24.4778,
+        "AllocatedBytes": 16102784,
+        "RetainedUndoBytes": 124336
+      },
+      {
+        "Milliseconds": 24.1012,
+        "AllocatedBytes": 16102784,
+        "RetainedUndoBytes": 124336
+      },
+      {
+        "Milliseconds": 24.2357,
+        "AllocatedBytes": 16102784,
+        "RetainedUndoBytes": 124336
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "first-viewport",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 83.7029,
+    "P95Ms": 93.2668,
+    "MedianAllocatedBytes": 13563736,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 250,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 92.9196,
+        "AllocatedBytes": 13563736,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 83.7029,
+        "AllocatedBytes": 13567000,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 86.513,
+        "AllocatedBytes": 13546248,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 93.2668,
+        "AllocatedBytes": 13573968,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 57.2378,
+        "AllocatedBytes": 13566168,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 71.9418,
+        "AllocatedBytes": 13553208,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 71.3947,
+        "AllocatedBytes": 13556472,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-start-unbound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 5.0326,
+    "P95Ms": 16.0041,
+    "MedianAllocatedBytes": 2091200,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 16.0041,
+        "AllocatedBytes": 2098384,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.0504,
+        "AllocatedBytes": 2091200,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.0326,
+        "AllocatedBytes": 2091200,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.684,
+        "AllocatedBytes": 2091200,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.3834,
+        "AllocatedBytes": 2091200,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.9473,
+        "AllocatedBytes": 2096032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.3981,
+        "AllocatedBytes": 2091200,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-start-unbound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 5.9176,
+    "P95Ms": 26.447,
+    "MedianAllocatedBytes": 2478296,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 5.7422,
+        "AllocatedBytes": 2478296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 26.447,
+        "AllocatedBytes": 2480920,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.9176,
+        "AllocatedBytes": 2478296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.8718,
+        "AllocatedBytes": 2478296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 13.9537,
+        "AllocatedBytes": 2482832,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.5348,
+        "AllocatedBytes": 2478296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.4068,
+        "AllocatedBytes": 2478296,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-middle-unbound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 6.6457,
+    "P95Ms": 21.1968,
+    "MedianAllocatedBytes": 2336560,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 5.6297,
+        "AllocatedBytes": 2336560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.8899,
+        "AllocatedBytes": 2341288,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.6459,
+        "AllocatedBytes": 2339080,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 21.1968,
+        "AllocatedBytes": 2338808,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.6457,
+        "AllocatedBytes": 2336560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.6183,
+        "AllocatedBytes": 2336560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.7889,
+        "AllocatedBytes": 2336560,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-middle-unbound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 15.9893,
+    "P95Ms": 22.2712,
+    "MedianAllocatedBytes": 2504992,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 6.1643,
+        "AllocatedBytes": 2504728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.9893,
+        "AllocatedBytes": 2509536,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2981,
+        "AllocatedBytes": 2504728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 16.4953,
+        "AllocatedBytes": 2509528,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2256,
+        "AllocatedBytes": 2504728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 22.2712,
+        "AllocatedBytes": 2511888,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 19.6913,
+        "AllocatedBytes": 2504992,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-end-unbound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 5.7984,
+    "P95Ms": 20.3381,
+    "MedianAllocatedBytes": 2393072,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 20.3381,
+        "AllocatedBytes": 2397376,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.4746,
+        "AllocatedBytes": 2393072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.7647,
+        "AllocatedBytes": 2393072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.6836,
+        "AllocatedBytes": 2393072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.695,
+        "AllocatedBytes": 2393072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.7934,
+        "AllocatedBytes": 2397792,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.7984,
+        "AllocatedBytes": 2393072,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-end-unbound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 6.3221,
+    "P95Ms": 29.9099,
+    "MedianAllocatedBytes": 2535088,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 6.3221,
+        "AllocatedBytes": 2535088,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 25.5438,
+        "AllocatedBytes": 2535352,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.4682,
+        "AllocatedBytes": 2532728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 29.9099,
+        "AllocatedBytes": 2537536,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.6429,
+        "AllocatedBytes": 2532728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 17.0169,
+        "AllocatedBytes": 2537552,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.9754,
+        "AllocatedBytes": 2532728,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "caret-unbound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 11.8015,
+    "P95Ms": 25.6804,
+    "MedianAllocatedBytes": 2165120,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 10.5731,
+        "AllocatedBytes": 2165120,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 25.3006,
+        "AllocatedBytes": 2175296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 25.6804,
+        "AllocatedBytes": 2165288,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.2931,
+        "AllocatedBytes": 2165024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 11.8015,
+        "AllocatedBytes": 2165024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.3234,
+        "AllocatedBytes": 2165024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 11.9196,
+        "AllocatedBytes": 2175152,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "text-update-unbound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 63.9304,
+    "P95Ms": 83.9582,
+    "MedianAllocatedBytes": 14527040,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 75.8464,
+        "AllocatedBytes": 14516048,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 57.4667,
+        "AllocatedBytes": 14527040,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 63.9304,
+        "AllocatedBytes": 14529160,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 70.2012,
+        "AllocatedBytes": 14505728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 56.2691,
+        "AllocatedBytes": 14529400,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 63.8065,
+        "AllocatedBytes": 14529400,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 83.9582,
+        "AllocatedBytes": 14505384,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-start-bound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 4.1895,
+    "P95Ms": 21.2099,
+    "MedianAllocatedBytes": 2091312,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 21.2099,
+        "AllocatedBytes": 2096152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3099,
+        "AllocatedBytes": 2091312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.1895,
+        "AllocatedBytes": 2091312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.8757,
+        "AllocatedBytes": 2091312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.8821,
+        "AllocatedBytes": 2091312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2529,
+        "AllocatedBytes": 2091312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.1136,
+        "AllocatedBytes": 2093672,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-start-bound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 6.2395,
+    "P95Ms": 27.5999,
+    "MedianAllocatedBytes": 2478312,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 5.6211,
+        "AllocatedBytes": 2478312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 27.5999,
+        "AllocatedBytes": 2483120,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.2868,
+        "AllocatedBytes": 2478312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.2395,
+        "AllocatedBytes": 2478312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.4783,
+        "AllocatedBytes": 2478312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.091,
+        "AllocatedBytes": 2478312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 27.2157,
+        "AllocatedBytes": 2483120,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-middle-bound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 7.1482,
+    "P95Ms": 27.487,
+    "MedianAllocatedBytes": 2336672,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 6.9788,
+        "AllocatedBytes": 2336672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 18.7153,
+        "AllocatedBytes": 2340968,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.9642,
+        "AllocatedBytes": 2336672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.1164,
+        "AllocatedBytes": 2336672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 27.487,
+        "AllocatedBytes": 2341680,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.1482,
+        "AllocatedBytes": 2336672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.6152,
+        "AllocatedBytes": 2343520,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-middle-bound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 5.4111,
+    "P95Ms": 21.6965,
+    "MedianAllocatedBytes": 2504744,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 6.9907,
+        "AllocatedBytes": 2504744,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.1191,
+        "AllocatedBytes": 2504744,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 21.6965,
+        "AllocatedBytes": 2507368,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.3525,
+        "AllocatedBytes": 2504744,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.4111,
+        "AllocatedBytes": 2504744,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.148,
+        "AllocatedBytes": 2504744,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.1587,
+        "AllocatedBytes": 2504744,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-end-bound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 7.206,
+    "P95Ms": 27.7341,
+    "MedianAllocatedBytes": 2395432,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 5.1365,
+        "AllocatedBytes": 2393184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 27.7341,
+        "AllocatedBytes": 2397472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.0562,
+        "AllocatedBytes": 2393184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.5626,
+        "AllocatedBytes": 2393184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.1611,
+        "AllocatedBytes": 2397472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.206,
+        "AllocatedBytes": 2395704,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 25.1096,
+        "AllocatedBytes": 2395432,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-end-bound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 5.8472,
+    "P95Ms": 20.9381,
+    "MedianAllocatedBytes": 2532744,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 12.084,
+        "AllocatedBytes": 2537304,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.8472,
+        "AllocatedBytes": 2532744,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 8.8805,
+        "AllocatedBytes": 2537288,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.6189,
+        "AllocatedBytes": 2532744,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 20.9381,
+        "AllocatedBytes": 2543816,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.6459,
+        "AllocatedBytes": 2532744,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2678,
+        "AllocatedBytes": 2532744,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "caret-bound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 10.4991,
+    "P95Ms": 28.4395,
+    "MedianAllocatedBytes": 2165024,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 10.7166,
+        "AllocatedBytes": 2165024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.4991,
+        "AllocatedBytes": 2165024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 28.4395,
+        "AllocatedBytes": 2170024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.0619,
+        "AllocatedBytes": 2165024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 9.7982,
+        "AllocatedBytes": 2165024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.6881,
+        "AllocatedBytes": 2165024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.4445,
+        "AllocatedBytes": 2165024,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "text-update-bound",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 65.573,
+    "P95Ms": 91.354,
+    "MedianAllocatedBytes": 14529512,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 67.8652,
+        "AllocatedBytes": 14529512,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 91.354,
+        "AllocatedBytes": 14516040,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 65.573,
+        "AllocatedBytes": 14529512,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 55.3725,
+        "AllocatedBytes": 14527152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 62.5172,
+        "AllocatedBytes": 14529512,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 64.9487,
+        "AllocatedBytes": 14529512,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 76.9271,
+        "AllocatedBytes": 14528792,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "scroll",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 3.3615,
+    "P95Ms": 24.1156,
+    "MedianAllocatedBytes": 230912,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 3.7635,
+        "AllocatedBytes": 230912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 24.1156,
+        "AllocatedBytes": 231016,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.3615,
+        "AllocatedBytes": 230752,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2.8856,
+        "AllocatedBytes": 230912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.5782,
+        "AllocatedBytes": 230912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2.8753,
+        "AllocatedBytes": 230912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2.9245,
+        "AllocatedBytes": 230912,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "resize",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 189.3313,
+    "P95Ms": 220.2216,
+    "MedianAllocatedBytes": 25163248,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 204.6691,
+        "AllocatedBytes": 25168152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 220.2216,
+        "AllocatedBytes": 25163248,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 209.1267,
+        "AllocatedBytes": 25175936,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 188.9539,
+        "AllocatedBytes": 25174912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 186.1962,
+        "AllocatedBytes": 25160888,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 189.3313,
+        "AllocatedBytes": 25163248,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 189.0627,
+        "AllocatedBytes": 25163248,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "replace-all",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 26.2148,
+    "P95Ms": 40.4532,
+    "MedianAllocatedBytes": 18062688,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 26.2148,
+        "AllocatedBytes": 18062688,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 9.9303,
+        "AllocatedBytes": 18060064,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 34.5141,
+        "AllocatedBytes": 18067344,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 37.4303,
+        "AllocatedBytes": 18067200,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 25.2605,
+        "AllocatedBytes": 18062688,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 40.4532,
+        "AllocatedBytes": 18067264,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.8244,
+        "AllocatedBytes": 18060064,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "native-save",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 3.8934,
+    "P95Ms": 4.3297,
+    "MedianAllocatedBytes": 5498448,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 4.3297,
+        "AllocatedBytes": 5499168,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9965,
+        "AllocatedBytes": 5498448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9755,
+        "AllocatedBytes": 5498448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.8934,
+        "AllocatedBytes": 5498448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.4381,
+        "AllocatedBytes": 5498448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.7689,
+        "AllocatedBytes": 5499168,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.6267,
+        "AllocatedBytes": 5498448,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "native-load",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 19.2951,
+    "P95Ms": 32.4651,
+    "MedianAllocatedBytes": 11385176,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 19.6537,
+        "AllocatedBytes": 11385176,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 19.2951,
+        "AllocatedBytes": 11385176,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 29.3803,
+        "AllocatedBytes": 11391088,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 32.4651,
+        "AllocatedBytes": 11398776,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 17.6325,
+        "AllocatedBytes": 11385176,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.8266,
+        "AllocatedBytes": 11385176,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 19.1774,
+        "AllocatedBytes": 11386432,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "history-100",
+    "Paragraphs": 1000,
+    "Utf16Length": 97069,
+    "NativeBytes": 1279136,
+    "MedianMs": 197.9109,
+    "P95Ms": 214.6682,
+    "MedianAllocatedBytes": 154957168,
+    "MedianRetainedUndoBytes": 837136,
+    "BudgetMs": null,
+    "WithinLatencyBudget": null,
+    "Samples": [
+      {
+        "Milliseconds": 197.9109,
+        "AllocatedBytes": 154957168,
+        "RetainedUndoBytes": 837136
+      },
+      {
+        "Milliseconds": 188.5353,
+        "AllocatedBytes": 154957168,
+        "RetainedUndoBytes": 837136
+      },
+      {
+        "Milliseconds": 187.3627,
+        "AllocatedBytes": 154957168,
+        "RetainedUndoBytes": 837136
+      },
+      {
+        "Milliseconds": 186.0953,
+        "AllocatedBytes": 154957168,
+        "RetainedUndoBytes": 837136
+      },
+      {
+        "Milliseconds": 207.8437,
+        "AllocatedBytes": 154957168,
+        "RetainedUndoBytes": 837136
+      },
+      {
+        "Milliseconds": 214.6682,
+        "AllocatedBytes": 154957168,
+        "RetainedUndoBytes": 837136
+      },
+      {
+        "Milliseconds": 205.1507,
+        "AllocatedBytes": 154957168,
+        "RetainedUndoBytes": 837136
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "first-viewport",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 776.1045,
+    "P95Ms": 923.4962,
+    "MedianAllocatedBytes": 140467392,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 250,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 697.3409,
+        "AllocatedBytes": 140466864,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 730.9649,
+        "AllocatedBytes": 140471688,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 776.1045,
+        "AllocatedBytes": 140476640,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 822.592,
+        "AllocatedBytes": 140464064,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 838.4259,
+        "AllocatedBytes": 140470920,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 744.6471,
+        "AllocatedBytes": 140467392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 923.4962,
+        "AllocatedBytes": 140466032,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-start-unbound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 24.8738,
+    "P95Ms": 42.6637,
+    "MedianAllocatedBytes": 21009784,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 42.6637,
+        "AllocatedBytes": 21009784,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.3476,
+        "AllocatedBytes": 21009784,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 18.676,
+        "AllocatedBytes": 21009784,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 24.8738,
+        "AllocatedBytes": 21009784,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 35.8165,
+        "AllocatedBytes": 21009784,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.9468,
+        "AllocatedBytes": 21009784,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 33.5765,
+        "AllocatedBytes": 21007424,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-start-unbound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 49.3892,
+    "P95Ms": 92.1778,
+    "MedianAllocatedBytes": 24891328,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 30.8907,
+        "AllocatedBytes": 24891328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 92.1778,
+        "AllocatedBytes": 24891328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 57.5278,
+        "AllocatedBytes": 24891328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 50.0151,
+        "AllocatedBytes": 24891328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 49.3892,
+        "AllocatedBytes": 24891328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 35.54,
+        "AllocatedBytes": 24891328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 28.2309,
+        "AllocatedBytes": 24891328,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-middle-unbound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 36.9463,
+    "P95Ms": 56.0266,
+    "MedianAllocatedBytes": 23270768,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 36.8499,
+        "AllocatedBytes": 23271304,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 39.881,
+        "AllocatedBytes": 23270872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 31.6636,
+        "AllocatedBytes": 23270768,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 30.041,
+        "AllocatedBytes": 23270768,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 36.9463,
+        "AllocatedBytes": 23270768,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 37.0788,
+        "AllocatedBytes": 23270768,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 56.0266,
+        "AllocatedBytes": 23270768,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-middle-unbound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 48.0599,
+    "P95Ms": 92.7899,
+    "MedianAllocatedBytes": 25169760,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 48.0599,
+        "AllocatedBytes": 25169760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 46.6405,
+        "AllocatedBytes": 25169760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 48.1962,
+        "AllocatedBytes": 25169760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 51.7994,
+        "AllocatedBytes": 25170288,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 47.1072,
+        "AllocatedBytes": 25169760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 44.5927,
+        "AllocatedBytes": 25169760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 92.7899,
+        "AllocatedBytes": 25170288,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-end-unbound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 27.6636,
+    "P95Ms": 101.5042,
+    "MedianAllocatedBytes": 23831344,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 101.5042,
+        "AllocatedBytes": 23835248,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 71.5488,
+        "AllocatedBytes": 23830768,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 27.6555,
+        "AllocatedBytes": 23831296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 41.2574,
+        "AllocatedBytes": 23830768,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 16.3838,
+        "AllocatedBytes": 23831464,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 27.6636,
+        "AllocatedBytes": 23831464,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 27.3111,
+        "AllocatedBytes": 23831344,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-end-unbound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 52.182,
+    "P95Ms": 79.4343,
+    "MedianAllocatedBytes": 25449760,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 51.8746,
+        "AllocatedBytes": 25449760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 48.4536,
+        "AllocatedBytes": 25449760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 79.3653,
+        "AllocatedBytes": 25449760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 79.4343,
+        "AllocatedBytes": 25450024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 52.182,
+        "AllocatedBytes": 25449760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 59.8594,
+        "AllocatedBytes": 25449760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 35.3304,
+        "AllocatedBytes": 25449760,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "caret-unbound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 101.9554,
+    "P95Ms": 126.784,
+    "MedianAllocatedBytes": 21238872,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 74.4158,
+        "AllocatedBytes": 21238872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 74.5859,
+        "AllocatedBytes": 21238872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 126.784,
+        "AllocatedBytes": 21239032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 101.9554,
+        "AllocatedBytes": 21238872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 65.2097,
+        "AllocatedBytes": 21248928,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 109.8093,
+        "AllocatedBytes": 21239296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 109.4192,
+        "AllocatedBytes": 21238872,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "text-update-unbound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 1087.4176,
+    "P95Ms": 1513.5802,
+    "MedianAllocatedBytes": 146701240,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 858.4108,
+        "AllocatedBytes": 146701368,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 799.6519,
+        "AllocatedBytes": 146694008,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1169.0091,
+        "AllocatedBytes": 146702600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1513.5802,
+        "AllocatedBytes": 146694616,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 986.4754,
+        "AllocatedBytes": 146705880,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1087.4176,
+        "AllocatedBytes": 146701240,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1156.3718,
+        "AllocatedBytes": 146694008,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-start-bound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 34.7427,
+    "P95Ms": 84.3301,
+    "MedianAllocatedBytes": 21009896,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 59.6618,
+        "AllocatedBytes": 21014432,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 53.6112,
+        "AllocatedBytes": 21009896,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.3314,
+        "AllocatedBytes": 21009896,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 84.3301,
+        "AllocatedBytes": 21014456,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 30.5564,
+        "AllocatedBytes": 21009896,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 21.7734,
+        "AllocatedBytes": 21009896,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 34.7427,
+        "AllocatedBytes": 21009896,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-start-bound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 50.3583,
+    "P95Ms": 91.5366,
+    "MedianAllocatedBytes": 24891440,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 50.3583,
+        "AllocatedBytes": 24891440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 91.5366,
+        "AllocatedBytes": 24891440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 51.419,
+        "AllocatedBytes": 24891440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 84.8243,
+        "AllocatedBytes": 24891440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 45.999,
+        "AllocatedBytes": 24889080,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 29.6255,
+        "AllocatedBytes": 24891440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 29.0193,
+        "AllocatedBytes": 24891440,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-middle-bound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 46.2147,
+    "P95Ms": 72.9742,
+    "MedianAllocatedBytes": 23270880,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 51.7036,
+        "AllocatedBytes": 23271144,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 30.98,
+        "AllocatedBytes": 23270880,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 72.9742,
+        "AllocatedBytes": 23276352,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 35.8828,
+        "AllocatedBytes": 23270880,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 32.0722,
+        "AllocatedBytes": 23271408,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 46.2147,
+        "AllocatedBytes": 23270880,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 63.0318,
+        "AllocatedBytes": 23270880,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-middle-bound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 49.746,
+    "P95Ms": 104.9618,
+    "MedianAllocatedBytes": 25169872,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 47.8682,
+        "AllocatedBytes": 25169872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 49.746,
+        "AllocatedBytes": 25169872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 104.9618,
+        "AllocatedBytes": 25174456,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 62.6143,
+        "AllocatedBytes": 25169872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 46.5469,
+        "AllocatedBytes": 25169872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 53.3824,
+        "AllocatedBytes": 25170400,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 49.4303,
+        "AllocatedBytes": 25169872,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-end-bound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 42.0384,
+    "P95Ms": 92.5521,
+    "MedianAllocatedBytes": 23831144,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 61.0754,
+        "AllocatedBytes": 23830880,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 26.8811,
+        "AllocatedBytes": 23830880,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 92.5521,
+        "AllocatedBytes": 23835416,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 16.9829,
+        "AllocatedBytes": 23831576,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 17.7316,
+        "AllocatedBytes": 23831576,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 42.0384,
+        "AllocatedBytes": 23830984,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 64.7786,
+        "AllocatedBytes": 23831144,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-end-bound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 44.8739,
+    "P95Ms": 85.6299,
+    "MedianAllocatedBytes": 25449872,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 83.6703,
+        "AllocatedBytes": 25449872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 47.6471,
+        "AllocatedBytes": 25449872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 85.6299,
+        "AllocatedBytes": 25449872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 44.8739,
+        "AllocatedBytes": 25449872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 43.0696,
+        "AllocatedBytes": 25449872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 43.6825,
+        "AllocatedBytes": 25449872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 43.0268,
+        "AllocatedBytes": 25449872,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "caret-bound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 67.1639,
+    "P95Ms": 151.4193,
+    "MedianAllocatedBytes": 21239032,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 151.4193,
+        "AllocatedBytes": 21239136,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 67.1639,
+        "AllocatedBytes": 21238872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 83.3455,
+        "AllocatedBytes": 21239032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 64.5002,
+        "AllocatedBytes": 21238872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 64.2505,
+        "AllocatedBytes": 21238872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 84.2394,
+        "AllocatedBytes": 21239032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 64.1447,
+        "AllocatedBytes": 21239400,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "text-update-bound",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 924.8617,
+    "P95Ms": 1252.6684,
+    "MedianAllocatedBytes": 146700952,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 983.9871,
+        "AllocatedBytes": 146704920,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1072.6783,
+        "AllocatedBytes": 146694464,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1252.6684,
+        "AllocatedBytes": 146699048,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 799.96,
+        "AllocatedBytes": 146707040,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 845.2354,
+        "AllocatedBytes": 146704544,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 924.8617,
+        "AllocatedBytes": 146700952,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 775.9266,
+        "AllocatedBytes": 146693936,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "scroll",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 4.4624,
+    "P95Ms": 28.8636,
+    "MedianAllocatedBytes": 1742336,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 28.8636,
+        "AllocatedBytes": 1742600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4624,
+        "AllocatedBytes": 1742600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 17.03,
+        "AllocatedBytes": 1742600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.7963,
+        "AllocatedBytes": 1742336,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3545,
+        "AllocatedBytes": 1742336,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.2021,
+        "AllocatedBytes": 1742336,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3847,
+        "AllocatedBytes": 1742336,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "resize",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 2795.8909,
+    "P95Ms": 3782.8073,
+    "MedianAllocatedBytes": 252328480,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 3782.8073,
+        "AllocatedBytes": 252328480,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3041.9626,
+        "AllocatedBytes": 252319000,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2615.6694,
+        "AllocatedBytes": 252325168,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2728.726,
+        "AllocatedBytes": 252313824,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2819.5067,
+        "AllocatedBytes": 252336736,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2558.0828,
+        "AllocatedBytes": 252332448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 2795.8909,
+        "AllocatedBytes": 252335336,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "replace-all",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 1881.2096,
+    "P95Ms": 1968.2368,
+    "MedianAllocatedBytes": 1748651576,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 1607.66,
+        "AllocatedBytes": 1748647096,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1960.6466,
+        "AllocatedBytes": 1748651576,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1881.2096,
+        "AllocatedBytes": 1748656048,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1902.2882,
+        "AllocatedBytes": 1748659624,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1821.0895,
+        "AllocatedBytes": 1748646944,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1771.2945,
+        "AllocatedBytes": 1748651456,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1968.2368,
+        "AllocatedBytes": 1748651752,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "native-save",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 40.9879,
+    "P95Ms": 48.1003,
+    "MedianAllocatedBytes": 54809280,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 40.9879,
+        "AllocatedBytes": 54809280,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 41.7936,
+        "AllocatedBytes": 54808560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 48.1003,
+        "AllocatedBytes": 54813912,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 39.2894,
+        "AllocatedBytes": 54824504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 35.3374,
+        "AllocatedBytes": 54809280,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 41.5073,
+        "AllocatedBytes": 54808560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 37.499,
+        "AllocatedBytes": 54808560,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "native-load",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 101.7406,
+    "P95Ms": 107.7509,
+    "MedianAllocatedBytes": 129447056,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 76.9138,
+        "AllocatedBytes": 129441864,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 103.6602,
+        "AllocatedBytes": 129455208,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 103.655,
+        "AllocatedBytes": 129454256,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 90.2127,
+        "AllocatedBytes": 129442400,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 101.7406,
+        "AllocatedBytes": 129442400,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 107.7509,
+        "AllocatedBytes": 129447056,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 93.9105,
+        "AllocatedBytes": 129453488,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "history-100",
+    "Paragraphs": 10000,
+    "Utf16Length": 970699,
+    "NativeBytes": 12790766,
+    "MedianMs": 2818.4207,
+    "P95Ms": 3022.4314,
+    "MedianAllocatedBytes": 1594349736,
+    "MedianRetainedUndoBytes": 7965136,
+    "BudgetMs": null,
+    "WithinLatencyBudget": null,
+    "Samples": [
+      {
+        "Milliseconds": 2632.7015,
+        "AllocatedBytes": 1594349768,
+        "RetainedUndoBytes": 7965136
+      },
+      {
+        "Milliseconds": 3022.4314,
+        "AllocatedBytes": 1594343176,
+        "RetainedUndoBytes": 7965136
+      },
+      {
+        "Milliseconds": 2742.3647,
+        "AllocatedBytes": 1594349736,
+        "RetainedUndoBytes": 7965136
+      },
+      {
+        "Milliseconds": 2707.7787,
+        "AllocatedBytes": 1594343264,
+        "RetainedUndoBytes": 7965136
+      },
+      {
+        "Milliseconds": 2826.9261,
+        "AllocatedBytes": 1594343232,
+        "RetainedUndoBytes": 7965136
+      },
+      {
+        "Milliseconds": 2818.4207,
+        "AllocatedBytes": 1594373448,
+        "RetainedUndoBytes": 7965136
+      },
+      {
+        "Milliseconds": 2856.0157,
+        "AllocatedBytes": 1594374528,
+        "RetainedUndoBytes": 7965136
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "first-viewport",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 352.1674,
+    "P95Ms": 641.3931,
+    "MedianAllocatedBytes": 38410720,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 250,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 594.0665,
+        "AllocatedBytes": 43310832,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 641.3931,
+        "AllocatedBytes": 41066288,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 371.7378,
+        "AllocatedBytes": 38414640,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 278.9032,
+        "AllocatedBytes": 38407816,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 299.2597,
+        "AllocatedBytes": 38406624,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 352.1674,
+        "AllocatedBytes": 38408008,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 307.6907,
+        "AllocatedBytes": 38410720,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-start-unbound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 381.624,
+    "P95Ms": 586.3413,
+    "MedianAllocatedBytes": 39113376,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 291.3642,
+        "AllocatedBytes": 39113904,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 324.4429,
+        "AllocatedBytes": 39112400,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 381.624,
+        "AllocatedBytes": 39113376,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 455.6677,
+        "AllocatedBytes": 39110600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 342.1699,
+        "AllocatedBytes": 39113376,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 480.7317,
+        "AllocatedBytes": 39110008,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 586.3413,
+        "AllocatedBytes": 39122472,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-start-unbound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 354.8839,
+    "P95Ms": 422.8647,
+    "MedianAllocatedBytes": 39427904,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 311.0335,
+        "AllocatedBytes": 39421216,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 323.5269,
+        "AllocatedBytes": 39428968,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 320.5212,
+        "AllocatedBytes": 39420048,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 413.4273,
+        "AllocatedBytes": 39432368,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 354.8839,
+        "AllocatedBytes": 39427904,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 422.8647,
+        "AllocatedBytes": 39430448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 394.4947,
+        "AllocatedBytes": 39424072,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-middle-unbound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 563.4956,
+    "P95Ms": 657.2487,
+    "MedianAllocatedBytes": 39392688,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 305.3055,
+        "AllocatedBytes": 39388624,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 568.3373,
+        "AllocatedBytes": 39392920,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 563.4956,
+        "AllocatedBytes": 39380136,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 657.2487,
+        "AllocatedBytes": 39380320,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 623.6083,
+        "AllocatedBytes": 39397584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 302.2396,
+        "AllocatedBytes": 39392688,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 339.4362,
+        "AllocatedBytes": 39397784,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-middle-unbound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 418.9856,
+    "P95Ms": 614.2699,
+    "MedianAllocatedBytes": 39609040,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 442.1287,
+        "AllocatedBytes": 39617824,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 408.815,
+        "AllocatedBytes": 39603776,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 418.9856,
+        "AllocatedBytes": 39619112,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 410.8008,
+        "AllocatedBytes": 39606136,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 335.8134,
+        "AllocatedBytes": 36934752,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 614.2699,
+        "AllocatedBytes": 39623504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 600.2525,
+        "AllocatedBytes": 39609040,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-end-unbound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 357.5568,
+    "P95Ms": 431.5501,
+    "MedianAllocatedBytes": 39113840,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 326.8354,
+        "AllocatedBytes": 39110456,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 357.5568,
+        "AllocatedBytes": 39117272,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 342.4158,
+        "AllocatedBytes": 39112304,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 431.5501,
+        "AllocatedBytes": 39113840,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 347.7028,
+        "AllocatedBytes": 39120328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 384.2059,
+        "AllocatedBytes": 39110000,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 423.0424,
+        "AllocatedBytes": 39116296,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-end-unbound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 400.2429,
+    "P95Ms": 570.0295,
+    "MedianAllocatedBytes": 39431144,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 439.5806,
+        "AllocatedBytes": 39431144,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 303.0926,
+        "AllocatedBytes": 39428312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 400.2429,
+        "AllocatedBytes": 39442096,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 570.0295,
+        "AllocatedBytes": 39434096,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 444.2102,
+        "AllocatedBytes": 39428200,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 342.3162,
+        "AllocatedBytes": 39437696,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 355.1196,
+        "AllocatedBytes": 39424128,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "caret-unbound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 39.1238,
+    "P95Ms": 73.4576,
+    "MedianAllocatedBytes": 3609312,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 42.5399,
+        "AllocatedBytes": 3614936,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 24.1439,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 39.1238,
+        "AllocatedBytes": 3620472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 25.8405,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 71.5117,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 27.5504,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 73.4576,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "text-update-unbound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 362.0896,
+    "P95Ms": 562.3323,
+    "MedianAllocatedBytes": 40720024,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 295.4764,
+        "AllocatedBytes": 40714104,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 486.5261,
+        "AllocatedBytes": 40720024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 332.0731,
+        "AllocatedBytes": 40724592,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 562.3323,
+        "AllocatedBytes": 40717448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 375.4598,
+        "AllocatedBytes": 40722656,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 336.6945,
+        "AllocatedBytes": 40714104,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 362.0896,
+        "AllocatedBytes": 40724064,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-start-bound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 358.7011,
+    "P95Ms": 629.5957,
+    "MedianAllocatedBytes": 39112552,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 358.7011,
+        "AllocatedBytes": 39110112,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 294.0413,
+        "AllocatedBytes": 39113488,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 420.5327,
+        "AllocatedBytes": 39112552,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 372.0306,
+        "AllocatedBytes": 39133488,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 257.1705,
+        "AllocatedBytes": 36444464,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 318.2073,
+        "AllocatedBytes": 39120504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 629.5957,
+        "AllocatedBytes": 39110776,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-start-bound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 417.8045,
+    "P95Ms": 585.1894,
+    "MedianAllocatedBytes": 39426432,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 585.1894,
+        "AllocatedBytes": 39425904,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 417.8045,
+        "AllocatedBytes": 39430240,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 384.0027,
+        "AllocatedBytes": 39425904,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 424.2931,
+        "AllocatedBytes": 39433800,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 352.8269,
+        "AllocatedBytes": 39426432,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 358.5752,
+        "AllocatedBytes": 39434952,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 426.3672,
+        "AllocatedBytes": 39425904,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-middle-bound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 405.8256,
+    "P95Ms": 463.9624,
+    "MedianAllocatedBytes": 39386512,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 368.8361,
+        "AllocatedBytes": 39380904,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 386.6704,
+        "AllocatedBytes": 39380992,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 405.8256,
+        "AllocatedBytes": 39390640,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 463.9624,
+        "AllocatedBytes": 39388208,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 440.9744,
+        "AllocatedBytes": 39386512,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 367.8823,
+        "AllocatedBytes": 39380240,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 430.9338,
+        "AllocatedBytes": 39394608,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-middle-bound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 345.5757,
+    "P95Ms": 479.8609,
+    "MedianAllocatedBytes": 39606248,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 479.8609,
+        "AllocatedBytes": 39622400,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 345.5757,
+        "AllocatedBytes": 39604416,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 357.7325,
+        "AllocatedBytes": 39608576,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 401.6806,
+        "AllocatedBytes": 39606248,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 323.3619,
+        "AllocatedBytes": 39609152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 329.9546,
+        "AllocatedBytes": 39606248,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 344.9032,
+        "AllocatedBytes": 39600504,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-end-bound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 309.9176,
+    "P95Ms": 371.2796,
+    "MedianAllocatedBytes": 39113424,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 369.4056,
+        "AllocatedBytes": 39110568,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 371.2796,
+        "AllocatedBytes": 39121008,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 296.3234,
+        "AllocatedBytes": 39110488,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 279.0155,
+        "AllocatedBytes": 39113424,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 331.9038,
+        "AllocatedBytes": 39122808,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 309.9176,
+        "AllocatedBytes": 39110568,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 299.5599,
+        "AllocatedBytes": 39123408,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-end-bound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 355.9628,
+    "P95Ms": 432.7153,
+    "MedianAllocatedBytes": 39426144,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 386.441,
+        "AllocatedBytes": 39428544,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 358.1028,
+        "AllocatedBytes": 39420856,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 355.9628,
+        "AllocatedBytes": 39426144,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 304.3698,
+        "AllocatedBytes": 39422760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 313.633,
+        "AllocatedBytes": 39420400,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 432.7153,
+        "AllocatedBytes": 39437752,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 316.668,
+        "AllocatedBytes": 39430472,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "caret-bound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 23.4844,
+    "P95Ms": 65.8509,
+    "MedianAllocatedBytes": 3609312,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 23.4844,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.3869,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 58.3466,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.2599,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 54.2223,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 21.6651,
+        "AllocatedBytes": 3609312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 65.8509,
+        "AllocatedBytes": 3609840,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "text-update-bound",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 364.4635,
+    "P95Ms": 409.2103,
+    "MedianAllocatedBytes": 40714648,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 366.7494,
+        "AllocatedBytes": 40714216,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 364.4635,
+        "AllocatedBytes": 40714648,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 409.2103,
+        "AllocatedBytes": 40731816,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 304.8911,
+        "AllocatedBytes": 40714232,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 333.9127,
+        "AllocatedBytes": 40722768,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 351.3146,
+        "AllocatedBytes": 40714216,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 386.9437,
+        "AllocatedBytes": 40723632,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "scroll",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 19.6749,
+    "P95Ms": 38.7612,
+    "MedianAllocatedBytes": 2704152,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 20.1002,
+        "AllocatedBytes": 2704152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 18.9234,
+        "AllocatedBytes": 2704152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 38.7612,
+        "AllocatedBytes": 2708752,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 18.8159,
+        "AllocatedBytes": 2704152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 18.0667,
+        "AllocatedBytes": 2704152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 20.3768,
+        "AllocatedBytes": 2704152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 19.6749,
+        "AllocatedBytes": 2704152,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "resize",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 948.4082,
+    "P95Ms": 1031.6364,
+    "MedianAllocatedBytes": 106424136,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 1031.6364,
+        "AllocatedBytes": 106438408,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 936.9138,
+        "AllocatedBytes": 106413656,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1015.7816,
+        "AllocatedBytes": 106424136,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 871.315,
+        "AllocatedBytes": 106421872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1029.2871,
+        "AllocatedBytes": 106426056,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 948.4082,
+        "AllocatedBytes": 106424512,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 848.22,
+        "AllocatedBytes": 106411360,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "replace-all",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 902.6031,
+    "P95Ms": 1005.2446,
+    "MedianAllocatedBytes": 1476169080,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 1005.2446,
+        "AllocatedBytes": 1476171024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 902.6031,
+        "AllocatedBytes": 1476169080,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 889.5262,
+        "AllocatedBytes": 1476151472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 910.0127,
+        "AllocatedBytes": 1476188872,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 947.8501,
+        "AllocatedBytes": 1476165648,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 839.826,
+        "AllocatedBytes": 1476167832,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 886.3822,
+        "AllocatedBytes": 1476180280,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "native-save",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 0.2472,
+    "P95Ms": 0.2537,
+    "MedianAllocatedBytes": 847032,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 0.2518,
+        "AllocatedBytes": 847032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.2519,
+        "AllocatedBytes": 847032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.2537,
+        "AllocatedBytes": 847032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.2472,
+        "AllocatedBytes": 847032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.2395,
+        "AllocatedBytes": 847032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.2451,
+        "AllocatedBytes": 847032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.2445,
+        "AllocatedBytes": 847032,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "native-load",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 0.826,
+    "P95Ms": 1.3311,
+    "MedianAllocatedBytes": 1910600,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 0.8554,
+        "AllocatedBytes": 1910600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.826,
+        "AllocatedBytes": 1910600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1.3311,
+        "AllocatedBytes": 1910600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 1.0184,
+        "AllocatedBytes": 1910600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.7062,
+        "AllocatedBytes": 1910600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.7022,
+        "AllocatedBytes": 1910600,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 0.7146,
+        "AllocatedBytes": 1910600,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "history-100",
+    "Paragraphs": 1,
+    "Utf16Length": 90000,
+    "NativeBytes": 211234,
+    "MedianMs": 138.2657,
+    "P95Ms": 145.246,
+    "MedianAllocatedBytes": 47960480,
+    "MedianRetainedUndoBytes": 17853800,
+    "BudgetMs": null,
+    "WithinLatencyBudget": null,
+    "Samples": [
+      {
+        "Milliseconds": 135.8624,
+        "AllocatedBytes": 47960480,
+        "RetainedUndoBytes": 17853800
+      },
+      {
+        "Milliseconds": 137.4154,
+        "AllocatedBytes": 47960480,
+        "RetainedUndoBytes": 17853800
+      },
+      {
+        "Milliseconds": 145.246,
+        "AllocatedBytes": 47960480,
+        "RetainedUndoBytes": 17853800
+      },
+      {
+        "Milliseconds": 140.9716,
+        "AllocatedBytes": 47960480,
+        "RetainedUndoBytes": 17853800
+      },
+      {
+        "Milliseconds": 142.9681,
+        "AllocatedBytes": 47960480,
+        "RetainedUndoBytes": 17853800
+      },
+      {
+        "Milliseconds": 138.2657,
+        "AllocatedBytes": 47960480,
+        "RetainedUndoBytes": 17853800
+      },
+      {
+        "Milliseconds": 137.6638,
+        "AllocatedBytes": 47960480,
+        "RetainedUndoBytes": 17853800
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "first-viewport",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 58.2014,
+    "P95Ms": 64.9518,
+    "MedianAllocatedBytes": 14722320,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 250,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 30.3911,
+        "AllocatedBytes": 14731256,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 64.9518,
+        "AllocatedBytes": 14714704,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 63.4939,
+        "AllocatedBytes": 14720936,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 58.8477,
+        "AllocatedBytes": 14731256,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 44.8664,
+        "AllocatedBytes": 14722320,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 58.2014,
+        "AllocatedBytes": 14717640,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 46.6663,
+        "AllocatedBytes": 14731256,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-start-unbound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 6.1716,
+    "P95Ms": 25.5187,
+    "MedianAllocatedBytes": 3393296,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 6.5074,
+        "AllocatedBytes": 3393032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.1716,
+        "AllocatedBytes": 3393032,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 25.5187,
+        "AllocatedBytes": 3393296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.7483,
+        "AllocatedBytes": 3395656,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.6784,
+        "AllocatedBytes": 3395392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.08,
+        "AllocatedBytes": 3393296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.5168,
+        "AllocatedBytes": 3393032,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-start-unbound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 5.6394,
+    "P95Ms": 26.1158,
+    "MedianAllocatedBytes": 3472592,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 20.7031,
+        "AllocatedBytes": 3479336,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.5235,
+        "AllocatedBytes": 3472328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.6394,
+        "AllocatedBytes": 3472328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.77,
+        "AllocatedBytes": 3472328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4799,
+        "AllocatedBytes": 3472592,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 19.3432,
+        "AllocatedBytes": 3474952,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 26.1158,
+        "AllocatedBytes": 3479096,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-middle-unbound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 5.278,
+    "P95Ms": 30.154,
+    "MedianAllocatedBytes": 3473016,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 5.278,
+        "AllocatedBytes": 3470656,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 17.6151,
+        "AllocatedBytes": 3473544,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 20.7391,
+        "AllocatedBytes": 3477672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.0266,
+        "AllocatedBytes": 3470392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.0153,
+        "AllocatedBytes": 3470392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 30.154,
+        "AllocatedBytes": 3478160,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9456,
+        "AllocatedBytes": 3473016,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-middle-unbound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 5.676,
+    "P95Ms": 25.2136,
+    "MedianAllocatedBytes": 3523712,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 5.3213,
+        "AllocatedBytes": 3521624,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 24.4482,
+        "AllocatedBytes": 3523712,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.1176,
+        "AllocatedBytes": 3523984,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.676,
+        "AllocatedBytes": 3521888,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 25.2136,
+        "AllocatedBytes": 3526568,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4394,
+        "AllocatedBytes": 3521624,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.8451,
+        "AllocatedBytes": 3523712,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-end-unbound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 6.5661,
+    "P95Ms": 48.0073,
+    "MedianAllocatedBytes": 3497448,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 6.5661,
+        "AllocatedBytes": 3497184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 25.6468,
+        "AllocatedBytes": 3497448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.8728,
+        "AllocatedBytes": 3497184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 14.9243,
+        "AllocatedBytes": 3502160,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.1041,
+        "AllocatedBytes": 3497184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.2735,
+        "AllocatedBytes": 3497448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 48.0073,
+        "AllocatedBytes": 3502104,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-end-unbound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 5.0428,
+    "P95Ms": 28.1408,
+    "MedianAllocatedBytes": 3520440,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 4.2292,
+        "AllocatedBytes": 3520176,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.649,
+        "AllocatedBytes": 3520440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 19.6754,
+        "AllocatedBytes": 3520440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.0428,
+        "AllocatedBytes": 3520704,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.0492,
+        "AllocatedBytes": 3520176,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 28.1408,
+        "AllocatedBytes": 3525104,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4336,
+        "AllocatedBytes": 3520440,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "caret-unbound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 4.8077,
+    "P95Ms": 16.3057,
+    "MedianAllocatedBytes": 2117584,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 4.5425,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2774,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.2773,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.8077,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.089,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.5046,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 16.3057,
+        "AllocatedBytes": 2117848,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "text-update-unbound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 36.1626,
+    "P95Ms": 55.3681,
+    "MedianAllocatedBytes": 8158408,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 31.0065,
+        "AllocatedBytes": 8161456,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 22.4869,
+        "AllocatedBytes": 8140288,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 24.2109,
+        "AllocatedBytes": 8158408,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 54.6069,
+        "AllocatedBytes": 8160928,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 55.3681,
+        "AllocatedBytes": 8124328,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 38.7047,
+        "AllocatedBytes": 8158408,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 36.1626,
+        "AllocatedBytes": 8160688,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-start-bound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 4.9358,
+    "P95Ms": 20.7748,
+    "MedianAllocatedBytes": 3393144,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 4.9358,
+        "AllocatedBytes": 3393144,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 20.7748,
+        "AllocatedBytes": 3393408,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.5038,
+        "AllocatedBytes": 3395504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.1724,
+        "AllocatedBytes": 3393408,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.704,
+        "AllocatedBytes": 3393144,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2257,
+        "AllocatedBytes": 3393144,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4396,
+        "AllocatedBytes": 3393144,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-start-bound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 4.7504,
+    "P95Ms": 23.2338,
+    "MedianAllocatedBytes": 3472440,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 4.1491,
+        "AllocatedBytes": 3472440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.7504,
+        "AllocatedBytes": 3472440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.537,
+        "AllocatedBytes": 3472440,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4859,
+        "AllocatedBytes": 3472704,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 16.6313,
+        "AllocatedBytes": 3475064,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.2338,
+        "AllocatedBytes": 3479184,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.7851,
+        "AllocatedBytes": 3472440,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-middle-bound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 15.1433,
+    "P95Ms": 32.5881,
+    "MedianAllocatedBytes": 3473128,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 20.1761,
+        "AllocatedBytes": 3473128,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.1433,
+        "AllocatedBytes": 3477808,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9604,
+        "AllocatedBytes": 3470504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3247,
+        "AllocatedBytes": 3470504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.1898,
+        "AllocatedBytes": 3470768,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.1045,
+        "AllocatedBytes": 3473128,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 32.5881,
+        "AllocatedBytes": 3478056,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-middle-bound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 7.0844,
+    "P95Ms": 39.0031,
+    "MedianAllocatedBytes": 3524096,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 39.0031,
+        "AllocatedBytes": 3529064,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.6275,
+        "AllocatedBytes": 3524360,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.0844,
+        "AllocatedBytes": 3521736,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 28.3052,
+        "AllocatedBytes": 3528488,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.4352,
+        "AllocatedBytes": 3521736,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 18.11,
+        "AllocatedBytes": 3523824,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.8781,
+        "AllocatedBytes": 3524096,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-end-bound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 19.0746,
+    "P95Ms": 25.7822,
+    "MedianAllocatedBytes": 3497560,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 22.5868,
+        "AllocatedBytes": 3497560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 19.0746,
+        "AllocatedBytes": 3504256,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.7105,
+        "AllocatedBytes": 3497296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.8038,
+        "AllocatedBytes": 3497560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3925,
+        "AllocatedBytes": 3497296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 20.3397,
+        "AllocatedBytes": 3497560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 25.7822,
+        "AllocatedBytes": 3502904,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-end-bound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 4.5125,
+    "P95Ms": 28.186,
+    "MedianAllocatedBytes": 3520552,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 4.5125,
+        "AllocatedBytes": 3520288,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 18.1693,
+        "AllocatedBytes": 3520552,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 28.186,
+        "AllocatedBytes": 3525208,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.0299,
+        "AllocatedBytes": 3520288,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4116,
+        "AllocatedBytes": 3520552,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4857,
+        "AllocatedBytes": 3520288,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 17.3568,
+        "AllocatedBytes": 3520552,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "caret-bound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 4.4993,
+    "P95Ms": 14.8744,
+    "MedianAllocatedBytes": 2117584,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 4.4993,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3774,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4759,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.5851,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 14.8744,
+        "AllocatedBytes": 2117848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.4315,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.4648,
+        "AllocatedBytes": 2117584,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "text-update-bound",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 37.7998,
+    "P95Ms": 71.1467,
+    "MedianAllocatedBytes": 8158520,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 71.1467,
+        "AllocatedBytes": 8126848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 36.2204,
+        "AllocatedBytes": 8158520,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 41.8014,
+        "AllocatedBytes": 8147776,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 37.7998,
+        "AllocatedBytes": 8161040,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 21.8989,
+        "AllocatedBytes": 8158520,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 40.0251,
+        "AllocatedBytes": 8161040,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 28.6077,
+        "AllocatedBytes": 8160880,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "scroll",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 3.4221,
+    "P95Ms": 6.5745,
+    "MedianAllocatedBytes": 398848,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 3.6068,
+        "AllocatedBytes": 398848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.4221,
+        "AllocatedBytes": 398848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.5745,
+        "AllocatedBytes": 404368,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.1503,
+        "AllocatedBytes": 398688,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.3882,
+        "AllocatedBytes": 398688,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.215,
+        "AllocatedBytes": 398848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.0332,
+        "AllocatedBytes": 398848,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "resize",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 140.437,
+    "P95Ms": 175.7907,
+    "MedianAllocatedBytes": 34305712,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 140.437,
+        "AllocatedBytes": 34312816,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 119.9372,
+        "AllocatedBytes": 34305712,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 158.7612,
+        "AllocatedBytes": 34305712,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 175.7907,
+        "AllocatedBytes": 34305712,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 153.5659,
+        "AllocatedBytes": 34312936,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 123.7129,
+        "AllocatedBytes": 34308072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 124.6223,
+        "AllocatedBytes": 34305712,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "replace-all",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 897.9727,
+    "P95Ms": 984.686,
+    "MedianAllocatedBytes": 1927569584,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 917.6209,
+        "AllocatedBytes": 1927566760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 897.9727,
+        "AllocatedBytes": 1927571448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 984.686,
+        "AllocatedBytes": 1927571960,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 773.8276,
+        "AllocatedBytes": 1927566824,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 915.1986,
+        "AllocatedBytes": 1927579272,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 876.5872,
+        "AllocatedBytes": 1927569056,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 834.6895,
+        "AllocatedBytes": 1927569584,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "native-save",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 4.3582,
+    "P95Ms": 7.2199,
+    "MedianAllocatedBytes": 8173472,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 4.4476,
+        "AllocatedBytes": 8173472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3582,
+        "AllocatedBytes": 8173472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.9463,
+        "AllocatedBytes": 8173472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3889,
+        "AllocatedBytes": 8173472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.2199,
+        "AllocatedBytes": 8173472,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.0934,
+        "AllocatedBytes": 8174192,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.216,
+        "AllocatedBytes": 8173472,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "native-load",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 8.7968,
+    "P95Ms": 21.5726,
+    "MedianAllocatedBytes": 18042192,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 21.5726,
+        "AllocatedBytes": 18048104,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.9897,
+        "AllocatedBytes": 18040888,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 17.1474,
+        "AllocatedBytes": 18054024,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.6677,
+        "AllocatedBytes": 18040936,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 8.7968,
+        "AllocatedBytes": 18042192,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 8.6021,
+        "AllocatedBytes": 18040936,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 16.4922,
+        "AllocatedBytes": 18046848,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "history-100",
+    "Paragraphs": 1001,
+    "Utf16Length": 20003,
+    "NativeBytes": 1869466,
+    "MedianMs": 156.4805,
+    "P95Ms": 195.053,
+    "MedianAllocatedBytes": 159934408,
+    "MedianRetainedUndoBytes": 11451224,
+    "BudgetMs": null,
+    "WithinLatencyBudget": null,
+    "Samples": [
+      {
+        "Milliseconds": 138.505,
+        "AllocatedBytes": 159934408,
+        "RetainedUndoBytes": 11451224
+      },
+      {
+        "Milliseconds": 138.4346,
+        "AllocatedBytes": 159934408,
+        "RetainedUndoBytes": 11451224
+      },
+      {
+        "Milliseconds": 133.0791,
+        "AllocatedBytes": 159934408,
+        "RetainedUndoBytes": 11451224
+      },
+      {
+        "Milliseconds": 156.4805,
+        "AllocatedBytes": 159934408,
+        "RetainedUndoBytes": 11451224
+      },
+      {
+        "Milliseconds": 178.8059,
+        "AllocatedBytes": 159934408,
+        "RetainedUndoBytes": 11451224
+      },
+      {
+        "Milliseconds": 184.6121,
+        "AllocatedBytes": 159934408,
+        "RetainedUndoBytes": 11451224
+      },
+      {
+        "Milliseconds": 195.053,
+        "AllocatedBytes": 159934408,
+        "RetainedUndoBytes": 11451224
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "first-viewport",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 143.5049,
+    "P95Ms": 153.2145,
+    "MedianAllocatedBytes": 26468312,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 250,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 151.6512,
+        "AllocatedBytes": 26452400,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 142.7876,
+        "AllocatedBytes": 26468712,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 134.9107,
+        "AllocatedBytes": 26468312,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 150.4981,
+        "AllocatedBytes": 26442016,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 153.2145,
+        "AllocatedBytes": 26468968,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 143.5049,
+        "AllocatedBytes": 26452528,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 101.2708,
+        "AllocatedBytes": 26468312,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-start-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 5.2794,
+    "P95Ms": 7.3053,
+    "MedianAllocatedBytes": 2190256,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 5.173,
+        "AllocatedBytes": 2190256,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.6407,
+        "AllocatedBytes": 2190256,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.0188,
+        "AllocatedBytes": 2190256,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2886,
+        "AllocatedBytes": 2190256,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.087,
+        "AllocatedBytes": 2190256,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.3053,
+        "AllocatedBytes": 2190256,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2794,
+        "AllocatedBytes": 2190256,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-start-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 8.3855,
+    "P95Ms": 20.3999,
+    "MedianAllocatedBytes": 2613560,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 8.3855,
+        "AllocatedBytes": 2613984,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.893,
+        "AllocatedBytes": 2613560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 8.5223,
+        "AllocatedBytes": 2613560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.6602,
+        "AllocatedBytes": 2613720,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.7898,
+        "AllocatedBytes": 2613560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.7269,
+        "AllocatedBytes": 2613560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 20.3999,
+        "AllocatedBytes": 2613984,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-middle-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 5.4005,
+    "P95Ms": 17.0109,
+    "MedianAllocatedBytes": 2182648,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 17.0109,
+        "AllocatedBytes": 2183072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.9251,
+        "AllocatedBytes": 2182648,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.9879,
+        "AllocatedBytes": 2182648,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 16.9675,
+        "AllocatedBytes": 2183072,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.7875,
+        "AllocatedBytes": 2182648,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.4005,
+        "AllocatedBytes": 2182648,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2258,
+        "AllocatedBytes": 2182648,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-middle-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 7.4974,
+    "P95Ms": 10.4455,
+    "MedianAllocatedBytes": 2619280,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 6.9858,
+        "AllocatedBytes": 2619280,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.4276,
+        "AllocatedBytes": 2619280,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.0121,
+        "AllocatedBytes": 2619280,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.4455,
+        "AllocatedBytes": 2619280,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.4974,
+        "AllocatedBytes": 2619280,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.1872,
+        "AllocatedBytes": 2619280,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.3279,
+        "AllocatedBytes": 2619280,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-end-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 5.139,
+    "P95Ms": 6.7447,
+    "MedianAllocatedBytes": 2188504,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 4.2838,
+        "AllocatedBytes": 2188504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.139,
+        "AllocatedBytes": 2188504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.4425,
+        "AllocatedBytes": 2188504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.5742,
+        "AllocatedBytes": 2188504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.6369,
+        "AllocatedBytes": 2188504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.277,
+        "AllocatedBytes": 2188504,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.7447,
+        "AllocatedBytes": 2188504,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-end-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 6.9443,
+    "P95Ms": 24.1961,
+    "MedianAllocatedBytes": 2622336,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 6.9443,
+        "AllocatedBytes": 2622336,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 24.1961,
+        "AllocatedBytes": 2628616,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 8.5802,
+        "AllocatedBytes": 2622336,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 8.9183,
+        "AllocatedBytes": 2622336,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.8685,
+        "AllocatedBytes": 2622336,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.8751,
+        "AllocatedBytes": 2622336,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.8961,
+        "AllocatedBytes": 2622336,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "caret-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 12.4277,
+    "P95Ms": 14.2237,
+    "MedianAllocatedBytes": 2004496,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 11.6753,
+        "AllocatedBytes": 2004496,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 11.7516,
+        "AllocatedBytes": 2004496,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 11.7185,
+        "AllocatedBytes": 2004496,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 14.2237,
+        "AllocatedBytes": 2004760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 13.3378,
+        "AllocatedBytes": 2004656,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 12.7111,
+        "AllocatedBytes": 2004760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 12.4277,
+        "AllocatedBytes": 2004496,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "text-update-unbound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 55.4057,
+    "P95Ms": 91.2167,
+    "MedianAllocatedBytes": 4114080,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 91.2167,
+        "AllocatedBytes": 4114080,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 55.4057,
+        "AllocatedBytes": 4114080,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 52.4765,
+        "AllocatedBytes": 4114080,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 55.0811,
+        "AllocatedBytes": 4114080,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 66.5545,
+        "AllocatedBytes": 4114080,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 53.5585,
+        "AllocatedBytes": 4114080,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 63.4767,
+        "AllocatedBytes": 4114080,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-start-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 5.6468,
+    "P95Ms": 7.5115,
+    "MedianAllocatedBytes": 2190368,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 6.2778,
+        "AllocatedBytes": 2190368,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.6468,
+        "AllocatedBytes": 2190368,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.9088,
+        "AllocatedBytes": 2190368,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.1137,
+        "AllocatedBytes": 2190368,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.0249,
+        "AllocatedBytes": 2190368,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.461,
+        "AllocatedBytes": 2190368,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.5115,
+        "AllocatedBytes": 2190368,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-start-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 7.4684,
+    "P95Ms": 32.037,
+    "MedianAllocatedBytes": 2613672,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 7.2964,
+        "AllocatedBytes": 2613672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.6253,
+        "AllocatedBytes": 2613672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.9254,
+        "AllocatedBytes": 2613672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.9089,
+        "AllocatedBytes": 2613672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.4684,
+        "AllocatedBytes": 2613672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.6314,
+        "AllocatedBytes": 2613672,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 32.037,
+        "AllocatedBytes": 2618640,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-middle-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 5.6009,
+    "P95Ms": 7.2472,
+    "MedianAllocatedBytes": 2182760,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 6.6091,
+        "AllocatedBytes": 2182760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.6009,
+        "AllocatedBytes": 2182920,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.5575,
+        "AllocatedBytes": 2182760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.9941,
+        "AllocatedBytes": 2182760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.2208,
+        "AllocatedBytes": 2182920,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.7716,
+        "AllocatedBytes": 2182760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.2472,
+        "AllocatedBytes": 2182760,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-middle-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 7.9218,
+    "P95Ms": 20.6862,
+    "MedianAllocatedBytes": 2619392,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 6.6538,
+        "AllocatedBytes": 2619392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 20.6862,
+        "AllocatedBytes": 2619816,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.6534,
+        "AllocatedBytes": 2619392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.1989,
+        "AllocatedBytes": 2619392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 17.631,
+        "AllocatedBytes": 2619816,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 8.3562,
+        "AllocatedBytes": 2619392,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.9218,
+        "AllocatedBytes": 2619392,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-end-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 5.3992,
+    "P95Ms": 17.3926,
+    "MedianAllocatedBytes": 2188616,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 5.3343,
+        "AllocatedBytes": 2188616,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 17.3926,
+        "AllocatedBytes": 2189040,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.6787,
+        "AllocatedBytes": 2188616,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 5.3992,
+        "AllocatedBytes": 2188616,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.5171,
+        "AllocatedBytes": 2188616,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.9295,
+        "AllocatedBytes": 2188616,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.7707,
+        "AllocatedBytes": 2188616,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-end-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 7.28,
+    "P95Ms": 10.5925,
+    "MedianAllocatedBytes": 2622448,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 6.6503,
+        "AllocatedBytes": 2622448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 6.7881,
+        "AllocatedBytes": 2622448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.2258,
+        "AllocatedBytes": 2622448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.28,
+        "AllocatedBytes": 2622448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.2058,
+        "AllocatedBytes": 2622448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 10.5925,
+        "AllocatedBytes": 2622448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 7.7375,
+        "AllocatedBytes": 2622448,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "caret-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 12.1404,
+    "P95Ms": 14.5337,
+    "MedianAllocatedBytes": 2004496,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 12.6253,
+        "AllocatedBytes": 2004496,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 12.1404,
+        "AllocatedBytes": 2004496,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 12.1308,
+        "AllocatedBytes": 2004496,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 11.881,
+        "AllocatedBytes": 2004496,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 14.3935,
+        "AllocatedBytes": 2004760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 14.5337,
+        "AllocatedBytes": 2004760,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 11.3802,
+        "AllocatedBytes": 2004496,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "text-update-bound",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 59.1475,
+    "P95Ms": 85.2981,
+    "MedianAllocatedBytes": 4114192,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 66.4095,
+        "AllocatedBytes": 4114192,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 85.2981,
+        "AllocatedBytes": 4114192,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 54.6963,
+        "AllocatedBytes": 4114192,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 59.1475,
+        "AllocatedBytes": 4114192,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 68.0896,
+        "AllocatedBytes": 4114192,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 51.5548,
+        "AllocatedBytes": 4114192,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 53.5998,
+        "AllocatedBytes": 4114192,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "scroll",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 3.2977,
+    "P95Ms": 4.5972,
+    "MedianAllocatedBytes": 155848,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 16,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 4.5972,
+        "AllocatedBytes": 155848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 4.3282,
+        "AllocatedBytes": 155848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.2759,
+        "AllocatedBytes": 155848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.1681,
+        "AllocatedBytes": 155848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.4843,
+        "AllocatedBytes": 155848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.2977,
+        "AllocatedBytes": 155848,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 3.2166,
+        "AllocatedBytes": 155848,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "resize",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 315.5155,
+    "P95Ms": 413.2369,
+    "MedianAllocatedBytes": 52521168,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 100,
+    "WithinLatencyBudget": false,
+    "Samples": [
+      {
+        "Milliseconds": 370.2885,
+        "AllocatedBytes": 52521216,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 413.2369,
+        "AllocatedBytes": 52521664,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 308.8539,
+        "AllocatedBytes": 52521120,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 308.1011,
+        "AllocatedBytes": 52521136,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 313.6081,
+        "AllocatedBytes": 52521704,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 315.5155,
+        "AllocatedBytes": 52521152,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 373.1102,
+        "AllocatedBytes": 52521168,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "replace-all",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 257.6887,
+    "P95Ms": 283.3012,
+    "MedianAllocatedBytes": 207178120,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 241.6485,
+        "AllocatedBytes": 207178248,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 266.2918,
+        "AllocatedBytes": 207182560,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 216.3057,
+        "AllocatedBytes": 207171296,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 237.4442,
+        "AllocatedBytes": 207178120,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 283.3012,
+        "AllocatedBytes": 207178040,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 257.6887,
+        "AllocatedBytes": 207176824,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 270.0637,
+        "AllocatedBytes": 207183088,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "native-save",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 15.1787,
+    "P95Ms": 15.8555,
+    "MedianAllocatedBytes": 18497728,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 14.7556,
+        "AllocatedBytes": 18498448,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 14.1167,
+        "AllocatedBytes": 18497728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.8555,
+        "AllocatedBytes": 18497728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.2268,
+        "AllocatedBytes": 18497728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.2812,
+        "AllocatedBytes": 18497728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.0594,
+        "AllocatedBytes": 18497728,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 15.1787,
+        "AllocatedBytes": 18497728,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "native-load",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 23.428,
+    "P95Ms": 36.9526,
+    "MedianAllocatedBytes": 40789832,
+    "MedianRetainedUndoBytes": null,
+    "BudgetMs": 2000,
+    "WithinLatencyBudget": true,
+    "Samples": [
+      {
+        "Milliseconds": 23.428,
+        "AllocatedBytes": 40788576,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.1143,
+        "AllocatedBytes": 40789832,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 36.9526,
+        "AllocatedBytes": 40794488,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 24.4362,
+        "AllocatedBytes": 40798888,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 21.4098,
+        "AllocatedBytes": 40789832,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 23.6546,
+        "AllocatedBytes": 40789832,
+        "RetainedUndoBytes": null
+      },
+      {
+        "Milliseconds": 20.6828,
+        "AllocatedBytes": 40789832,
+        "RetainedUndoBytes": null
+      }
+    ]
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "history-100",
+    "Paragraphs": 100,
+    "Utf16Length": 110099,
+    "NativeBytes": 4555166,
+    "MedianMs": 256.1281,
+    "P95Ms": 286.6926,
+    "MedianAllocatedBytes": 170628280,
+    "MedianRetainedUndoBytes": 491504,
+    "BudgetMs": null,
+    "WithinLatencyBudget": null,
+    "Samples": [
+      {
+        "Milliseconds": 256.1281,
+        "AllocatedBytes": 170628280,
+        "RetainedUndoBytes": 491504
+      },
+      {
+        "Milliseconds": 286.6926,
+        "AllocatedBytes": 170628280,
+        "RetainedUndoBytes": 491504
+      },
+      {
+        "Milliseconds": 258.6598,
+        "AllocatedBytes": 170628280,
+        "RetainedUndoBytes": 491504
+      },
+      {
+        "Milliseconds": 280.43,
+        "AllocatedBytes": 170628280,
+        "RetainedUndoBytes": 491504
+      },
+      {
+        "Milliseconds": 248.0736,
+        "AllocatedBytes": 170628280,
+        "RetainedUndoBytes": 491504
+      },
+      {
+        "Milliseconds": 252.2581,
+        "AllocatedBytes": 170628280,
+        "RetainedUndoBytes": 491504
+      },
+      {
+        "Milliseconds": 241.8822,
+        "AllocatedBytes": 170628280,
+        "RetainedUndoBytes": 491504
+      }
+    ]
+  }
+]

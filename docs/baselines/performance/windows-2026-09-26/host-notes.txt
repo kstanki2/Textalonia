@@ -1,0 +1,6 @@
+﻿CPU: AMD Ryzen 9 5900X 12-Core Processor (24 logical processors).
+Power plan queried after capture: High performance (8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c).
+Development workstation; background OS activity and lightweight file/document work were uncontrolled.
+No build or test process overlapped the full benchmark capture.
+Inter 16 DIP; OS fallback fonts were not individually resolved/instrumented. Compare on the same host.
+No native compositor, native IME, physical input device, or screen reader was exercised.

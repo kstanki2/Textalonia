@@ -1,0 +1,95 @@
+﻿{
+    "schemaVersion":  1,
+    "createdUtc":  "2026-09-26T15:45:11.5373556+00:00",
+    "target":  "linux",
+    "owner":  "Linux QA maintainer",
+    "revision":  "050c7adff2c612acb6de2a9e226ad6020720f7fe + Phase 1 working tree",
+    "osBuild":  "Pending exact native host inventory",
+    "backend":  "Avalonia 12.1.3; fill native backend and build",
+    "imeAndVersion":  "",
+    "sourceApplications":  "",
+    "screenReaderAndVersion":  "",
+    "font":  "Inter 16 DIP; record fallback fonts",
+    "dpi":  "96 and 144 on Windows; record native scaling on other targets",
+    "theme":  "Light and Dark",
+    "window":  "1000 x 700 DIP; repeat candidate geometry at 700 x 500",
+    "results":  [
+                    {
+                        "case":  "N01",
+                        "name":  "CJK commit",
+                        "status":  "pending",
+                        "reason":  "Native target host and operator are unavailable in this session; platform QA owner must execute N01-N07.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P4.2/P6.6",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N02",
+                        "name":  "Composition cancellation",
+                        "status":  "pending",
+                        "reason":  "Native target host and operator are unavailable in this session; platform QA owner must execute N01-N07.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P4.2/P6.6",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N03",
+                        "name":  "Candidate position after scroll",
+                        "status":  "pending",
+                        "reason":  "Native target host and operator are unavailable in this session; platform QA owner must execute N01-N07.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P2.4/P6.6",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N04",
+                        "name":  "Dead keys",
+                        "status":  "pending",
+                        "reason":  "Native target host and operator are unavailable in this session; platform QA owner must execute N01-N07.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P6.6",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N05",
+                        "name":  "Mixed bidi navigation",
+                        "status":  "pending",
+                        "reason":  "Native target host and operator are unavailable in this session; platform QA owner must execute N01-N07.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P6.1",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N06",
+                        "name":  "Rich clipboard",
+                        "status":  "pending",
+                        "reason":  "Native target host and operator are unavailable in this session; platform QA owner must execute N01-N07.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P5.5/P5.6",
+                        "executedUtc":  null
+                    },
+                    {
+                        "case":  "N07",
+                        "name":  "Screen-reader value and selection",
+                        "status":  "pending",
+                        "reason":  "Native target host and operator are unavailable in this session; platform QA owner must execute N01-N07.",
+                        "evidence":  [
+
+                                     ],
+                        "correctiveTask":  "P4.6",
+                        "executedUtc":  null
+                    }
+                ]
+}
