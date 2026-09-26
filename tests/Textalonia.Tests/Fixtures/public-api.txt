@@ -43,6 +43,12 @@ type Textalonia.Controls.EditorErrorEventArgs : System.EventArgs sealed
 type Textalonia.Controls.HyperlinkEventArgs : System.EventArgs sealed
   ctor public (System.String uri)
   property System.String Uri { public get; }
+type Textalonia.Controls.ShapingLimitExceededException : System.InvalidOperationException sealed
+  interface System.Runtime.Serialization.ISerializable
+  ctor public (System.Guid paragraphId, System.Int32 characterLimit, System.Int32 requestedCharacters)
+  property System.Guid ParagraphId { public get; }
+  property System.Int32 CharacterLimit { public get; }
+  property System.Int32 RequestedCharacters { public get; }
 type Textalonia.Controls.TextHighlight : System.Object sealed
   interface System.IEquatable<Textalonia.Controls.TextHighlight>
   ctor public (System.Int32 Start, System.Int32 Length, Avalonia.Media.IBrush Brush)
@@ -80,12 +86,14 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   event System.EventHandler SelectionChanged
   event System.EventHandler<Textalonia.Controls.EditorErrorEventArgs> OperationFailed
   event System.EventHandler<Textalonia.Controls.HyperlinkEventArgs> HyperlinkActivated
+  field Avalonia.DirectProperty<Textalonia.Controls.TextaloniaEditor,Textalonia.Controls.ShapingLimitExceededException> LayoutErrorProperty static readonly
   field Avalonia.StyledProperty<Avalonia.Media.IBrush> SelectionBrushProperty static readonly
   field Avalonia.StyledProperty<Avalonia.Thickness> DocumentPaddingProperty static readonly
   field Avalonia.StyledProperty<System.Boolean> AcceptsTabProperty static readonly
   field Avalonia.StyledProperty<System.Boolean> IsReadOnlyProperty static readonly
   field Avalonia.StyledProperty<System.Boolean> ShowToolbarProperty static readonly
   field Avalonia.StyledProperty<System.Boolean> SynchronizeTextProperty static readonly
+  field Avalonia.StyledProperty<System.Int32> MaxShapingCharactersProperty static readonly
   field Avalonia.StyledProperty<System.Int32> SelectionEndProperty static readonly
   field Avalonia.StyledProperty<System.Int32> SelectionStartProperty static readonly
   field Avalonia.StyledProperty<System.String> PlaceholderTextProperty static readonly
@@ -115,6 +123,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property System.Boolean SynchronizeText { public get; public set; }
   property System.Collections.ObjectModel.ObservableCollection<Textalonia.Controls.TextHighlight> Highlights { public get; }
   property System.Exception LastError { public get; }
+  property System.Int32 MaxShapingCharacters { public get; public set; }
   property System.Int32 SelectionEnd { public get; public set; }
   property System.Int32 SelectionStart { public get; public set; }
   property System.String PlaceholderText { public get; public set; }
@@ -130,6 +139,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property System.Windows.Input.ICommand StrikethroughCommand { public get; }
   property System.Windows.Input.ICommand UnderlineCommand { public get; }
   property System.Windows.Input.ICommand UndoCommand { public get; }
+  property Textalonia.Controls.ShapingLimitExceededException LayoutError { public get; }
   property Textalonia.Editing.EditorSession Session { public get; }
   property Textalonia.Model.FlowDocument Document { public get; public set; }
 type Textalonia.Controls.TextaloniaToolbar : Avalonia.Controls.WrapPanel

@@ -30,6 +30,11 @@ public class TextaloniaEditor : TemplatedControl
         AvaloniaProperty.Register<TextaloniaEditor, string>(nameof(Text), "", defaultBindingMode: BindingMode.TwoWay);
     public static readonly StyledProperty<bool> SynchronizeTextProperty =
         AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(SynchronizeText), true);
+    public static readonly StyledProperty<int> MaxShapingCharactersProperty =
+        AvaloniaProperty.Register<TextaloniaEditor, int>(nameof(MaxShapingCharacters), 0,
+            validate: value => value == 0 || value >= ParagraphLayout.WindowLength);
+    public static readonly DirectProperty<TextaloniaEditor, ShapingLimitExceededException?> LayoutErrorProperty =
+        AvaloniaProperty.RegisterDirect<TextaloniaEditor, ShapingLimitExceededException?>(nameof(LayoutError), editor => editor.LayoutError);
     public static readonly StyledProperty<bool> IsReadOnlyProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(IsReadOnly));
     public static readonly StyledProperty<bool> ShowToolbarProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(ShowToolbar), true);
     public static readonly StyledProperty<bool> AcceptsTabProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(AcceptsTab));
@@ -48,6 +53,7 @@ public class TextaloniaEditor : TemplatedControl
 
     private bool _synchronizing;
     private int _textRevision = -1;
+    private ShapingLimitExceededException? _layoutError;
     private readonly List<EditorCommand> _commands = [];
     private DocumentSurface? _surface;
     private TextaloniaToolbar? _toolbar;
@@ -76,6 +82,10 @@ public class TextaloniaEditor : TemplatedControl
     public string Text { get => GetValue(TextProperty); set => SetValue(TextProperty, value); }
     /// <summary>False opts into document binding without eager full-text notifications. Text retains its last published value.</summary>
     public bool SynchronizeText { get => GetValue(SynchronizeTextProperty); set => SetValue(SynchronizeTextProperty, value); }
+    /// <summary>Maximum UTF-16 units per exact shaping input. Zero preserves unrestricted compatibility; positive values must be at least 2048.</summary>
+    public int MaxShapingCharacters { get => GetValue(MaxShapingCharactersProperty); set => SetValue(MaxShapingCharactersProperty, value); }
+    /// <summary>Current rendering-limit error, or null. The document and its history remain available when rendering is suspended.</summary>
+    public ShapingLimitExceededException? LayoutError => _layoutError;
     public bool IsReadOnly { get => GetValue(IsReadOnlyProperty); set => SetValue(IsReadOnlyProperty, value); }
     public bool ShowToolbar { get => GetValue(ShowToolbarProperty); set => SetValue(ShowToolbarProperty, value); }
     public bool AcceptsTab { get => GetValue(AcceptsTabProperty); set => SetValue(AcceptsTabProperty, value); }
@@ -118,6 +128,7 @@ public class TextaloniaEditor : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == MaxShapingCharactersProperty) { _surface?.Refresh(); return; }
         if (_synchronizing) return;
         if (change.Property == DocumentProperty)
         {
@@ -260,6 +271,15 @@ public class TextaloniaEditor : TemplatedControl
     internal void ReportError(Exception exception)
     {
         LastError = exception; OperationFailed?.Invoke(this, new(exception));
+    }
+    internal void SetLayoutError(ShapingLimitExceededException? error)
+    {
+        var previous = _layoutError;
+        if (previous?.ParagraphId == error?.ParagraphId && previous?.CharacterLimit == error?.CharacterLimit &&
+            previous?.RequestedCharacters == error?.RequestedCharacters) return;
+        SetAndRaise(LayoutErrorProperty, ref _layoutError, error);
+        if (error is not null) ReportError(error);
+        else if (ReferenceEquals(LastError, previous)) LastError = null;
     }
     internal void Run(Action action)
     {

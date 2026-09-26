@@ -189,6 +189,38 @@ public class ScalableLayoutTests(UiFixture fixture) : IClassFixture<UiFixture>
         finally { window.Close(); }
     }, CancellationToken.None);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows(bool insert) => fixture.Session.Dispatch(() =>
+    {
+        var editor = new TextaloniaEditor { SynchronizeText = false, FontFamily = Font,
+            Document = BaselineDocuments.Workload("long-paragraph") };
+        var window = new Window { Width = 800, Height = 500, Content = editor };
+        try
+        {
+            window.Show(); window.UpdateLayout(); editor.FocusDocument();
+            void Frame() { Dispatcher.UIThread.RunJobs(); window.UpdateLayout(); using var frame = window.CaptureRenderedFrame(); }
+            var surface = editor.GetVisualDescendants().OfType<DocumentSurface>().Single();
+            var scroller = editor.GetVisualDescendants().OfType<ScrollViewer>().Single(s => s.Name == "PART_ScrollViewer");
+            void CaretIsVisible()
+            {
+                var caret = surface.CaretRectangle;
+                Assert.InRange(caret.Top, scroller.Offset.Y, scroller.Offset.Y + scroller.Viewport.Height);
+                Assert.InRange(caret.Bottom, scroller.Offset.Y, scroller.Offset.Y + scroller.Viewport.Height);
+            }
+            editor.Session.Select(editor.Session.Index.Length, editor.Session.Index.Length); Frame();
+            CaretIsVisible();
+            var shapes = surface.Layout.ShapedParagraphs;
+            if (insert) window.KeyTextInput("x");
+            else window.KeyPress(Key.Back, RawInputModifiers.None, PhysicalKey.None, null);
+            Frame(); CaretIsVisible();
+            // The visible prefix windows were measured before the edit. Only
+            // the final window's text changed, so no other glyphs need rebuilding.
+            Assert.Equal(1, surface.Layout.ShapedParagraphs - shapes);
+        }
+        finally { window.Close(); }
+    }, CancellationToken.None);
     [Fact]
     public Task Long_paragraph_windows_bound_first_open_and_reuse_unchanged_line_breaks() => fixture.Session.Dispatch(() =>
     {
@@ -440,6 +472,26 @@ public class ScalableLayoutTests(UiFixture fixture) : IClassFixture<UiFixture>
             Assert.Equal(before, editor.Document.Text);
             window.KeyTextInput("日本"); editor.Undo();
             Assert.Equal(before, editor.Document.Text);
+        }
+        finally { window.Close(); }
+    }, CancellationToken.None);
+    [Fact]
+    public Task Closing_the_control_releases_all_cached_glyphs() => fixture.Session.Dispatch(() =>
+    {
+        var editor = new TextaloniaEditor { Document = BaselineDocuments.Workload("paragraphs-1000"), FontFamily = Font };
+        var window = new Window { Width = 800, Height = 500, Content = editor };
+        try
+        {
+            window.Show(); window.UpdateLayout(); editor.FocusDocument();
+            editor.Session.Select(editor.Session.Index.Length, editor.Session.Index.Length);
+            Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+            using (var frame = window.CaptureRenderedFrame()) Assert.NotNull(frame);
+            var layout = editor.GetVisualDescendants().OfType<DocumentSurface>().Single().Layout;
+            var cached = layout.CachedLayouts; var disposed = layout.DisposedLayouts;
+            Assert.True(cached > 0);
+            window.Close();
+            Assert.Equal(0, layout.CachedLayouts); Assert.Equal(0, layout.CachedLayoutBytes);
+            Assert.Equal(disposed + cached, layout.DisposedLayouts);
         }
         finally { window.Close(); }
     }, CancellationToken.None);

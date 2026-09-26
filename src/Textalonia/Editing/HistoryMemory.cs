@@ -9,6 +9,18 @@ internal sealed class RetentionGraph
 {
     private struct Ownership { public int Total, Current; }
     private readonly Dictionary<object, Ownership> _references = new(ReferenceEqualityComparer.Instance);
+    // Reuse the six traversal callbacks instead of allocating two iterator
+    // objects per visited node during document ingestion and history changes.
+    private readonly Action<object> _addTotal, _addCurrent, _addBoth, _removeTotal, _removeCurrent, _removeBoth;
+    public RetentionGraph()
+    {
+        _addTotal = value => Add(value, true, false);
+        _addCurrent = value => Add(value, false, true);
+        _addBoth = value => Add(value, true, true);
+        _removeTotal = value => Remove(value, true, false);
+        _removeCurrent = value => Remove(value, false, true);
+        _removeBoth = value => Remove(value, true, true);
+    }
     public long Bytes { get; private set; }
     private long _currentBytes;
     public long HistoryBytes => Bytes - _currentBytes;
@@ -29,7 +41,7 @@ internal sealed class RetentionGraph
         var bytes = Size(value);
         if (total) Bytes += bytes;
         if (current) _currentBytes += bytes;
-        foreach (var child in Children(value)) Add(child, total, current);
+        VisitChildren(value, total ? current ? _addBoth : _addTotal : _addCurrent);
     }
     public void Remove(object value, bool current = false) => Remove(value, true, current);
     private void Remove(object value, bool total, bool current)
@@ -42,7 +54,7 @@ internal sealed class RetentionGraph
         var bytes = Size(value);
         if (total) Bytes -= bytes;
         if (current) _currentBytes -= bytes;
-        foreach (var child in Children(value)) Remove(child, total, current);
+        VisitChildren(value, total ? current ? _removeBoth : _removeTotal : _removeCurrent);
     }
     private static long Size(object value) => value switch
     {
@@ -54,24 +66,25 @@ internal sealed class RetentionGraph
         ParagraphStyle => 64,
         _ => 32
     };
-    private static IEnumerable<object> Children(object value)
+    private static void VisitChildren(object value, Action<object> visit)
     {
         switch (value)
         {
             case IRetained node:
-                foreach (var child in node.References) yield return child;
+                node.VisitReferences(visit);
                 break;
             // Row arrays contribute allocation only. Visible cells are already
             // owned by indexed nodes; covered cells are in HiddenCellStorage.
             case TableCell cell:
-                foreach (var paragraph in cell.Paragraphs.Concat(cell.MergeOriginal)) yield return DocumentNode.HiddenParagraph(paragraph);
-                if (cell.Background is not null) yield return cell.Background;
+                foreach (var paragraph in cell.Paragraphs) visit(DocumentNode.HiddenParagraph(paragraph));
+                foreach (var paragraph in cell.MergeOriginal) visit(DocumentNode.HiddenParagraph(paragraph));
+                if (cell.Background is not null) visit(cell.Background);
                 break;
             case TextStyle style:
-                if (style.FontFamily is not null) yield return style.FontFamily;
-                if (style.Foreground is not null) yield return style.Foreground;
-                if (style.Background is not null) yield return style.Background;
-                if (style.Hyperlink is not null) yield return style.Hyperlink;
+                if (style.FontFamily is not null) visit(style.FontFamily);
+                if (style.Foreground is not null) visit(style.Foreground);
+                if (style.Background is not null) visit(style.Background);
+                if (style.Hyperlink is not null) visit(style.Hyperlink);
                 break;
         }
     }

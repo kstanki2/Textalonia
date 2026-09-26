@@ -27,6 +27,7 @@ internal sealed class ParagraphLayout : IDisposable
     private readonly Func<Paragraph, int, string, TextLayout> _shape;
     private readonly Action _disposed;
     private readonly ShapedLayoutCache _cache;
+    private readonly int _maxShapingCharacters;
     private readonly List<Page> _pages = [];
     private readonly HashSet<Page> _resident = [];
     private List<Page> _tail = [];
@@ -41,8 +42,12 @@ internal sealed class ParagraphLayout : IDisposable
     public double Height => Math.Max(Paragraph.DefaultStyle.FontSize * 1.25,
         MeasuredHeight + (Complete ? 0 : Estimate(Paragraph.Length - End)));
 
-    public ParagraphLayout(Paragraph paragraph, double width, Func<Paragraph, int, string, TextLayout> shape, Action disposed, ShapedLayoutCache cache)
-    { Paragraph = paragraph; _width = width; _shape = shape; _disposed = disposed; _cache = cache; }
+    public ParagraphLayout(Paragraph paragraph, double width, Func<Paragraph, int, string, TextLayout> shape, Action disposed,
+        ShapedLayoutCache cache, int maxShapingCharacters = 0)
+    {
+        Paragraph = paragraph; _width = width; _shape = shape; _disposed = disposed; _cache = cache;
+        _maxShapingCharacters = maxShapingCharacters;
+    }
 
     private double Estimate(int length) => Math.Ceiling(length * Paragraph.DefaultStyle.FontSize * .52 / _width) * Paragraph.DefaultStyle.FontSize * 1.25;
 
@@ -123,6 +128,8 @@ internal sealed class ParagraphLayout : IDisposable
         int count, end;
         while (true)
         {
+            var requestedLength = length;
+            CheckInputLength(length);
             var inputEnd = start + length;
             text = ParagraphText.For(Paragraph).Read(start, length);
             if (inputEnd < Paragraph.Length)
@@ -133,7 +140,7 @@ internal sealed class ParagraphLayout : IDisposable
                 var boundaries = StringInfo.ParseCombiningCharacters(text);
                 var safeLength = boundaries[^1];
                 if (safeLength == 0)
-                { length = Math.Min(Paragraph.Length - start, length * 2); continue; }
+                { length = GrowInput(start, length); continue; }
                 text = text[..safeLength]; inputEnd = start + safeLength;
             }
             length = inputEnd - start;
@@ -142,7 +149,7 @@ internal sealed class ParagraphLayout : IDisposable
             if (inputEnd < Paragraph.Length) count--; // incomplete trailing line is lookahead only
             if (count > 0 || inputEnd == Paragraph.Length) break;
             layout.Dispose(); _disposed();
-            length = Math.Min(Paragraph.Length - start, Math.Max(length + 1, length * 2));
+            length = GrowInput(start, requestedLength);
         }
         end = start + (count == 0 ? 0 : layout.TextLines[count - 1].FirstTextSourceIndex + layout.TextLines[count - 1].Length);
         end = Math.Min(end, Paragraph.Length);
@@ -174,11 +181,27 @@ internal sealed class ParagraphLayout : IDisposable
         return page;
     }
 
+    private void CheckInputLength(int length)
+    {
+        if (_maxShapingCharacters > 0 && length > _maxShapingCharacters)
+            throw new ShapingLimitExceededException(Paragraph.Id, _maxShapingCharacters, length);
+    }
+    private int GrowInput(int start, int length)
+    {
+        // Try the remaining allowance before rejecting a doubled window. Check
+        // before reading text or allocating grapheme/shaping buffers.
+        var next = (int)Math.Min(Paragraph.Length - start, Math.Max(length + 1L, length * 2L));
+        if (_maxShapingCharacters > length) next = Math.Min(next, _maxShapingCharacters);
+        CheckInputLength(next);
+        return next;
+    }
+
     private TextLayout Shape(int start, string text)
     {
         if (_spare is { Layout: { } layout } && _spare.Text == text && Paragraph.Runs.Length == 1 &&
             _spare.RunStyle == Paragraph.Runs[0].Style && _spare.DefaultStyle == Paragraph.DefaultStyle && _spare.ParagraphStyle == Paragraph.Style)
         { _cache.Take(_spare); _spare = null; return layout; }
+        _cache.RecordTransient(text.Length);
         return _shape(Paragraph, start, text);
     }
     public ShapedLayoutCache.Lease Acquire(Page page)
@@ -187,6 +210,7 @@ internal sealed class ParagraphLayout : IDisposable
         if (page.Layout is not null) return lease;
         try
         {
+            CheckInputLength(page.InputEnd - page.Start);
             page.Text = ParagraphText.For(Paragraph).Read(page.Start, page.InputEnd - page.Start);
             page.Layout = Shape(page.Start, page.Text);
             _resident.Add(page);

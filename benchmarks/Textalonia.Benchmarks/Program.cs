@@ -46,11 +46,12 @@ internal static class Program
     private sealed record Counters(int ShapedParagraphs, int CachedParagraphs, int UpdatedIndexNodes, long RetainedHistoryBytes,
         long ShapedCharacters, int LargestShapingWindow, int CachedLayouts, long CachedLayoutBytes, long PeakLayoutBytes, int GeometryNodes);
     private sealed record Collections(int Gen0, int Gen1, int Gen2);
-    private sealed record Sample(double Milliseconds, long AllocatedBytes, long? RetainedUndoBytes, Counters? Counters, Collections Collections);
+    private sealed record Sample(double Milliseconds, long AllocatedBytes, long? RetainedUndoBytes, Counters? Counters, Collections Collections, double GcPauseMilliseconds);
     private sealed record Result(string Workload, string Operation, int Paragraphs, int Utf16Length, int NativeBytes,
         double MedianMs, double P95Ms, long MedianAllocatedBytes, long? MedianRetainedUndoBytes, double? BudgetMs, bool? WithinLatencyBudget, List<Sample> Samples);
     private sealed record Operation(Func<long?> Run, Action Cleanup, Func<Counters?>? Observe = null);
     private static bool _synchronizeText = true;
+    private static int _maxShapingCharacters;
 
     public static int Main(string[] args)
     {
@@ -78,11 +79,14 @@ internal static class Program
             var textMode = options.GetValueOrDefault("--text-mode", "compatibility");
             if (textMode is not ("compatibility" or "document")) throw new ArgumentException("Text mode must be compatibility or document.");
             _synchronizeText = textMode == "compatibility";
+            _maxShapingCharacters = int.Parse(options.GetValueOrDefault("--max-shaping-characters", "0"), CultureInfo.InvariantCulture);
+            if (_maxShapingCharacters != 0 && _maxShapingCharacters < 2048) throw new ArgumentException("Shaping limit must be zero or at least 2048.");
             var output = Path.GetFullPath(options.GetValueOrDefault("--output", "artifacts/benchmarks/latest"));
             Directory.CreateDirectory(output);
             var warmups = int.Parse(options.GetValueOrDefault("--warmups", "2"), CultureInfo.InvariantCulture);
             var repetitions = int.Parse(options.GetValueOrDefault("--repetitions", "7"), CultureInfo.InvariantCulture);
             if (warmups is < 1 or > 100 || repetitions is < 3 or > 200) throw new ArgumentException("Use 1-100 warmups and 3-200 repetitions.");
+            var isolateSamples = bool.Parse(options.GetValueOrDefault("--isolate-samples", "false"));
             var chosen = options.TryGetValue("--workload", out var single) ? new[] { single } : Workloads;
             if (chosen.Any(w => !Workloads.Contains(w))) throw new ArgumentException("Unknown workload.");
             var environment = new
@@ -95,7 +99,7 @@ internal static class Program
                 avalonia = typeof(Application).Assembly.GetName().Version?.ToString(),
                 backend = "Avalonia.Headless + Skia software drawing (not native compositor latency)",
                 font = "Inter, 16 DIP; OS fallback for missing glyphs", theme = "Fluent Light", viewport = "800 x 500 DIP", dpiScale = 1,
-                configuration = "Release required", textMode, warmups, repetitions, workloads = chosen,
+                configuration = "Release required", textMode, maxShapingCharacters = _maxShapingCharacters, isolateSamples, warmups, repetitions, workloads = chosen,
                 percentile = "nearest rank ceil(0.95 * n); median averages central pair", historyEntries = 100,
                 allocationMethod = "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
                 historyMethod = "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
@@ -120,14 +124,26 @@ internal static class Program
                         var operation = prepare();
                         try
                         {
+                            // Setup constructs a fresh control per sample. Settle its
+                            // garbage before timing, so a previous setup's background
+                            // collection cannot be charged to this action. Collections
+                            // caused by the measured action remain inside the timer.
+                            if (isolateSamples)
+                            {
+                                GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+                                GC.WaitForPendingFinalizers();
+                                GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+                            }
                             var gen0 = GC.CollectionCount(0); var gen1 = GC.CollectionCount(1); var gen2 = GC.CollectionCount(2);
                             var allocated = GC.GetTotalAllocatedBytes(true);
+                            var paused = GC.GetTotalPauseDuration();
                             var start = Stopwatch.GetTimestamp();
                             var retained = operation.Run();
                             var elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+                            var gcPause = (GC.GetTotalPauseDuration() - paused).TotalMilliseconds;
                             var bytes = GC.GetTotalAllocatedBytes(true) - allocated;
                             if (i >= 0) samples.Add(new(elapsed, bytes, retained, operation.Observe?.Invoke(),
-                                new(GC.CollectionCount(0) - gen0, GC.CollectionCount(1) - gen1, GC.CollectionCount(2) - gen2)));
+                                new(GC.CollectionCount(0) - gen0, GC.CollectionCount(1) - gen1, GC.CollectionCount(2) - gen2), gcPause));
                         }
                         finally { operation.Cleanup(); }
                     }
@@ -226,8 +242,8 @@ internal static class Program
         var options = new Dictionary<string, string>();
         for (var i = 0; i < args.Length; i += 2)
         {
-            if (i + 1 >= args.Length || args[i] is not ("--output" or "--warmups" or "--repetitions" or "--workload" or "--text-mode"))
-                throw new ArgumentException("Options: --output PATH --warmups N --repetitions N --workload NAME; or --export-fixtures PATH; or --capture-contracts PATH.");
+            if (i + 1 >= args.Length || args[i] is not ("--output" or "--warmups" or "--repetitions" or "--workload" or "--text-mode" or "--max-shaping-characters" or "--isolate-samples"))
+                throw new ArgumentException("Options: --output PATH --warmups N --repetitions N --workload NAME --text-mode compatibility|document --max-shaping-characters N --isolate-samples true|false; or --export-fixtures PATH; or --capture-contracts PATH.");
             options.Add(args[i], args[i + 1]);
         }
         return options;
@@ -279,6 +295,7 @@ internal static class Program
         public EditorHost(FlowDocument document, bool bound)
         {
             Editor.SynchronizeText = _synchronizeText;
+            Editor.MaxShapingCharacters = _maxShapingCharacters;
             if (bound)
             {
                 Editor.DataContext = Model;
@@ -298,6 +315,7 @@ internal static class Program
         {
             Dispatcher.UIThread.RunJobs(); Window.UpdateLayout();
             using var frame = Window.CaptureRenderedFrame() ?? throw new InvalidOperationException("No rendered frame.");
+            if (Editor.LayoutError is { } error) throw new InvalidOperationException("Benchmark content exceeded its shaping limit.", error);
         }
         public void Dispose() => Window.Close();
     }

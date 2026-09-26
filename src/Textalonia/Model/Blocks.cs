@@ -27,7 +27,15 @@ public sealed record Paragraph : Block
     public Paragraph(IEnumerable<RichRun> runs) => Runs = Normalize(runs);
 
     [JsonIgnore] public string Text => string.Concat(Runs.Select(x => x.Text));
-    [JsonIgnore] public int Length => Runs.Sum(x => x.Storage.Length);
+    [JsonIgnore] public int Length
+    {
+        get
+        {
+            var length = 0;
+            foreach (var run in Runs) length = checked(length + run.Storage.Length);
+            return length;
+        }
+    }
 
     public TextStyle StyleAt(int offset)
     {

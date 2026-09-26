@@ -11,7 +11,7 @@ public sealed class EditorSession
     private sealed record State(FlowDocument Document, DocumentIndex Index, TextSelection Selection, TextStyle TypingStyle) : IRetained
     {
         public long Bytes => 80;
-        public IEnumerable<object> References { get { yield return Index.Tree; yield return TypingStyle; } }
+        public void VisitReferences(Action<object> visit) { visit(Index.Tree); visit(TypingStyle); }
     }
     private readonly List<State> _undo = [];
     private readonly List<State> _redo = [];

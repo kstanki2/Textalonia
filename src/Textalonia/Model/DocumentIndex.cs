@@ -88,9 +88,10 @@ public sealed class DocumentIndex
         if (offset >= end || offset + node.Length <= start) return;
         if (node.Source is Paragraph paragraph)
         {
-            var from = Math.Max(0, start - offset); var to = Math.Min(paragraph.Length, end - offset);
+            var paragraphLength = paragraph.Length;
+            var from = Math.Max(0, start - offset); var to = Math.Min(paragraphLength, end - offset);
             if (to > from) { ParagraphText.For(paragraph).CopyTo(from, target.Slice(written, to - from)); written += to - from; }
-            if (offset + paragraph.Length >= start && offset + paragraph.Length < end) target[written++] = '\n';
+            if (offset + paragraphLength >= start && offset + paragraphLength < end) target[written++] = '\n';
         }
         else if (node.Children is not null) CopyChildren(node.Children, offset, start, end, target, ref written);
     }
@@ -149,7 +150,7 @@ public sealed class DocumentIndex
 internal static class ParagraphText
 {
     private static readonly ConditionalWeakTable<Paragraph, PieceText> Texts = new();
-    public static PieceText For(Paragraph paragraph) => Texts.GetValue(paragraph, p =>
+    public static PieceText For(Paragraph paragraph) => paragraph.Runs.Length == 1 ? paragraph.Runs[0].Storage : Texts.GetValue(paragraph, p =>
     {
         var text = PieceText.Empty;
         foreach (var run in p.Runs) text = PieceText.Join(text, run.Storage);

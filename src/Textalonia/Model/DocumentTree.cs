@@ -6,7 +6,7 @@ namespace Textalonia.Model;
 internal sealed record DocumentPath(DocumentPath? Parent, OrderKey Key) : IRetained
 {
     public long Bytes => 64 + Key.Numerator.GetByteCount();
-    public IEnumerable<object> References { get { if (Parent is not null) yield return Parent; } }
+    public void VisitReferences(Action<object> visit) { if (Parent is not null) visit(Parent); }
     public IEnumerable<OrderKey> Keys()
     {
         if (Parent is not null) foreach (var key in Parent.Keys()) yield return key;
@@ -43,30 +43,27 @@ internal sealed class DocumentNode(object? source, StorageTree<OrderKey, Documen
         Table t => 96 + t.Rows.Length * 16L, // row arrays are separate retained objects below
         _ => 80 + (Children?.Count ?? 0) * 8L
     });
-    public IEnumerable<object> References
+    public void VisitReferences(Action<object> visit)
     {
-        get
+        if (Children is not null) visit(Children);
+        if (Hidden is not null) visit(Hidden);
+        if (Source is Paragraph p)
         {
-            if (Children is not null) yield return Children;
-            if (Hidden is not null) yield return Hidden;
-            if (Source is Paragraph p)
-            {
-                yield return p.DefaultStyle; yield return p.Style;
-                foreach (var run in p.Runs) { yield return run.Storage; yield return run.Style; }
-                yield return ParagraphText.For(p);
-            }
-            // Table snapshots also own covered cells and merge backups, outside visible indexing.
-            if (Source is Table table)
-                foreach (var row in table.Rows) yield return System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(row)!;
-            if (Source is TableCell cell)
-                foreach (var paragraph in cell.MergeOriginal) yield return HiddenParagraph(paragraph);
-            if (Source is Section section)
-            {
-                if (section.Background is not null) yield return section.Background;
-                if (section.BorderColor is not null) yield return section.BorderColor;
-            }
-            if (Source is TableCell { Background: { } background }) yield return background;
+            visit(p.DefaultStyle); visit(p.Style);
+            foreach (var run in p.Runs) { visit(run.Storage); visit(run.Style); }
+            visit(ParagraphText.For(p));
         }
+        // Table snapshots also own covered cells and merge backups, outside visible indexing.
+        if (Source is Table table)
+            foreach (var row in table.Rows) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(row)!);
+        if (Source is TableCell cell)
+            foreach (var paragraph in cell.MergeOriginal) visit(HiddenParagraph(paragraph));
+        if (Source is Section section)
+        {
+            if (section.Background is not null) visit(section.Background);
+            if (section.BorderColor is not null) visit(section.BorderColor);
+        }
+        if (Source is TableCell { Background: { } background }) visit(background);
     }
     private static readonly ConditionalWeakTable<Paragraph, DocumentNode> HiddenParagraphs = new();
     internal static DocumentNode HiddenParagraph(Paragraph paragraph) => HiddenParagraphs.GetValue(paragraph, p => new(p));
@@ -75,7 +72,7 @@ internal sealed class DocumentNode(object? source, StorageTree<OrderKey, Documen
 internal sealed class HiddenCellStorage(IReadOnlyList<TableCell> cells) : IRetained
 {
     public long Bytes => 32 + cells.Count * 8L;
-    public IEnumerable<object> References => cells;
+    public void VisitReferences(Action<object> visit) { for (var i = 0; i < cells.Count; i++) visit(cells[i]); }
 }
 
 internal sealed class DocumentTree : IRetained
@@ -137,8 +134,11 @@ internal sealed class DocumentTree : IRetained
     {
         var path = Paths?.Find(id)?.Value ?? throw new KeyNotFoundException("The block is not visible in this snapshot.");
         var node = Root; var start = 0; var container = Guid.Empty; var top = Guid.Empty;
-        foreach (var key in path.Keys())
+        Visit(path);
+        void Visit(DocumentPath current)
         {
+            if (current.Parent is not null) Visit(current.Parent);
+            var key = current.Key;
             if (node.Source is Section or TableCell) container = node.Id;
             start += node.Children!.Prefix(key).Length;
             node = node.Children.Find(key)!.Value;
@@ -190,5 +190,5 @@ internal sealed class DocumentTree : IRetained
         return result;
     }
     public long Bytes => 64;
-    public IEnumerable<object> References { get { yield return Root; if (Paths is not null) yield return Paths; } }
+    public void VisitReferences(Action<object> visit) { visit(Root); if (Paths is not null) visit(Paths); }
 }
