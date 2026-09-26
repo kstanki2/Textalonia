@@ -17,12 +17,62 @@ The target is the feature set described by [Avalonia's editor announcement](http
 | Scale | Cached paragraph shaping and viewport-clipped painting | True layout virtualization, incremental indexes, piece-table storage, byte-budgeted undo |
 | Distribution | Local NuGet + symbols, docs, tests, CI workflow, package consumer smoke test | Ownership/license metadata and package ID availability, platform certification, public release |
 
-## Suggested milestones
+## Implementation phases
 
-1. Harden the existing preview with native IME, clipboard, screen-reader, and bidirectional-text tests. Add document fuzzing and realistic performance measurements.
-2. Introduce incremental storage/position/layout indexes before claiming large-document performance.
-3. Extend the model with inline resources and separate input components without forcing file codecs to depend on live controls.
-4. Expand conversion fidelity against a corpus of Word, LibreOffice, browser, and native documents. Add explicit diagnostics for unsupported content.
-5. Add XAML/Markdown integrations and advanced table interactions, then stabilize and version the public API.
+The plans below turn the remaining work into ordered deliverables. All tasks are **planned**, not implemented or verified by this review. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
 
-A fully featured clone requires these additional milestones. The current package is suitable for evaluating the API and continuing development; it is not a claim of production parity.
+| Phase | Outcome and detailed plan | Prerequisites |
+| --- | --- | --- |
+| 1 | [Qualification and regression baselines](PLAN-01-BASELINES.md): reproducible native checks, document corpus, fuzzing, and performance budgets | None; start here |
+| 2 | [Scalable editing core](PLAN-02-SCALABLE-CORE.md): incremental positions, shared text storage, virtual layout, bounded history memory | Phase 1 automated baseline and measured workloads |
+| 3 | [Document semantics and tables](PLAN-03-DOCUMENT-MODEL.md): selection formatting state, list identity, typography, nested tables, merge-aware structural edits | Phase 2 edit/index contracts; schema policy from P1.2 |
+| 4 | [Extensible input and inline resources](PLAN-04-EXTENSIBILITY.md): replaceable input, serializable resources, images/controls, text accessibility | Phases 2-3 model/layout contracts |
+| 5 | [Conversion fidelity and structured clipboard](PLAN-05-INTERCHANGE.md): diagnostics, corpus-driven codecs, structural copy/paste | Phases 3-4 model/resource contracts; corpus work can start in Phase 1 |
+| 6 | [Editing and table interactions](PLAN-06-INTERACTIONS.md): visual bidi navigation, resize/style UI, drag/drop, touch, native input qualification | Phases 2-4; structured drop also requires P5.5 |
+| 7 | [XAML and Markdown integrations](PLAN-07-INTEGRATIONS.md): data-only XAML, Markdown codec/viewer, optional highlighting | Phases 3-4 and P5.1 diagnostics; can run alongside Phase 6 |
+| 8 | [API stabilization and release](PLAN-08-RELEASE.md): compatibility, platform evidence, package metadata, public release | Phases 1-7 exit gates for the advertised release scope |
+
+The default implementation order is 1 through 8. Dependencies permit earlier corpus collection, codec design, and release-metadata work; input polish and integrations can proceed independently once their stated contracts exist. Implementation should follow dependencies, not require every platform investigation to finish before unrelated core work begins.
+
+## Review findings that determine the order
+
+- **Measure the complete editing path first.** `DocumentIndex` materializes a full string, `EditorSession` rebuilds indexes during edits and history restoration, and `TextaloniaEditor` synchronizes the full `Text` property on session changes. Layout caching alone cannot establish large-document performance. Phase 2 must address the public binding contract as well as internal storage.
+- **Decide schema evolution before extending the model.** The version-1 JSON reader rejects unknown members and other versions. Lists, cell blocks, typography, and resources need explicit reader migration, writer-version, and old-file fixtures. Existing native files must remain readable; older readers must not silently misread newer files.
+- **Finish structural semantics before expanding codecs.** Cells currently contain paragraphs only, row/column edits reject all merged tables, and rich fragments flatten structure. Nesting, merge transformations, and inline resource descriptors belong in the model before interchange code can preserve them.
+- **Extract input behind existing behavior tests.** `DocumentSurface` currently owns keyboard, pointer, caret, IME, and value-only automation behavior. Splitting it without a baseline would make regressions difficult to distinguish from new behavior.
+- **Separate evidence from claims.** The existing CI matrix and headless tests are useful, but do not certify native IME, clipboard, touch, or screen readers. Conversion fidelity must be demonstrated against named fixtures and applications. Full arbitrary RTF/DOCX fidelity remains an aspiration beyond any declared subset; known losses cannot be counted as completed parity.
+
+## Coverage of the remaining work
+
+| Roadmap area | Implementation tasks |
+| --- | --- |
+| Character formatting | P3.2 mixed selection; P3.4 typography; P6.2 UI |
+| Document structure | P3.3 list restart/continuation; P3.4 block styles |
+| Tables | P3.5 merge-aware edits; P3.6 nesting; P6.2 sizing/borders/padding |
+| Editing | P6.1 bidi; P6.3 drag autoscroll; P6.4 drag/drop; P6.5 touch |
+| IME | P1.4 native baseline; P4.2 composition component; P6.6 qualification |
+| Clipboard | P5.5 structured fragments; P5.6 native cross-application checks |
+| Formats | P5.1 diagnostics; P5.3-P5.4 HTML/RTF/DOCX; P7.1 XAML |
+| Embedded content | P4.3 resource rules; P4.4 images; P4.5 host controls |
+| Display | P4.1-P4.2 independent input; P4.6 text accessibility; P6.6 native checks |
+| Markdown | P7.2 codec; P7.3 viewer; P7.4 optional highlighting |
+| Scale | P2.2 indexes; P2.3 storage; P2.4-P2.5 layout; P2.6 history |
+| Distribution | P1.1 ownership decisions; P8.1-P8.6 API, metadata, certification, packaging, release |
+
+## Shared completion rules
+
+Each implementation task needs observable behavior, focused regression coverage, and updated user-facing documentation for any changed contract. Preserve immutable snapshots, directional UTF-16 selections, grapheme-safe editing, read-only behavior, undo/redo, caller-owned streams, cancellation, and model use without controls. A deliberate public-contract change needs a migration note and consumer verification.
+
+Model and schema changes must include native round trips and old-version fixtures in the same change. Resource-bearing changes must cover history retention and disposal. Interactive changes must exercise the actual control and shared layout/hit-test geometry. Run the existing build/test/package-consumer checks for code changes; add native evidence and measured performance comparisons where the task requires them. Do not substitute a headless pass for a native check.
+
+Initial qualification targets are Windows, macOS, and Linux, reflecting the current demo and CI. Android/iOS hosts, keyboards, and touch checks remain explicit work in Phases 6 and 8. P1.1 records the intended support tiers; a platform or feature that is deferred must stay visible as an uncompleted roadmap item.
+
+## First implementation batch
+
+1. Complete **P1.1-P1.2**: record support targets, compatibility invariants, and the native schema policy.
+2. Complete **P1.3**: add deterministic fixtures and extend the existing randomized replacement test to structured operations.
+3. Complete **P1.5**: measure editing, binding, layout, serialization, and history on those fixtures; adopt explicit budgets.
+4. Run **P1.4** native scripts and land **P1.6** reporting/CI changes. Track newly discovered defects against the phase that fixes them.
+5. Start **P2.1** using that evidence; do not select a storage replacement solely from a benchmark of an isolated data structure.
+
+Phases 1-7 produce reviewable preview milestones. Phase 8 separates release-candidate qualification from public publication. The current package remains suitable for evaluating the API and continuing development; it is not a claim of production parity.
