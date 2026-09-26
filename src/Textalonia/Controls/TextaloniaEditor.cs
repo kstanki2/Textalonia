@@ -152,7 +152,7 @@ public class TextaloniaEditor : TemplatedControl
         }
         finally { _synchronizing = false; }
         foreach (var command in _commands) command.RaiseCanExecuteChanged();
-        _surface?.Refresh(selectionChanged || documentChanged && Session.LastEdit is { Reset: false });
+        _surface?.Refresh(selectionChanged || documentChanged && Session.LastEdit is { Reset: false }, invalidateLayout: documentChanged);
         if (documentChanged) DocumentChanged?.Invoke(this, EventArgs.Empty);
         if (selectionChanged) SelectionChanged?.Invoke(this, EventArgs.Empty);
     }

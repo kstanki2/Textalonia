@@ -44,8 +44,9 @@ internal static class Program
     private static readonly string[] Workloads = ["paragraphs-100", "paragraphs-1000", "paragraphs-10000", "long-paragraph", "table-heavy", "run-heavy"];
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private sealed record Counters(int ShapedParagraphs, int CachedParagraphs, int UpdatedIndexNodes, long RetainedHistoryBytes,
-        long ShapedCharacters, int LargestShapingWindow, int CachedLayouts, long CachedLayoutBytes);
-    private sealed record Sample(double Milliseconds, long AllocatedBytes, long? RetainedUndoBytes, Counters? Counters);
+        long ShapedCharacters, int LargestShapingWindow, int CachedLayouts, long CachedLayoutBytes, long PeakLayoutBytes, int GeometryNodes);
+    private sealed record Collections(int Gen0, int Gen1, int Gen2);
+    private sealed record Sample(double Milliseconds, long AllocatedBytes, long? RetainedUndoBytes, Counters? Counters, Collections Collections);
     private sealed record Result(string Workload, string Operation, int Paragraphs, int Utf16Length, int NativeBytes,
         double MedianMs, double P95Ms, long MedianAllocatedBytes, long? MedianRetainedUndoBytes, double? BudgetMs, bool? WithinLatencyBudget, List<Sample> Samples);
     private sealed record Operation(Func<long?> Run, Action Cleanup, Func<Counters?>? Observe = null);
@@ -119,12 +120,14 @@ internal static class Program
                         var operation = prepare();
                         try
                         {
+                            var gen0 = GC.CollectionCount(0); var gen1 = GC.CollectionCount(1); var gen2 = GC.CollectionCount(2);
                             var allocated = GC.GetTotalAllocatedBytes(true);
                             var start = Stopwatch.GetTimestamp();
                             var retained = operation.Run();
                             var elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
                             var bytes = GC.GetTotalAllocatedBytes(true) - allocated;
-                            if (i >= 0) samples.Add(new(elapsed, bytes, retained, operation.Observe?.Invoke()));
+                            if (i >= 0) samples.Add(new(elapsed, bytes, retained, operation.Observe?.Invoke(),
+                                new(GC.CollectionCount(0) - gen0, GC.CollectionCount(1) - gen1, GC.CollectionCount(2) - gen2)));
                         }
                         finally { operation.Cleanup(); }
                     }
@@ -289,7 +292,7 @@ internal static class Program
         {
             var layout = Editor.GetVisualDescendants().OfType<DocumentSurface>().Single().Layout;
             return new(layout.ShapedParagraphs, layout.CachedParagraphs, Editor.Session.Index.Tree.UpdatedNodes, Editor.Session.RetainedHistoryBytes,
-                layout.ShapedCharacters, layout.LargestShapingWindow, layout.CachedLayouts, layout.CachedLayoutBytes);
+                layout.ShapedCharacters, layout.LargestShapingWindow, layout.CachedLayouts, layout.CachedLayoutBytes, layout.PeakLayoutBytes, layout.GeometryNodes);
         }
         public void Frame()
         {

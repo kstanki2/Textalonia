@@ -1,0 +1,8 @@
+Same Windows x64 host/CPU signature as P1; runtime, SDK, UI backend and workloads are in environment.json.
+Final binaries: two warmups, seven samples per case; all 138 compatibility and 90 document-mode cases preserved. Modes ran sequentially after the full 98-test corpus, with no test or build running during this final capture.
+No workload, timing boundary or adopted budget was widened or dropped. Observation adds GC generation counts, peak estimated glyph bytes and geometry-node counters outside the timed interval.
+Power state and unrelated host activity were not controlled. Earlier diagnostic host CPU readings were 77% and 100%; host-load.json saves the second reading. These are point observations, not proof of the cause of individual slow samples.
+The diagnostic-30 directory preserves a separate complete three-warmup, 30-sample run. It preceded the final offscreen caret-below-viewport visibility guard; its engine/harness source and assembly hashes are recorded separately. Two focused correctness checks ran near the end of that diagnostic capture. It is not final-binary acceptance evidence and is not substituted for any final sample.
+Seven-sample p95 is the maximum, not a robust population-tail estimate. Both the final and diagnostic captures fail the unchanged enforced budgets.
+Package verification uses a new workspace cache and an offline feed containing the freshly packed library plus cached dependencies. Library hashes are checked after execution.
+No native compositor, IME, clipboard, accessibility, Linux or macOS qualification is claimed.

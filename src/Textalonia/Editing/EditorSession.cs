@@ -16,7 +16,6 @@ public sealed class EditorSession
     private readonly List<State> _undo = [];
     private readonly List<State> _redo = [];
     private readonly RetentionGraph _retained = new();
-    private readonly RetentionGraph _current = new();
     private long _historyByteLimit = 64 * 1024 * 1024;
     private readonly Guid _positionScope = Guid.NewGuid();
     private int _undoLimit = 100;
@@ -34,8 +33,8 @@ public sealed class EditorSession
         private set
         {
             if (ReferenceEquals(value, _typingStyle)) return;
-            _retained.Add(value); _current.Add(value);
-            _retained.Remove(_typingStyle); _current.Remove(_typingStyle); _typingStyle = value;
+            _retained.Add(value, current: true);
+            _retained.Remove(_typingStyle, current: true); _typingStyle = value;
         }
     }
     public bool CanUndo => !IsReadOnly && _undo.Count > 0;
@@ -46,7 +45,7 @@ public sealed class EditorSession
     internal DocumentEdit? LastEdit { get; private set; }
     internal Func<long> Timestamp { get; set; } = Stopwatch.GetTimestamp;
     /// <summary>Estimated bytes owned exclusively by undo/redo, including shared storage only once.</summary>
-    public long RetainedHistoryBytes => _retained.Bytes - _current.Bytes;
+    public long RetainedHistoryBytes => _retained.HistoryBytes;
     /// <summary>History estimate budget, in bytes. Oversized entries are evicted; current document is excluded.</summary>
     public long HistoryByteLimit
     {
@@ -90,8 +89,8 @@ public sealed class EditorSession
 
     public EditorSession()
     {
-        Index = new DocumentIndex(Document); _retained.Add(Index.Tree); _current.Add(Index.Tree);
-        _retained.Add(TypingStyle); _current.Add(TypingStyle);
+        Index = new DocumentIndex(Document); _retained.Add(Index.Tree, current: true);
+        _retained.Add(TypingStyle, current: true);
     }
     public EditorSession(FlowDocument document) : this() => Load(document);
 
@@ -99,8 +98,14 @@ public sealed class EditorSession
     {
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
-        ClearHistory(); SetDocument(document, new(document));
-        Selection = default; TypingStyle = Index.At(0).Paragraph.StyleAt(0);
+        // Loading releases every previous root. Clearing the ownership table
+        // avoids walking a graph solely to decrement all its counts to zero.
+        var index = new DocumentIndex(document);
+        _undo.Clear(); _redo.Clear(); _retained.Clear();
+        _retained.EnsureCapacity(index.ParagraphCount * 6 + index.Tree.UpdatedNodes * 2);
+        Document = document; Index = index;
+        Selection = default; _typingStyle = Index.At(0).Paragraph.StyleAt(0);
+        _retained.Add(Index.Tree, current: true); _retained.Add(TypingStyle, current: true);
         BreakUndoGroup(); Revision++; LastEdit = new(Revision - 1, Revision, 0, 0, Index.Length, [], true); OnChanged();
     }
 
@@ -419,14 +424,12 @@ public sealed class EditorSession
     }
     private void SetDocument(FlowDocument document, DocumentIndex index)
     {
-        _retained.Add(index.Tree); _current.Add(index.Tree);
-        _retained.Remove(Index.Tree); _current.Remove(Index.Tree);
+        _retained.Add(index.Tree, current: true);
+        _retained.Remove(Index.Tree, current: true);
         Document = document; Index = index;
     }
     private void ClearRedo()
     { foreach (var state in _redo) _retained.Remove(state); _redo.Clear(); }
-    private void ClearHistory()
-    { ClearRedo(); foreach (var state in _undo) _retained.Remove(state); _undo.Clear(); }
     private void OnChanged() => Changed?.Invoke(this, EventArgs.Empty);
 
     private static (FlowDocument Document, int Caret) ReplaceRange(

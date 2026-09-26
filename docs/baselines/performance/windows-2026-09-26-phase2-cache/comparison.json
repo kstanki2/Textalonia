@@ -1,0 +1,6614 @@
+[
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "first-viewport",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 80.5477,
+      "P95Ms": 91.8391,
+      "MedianAllocatedBytes": 15512296,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 36.4587,
+      "P95Ms": 57.4906,
+      "MedianAllocatedBytes": 6656648,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 35.0448,
+      "P95Ms": 51.5236,
+      "MedianAllocatedBytes": 6739648,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 31.1026,
+      "P95Ms": 44.7772,
+      "MedianAllocatedBytes": 5051272,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.0878,
+      "P95Ms": 11.4688,
+      "MedianAllocatedBytes": 251720,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 10.3045,
+      "P95Ms": 11.187,
+      "MedianAllocatedBytes": 270072,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 11.4558,
+      "P95Ms": 12.8561,
+      "MedianAllocatedBytes": 302304,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.5402,
+      "P95Ms": 5.2809,
+      "MedianAllocatedBytes": 260920,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.4647,
+      "P95Ms": 6.6463,
+      "MedianAllocatedBytes": 289360,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.8505,
+      "P95Ms": 6.1808,
+      "MedianAllocatedBytes": 262952,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.2455,
+      "P95Ms": 7.2067,
+      "MedianAllocatedBytes": 294992,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.2783,
+      "P95Ms": 4.4286,
+      "MedianAllocatedBytes": 255848,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 6.1712,
+      "P95Ms": 6.7341,
+      "MedianAllocatedBytes": 300912,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.6029,
+      "P95Ms": 5.2398,
+      "MedianAllocatedBytes": 282152,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.0088,
+      "P95Ms": 6.5396,
+      "MedianAllocatedBytes": 337976,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.6628,
+      "P95Ms": 5.6918,
+      "MedianAllocatedBytes": 277072,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 3.9654,
+      "P95Ms": 4.7118,
+      "MedianAllocatedBytes": 290960,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 10.038,
+      "P95Ms": 10.71,
+      "MedianAllocatedBytes": 271968,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 10.5228,
+      "P95Ms": 13.4815,
+      "MedianAllocatedBytes": 327568,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.6854,
+      "P95Ms": 6.7717,
+      "MedianAllocatedBytes": 259888,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 6.4838,
+      "P95Ms": 7.3129,
+      "MedianAllocatedBytes": 305928,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.7386,
+      "P95Ms": 9.8337,
+      "MedianAllocatedBytes": 159000,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.0328,
+      "P95Ms": 16.0224,
+      "MedianAllocatedBytes": 170072,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.7407,
+      "P95Ms": 8.9371,
+      "MedianAllocatedBytes": 255888,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.169,
+      "P95Ms": 4.2956,
+      "MedianAllocatedBytes": 293392,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.6226,
+      "P95Ms": 3.9816,
+      "MedianAllocatedBytes": 123816,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.2895,
+      "P95Ms": 11.3426,
+      "MedianAllocatedBytes": 159944,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.6052,
+      "P95Ms": 14.5313,
+      "MedianAllocatedBytes": 133024,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "caret-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 3.7723,
+      "P95Ms": 5.8942,
+      "MedianAllocatedBytes": 216840,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.6958,
+      "P95Ms": 3.823,
+      "MedianAllocatedBytes": 57328,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.6904,
+      "P95Ms": 3.8147,
+      "MedianAllocatedBytes": 96240,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.7842,
+      "P95Ms": 3.647,
+      "MedianAllocatedBytes": 26520,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "text-update-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 10.7206,
+      "P95Ms": 16.8751,
+      "MedianAllocatedBytes": 903424,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 6.8665,
+      "P95Ms": 13.522,
+      "MedianAllocatedBytes": 920944,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 10.417,
+      "P95Ms": 20.7844,
+      "MedianAllocatedBytes": 991304,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.2598,
+      "P95Ms": 11.1531,
+      "MedianAllocatedBytes": 507456,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 3.8909,
+      "P95Ms": 5.6079,
+      "MedianAllocatedBytes": 249472,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.2658,
+      "P95Ms": 9.8685,
+      "MedianAllocatedBytes": 126528,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.1993,
+      "P95Ms": 3.5266,
+      "MedianAllocatedBytes": 158760,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.0366,
+      "P95Ms": 5.3516,
+      "MedianAllocatedBytes": 132776,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 3.9828,
+      "P95Ms": 4.9763,
+      "MedianAllocatedBytes": 289472,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.2344,
+      "P95Ms": 3.4396,
+      "MedianAllocatedBytes": 123272,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.9072,
+      "P95Ms": 11.022,
+      "MedianAllocatedBytes": 157248,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.7759,
+      "P95Ms": 11.0666,
+      "MedianAllocatedBytes": 131288,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.9856,
+      "P95Ms": 7.6001,
+      "MedianAllocatedBytes": 301184,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.4243,
+      "P95Ms": 12.2662,
+      "MedianAllocatedBytes": 149720,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.4312,
+      "P95Ms": 4.9119,
+      "MedianAllocatedBytes": 203312,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.324,
+      "P95Ms": 5.3711,
+      "MedianAllocatedBytes": 148840,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.3345,
+      "P95Ms": 12.8922,
+      "MedianAllocatedBytes": 291072,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.9523,
+      "P95Ms": 3.8064,
+      "MedianAllocatedBytes": 140488,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.5497,
+      "P95Ms": 12.2119,
+      "MedianAllocatedBytes": 198784,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.689,
+      "P95Ms": 4.4124,
+      "MedianAllocatedBytes": 142920,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.1387,
+      "P95Ms": 6.7096,
+      "MedianAllocatedBytes": 306040,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.8768,
+      "P95Ms": 5.0389,
+      "MedianAllocatedBytes": 128912,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.2149,
+      "P95Ms": 4.5827,
+      "MedianAllocatedBytes": 169304,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.2976,
+      "P95Ms": 6.0202,
+      "MedianAllocatedBytes": 133480,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.2639,
+      "P95Ms": 6.9345,
+      "MedianAllocatedBytes": 293312,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.7608,
+      "P95Ms": 14.6012,
+      "MedianAllocatedBytes": 123736,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.9514,
+      "P95Ms": 10.8341,
+      "MedianAllocatedBytes": 161800,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.3333,
+      "P95Ms": 5.5238,
+      "MedianAllocatedBytes": 125968,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "caret-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.4443,
+      "P95Ms": 6.3809,
+      "MedianAllocatedBytes": 216672,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.347,
+      "P95Ms": 2.6785,
+      "MedianAllocatedBytes": 57160,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.6253,
+      "P95Ms": 3.9762,
+      "MedianAllocatedBytes": 96072,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.3315,
+      "P95Ms": 4.0087,
+      "MedianAllocatedBytes": 26352,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "text-update-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 9.1892,
+      "P95Ms": 9.8799,
+      "MedianAllocatedBytes": 900176,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.3703,
+      "P95Ms": 5.4626,
+      "MedianAllocatedBytes": 920120,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 7.2547,
+      "P95Ms": 22.4112,
+      "MedianAllocatedBytes": 983768,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.2509,
+      "P95Ms": 6.8759,
+      "MedianAllocatedBytes": 507448,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "scroll",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 3.3042,
+      "P95Ms": 4.8568,
+      "MedianAllocatedBytes": 85128,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.4861,
+      "P95Ms": 14.4354,
+      "MedianAllocatedBytes": 416112,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 8.2351,
+      "P95Ms": 16.3822,
+      "MedianAllocatedBytes": 538552,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.478,
+      "P95Ms": 12.5514,
+      "MedianAllocatedBytes": 332624,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "resize",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 30.1912,
+      "P95Ms": 37.526,
+      "MedianAllocatedBytes": 2623056,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.9107,
+      "P95Ms": 15.8193,
+      "MedianAllocatedBytes": 777160,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 9.4899,
+      "P95Ms": 10.6031,
+      "MedianAllocatedBytes": 924584,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 8.107,
+      "P95Ms": 24.6151,
+      "MedianAllocatedBytes": 570848,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "replace-all",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 3.3194,
+      "P95Ms": 4.3925,
+      "MedianAllocatedBytes": 327384,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.6422,
+      "P95Ms": 2.7704,
+      "MedianAllocatedBytes": 216728,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.8571,
+      "P95Ms": 11.0907,
+      "MedianAllocatedBytes": 248880,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.384,
+      "P95Ms": 8.0153,
+      "MedianAllocatedBytes": 223056,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "native-save",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 0.8784,
+      "P95Ms": 0.9952,
+      "MedianAllocatedBytes": 551352,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 0.7681,
+      "P95Ms": 0.8561,
+      "MedianAllocatedBytes": 551352,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 0.6684,
+      "P95Ms": 0.9437,
+      "MedianAllocatedBytes": 551352,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 0.8763,
+      "P95Ms": 1.1072,
+      "MedianAllocatedBytes": 551352,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "native-load",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 1.6579,
+      "P95Ms": 3.2976,
+      "MedianAllocatedBytes": 1082528,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 1.662,
+      "P95Ms": 2.3879,
+      "MedianAllocatedBytes": 1088192,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 1.9033,
+      "P95Ms": 2.3074,
+      "MedianAllocatedBytes": 1088192,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 1.7184,
+      "P95Ms": 2.0606,
+      "MedianAllocatedBytes": 1088192,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "history-100",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 28.8036,
+      "P95Ms": 41.0399,
+      "MedianAllocatedBytes": 16102784,
+      "MedianRetainedUndoBytes": 124336
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.9566,
+      "P95Ms": 8.3708,
+      "MedianAllocatedBytes": 2438880,
+      "MedianRetainedUndoBytes": 205384
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 11.6516,
+      "P95Ms": 12.1197,
+      "MedianAllocatedBytes": 2438880,
+      "MedianRetainedUndoBytes": 205384
+    },
+    "Current": {
+      "MedianMs": 13.7959,
+      "P95Ms": 14.2637,
+      "MedianAllocatedBytes": 2179184,
+      "MedianRetainedUndoBytes": 205384
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "first-viewport",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 83.7029,
+      "P95Ms": 93.2668,
+      "MedianAllocatedBytes": 13563736,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 17.3969,
+      "P95Ms": 25.9572,
+      "MedianAllocatedBytes": 6393944,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 29.3737,
+      "P95Ms": 34.2457,
+      "MedianAllocatedBytes": 6476688,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 14.3366,
+      "P95Ms": 27.4619,
+      "MedianAllocatedBytes": 4514144,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.0326,
+      "P95Ms": 16.0041,
+      "MedianAllocatedBytes": 2091200,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.0289,
+      "P95Ms": 3.8391,
+      "MedianAllocatedBytes": 458408,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.0678,
+      "P95Ms": 5.1481,
+      "MedianAllocatedBytes": 490376,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.1186,
+      "P95Ms": 4.6364,
+      "MedianAllocatedBytes": 461328,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.9176,
+      "P95Ms": 26.447,
+      "MedianAllocatedBytes": 2478296,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.8988,
+      "P95Ms": 16.9281,
+      "MedianAllocatedBytes": 456824,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.4871,
+      "P95Ms": 5.1405,
+      "MedianAllocatedBytes": 488864,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.0306,
+      "P95Ms": 7.385,
+      "MedianAllocatedBytes": 459840,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 6.6457,
+      "P95Ms": 21.1968,
+      "MedianAllocatedBytes": 2336560,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.9872,
+      "P95Ms": 5.3573,
+      "MedianAllocatedBytes": 476032,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.3802,
+      "P95Ms": 6.0701,
+      "MedianAllocatedBytes": 531216,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.0936,
+      "P95Ms": 7.8097,
+      "MedianAllocatedBytes": 476872,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 15.9893,
+      "P95Ms": 22.2712,
+      "MedianAllocatedBytes": 2504992,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.9176,
+      "P95Ms": 4.9669,
+      "MedianAllocatedBytes": 472744,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.8079,
+      "P95Ms": 10.4719,
+      "MedianAllocatedBytes": 530600,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.0054,
+      "P95Ms": 8.6641,
+      "MedianAllocatedBytes": 473744,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.7984,
+      "P95Ms": 20.3381,
+      "MedianAllocatedBytes": 2393072,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.9997,
+      "P95Ms": 4.2224,
+      "MedianAllocatedBytes": 460096,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.7691,
+      "P95Ms": 6.653,
+      "MedianAllocatedBytes": 498656,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.1074,
+      "P95Ms": 4.836,
+      "MedianAllocatedBytes": 463696,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 6.3221,
+      "P95Ms": 29.9099,
+      "MedianAllocatedBytes": 2535088,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.1019,
+      "P95Ms": 3.9413,
+      "MedianAllocatedBytes": 454184,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.3915,
+      "P95Ms": 4.5305,
+      "MedianAllocatedBytes": 492248,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.3469,
+      "P95Ms": 9.0503,
+      "MedianAllocatedBytes": 457576,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "caret-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 11.8015,
+      "P95Ms": 25.6804,
+      "MedianAllocatedBytes": 2165120,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.6525,
+      "P95Ms": 3.5884,
+      "MedianAllocatedBytes": 56568,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.0562,
+      "P95Ms": 5.3178,
+      "MedianAllocatedBytes": 95480,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.0848,
+      "P95Ms": 9.0651,
+      "MedianAllocatedBytes": 25928,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "text-update-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 63.9304,
+      "P95Ms": 83.9582,
+      "MedianAllocatedBytes": 14527040,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 19.676,
+      "P95Ms": 25.8494,
+      "MedianAllocatedBytes": 6768400,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 25.7026,
+      "P95Ms": 32.3183,
+      "MedianAllocatedBytes": 6824728,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.8805,
+      "P95Ms": 18.4508,
+      "MedianAllocatedBytes": 3054280,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.1895,
+      "P95Ms": 21.2099,
+      "MedianAllocatedBytes": 2091312,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.876,
+      "P95Ms": 17.1148,
+      "MedianAllocatedBytes": 458520,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.8417,
+      "P95Ms": 6.5532,
+      "MedianAllocatedBytes": 490488,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.6069,
+      "P95Ms": 4.209,
+      "MedianAllocatedBytes": 461440,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 6.2395,
+      "P95Ms": 27.5999,
+      "MedianAllocatedBytes": 2478312,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.7089,
+      "P95Ms": 4.6265,
+      "MedianAllocatedBytes": 456936,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.5312,
+      "P95Ms": 7.1635,
+      "MedianAllocatedBytes": 488880,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.9451,
+      "P95Ms": 4.9759,
+      "MedianAllocatedBytes": 459952,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 7.1482,
+      "P95Ms": 27.487,
+      "MedianAllocatedBytes": 2336672,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.738,
+      "P95Ms": 5.3158,
+      "MedianAllocatedBytes": 476144,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.1341,
+      "P95Ms": 5.2611,
+      "MedianAllocatedBytes": 531328,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.3389,
+      "P95Ms": 11.4709,
+      "MedianAllocatedBytes": 476984,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.4111,
+      "P95Ms": 21.6965,
+      "MedianAllocatedBytes": 2504744,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.6758,
+      "P95Ms": 3.2575,
+      "MedianAllocatedBytes": 472496,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.0417,
+      "P95Ms": 5.8054,
+      "MedianAllocatedBytes": 528256,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.1197,
+      "P95Ms": 21.6754,
+      "MedianAllocatedBytes": 474120,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 7.206,
+      "P95Ms": 27.7341,
+      "MedianAllocatedBytes": 2395432,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.7205,
+      "P95Ms": 3.1333,
+      "MedianAllocatedBytes": 460736,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.7671,
+      "P95Ms": 6.7853,
+      "MedianAllocatedBytes": 498504,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.0325,
+      "P95Ms": 3.766,
+      "MedianAllocatedBytes": 463808,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.8472,
+      "P95Ms": 20.9381,
+      "MedianAllocatedBytes": 2532744,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.0735,
+      "P95Ms": 20.5948,
+      "MedianAllocatedBytes": 454200,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.9286,
+      "P95Ms": 20.2308,
+      "MedianAllocatedBytes": 492264,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.0255,
+      "P95Ms": 4.1751,
+      "MedianAllocatedBytes": 457592,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "caret-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 10.4991,
+      "P95Ms": 28.4395,
+      "MedianAllocatedBytes": 2165024,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.3328,
+      "P95Ms": 4.0886,
+      "MedianAllocatedBytes": 56472,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.2561,
+      "P95Ms": 4.7913,
+      "MedianAllocatedBytes": 95384,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.8733,
+      "P95Ms": 3.3467,
+      "MedianAllocatedBytes": 25832,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "text-update-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 65.573,
+      "P95Ms": 91.354,
+      "MedianAllocatedBytes": 14529512,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 17.3243,
+      "P95Ms": 22.6508,
+      "MedianAllocatedBytes": 6765816,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 10.8777,
+      "P95Ms": 38.1674,
+      "MedianAllocatedBytes": 6824360,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.8439,
+      "P95Ms": 20.8949,
+      "MedianAllocatedBytes": 3056696,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "scroll",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 3.3615,
+      "P95Ms": 24.1156,
+      "MedianAllocatedBytes": 230912,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.0658,
+      "P95Ms": 13.5451,
+      "MedianAllocatedBytes": 417352,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.9054,
+      "P95Ms": 8.7631,
+      "MedianAllocatedBytes": 536336,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.9735,
+      "P95Ms": 23.0015,
+      "MedianAllocatedBytes": 323240,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "resize",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 189.3313,
+      "P95Ms": 220.2216,
+      "MedianAllocatedBytes": 25163248,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.7542,
+      "P95Ms": 17.8498,
+      "MedianAllocatedBytes": 1940072,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 9.6918,
+      "P95Ms": 26.8817,
+      "MedianAllocatedBytes": 2087232,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.0748,
+      "P95Ms": 27.1953,
+      "MedianAllocatedBytes": 572960,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "replace-all",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 26.2148,
+      "P95Ms": 40.4532,
+      "MedianAllocatedBytes": 18062688,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.7499,
+      "P95Ms": 19.2493,
+      "MedianAllocatedBytes": 1650320,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 12.873,
+      "P95Ms": 21.3783,
+      "MedianAllocatedBytes": 1687048,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.6395,
+      "P95Ms": 13.1485,
+      "MedianAllocatedBytes": 1574400,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "native-save",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 3.8934,
+      "P95Ms": 4.3297,
+      "MedianAllocatedBytes": 5498448,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.5053,
+      "P95Ms": 10.6221,
+      "MedianAllocatedBytes": 5498448,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.4653,
+      "P95Ms": 12.1333,
+      "MedianAllocatedBytes": 5498448,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.3879,
+      "P95Ms": 23.5544,
+      "MedianAllocatedBytes": 5498448,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "native-load",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 19.2951,
+      "P95Ms": 32.4651,
+      "MedianAllocatedBytes": 11385176,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 16.5502,
+      "P95Ms": 19.4149,
+      "MedianAllocatedBytes": 11441240,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 19.756,
+      "P95Ms": 30.1987,
+      "MedianAllocatedBytes": 11442496,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 20.4328,
+      "P95Ms": 29.6453,
+      "MedianAllocatedBytes": 11442496,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "history-100",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 197.9109,
+      "P95Ms": 214.6682,
+      "MedianAllocatedBytes": 154957168,
+      "MedianRetainedUndoBytes": 837136
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.5594,
+      "P95Ms": 9.012,
+      "MedianAllocatedBytes": 3417088,
+      "MedianRetainedUndoBytes": 256992
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 16.3625,
+      "P95Ms": 17.8404,
+      "MedianAllocatedBytes": 3417088,
+      "MedianRetainedUndoBytes": 256992
+    },
+    "Current": {
+      "MedianMs": 28.3192,
+      "P95Ms": 32.3619,
+      "MedianAllocatedBytes": 3084784,
+      "MedianRetainedUndoBytes": 256992
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "first-viewport",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 776.1045,
+      "P95Ms": 923.4962,
+      "MedianAllocatedBytes": 140467392,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 66.3335,
+      "P95Ms": 109.057,
+      "MedianAllocatedBytes": 42380152,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 73.7366,
+      "P95Ms": 116.9716,
+      "MedianAllocatedBytes": 42463312,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 32.2815,
+      "P95Ms": 66.7174,
+      "MedianAllocatedBytes": 24394824,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 24.8738,
+      "P95Ms": 42.6637,
+      "MedianAllocatedBytes": 21009784,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.3046,
+      "P95Ms": 11.285,
+      "MedianAllocatedBytes": 3723944,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.974,
+      "P95Ms": 15.0529,
+      "MedianAllocatedBytes": 3756176,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.6786,
+      "P95Ms": 14.0381,
+      "MedianAllocatedBytes": 3726328,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 49.3892,
+      "P95Ms": 92.1778,
+      "MedianAllocatedBytes": 24891328,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.2833,
+      "P95Ms": 13.4865,
+      "MedianAllocatedBytes": 3722536,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.5606,
+      "P95Ms": 11.5168,
+      "MedianAllocatedBytes": 3754576,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.0003,
+      "P95Ms": 11.8153,
+      "MedianAllocatedBytes": 3725440,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 36.9463,
+      "P95Ms": 56.0266,
+      "MedianAllocatedBytes": 23270768,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.3091,
+      "P95Ms": 12.0676,
+      "MedianAllocatedBytes": 3742152,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.3326,
+      "P95Ms": 12.5899,
+      "MedianAllocatedBytes": 3797600,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.2692,
+      "P95Ms": 16.704,
+      "MedianAllocatedBytes": 3739248,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 48.0599,
+      "P95Ms": 92.7899,
+      "MedianAllocatedBytes": 25169760,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.115,
+      "P95Ms": 11.9467,
+      "MedianAllocatedBytes": 3738512,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.8975,
+      "P95Ms": 5.2487,
+      "MedianAllocatedBytes": 3794272,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.6217,
+      "P95Ms": 17.7251,
+      "MedianAllocatedBytes": 3736032,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 27.6636,
+      "P95Ms": 101.5042,
+      "MedianAllocatedBytes": 23831344,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.0629,
+      "P95Ms": 12.3271,
+      "MedianAllocatedBytes": 3725896,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.3753,
+      "P95Ms": 5.0121,
+      "MedianAllocatedBytes": 3764192,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.2869,
+      "P95Ms": 17.8575,
+      "MedianAllocatedBytes": 3731320,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 52.182,
+      "P95Ms": 79.4343,
+      "MedianAllocatedBytes": 25449760,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.3859,
+      "P95Ms": 12.0217,
+      "MedianAllocatedBytes": 3719896,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.7359,
+      "P95Ms": 12.7868,
+      "MedianAllocatedBytes": 3757960,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.3041,
+      "P95Ms": 14.6519,
+      "MedianAllocatedBytes": 3725112,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "caret-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 101.9554,
+      "P95Ms": 126.784,
+      "MedianAllocatedBytes": 21238872,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.4736,
+      "P95Ms": 2.8265,
+      "MedianAllocatedBytes": 56472,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.4349,
+      "P95Ms": 3.4602,
+      "MedianAllocatedBytes": 95384,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.1972,
+      "P95Ms": 3.0561,
+      "MedianAllocatedBytes": 25832,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "text-update-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 1087.4176,
+      "P95Ms": 1513.5802,
+      "MedianAllocatedBytes": 146701240,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 120.679,
+      "P95Ms": 151.4456,
+      "MedianAllocatedBytes": 65623432,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 119.2601,
+      "P95Ms": 169.7839,
+      "MedianAllocatedBytes": 66342808,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 41.3728,
+      "P95Ms": 43.5998,
+      "MedianAllocatedBytes": 29438616,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 34.7427,
+      "P95Ms": 84.3301,
+      "MedianAllocatedBytes": 21009896,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.47,
+      "P95Ms": 12.7469,
+      "MedianAllocatedBytes": 3724056,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.1627,
+      "P95Ms": 17.7657,
+      "MedianAllocatedBytes": 3756288,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.6711,
+      "P95Ms": 6.4698,
+      "MedianAllocatedBytes": 3726440,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 50.3583,
+      "P95Ms": 91.5366,
+      "MedianAllocatedBytes": 24891440,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.5206,
+      "P95Ms": 13.0536,
+      "MedianAllocatedBytes": 3722648,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.9633,
+      "P95Ms": 5.1929,
+      "MedianAllocatedBytes": 3754688,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.991,
+      "P95Ms": 19.5539,
+      "MedianAllocatedBytes": 3724864,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 46.2147,
+      "P95Ms": 72.9742,
+      "MedianAllocatedBytes": 23270880,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.3903,
+      "P95Ms": 13.3992,
+      "MedianAllocatedBytes": 3742264,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.0879,
+      "P95Ms": 6.019,
+      "MedianAllocatedBytes": 3797448,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.249,
+      "P95Ms": 25.7805,
+      "MedianAllocatedBytes": 3739360,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 49.746,
+      "P95Ms": 104.9618,
+      "MedianAllocatedBytes": 25169872,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.3884,
+      "P95Ms": 13.3678,
+      "MedianAllocatedBytes": 3738624,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.3311,
+      "P95Ms": 20.4716,
+      "MedianAllocatedBytes": 3794384,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.6202,
+      "P95Ms": 24.5676,
+      "MedianAllocatedBytes": 3736144,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 42.0384,
+      "P95Ms": 92.5521,
+      "MedianAllocatedBytes": 23831144,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.1826,
+      "P95Ms": 28.5788,
+      "MedianAllocatedBytes": 3726008,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.7424,
+      "P95Ms": 15.8863,
+      "MedianAllocatedBytes": 3764304,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.9696,
+      "P95Ms": 6.7594,
+      "MedianAllocatedBytes": 3731432,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 44.8739,
+      "P95Ms": 85.6299,
+      "MedianAllocatedBytes": 25449872,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.9258,
+      "P95Ms": 5.4201,
+      "MedianAllocatedBytes": 3720008,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.9143,
+      "P95Ms": 22.5766,
+      "MedianAllocatedBytes": 3758072,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.6899,
+      "P95Ms": 27.6617,
+      "MedianAllocatedBytes": 3725224,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "caret-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 67.1639,
+      "P95Ms": 151.4193,
+      "MedianAllocatedBytes": 21239032,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.214,
+      "P95Ms": 2.4867,
+      "MedianAllocatedBytes": 56472,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.3576,
+      "P95Ms": 2.869,
+      "MedianAllocatedBytes": 95384,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.1342,
+      "P95Ms": 2.497,
+      "MedianAllocatedBytes": 25832,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "text-update-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 924.8617,
+      "P95Ms": 1252.6684,
+      "MedianAllocatedBytes": 146700952,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 124.0281,
+      "P95Ms": 169.6633,
+      "MedianAllocatedBytes": 65627976,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 125.3141,
+      "P95Ms": 169.3297,
+      "MedianAllocatedBytes": 65692168,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 75.1542,
+      "P95Ms": 89.2197,
+      "MedianAllocatedBytes": 29438968,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "scroll",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.4624,
+      "P95Ms": 28.8636,
+      "MedianAllocatedBytes": 1742336,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.0292,
+      "P95Ms": 5.1685,
+      "MedianAllocatedBytes": 415928,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.48,
+      "P95Ms": 34.5419,
+      "MedianAllocatedBytes": 535280,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.4569,
+      "P95Ms": 5.2952,
+      "MedianAllocatedBytes": 324896,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "resize",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 2795.8909,
+      "P95Ms": 3782.8073,
+      "MedianAllocatedBytes": 252328480,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 24.4752,
+      "P95Ms": 70.9943,
+      "MedianAllocatedBytes": 15135368,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 29.5676,
+      "P95Ms": 43.7503,
+      "MedianAllocatedBytes": 15282792,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.39,
+      "P95Ms": 10.1047,
+      "MedianAllocatedBytes": 580112,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "replace-all",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 1881.2096,
+      "P95Ms": 1968.2368,
+      "MedianAllocatedBytes": 1748651576,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 25.9406,
+      "P95Ms": 41.61,
+      "MedianAllocatedBytes": 15747288,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 23.9081,
+      "P95Ms": 54.6546,
+      "MedianAllocatedBytes": 15779600,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 28.456,
+      "P95Ms": 100.933,
+      "MedianAllocatedBytes": 15322800,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "native-save",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 40.9879,
+      "P95Ms": 48.1003,
+      "MedianAllocatedBytes": 54809280,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 43.0152,
+      "P95Ms": 62.1919,
+      "MedianAllocatedBytes": 54809280,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 59.5817,
+      "P95Ms": 90.6834,
+      "MedianAllocatedBytes": 54809256,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 51.7286,
+      "P95Ms": 140.9747,
+      "MedianAllocatedBytes": 54809280,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "native-load",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 101.7406,
+      "P95Ms": 107.7509,
+      "MedianAllocatedBytes": 129447056,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 82.1305,
+      "P95Ms": 103.8595,
+      "MedianAllocatedBytes": 130014016,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 106.5347,
+      "P95Ms": 123.5544,
+      "MedianAllocatedBytes": 130014016,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 126.4156,
+      "P95Ms": 178.8495,
+      "MedianAllocatedBytes": 130002464,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "history-100",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 2818.4207,
+      "P95Ms": 3022.4314,
+      "MedianAllocatedBytes": 1594349736,
+      "MedianRetainedUndoBytes": 7965136
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 25.5555,
+      "P95Ms": 29.5354,
+      "MedianAllocatedBytes": 3659656,
+      "MedianRetainedUndoBytes": 313904
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 32.4169,
+      "P95Ms": 35.9635,
+      "MedianAllocatedBytes": 3659656,
+      "MedianRetainedUndoBytes": 313904
+    },
+    "Current": {
+      "MedianMs": 333.3522,
+      "P95Ms": 401.7617,
+      "MedianAllocatedBytes": 3243832,
+      "MedianRetainedUndoBytes": 313904
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "first-viewport",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 352.1674,
+      "P95Ms": 641.3931,
+      "MedianAllocatedBytes": 38410720,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 271.5372,
+      "P95Ms": 310.7619,
+      "MedianAllocatedBytes": 39413984,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 11.442,
+      "P95Ms": 27.0646,
+      "MedianAllocatedBytes": 4110096,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 18.3603,
+      "P95Ms": 64.2755,
+      "MedianAllocatedBytes": 4059928,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 381.624,
+      "P95Ms": 586.3413,
+      "MedianAllocatedBytes": 39113376,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 261.2982,
+      "P95Ms": 311.3566,
+      "MedianAllocatedBytes": 36638656,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.9681,
+      "P95Ms": 12.8026,
+      "MedianAllocatedBytes": 857840,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.9195,
+      "P95Ms": 5.5422,
+      "MedianAllocatedBytes": 854504,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 354.8839,
+      "P95Ms": 422.8647,
+      "MedianAllocatedBytes": 39427904,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 285.5259,
+      "P95Ms": 317.0434,
+      "MedianAllocatedBytes": 39296096,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.1416,
+      "P95Ms": 11.1589,
+      "MedianAllocatedBytes": 856760,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.9917,
+      "P95Ms": 19.7472,
+      "MedianAllocatedBytes": 853712,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 563.4956,
+      "P95Ms": 657.2487,
+      "MedianAllocatedBytes": 39392688,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 287.2204,
+      "P95Ms": 333.7902,
+      "MedianAllocatedBytes": 39300728,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.9011,
+      "P95Ms": 16.6558,
+      "MedianAllocatedBytes": 1009312,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.7417,
+      "P95Ms": 5.7912,
+      "MedianAllocatedBytes": 1005680,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 418.9856,
+      "P95Ms": 614.2699,
+      "MedianAllocatedBytes": 39609040,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 295.1846,
+      "P95Ms": 307.9185,
+      "MedianAllocatedBytes": 39296544,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.796,
+      "P95Ms": 7.2867,
+      "MedianAllocatedBytes": 1008616,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.9068,
+      "P95Ms": 9.5787,
+      "MedianAllocatedBytes": 1005272,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 357.5568,
+      "P95Ms": 431.5501,
+      "MedianAllocatedBytes": 39113840,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 314.3131,
+      "P95Ms": 371.9781,
+      "MedianAllocatedBytes": 41987264,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 8.2539,
+      "P95Ms": 27.6652,
+      "MedianAllocatedBytes": 1302200,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.7842,
+      "P95Ms": 15.714,
+      "MedianAllocatedBytes": 1291568,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 400.2429,
+      "P95Ms": 570.0295,
+      "MedianAllocatedBytes": 39431144,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 321.6957,
+      "P95Ms": 331.949,
+      "MedianAllocatedBytes": 41985760,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 8.0748,
+      "P95Ms": 16.1626,
+      "MedianAllocatedBytes": 1301112,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 14.1263,
+      "P95Ms": 14.8072,
+      "MedianAllocatedBytes": 1351752,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "caret-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 39.1238,
+      "P95Ms": 73.4576,
+      "MedianAllocatedBytes": 3609312,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 19.78,
+      "P95Ms": 66.2293,
+      "MedianAllocatedBytes": 2674032,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.2725,
+      "P95Ms": 6.94,
+      "MedianAllocatedBytes": 70952,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.6199,
+      "P95Ms": 3.3496,
+      "MedianAllocatedBytes": 66128,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "text-update-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 362.0896,
+      "P95Ms": 562.3323,
+      "MedianAllocatedBytes": 40720024,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 272.9136,
+      "P95Ms": 348.7961,
+      "MedianAllocatedBytes": 42061760,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.8819,
+      "P95Ms": 7.7449,
+      "MedianAllocatedBytes": 2537816,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.6311,
+      "P95Ms": 29.6515,
+      "MedianAllocatedBytes": 2472144,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 358.7011,
+      "P95Ms": 629.5957,
+      "MedianAllocatedBytes": 39112552,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 276.9454,
+      "P95Ms": 323.6123,
+      "MedianAllocatedBytes": 36641664,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.9672,
+      "P95Ms": 5.2285,
+      "MedianAllocatedBytes": 857952,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.7848,
+      "P95Ms": 37.0366,
+      "MedianAllocatedBytes": 854616,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 417.8045,
+      "P95Ms": 585.1894,
+      "MedianAllocatedBytes": 39426432,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 267.4008,
+      "P95Ms": 313.2299,
+      "MedianAllocatedBytes": 39295696,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 7.2018,
+      "P95Ms": 8.0868,
+      "MedianAllocatedBytes": 856872,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.8975,
+      "P95Ms": 5.5333,
+      "MedianAllocatedBytes": 853824,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 405.8256,
+      "P95Ms": 463.9624,
+      "MedianAllocatedBytes": 39386512,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 300.8681,
+      "P95Ms": 320.4809,
+      "MedianAllocatedBytes": 39305584,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.0926,
+      "P95Ms": 7.7109,
+      "MedianAllocatedBytes": 1009160,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.8013,
+      "P95Ms": 28.8595,
+      "MedianAllocatedBytes": 1005792,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 345.5757,
+      "P95Ms": 479.8609,
+      "MedianAllocatedBytes": 39606248,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 276.0117,
+      "P95Ms": 298.2569,
+      "MedianAllocatedBytes": 39303824,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.3946,
+      "P95Ms": 16.8427,
+      "MedianAllocatedBytes": 1008728,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.9306,
+      "P95Ms": 7.6697,
+      "MedianAllocatedBytes": 1005384,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 309.9176,
+      "P95Ms": 371.2796,
+      "MedianAllocatedBytes": 39113424,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 310.1219,
+      "P95Ms": 325.6657,
+      "MedianAllocatedBytes": 41983048,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 8.6805,
+      "P95Ms": 20.5327,
+      "MedianAllocatedBytes": 1302312,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.9368,
+      "P95Ms": 64.3372,
+      "MedianAllocatedBytes": 1291416,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 355.9628,
+      "P95Ms": 432.7153,
+      "MedianAllocatedBytes": 39426144,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 309.5322,
+      "P95Ms": 330.2054,
+      "MedianAllocatedBytes": 41978608,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 8.1724,
+      "P95Ms": 9.3526,
+      "MedianAllocatedBytes": 1301224,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.6138,
+      "P95Ms": 86.0353,
+      "MedianAllocatedBytes": 1290672,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "caret-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 23.4844,
+      "P95Ms": 65.8509,
+      "MedianAllocatedBytes": 3609312,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 17.2434,
+      "P95Ms": 19.149,
+      "MedianAllocatedBytes": 2674032,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.6945,
+      "P95Ms": 3.4425,
+      "MedianAllocatedBytes": 70952,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.3477,
+      "P95Ms": 2.9631,
+      "MedianAllocatedBytes": 66128,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "text-update-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 364.4635,
+      "P95Ms": 409.2103,
+      "MedianAllocatedBytes": 40714648,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 290.3116,
+      "P95Ms": 359.07,
+      "MedianAllocatedBytes": 42069808,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 7.5911,
+      "P95Ms": 16.4191,
+      "MedianAllocatedBytes": 2537928,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.9047,
+      "P95Ms": 72.1932,
+      "MedianAllocatedBytes": 2472256,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "scroll",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 19.6749,
+      "P95Ms": 38.7612,
+      "MedianAllocatedBytes": 2704152,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 19.57,
+      "P95Ms": 40.259,
+      "MedianAllocatedBytes": 2705432,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 18.1079,
+      "P95Ms": 28.8777,
+      "MedianAllocatedBytes": 2787152,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.1101,
+      "P95Ms": 7.5769,
+      "MedianAllocatedBytes": 1497272,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "resize",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 948.4082,
+      "P95Ms": 1031.6364,
+      "MedianAllocatedBytes": 106424136,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 870.6049,
+      "P95Ms": 950.9119,
+      "MedianAllocatedBytes": 106972768,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 18.0092,
+      "P95Ms": 27.309,
+      "MedianAllocatedBytes": 3360456,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 18.8161,
+      "P95Ms": 33.9785,
+      "MedianAllocatedBytes": 2316120,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "replace-all",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 902.6031,
+      "P95Ms": 1005.2446,
+      "MedianAllocatedBytes": 1476169080,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 326.2091,
+      "P95Ms": 360.5529,
+      "MedianAllocatedBytes": 60228192,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 23.2915,
+      "P95Ms": 38.0513,
+      "MedianAllocatedBytes": 22589400,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 39.8399,
+      "P95Ms": 127.7369,
+      "MedianAllocatedBytes": 21668568,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "native-save",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 0.2472,
+      "P95Ms": 0.2537,
+      "MedianAllocatedBytes": 847032,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 0.3498,
+      "P95Ms": 0.4398,
+      "MedianAllocatedBytes": 2107200,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 0.6274,
+      "P95Ms": 1.0004,
+      "MedianAllocatedBytes": 2107200,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 0.4383,
+      "P95Ms": 0.6851,
+      "MedianAllocatedBytes": 2107200,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "native-load",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 0.826,
+      "P95Ms": 1.3311,
+      "MedianAllocatedBytes": 1910600,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 1.2099,
+      "P95Ms": 1.4171,
+      "MedianAllocatedBytes": 3179680,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 1.7488,
+      "P95Ms": 3.9942,
+      "MedianAllocatedBytes": 3179680,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 1.2081,
+      "P95Ms": 1.6146,
+      "MedianAllocatedBytes": 3179680,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "history-100",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 138.2657,
+      "P95Ms": 145.246,
+      "MedianAllocatedBytes": 47960480,
+      "MedianRetainedUndoBytes": 17853800
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 15.0038,
+      "P95Ms": 16.0653,
+      "MedianAllocatedBytes": 1436656,
+      "MedianRetainedUndoBytes": 127072
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 10.481,
+      "P95Ms": 11.3718,
+      "MedianAllocatedBytes": 1436656,
+      "MedianRetainedUndoBytes": 127072
+    },
+    "Current": {
+      "MedianMs": 12.0386,
+      "P95Ms": 14.914,
+      "MedianAllocatedBytes": 1240960,
+      "MedianRetainedUndoBytes": 127072
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "first-viewport",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 58.2014,
+      "P95Ms": 64.9518,
+      "MedianAllocatedBytes": 14722320,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 27.3954,
+      "P95Ms": 35.7391,
+      "MedianAllocatedBytes": 10818216,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 29.8554,
+      "P95Ms": 55.4919,
+      "MedianAllocatedBytes": 11050840,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 14.4749,
+      "P95Ms": 32.3504,
+      "MedianAllocatedBytes": 8053904,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 6.1716,
+      "P95Ms": 25.5187,
+      "MedianAllocatedBytes": 3393296,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.3705,
+      "P95Ms": 11.7008,
+      "MedianAllocatedBytes": 647912,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.8413,
+      "P95Ms": 9.573,
+      "MedianAllocatedBytes": 706936,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.3123,
+      "P95Ms": 25.2967,
+      "MedianAllocatedBytes": 741496,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.6394,
+      "P95Ms": 26.1158,
+      "MedianAllocatedBytes": 3472592,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.6929,
+      "P95Ms": 17.4639,
+      "MedianAllocatedBytes": 646768,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.5479,
+      "P95Ms": 7.7393,
+      "MedianAllocatedBytes": 705504,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.953,
+      "P95Ms": 14.8025,
+      "MedianAllocatedBytes": 740088,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.278,
+      "P95Ms": 30.154,
+      "MedianAllocatedBytes": 3473016,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.0374,
+      "P95Ms": 12.744,
+      "MedianAllocatedBytes": 1382936,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 7.2624,
+      "P95Ms": 20.807,
+      "MedianAllocatedBytes": 1666664,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 22.8805,
+      "P95Ms": 54.5319,
+      "MedianAllocatedBytes": 1113328,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.676,
+      "P95Ms": 25.2136,
+      "MedianAllocatedBytes": 3523712,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 12.3771,
+      "P95Ms": 19.6251,
+      "MedianAllocatedBytes": 1383848,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 9.6718,
+      "P95Ms": 10.7744,
+      "MedianAllocatedBytes": 1664784,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 8.4597,
+      "P95Ms": 24.196,
+      "MedianAllocatedBytes": 1111752,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 6.5661,
+      "P95Ms": 48.0073,
+      "MedianAllocatedBytes": 3497448,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.1614,
+      "P95Ms": 18.4349,
+      "MedianAllocatedBytes": 779080,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.3644,
+      "P95Ms": 9.2408,
+      "MedianAllocatedBytes": 947392,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.6086,
+      "P95Ms": 9.8358,
+      "MedianAllocatedBytes": 787928,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.0428,
+      "P95Ms": 28.1408,
+      "MedianAllocatedBytes": 3520440,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.2536,
+      "P95Ms": 8.8338,
+      "MedianAllocatedBytes": 771064,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.4898,
+      "P95Ms": 22.0708,
+      "MedianAllocatedBytes": 946168,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.1991,
+      "P95Ms": 29.6564,
+      "MedianAllocatedBytes": 786728,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "caret-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.8077,
+      "P95Ms": 16.3057,
+      "MedianAllocatedBytes": 2117584,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.07,
+      "P95Ms": 23.1632,
+      "MedianAllocatedBytes": 979264,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.2424,
+      "P95Ms": 18.9976,
+      "MedianAllocatedBytes": 1261656,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.04,
+      "P95Ms": 31.6819,
+      "MedianAllocatedBytes": 443672,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "text-update-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 36.1626,
+      "P95Ms": 55.3681,
+      "MedianAllocatedBytes": 8158408,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.7851,
+      "P95Ms": 21.0931,
+      "MedianAllocatedBytes": 6313248,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 16.8642,
+      "P95Ms": 23.8613,
+      "MedianAllocatedBytes": 6386952,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.1425,
+      "P95Ms": 41.4943,
+      "MedianAllocatedBytes": 2393376,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.9358,
+      "P95Ms": 20.7748,
+      "MedianAllocatedBytes": 3393144,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.499,
+      "P95Ms": 10.6662,
+      "MedianAllocatedBytes": 648024,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.9978,
+      "P95Ms": 8.8487,
+      "MedianAllocatedBytes": 707048,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.934,
+      "P95Ms": 47.3142,
+      "MedianAllocatedBytes": 741608,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.7504,
+      "P95Ms": 23.2338,
+      "MedianAllocatedBytes": 3472440,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.5835,
+      "P95Ms": 4.3554,
+      "MedianAllocatedBytes": 646616,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.5955,
+      "P95Ms": 8.438,
+      "MedianAllocatedBytes": 705616,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.6174,
+      "P95Ms": 54.6994,
+      "MedianAllocatedBytes": 740200,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 15.1433,
+      "P95Ms": 32.5881,
+      "MedianAllocatedBytes": 3473128,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.675,
+      "P95Ms": 26.3958,
+      "MedianAllocatedBytes": 1383152,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 10.6385,
+      "P95Ms": 22.8403,
+      "MedianAllocatedBytes": 1666776,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.8633,
+      "P95Ms": 54.0742,
+      "MedianAllocatedBytes": 1113296,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 7.0844,
+      "P95Ms": 39.0031,
+      "MedianAllocatedBytes": 3524096,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 15.2999,
+      "P95Ms": 21.0169,
+      "MedianAllocatedBytes": 1386056,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 7.4093,
+      "P95Ms": 8.6075,
+      "MedianAllocatedBytes": 1665000,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.8407,
+      "P95Ms": 6.5374,
+      "MedianAllocatedBytes": 1111600,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 19.0746,
+      "P95Ms": 25.7822,
+      "MedianAllocatedBytes": 3497560,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.437,
+      "P95Ms": 14.3281,
+      "MedianAllocatedBytes": 772352,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.7377,
+      "P95Ms": 9.1246,
+      "MedianAllocatedBytes": 947504,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.2598,
+      "P95Ms": 59.9393,
+      "MedianAllocatedBytes": 788040,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.5125,
+      "P95Ms": 28.186,
+      "MedianAllocatedBytes": 3520552,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 6.5238,
+      "P95Ms": 19.3454,
+      "MedianAllocatedBytes": 771176,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.737,
+      "P95Ms": 6.2692,
+      "MedianAllocatedBytes": 946280,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.7309,
+      "P95Ms": 56.9842,
+      "MedianAllocatedBytes": 786840,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "caret-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.4993,
+      "P95Ms": 14.8744,
+      "MedianAllocatedBytes": 2117584,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.9012,
+      "P95Ms": 20.6622,
+      "MedianAllocatedBytes": 978840,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.2123,
+      "P95Ms": 15.775,
+      "MedianAllocatedBytes": 1261656,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.7573,
+      "P95Ms": 87.2869,
+      "MedianAllocatedBytes": 443672,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "text-update-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 37.7998,
+      "P95Ms": 71.1467,
+      "MedianAllocatedBytes": 8158520,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.9143,
+      "P95Ms": 18.2519,
+      "MedianAllocatedBytes": 6313360,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 12.6056,
+      "P95Ms": 34.4248,
+      "MedianAllocatedBytes": 6385000,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.6693,
+      "P95Ms": 73.3939,
+      "MedianAllocatedBytes": 2393488,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "scroll",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 3.4221,
+      "P95Ms": 6.5745,
+      "MedianAllocatedBytes": 398848,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 6.0894,
+      "P95Ms": 24.673,
+      "MedianAllocatedBytes": 1865168,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 10.8927,
+      "P95Ms": 26.8108,
+      "MedianAllocatedBytes": 2072080,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.219,
+      "P95Ms": 6.4976,
+      "MedianAllocatedBytes": 1335904,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "resize",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 140.437,
+      "P95Ms": 175.7907,
+      "MedianAllocatedBytes": 34305712,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 21.9168,
+      "P95Ms": 40.074,
+      "MedianAllocatedBytes": 5970968,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 16.2856,
+      "P95Ms": 45.6488,
+      "MedianAllocatedBytes": 6443088,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 14.2427,
+      "P95Ms": 102.8585,
+      "MedianAllocatedBytes": 4600888,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "replace-all",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 897.9727,
+      "P95Ms": 984.686,
+      "MedianAllocatedBytes": 1927569584,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 30.34,
+      "P95Ms": 53.29,
+      "MedianAllocatedBytes": 22711096,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 33.5337,
+      "P95Ms": 45.0813,
+      "MedianAllocatedBytes": 22875912,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 64.8174,
+      "P95Ms": 152.2219,
+      "MedianAllocatedBytes": 19065240,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "native-save",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 4.3582,
+      "P95Ms": 7.2199,
+      "MedianAllocatedBytes": 8173472,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.8717,
+      "P95Ms": 20.557,
+      "MedianAllocatedBytes": 8173472,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.1831,
+      "P95Ms": 16.3597,
+      "MedianAllocatedBytes": 8173472,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.1312,
+      "P95Ms": 104.3111,
+      "MedianAllocatedBytes": 8173472,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "native-load",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 8.7968,
+      "P95Ms": 21.5726,
+      "MedianAllocatedBytes": 18042192,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.5201,
+      "P95Ms": 27.9433,
+      "MedianAllocatedBytes": 18161056,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 9.3309,
+      "P95Ms": 25.0516,
+      "MedianAllocatedBytes": 18161056,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 9.6087,
+      "P95Ms": 29.4705,
+      "MedianAllocatedBytes": 18161056,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "history-100",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 156.4805,
+      "P95Ms": 195.053,
+      "MedianAllocatedBytes": 159934408,
+      "MedianRetainedUndoBytes": 11451224
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 20.9066,
+      "P95Ms": 24.6665,
+      "MedianAllocatedBytes": 2575536,
+      "MedianRetainedUndoBytes": 302376
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 28.7705,
+      "P95Ms": 32.0794,
+      "MedianAllocatedBytes": 2575536,
+      "MedianRetainedUndoBytes": 302376
+    },
+    "Current": {
+      "MedianMs": 456.9903,
+      "P95Ms": 502.9837,
+      "MedianAllocatedBytes": 2244776,
+      "MedianRetainedUndoBytes": 299520
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "first-viewport",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 143.5049,
+      "P95Ms": 153.2145,
+      "MedianAllocatedBytes": 26468312,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 25.4634,
+      "P95Ms": 33.9793,
+      "MedianAllocatedBytes": 13686688,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 24.1775,
+      "P95Ms": 45.8796,
+      "MedianAllocatedBytes": 13676344,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 15.2935,
+      "P95Ms": 152.2356,
+      "MedianAllocatedBytes": 8216808,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.2794,
+      "P95Ms": 7.3053,
+      "MedianAllocatedBytes": 2190256,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.972,
+      "P95Ms": 11.1738,
+      "MedianAllocatedBytes": 591776,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.5609,
+      "P95Ms": 14.6977,
+      "MedianAllocatedBytes": 586752,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.4746,
+      "P95Ms": 5.168,
+      "MedianAllocatedBytes": 568344,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-start-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 8.3855,
+      "P95Ms": 20.3999,
+      "MedianAllocatedBytes": 2613560,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.1925,
+      "P95Ms": 6.6739,
+      "MedianAllocatedBytes": 574528,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.9242,
+      "P95Ms": 6.1826,
+      "MedianAllocatedBytes": 569496,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.461,
+      "P95Ms": 5.9686,
+      "MedianAllocatedBytes": 551112,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.4005,
+      "P95Ms": 17.0109,
+      "MedianAllocatedBytes": 2182648,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.8607,
+      "P95Ms": 6.1482,
+      "MedianAllocatedBytes": 593480,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.1812,
+      "P95Ms": 4.4905,
+      "MedianAllocatedBytes": 642336,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.9498,
+      "P95Ms": 4.4665,
+      "MedianAllocatedBytes": 583808,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-middle-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 7.4974,
+      "P95Ms": 10.4455,
+      "MedianAllocatedBytes": 2619280,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.9259,
+      "P95Ms": 6.27,
+      "MedianAllocatedBytes": 592368,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.2895,
+      "P95Ms": 8.0199,
+      "MedianAllocatedBytes": 641848,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.3805,
+      "P95Ms": 5.2746,
+      "MedianAllocatedBytes": 583400,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.139,
+      "P95Ms": 6.7447,
+      "MedianAllocatedBytes": 2188504,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.7396,
+      "P95Ms": 22.2342,
+      "MedianAllocatedBytes": 582824,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.1564,
+      "P95Ms": 8.1449,
+      "MedianAllocatedBytes": 645416,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.9748,
+      "P95Ms": 5.3535,
+      "MedianAllocatedBytes": 552968,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-end-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 6.9443,
+      "P95Ms": 24.1961,
+      "MedianAllocatedBytes": 2622336,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.8965,
+      "P95Ms": 4.2788,
+      "MedianAllocatedBytes": 581712,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.0533,
+      "P95Ms": 6.9806,
+      "MedianAllocatedBytes": 644928,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.0254,
+      "P95Ms": 4.695,
+      "MedianAllocatedBytes": 551872,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "caret-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 12.4277,
+      "P95Ms": 14.2237,
+      "MedianAllocatedBytes": 2004496,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.0754,
+      "P95Ms": 5.5209,
+      "MedianAllocatedBytes": 87008,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.4448,
+      "P95Ms": 4.0686,
+      "MedianAllocatedBytes": 64696,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.7843,
+      "P95Ms": 4.1722,
+      "MedianAllocatedBytes": 53576,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "text-update-unbound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 55.4057,
+      "P95Ms": 91.2167,
+      "MedianAllocatedBytes": 4114080,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 15.749,
+      "P95Ms": 18.5179,
+      "MedianAllocatedBytes": 7840624,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 13.5618,
+      "P95Ms": 17.0091,
+      "MedianAllocatedBytes": 7857664,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.74,
+      "P95Ms": 6.2574,
+      "MedianAllocatedBytes": 1245256,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.6468,
+      "P95Ms": 7.5115,
+      "MedianAllocatedBytes": 2190368,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.1805,
+      "P95Ms": 18.0795,
+      "MedianAllocatedBytes": 591888,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.5777,
+      "P95Ms": 6.2153,
+      "MedianAllocatedBytes": 586864,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.4477,
+      "P95Ms": 5.9946,
+      "MedianAllocatedBytes": 568456,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-start-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 7.4684,
+      "P95Ms": 32.037,
+      "MedianAllocatedBytes": 2613672,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.9961,
+      "P95Ms": 4.1763,
+      "MedianAllocatedBytes": 574640,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.192,
+      "P95Ms": 4.2481,
+      "MedianAllocatedBytes": 569608,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.0659,
+      "P95Ms": 53.2444,
+      "MedianAllocatedBytes": 551224,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.6009,
+      "P95Ms": 7.2472,
+      "MedianAllocatedBytes": 2182760,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.9893,
+      "P95Ms": 4.8552,
+      "MedianAllocatedBytes": 593592,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.0348,
+      "P95Ms": 7.5723,
+      "MedianAllocatedBytes": 642448,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.2065,
+      "P95Ms": 9.9504,
+      "MedianAllocatedBytes": 583920,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-middle-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 7.9218,
+      "P95Ms": 20.6862,
+      "MedianAllocatedBytes": 2619392,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.8657,
+      "P95Ms": 11.9593,
+      "MedianAllocatedBytes": 592480,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.4087,
+      "P95Ms": 5.0373,
+      "MedianAllocatedBytes": 641960,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.2983,
+      "P95Ms": 4.54,
+      "MedianAllocatedBytes": 583512,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 5.3992,
+      "P95Ms": 17.3926,
+      "MedianAllocatedBytes": 2188616,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.3022,
+      "P95Ms": 6.6181,
+      "MedianAllocatedBytes": 582936,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.4308,
+      "P95Ms": 5.1888,
+      "MedianAllocatedBytes": 645528,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.3173,
+      "P95Ms": 6.4735,
+      "MedianAllocatedBytes": 553080,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-end-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 7.28,
+      "P95Ms": 10.5925,
+      "MedianAllocatedBytes": 2622448,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.0389,
+      "P95Ms": 10.9124,
+      "MedianAllocatedBytes": 581824,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.4654,
+      "P95Ms": 5.5223,
+      "MedianAllocatedBytes": 645040,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.9649,
+      "P95Ms": 4.2728,
+      "MedianAllocatedBytes": 551984,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "caret-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 12.1404,
+      "P95Ms": 14.5337,
+      "MedianAllocatedBytes": 2004496,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.451,
+      "P95Ms": 17.9152,
+      "MedianAllocatedBytes": 87008,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.5883,
+      "P95Ms": 3.9916,
+      "MedianAllocatedBytes": 64696,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.9023,
+      "P95Ms": 104.2449,
+      "MedianAllocatedBytes": 53576,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "text-update-bound",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 59.1475,
+      "P95Ms": 85.2981,
+      "MedianAllocatedBytes": 4114192,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 12.2739,
+      "P95Ms": 13.4614,
+      "MedianAllocatedBytes": 7840952,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 13.2996,
+      "P95Ms": 24.9378,
+      "MedianAllocatedBytes": 7857776,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.6045,
+      "P95Ms": 6.9471,
+      "MedianAllocatedBytes": 1245368,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "scroll",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 3.2977,
+      "P95Ms": 4.5972,
+      "MedianAllocatedBytes": 155848,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.483,
+      "P95Ms": 11.2203,
+      "MedianAllocatedBytes": 1371208,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 7.1243,
+      "P95Ms": 12.2529,
+      "MedianAllocatedBytes": 1332312,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.2727,
+      "P95Ms": 73.9082,
+      "MedianAllocatedBytes": 774592,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "resize",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 315.5155,
+      "P95Ms": 413.2369,
+      "MedianAllocatedBytes": 52521168,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 13.8062,
+      "P95Ms": 19.4505,
+      "MedianAllocatedBytes": 2109552,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 14.7157,
+      "P95Ms": 22.0418,
+      "MedianAllocatedBytes": 2077432,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 10.9423,
+      "P95Ms": 59.9501,
+      "MedianAllocatedBytes": 1365608,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "replace-all",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 257.6887,
+      "P95Ms": 283.3012,
+      "MedianAllocatedBytes": 207178120,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 16.2361,
+      "P95Ms": 21.8885,
+      "MedianAllocatedBytes": 12336120,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 17.966,
+      "P95Ms": 23.3352,
+      "MedianAllocatedBytes": 12325160,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 26.997,
+      "P95Ms": 194.9281,
+      "MedianAllocatedBytes": 9511648,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "native-save",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 15.1787,
+      "P95Ms": 15.8555,
+      "MedianAllocatedBytes": 18497728,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 11.2495,
+      "P95Ms": 28.0409,
+      "MedianAllocatedBytes": 18498448,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 11.8424,
+      "P95Ms": 14.104,
+      "MedianAllocatedBytes": 18497728,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 17.8193,
+      "P95Ms": 131.1114,
+      "MedianAllocatedBytes": 18497728,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "native-load",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 23.428,
+      "P95Ms": 36.9526,
+      "MedianAllocatedBytes": 40789832,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 23.2898,
+      "P95Ms": 40.4876,
+      "MedianAllocatedBytes": 41349896,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 20.4635,
+      "P95Ms": 23.1503,
+      "MedianAllocatedBytes": 41349896,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 39.1941,
+      "P95Ms": 120.6687,
+      "MedianAllocatedBytes": 41349896,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "history-100",
+    "TextMode": "compatibility",
+    "Phase1Compatibility": {
+      "MedianMs": 256.1281,
+      "P95Ms": 286.6926,
+      "MedianAllocatedBytes": 170628280,
+      "MedianRetainedUndoBytes": 491504
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 32.5315,
+      "P95Ms": 39.0189,
+      "MedianAllocatedBytes": 10074736,
+      "MedianRetainedUndoBytes": 927528
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 26.9557,
+      "P95Ms": 32.6192,
+      "MedianAllocatedBytes": 10074736,
+      "MedianRetainedUndoBytes": 927528
+    },
+    "Current": {
+      "MedianMs": 70.962,
+      "P95Ms": 88.923,
+      "MedianAllocatedBytes": 9448752,
+      "MedianRetainedUndoBytes": 927528
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "first-viewport",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 80.5477,
+      "P95Ms": 91.8391,
+      "MedianAllocatedBytes": 15512296,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 36.4587,
+      "P95Ms": 57.4906,
+      "MedianAllocatedBytes": 6656648,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 35.0448,
+      "P95Ms": 51.5236,
+      "MedianAllocatedBytes": 6739648,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 28.8958,
+      "P95Ms": 49.9275,
+      "MedianAllocatedBytes": 5013280,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 4.0878,
+      "P95Ms": 11.4688,
+      "MedianAllocatedBytes": 251720,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 10.3045,
+      "P95Ms": 11.187,
+      "MedianAllocatedBytes": 270072,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 11.4558,
+      "P95Ms": 12.8561,
+      "MedianAllocatedBytes": 302304,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.0878,
+      "P95Ms": 4.4263,
+      "MedianAllocatedBytes": 132824,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 4.4647,
+      "P95Ms": 6.6463,
+      "MedianAllocatedBytes": 289360,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.8505,
+      "P95Ms": 6.1808,
+      "MedianAllocatedBytes": 262952,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.2455,
+      "P95Ms": 7.2067,
+      "MedianAllocatedBytes": 294992,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.6508,
+      "P95Ms": 3.7304,
+      "MedianAllocatedBytes": 94864,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 6.1712,
+      "P95Ms": 6.7341,
+      "MedianAllocatedBytes": 300912,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.6029,
+      "P95Ms": 5.2398,
+      "MedianAllocatedBytes": 282152,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.0088,
+      "P95Ms": 6.5396,
+      "MedianAllocatedBytes": 337976,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.8985,
+      "P95Ms": 4.3588,
+      "MedianAllocatedBytes": 112144,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 3.9654,
+      "P95Ms": 4.7118,
+      "MedianAllocatedBytes": 290960,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 10.038,
+      "P95Ms": 10.71,
+      "MedianAllocatedBytes": 271968,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 10.5228,
+      "P95Ms": 13.4815,
+      "MedianAllocatedBytes": 327568,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.477,
+      "P95Ms": 3.7236,
+      "MedianAllocatedBytes": 106496,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "type-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 6.4838,
+      "P95Ms": 7.3129,
+      "MedianAllocatedBytes": 305928,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.7386,
+      "P95Ms": 9.8337,
+      "MedianAllocatedBytes": 159000,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.0328,
+      "P95Ms": 16.0224,
+      "MedianAllocatedBytes": 170072,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.6661,
+      "P95Ms": 9.5124,
+      "MedianAllocatedBytes": 97048,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "delete-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 4.169,
+      "P95Ms": 4.2956,
+      "MedianAllocatedBytes": 293392,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.6226,
+      "P95Ms": 3.9816,
+      "MedianAllocatedBytes": 123816,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.2895,
+      "P95Ms": 11.3426,
+      "MedianAllocatedBytes": 159944,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.5852,
+      "P95Ms": 5.3717,
+      "MedianAllocatedBytes": 90024,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "caret-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 3.7723,
+      "P95Ms": 5.8942,
+      "MedianAllocatedBytes": 216840,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.6958,
+      "P95Ms": 3.823,
+      "MedianAllocatedBytes": 57328,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.6904,
+      "P95Ms": 3.8147,
+      "MedianAllocatedBytes": 96240,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.6267,
+      "P95Ms": 3.5401,
+      "MedianAllocatedBytes": 26520,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "text-update-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 10.7206,
+      "P95Ms": 16.8751,
+      "MedianAllocatedBytes": 903424,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 6.8665,
+      "P95Ms": 13.522,
+      "MedianAllocatedBytes": 920944,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 10.417,
+      "P95Ms": 20.7844,
+      "MedianAllocatedBytes": 991304,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.043,
+      "P95Ms": 9.4999,
+      "MedianAllocatedBytes": 471304,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "scroll",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 3.3042,
+      "P95Ms": 4.8568,
+      "MedianAllocatedBytes": 85128,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.4861,
+      "P95Ms": 14.4354,
+      "MedianAllocatedBytes": 416112,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 8.2351,
+      "P95Ms": 16.3822,
+      "MedianAllocatedBytes": 538552,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 12.5727,
+      "P95Ms": 13.4727,
+      "MedianAllocatedBytes": 332744,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "resize",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 30.1912,
+      "P95Ms": 37.526,
+      "MedianAllocatedBytes": 2623056,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.9107,
+      "P95Ms": 15.8193,
+      "MedianAllocatedBytes": 777160,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 9.4899,
+      "P95Ms": 10.6031,
+      "MedianAllocatedBytes": 924584,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 14.8819,
+      "P95Ms": 20.1261,
+      "MedianAllocatedBytes": 575512,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "replace-all",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 3.3194,
+      "P95Ms": 4.3925,
+      "MedianAllocatedBytes": 327384,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.6422,
+      "P95Ms": 2.7704,
+      "MedianAllocatedBytes": 216728,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.8571,
+      "P95Ms": 11.0907,
+      "MedianAllocatedBytes": 248880,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.5737,
+      "P95Ms": 6.312,
+      "MedianAllocatedBytes": 186456,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "native-save",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 0.8784,
+      "P95Ms": 0.9952,
+      "MedianAllocatedBytes": 551352,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 0.7681,
+      "P95Ms": 0.8561,
+      "MedianAllocatedBytes": 551352,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 0.6684,
+      "P95Ms": 0.9437,
+      "MedianAllocatedBytes": 551352,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 0.8679,
+      "P95Ms": 1.4306,
+      "MedianAllocatedBytes": 551352,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "native-load",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 1.6579,
+      "P95Ms": 3.2976,
+      "MedianAllocatedBytes": 1082528,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 1.662,
+      "P95Ms": 2.3879,
+      "MedianAllocatedBytes": 1088192,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 1.9033,
+      "P95Ms": 2.3074,
+      "MedianAllocatedBytes": 1088192,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 1.7516,
+      "P95Ms": 3.5671,
+      "MedianAllocatedBytes": 1088192,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-100",
+    "Operation": "history-100",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 28.8036,
+      "P95Ms": 41.0399,
+      "MedianAllocatedBytes": 16102784,
+      "MedianRetainedUndoBytes": 124336
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.9566,
+      "P95Ms": 8.3708,
+      "MedianAllocatedBytes": 2438880,
+      "MedianRetainedUndoBytes": 205384
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 11.6516,
+      "P95Ms": 12.1197,
+      "MedianAllocatedBytes": 2438880,
+      "MedianRetainedUndoBytes": 205384
+    },
+    "Current": {
+      "MedianMs": 21.1506,
+      "P95Ms": 24.0288,
+      "MedianAllocatedBytes": 2179184,
+      "MedianRetainedUndoBytes": 205384
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "first-viewport",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 83.7029,
+      "P95Ms": 93.2668,
+      "MedianAllocatedBytes": 13563736,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 17.3969,
+      "P95Ms": 25.9572,
+      "MedianAllocatedBytes": 6393944,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 29.3737,
+      "P95Ms": 34.2457,
+      "MedianAllocatedBytes": 6476688,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 27.0712,
+      "P95Ms": 40.6122,
+      "MedianAllocatedBytes": 4152120,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 5.0326,
+      "P95Ms": 16.0041,
+      "MedianAllocatedBytes": 2091200,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.0289,
+      "P95Ms": 3.8391,
+      "MedianAllocatedBytes": 458408,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.0678,
+      "P95Ms": 5.1481,
+      "MedianAllocatedBytes": 490376,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.1284,
+      "P95Ms": 10.2197,
+      "MedianAllocatedBytes": 99272,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 5.9176,
+      "P95Ms": 26.447,
+      "MedianAllocatedBytes": 2478296,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.8988,
+      "P95Ms": 16.9281,
+      "MedianAllocatedBytes": 456824,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.4871,
+      "P95Ms": 5.1405,
+      "MedianAllocatedBytes": 488864,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.8978,
+      "P95Ms": 4.9941,
+      "MedianAllocatedBytes": 98056,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 6.6457,
+      "P95Ms": 21.1968,
+      "MedianAllocatedBytes": 2336560,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.9872,
+      "P95Ms": 5.3573,
+      "MedianAllocatedBytes": 476032,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.3802,
+      "P95Ms": 6.0701,
+      "MedianAllocatedBytes": 531216,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.2029,
+      "P95Ms": 7.264,
+      "MedianAllocatedBytes": 114816,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 15.9893,
+      "P95Ms": 22.2712,
+      "MedianAllocatedBytes": 2504992,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.9176,
+      "P95Ms": 4.9669,
+      "MedianAllocatedBytes": 472744,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.8079,
+      "P95Ms": 10.4719,
+      "MedianAllocatedBytes": 530600,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.815,
+      "P95Ms": 8.4625,
+      "MedianAllocatedBytes": 111696,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "type-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 5.7984,
+      "P95Ms": 20.3381,
+      "MedianAllocatedBytes": 2393072,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.9997,
+      "P95Ms": 4.2224,
+      "MedianAllocatedBytes": 460096,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.7691,
+      "P95Ms": 6.653,
+      "MedianAllocatedBytes": 498656,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.9562,
+      "P95Ms": 4.933,
+      "MedianAllocatedBytes": 101640,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "delete-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 6.3221,
+      "P95Ms": 29.9099,
+      "MedianAllocatedBytes": 2535088,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.1019,
+      "P95Ms": 3.9413,
+      "MedianAllocatedBytes": 454184,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.3915,
+      "P95Ms": 4.5305,
+      "MedianAllocatedBytes": 492248,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.8343,
+      "P95Ms": 6.591,
+      "MedianAllocatedBytes": 95528,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "caret-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 11.8015,
+      "P95Ms": 25.6804,
+      "MedianAllocatedBytes": 2165120,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.6525,
+      "P95Ms": 3.5884,
+      "MedianAllocatedBytes": 56568,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.0562,
+      "P95Ms": 5.3178,
+      "MedianAllocatedBytes": 95480,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.8148,
+      "P95Ms": 7.1194,
+      "MedianAllocatedBytes": 25928,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "text-update-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 63.9304,
+      "P95Ms": 83.9582,
+      "MedianAllocatedBytes": 14527040,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 19.676,
+      "P95Ms": 25.8494,
+      "MedianAllocatedBytes": 6768400,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 25.7026,
+      "P95Ms": 32.3183,
+      "MedianAllocatedBytes": 6824728,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 8.8764,
+      "P95Ms": 28.4164,
+      "MedianAllocatedBytes": 2692200,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "scroll",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 3.3615,
+      "P95Ms": 24.1156,
+      "MedianAllocatedBytes": 230912,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.0658,
+      "P95Ms": 13.5451,
+      "MedianAllocatedBytes": 417352,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.9054,
+      "P95Ms": 8.7631,
+      "MedianAllocatedBytes": 536336,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.8496,
+      "P95Ms": 6.3201,
+      "MedianAllocatedBytes": 323000,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "resize",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 189.3313,
+      "P95Ms": 220.2216,
+      "MedianAllocatedBytes": 25163248,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.7542,
+      "P95Ms": 17.8498,
+      "MedianAllocatedBytes": 1940072,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 9.6918,
+      "P95Ms": 26.8817,
+      "MedianAllocatedBytes": 2087232,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 11.7797,
+      "P95Ms": 18.2016,
+      "MedianAllocatedBytes": 575320,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "replace-all",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 26.2148,
+      "P95Ms": 40.4532,
+      "MedianAllocatedBytes": 18062688,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.7499,
+      "P95Ms": 19.2493,
+      "MedianAllocatedBytes": 1650320,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 12.873,
+      "P95Ms": 21.3783,
+      "MedianAllocatedBytes": 1687048,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.4568,
+      "P95Ms": 5.5741,
+      "MedianAllocatedBytes": 1212384,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "native-save",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 3.8934,
+      "P95Ms": 4.3297,
+      "MedianAllocatedBytes": 5498448,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.5053,
+      "P95Ms": 10.6221,
+      "MedianAllocatedBytes": 5498448,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.4653,
+      "P95Ms": 12.1333,
+      "MedianAllocatedBytes": 5498448,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.7861,
+      "P95Ms": 23.1844,
+      "MedianAllocatedBytes": 5498448,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "native-load",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 19.2951,
+      "P95Ms": 32.4651,
+      "MedianAllocatedBytes": 11385176,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 16.5502,
+      "P95Ms": 19.4149,
+      "MedianAllocatedBytes": 11441240,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 19.756,
+      "P95Ms": 30.1987,
+      "MedianAllocatedBytes": 11442496,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 24.3522,
+      "P95Ms": 29.3922,
+      "MedianAllocatedBytes": 11441240,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-1000",
+    "Operation": "history-100",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 197.9109,
+      "P95Ms": 214.6682,
+      "MedianAllocatedBytes": 154957168,
+      "MedianRetainedUndoBytes": 837136
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.5594,
+      "P95Ms": 9.012,
+      "MedianAllocatedBytes": 3417088,
+      "MedianRetainedUndoBytes": 256992
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 16.3625,
+      "P95Ms": 17.8404,
+      "MedianAllocatedBytes": 3417088,
+      "MedianRetainedUndoBytes": 256992
+    },
+    "Current": {
+      "MedianMs": 37.1589,
+      "P95Ms": 47.7397,
+      "MedianAllocatedBytes": 3085072,
+      "MedianRetainedUndoBytes": 256992
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "first-viewport",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 776.1045,
+      "P95Ms": 923.4962,
+      "MedianAllocatedBytes": 140467392,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 66.3335,
+      "P95Ms": 109.057,
+      "MedianAllocatedBytes": 42380152,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 73.7366,
+      "P95Ms": 116.9716,
+      "MedianAllocatedBytes": 42463312,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 42.2721,
+      "P95Ms": 93.2549,
+      "MedianAllocatedBytes": 20773424,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 24.8738,
+      "P95Ms": 42.6637,
+      "MedianAllocatedBytes": 21009784,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.3046,
+      "P95Ms": 11.285,
+      "MedianAllocatedBytes": 3723944,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.974,
+      "P95Ms": 15.0529,
+      "MedianAllocatedBytes": 3756176,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.635,
+      "P95Ms": 2.9163,
+      "MedianAllocatedBytes": 104824,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 49.3892,
+      "P95Ms": 92.1778,
+      "MedianAllocatedBytes": 24891328,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.2833,
+      "P95Ms": 13.4865,
+      "MedianAllocatedBytes": 3722536,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.5606,
+      "P95Ms": 11.5168,
+      "MedianAllocatedBytes": 3754576,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.617,
+      "P95Ms": 3.8036,
+      "MedianAllocatedBytes": 103344,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 36.9463,
+      "P95Ms": 56.0266,
+      "MedianAllocatedBytes": 23270768,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.3091,
+      "P95Ms": 12.0676,
+      "MedianAllocatedBytes": 3742152,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.3326,
+      "P95Ms": 12.5899,
+      "MedianAllocatedBytes": 3797600,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.5214,
+      "P95Ms": 4.2473,
+      "MedianAllocatedBytes": 117744,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 48.0599,
+      "P95Ms": 92.7899,
+      "MedianAllocatedBytes": 25169760,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.115,
+      "P95Ms": 11.9467,
+      "MedianAllocatedBytes": 3738512,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.8975,
+      "P95Ms": 5.2487,
+      "MedianAllocatedBytes": 3794272,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.0055,
+      "P95Ms": 4.8989,
+      "MedianAllocatedBytes": 114624,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "type-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 27.6636,
+      "P95Ms": 101.5042,
+      "MedianAllocatedBytes": 23831344,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.0629,
+      "P95Ms": 12.3271,
+      "MedianAllocatedBytes": 3725896,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.3753,
+      "P95Ms": 5.0121,
+      "MedianAllocatedBytes": 3764192,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.8965,
+      "P95Ms": 4.9873,
+      "MedianAllocatedBytes": 109816,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "delete-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 52.182,
+      "P95Ms": 79.4343,
+      "MedianAllocatedBytes": 25449760,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.3859,
+      "P95Ms": 12.0217,
+      "MedianAllocatedBytes": 3719896,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.7359,
+      "P95Ms": 12.7868,
+      "MedianAllocatedBytes": 3757960,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.6307,
+      "P95Ms": 3.4743,
+      "MedianAllocatedBytes": 103704,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "caret-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 101.9554,
+      "P95Ms": 126.784,
+      "MedianAllocatedBytes": 21238872,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 2.4736,
+      "P95Ms": 2.8265,
+      "MedianAllocatedBytes": 56472,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.4349,
+      "P95Ms": 3.4602,
+      "MedianAllocatedBytes": 95384,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.2863,
+      "P95Ms": 2.5854,
+      "MedianAllocatedBytes": 25832,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "text-update-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 1087.4176,
+      "P95Ms": 1513.5802,
+      "MedianAllocatedBytes": 146701240,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 120.679,
+      "P95Ms": 151.4456,
+      "MedianAllocatedBytes": 65623432,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 119.2601,
+      "P95Ms": 169.7839,
+      "MedianAllocatedBytes": 66342808,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 52.5129,
+      "P95Ms": 63.1022,
+      "MedianAllocatedBytes": 25817520,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "scroll",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 4.4624,
+      "P95Ms": 28.8636,
+      "MedianAllocatedBytes": 1742336,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.0292,
+      "P95Ms": 5.1685,
+      "MedianAllocatedBytes": 415928,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.48,
+      "P95Ms": 34.5419,
+      "MedianAllocatedBytes": 535280,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.2361,
+      "P95Ms": 4.4549,
+      "MedianAllocatedBytes": 324896,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "resize",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 2795.8909,
+      "P95Ms": 3782.8073,
+      "MedianAllocatedBytes": 252328480,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 24.4752,
+      "P95Ms": 70.9943,
+      "MedianAllocatedBytes": 15135368,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 29.5676,
+      "P95Ms": 43.7503,
+      "MedianAllocatedBytes": 15282792,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.2301,
+      "P95Ms": 32.0465,
+      "MedianAllocatedBytes": 580112,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "replace-all",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 1881.2096,
+      "P95Ms": 1968.2368,
+      "MedianAllocatedBytes": 1748651576,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 25.9406,
+      "P95Ms": 41.61,
+      "MedianAllocatedBytes": 15747288,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 23.9081,
+      "P95Ms": 54.6546,
+      "MedianAllocatedBytes": 15779600,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 21.4627,
+      "P95Ms": 32.8157,
+      "MedianAllocatedBytes": 11700896,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "native-save",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 40.9879,
+      "P95Ms": 48.1003,
+      "MedianAllocatedBytes": 54809280,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 43.0152,
+      "P95Ms": 62.1919,
+      "MedianAllocatedBytes": 54809280,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 59.5817,
+      "P95Ms": 90.6834,
+      "MedianAllocatedBytes": 54809256,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 40.1568,
+      "P95Ms": 96.2037,
+      "MedianAllocatedBytes": 54809280,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "native-load",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 101.7406,
+      "P95Ms": 107.7509,
+      "MedianAllocatedBytes": 129447056,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 82.1305,
+      "P95Ms": 103.8595,
+      "MedianAllocatedBytes": 130014016,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 106.5347,
+      "P95Ms": 123.5544,
+      "MedianAllocatedBytes": 130014016,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 129.0559,
+      "P95Ms": 159.8721,
+      "MedianAllocatedBytes": 130007128,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "paragraphs-10000",
+    "Operation": "history-100",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 2818.4207,
+      "P95Ms": 3022.4314,
+      "MedianAllocatedBytes": 1594349736,
+      "MedianRetainedUndoBytes": 7965136
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 25.5555,
+      "P95Ms": 29.5354,
+      "MedianAllocatedBytes": 3659656,
+      "MedianRetainedUndoBytes": 313904
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 32.4169,
+      "P95Ms": 35.9635,
+      "MedianAllocatedBytes": 3659656,
+      "MedianRetainedUndoBytes": 313904
+    },
+    "Current": {
+      "MedianMs": 145.2719,
+      "P95Ms": 176.8604,
+      "MedianAllocatedBytes": 3244120,
+      "MedianRetainedUndoBytes": 313904
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "first-viewport",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 352.1674,
+      "P95Ms": 641.3931,
+      "MedianAllocatedBytes": 38410720,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 271.5372,
+      "P95Ms": 310.7619,
+      "MedianAllocatedBytes": 39413984,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 11.442,
+      "P95Ms": 27.0646,
+      "MedianAllocatedBytes": 4110096,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 10.9245,
+      "P95Ms": 33.4843,
+      "MedianAllocatedBytes": 3879568,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 381.624,
+      "P95Ms": 586.3413,
+      "MedianAllocatedBytes": 39113376,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 261.2982,
+      "P95Ms": 311.3566,
+      "MedianAllocatedBytes": 36638656,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.9681,
+      "P95Ms": 12.8026,
+      "MedianAllocatedBytes": 857840,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.6208,
+      "P95Ms": 50.2822,
+      "MedianAllocatedBytes": 680272,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 354.8839,
+      "P95Ms": 422.8647,
+      "MedianAllocatedBytes": 39427904,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 285.5259,
+      "P95Ms": 317.0434,
+      "MedianAllocatedBytes": 39296096,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.1416,
+      "P95Ms": 11.1589,
+      "MedianAllocatedBytes": 856760,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.0004,
+      "P95Ms": 39.8341,
+      "MedianAllocatedBytes": 673176,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 563.4956,
+      "P95Ms": 657.2487,
+      "MedianAllocatedBytes": 39392688,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 287.2204,
+      "P95Ms": 333.7902,
+      "MedianAllocatedBytes": 39300728,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.9011,
+      "P95Ms": 16.6558,
+      "MedianAllocatedBytes": 1009312,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.0695,
+      "P95Ms": 7.9915,
+      "MedianAllocatedBytes": 825408,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 418.9856,
+      "P95Ms": 614.2699,
+      "MedianAllocatedBytes": 39609040,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 295.1846,
+      "P95Ms": 307.9185,
+      "MedianAllocatedBytes": 39296544,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.796,
+      "P95Ms": 7.2867,
+      "MedianAllocatedBytes": 1008616,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.0167,
+      "P95Ms": 40.0939,
+      "MedianAllocatedBytes": 825264,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "type-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 357.5568,
+      "P95Ms": 431.5501,
+      "MedianAllocatedBytes": 39113840,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 314.3131,
+      "P95Ms": 371.9781,
+      "MedianAllocatedBytes": 41987264,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 8.2539,
+      "P95Ms": 27.6652,
+      "MedianAllocatedBytes": 1302200,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.5008,
+      "P95Ms": 46.9942,
+      "MedianAllocatedBytes": 1111032,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "delete-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 400.2429,
+      "P95Ms": 570.0295,
+      "MedianAllocatedBytes": 39431144,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 321.6957,
+      "P95Ms": 331.949,
+      "MedianAllocatedBytes": 41985760,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 8.0748,
+      "P95Ms": 16.1626,
+      "MedianAllocatedBytes": 1301112,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 10.8394,
+      "P95Ms": 53.4594,
+      "MedianAllocatedBytes": 1110288,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "caret-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 39.1238,
+      "P95Ms": 73.4576,
+      "MedianAllocatedBytes": 3609312,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 19.78,
+      "P95Ms": 66.2293,
+      "MedianAllocatedBytes": 2674032,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 2.2725,
+      "P95Ms": 6.94,
+      "MedianAllocatedBytes": 70952,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.872,
+      "P95Ms": 3.3001,
+      "MedianAllocatedBytes": 66128,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "text-update-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 362.0896,
+      "P95Ms": 562.3323,
+      "MedianAllocatedBytes": 40720024,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 272.9136,
+      "P95Ms": 348.7961,
+      "MedianAllocatedBytes": 42061760,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.8819,
+      "P95Ms": 7.7449,
+      "MedianAllocatedBytes": 2537816,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.3257,
+      "P95Ms": 58.0581,
+      "MedianAllocatedBytes": 2292040,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "scroll",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 19.6749,
+      "P95Ms": 38.7612,
+      "MedianAllocatedBytes": 2704152,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 19.57,
+      "P95Ms": 40.259,
+      "MedianAllocatedBytes": 2705432,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 18.1079,
+      "P95Ms": 28.8777,
+      "MedianAllocatedBytes": 2787152,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 11.4952,
+      "P95Ms": 50.4156,
+      "MedianAllocatedBytes": 1497272,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "resize",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 948.4082,
+      "P95Ms": 1031.6364,
+      "MedianAllocatedBytes": 106424136,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 870.6049,
+      "P95Ms": 950.9119,
+      "MedianAllocatedBytes": 106972768,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 18.0092,
+      "P95Ms": 27.309,
+      "MedianAllocatedBytes": 3360456,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 29.6436,
+      "P95Ms": 55.9684,
+      "MedianAllocatedBytes": 2316000,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "replace-all",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 902.6031,
+      "P95Ms": 1005.2446,
+      "MedianAllocatedBytes": 1476169080,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 326.2091,
+      "P95Ms": 360.5529,
+      "MedianAllocatedBytes": 60228192,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 23.2915,
+      "P95Ms": 38.0513,
+      "MedianAllocatedBytes": 22589400,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 34.7838,
+      "P95Ms": 42.8717,
+      "MedianAllocatedBytes": 21473656,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "native-save",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 0.2472,
+      "P95Ms": 0.2537,
+      "MedianAllocatedBytes": 847032,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 0.3498,
+      "P95Ms": 0.4398,
+      "MedianAllocatedBytes": 2107200,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 0.6274,
+      "P95Ms": 1.0004,
+      "MedianAllocatedBytes": 2107200,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 0.5045,
+      "P95Ms": 0.5724,
+      "MedianAllocatedBytes": 2107200,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "native-load",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 0.826,
+      "P95Ms": 1.3311,
+      "MedianAllocatedBytes": 1910600,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 1.2099,
+      "P95Ms": 1.4171,
+      "MedianAllocatedBytes": 3179680,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 1.7488,
+      "P95Ms": 3.9942,
+      "MedianAllocatedBytes": 3179680,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 1.4425,
+      "P95Ms": 1.7976,
+      "MedianAllocatedBytes": 3179680,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "long-paragraph",
+    "Operation": "history-100",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 138.2657,
+      "P95Ms": 145.246,
+      "MedianAllocatedBytes": 47960480,
+      "MedianRetainedUndoBytes": 17853800
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 15.0038,
+      "P95Ms": 16.0653,
+      "MedianAllocatedBytes": 1436656,
+      "MedianRetainedUndoBytes": 127072
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 10.481,
+      "P95Ms": 11.3718,
+      "MedianAllocatedBytes": 1436656,
+      "MedianRetainedUndoBytes": 127072
+    },
+    "Current": {
+      "MedianMs": 20.3839,
+      "P95Ms": 24.2122,
+      "MedianAllocatedBytes": 1240960,
+      "MedianRetainedUndoBytes": 127072
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "first-viewport",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 58.2014,
+      "P95Ms": 64.9518,
+      "MedianAllocatedBytes": 14722320,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 27.3954,
+      "P95Ms": 35.7391,
+      "MedianAllocatedBytes": 10818216,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 29.8554,
+      "P95Ms": 55.4919,
+      "MedianAllocatedBytes": 11050840,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 21.6751,
+      "P95Ms": 48.5992,
+      "MedianAllocatedBytes": 7845696,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 6.1716,
+      "P95Ms": 25.5187,
+      "MedianAllocatedBytes": 3393296,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.3705,
+      "P95Ms": 11.7008,
+      "MedianAllocatedBytes": 647912,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.8413,
+      "P95Ms": 9.573,
+      "MedianAllocatedBytes": 706936,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.866,
+      "P95Ms": 16.4332,
+      "MedianAllocatedBytes": 533216,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 5.6394,
+      "P95Ms": 26.1158,
+      "MedianAllocatedBytes": 3472592,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.6929,
+      "P95Ms": 17.4639,
+      "MedianAllocatedBytes": 646768,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.5479,
+      "P95Ms": 7.7393,
+      "MedianAllocatedBytes": 705504,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.9192,
+      "P95Ms": 5.4277,
+      "MedianAllocatedBytes": 531808,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 5.278,
+      "P95Ms": 30.154,
+      "MedianAllocatedBytes": 3473016,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.0374,
+      "P95Ms": 12.744,
+      "MedianAllocatedBytes": 1382936,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 7.2624,
+      "P95Ms": 20.807,
+      "MedianAllocatedBytes": 1666664,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.1156,
+      "P95Ms": 19.0309,
+      "MedianAllocatedBytes": 904904,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 5.676,
+      "P95Ms": 25.2136,
+      "MedianAllocatedBytes": 3523712,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 12.3771,
+      "P95Ms": 19.6251,
+      "MedianAllocatedBytes": 1383848,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 9.6718,
+      "P95Ms": 10.7744,
+      "MedianAllocatedBytes": 1664784,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.8583,
+      "P95Ms": 7.402,
+      "MedianAllocatedBytes": 903208,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "type-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 6.5661,
+      "P95Ms": 48.0073,
+      "MedianAllocatedBytes": 3497448,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.1614,
+      "P95Ms": 18.4349,
+      "MedianAllocatedBytes": 779080,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.3644,
+      "P95Ms": 9.2408,
+      "MedianAllocatedBytes": 947392,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.1847,
+      "P95Ms": 25.548,
+      "MedianAllocatedBytes": 579648,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "delete-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 5.0428,
+      "P95Ms": 28.1408,
+      "MedianAllocatedBytes": 3520440,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 5.2536,
+      "P95Ms": 8.8338,
+      "MedianAllocatedBytes": 771064,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.4898,
+      "P95Ms": 22.0708,
+      "MedianAllocatedBytes": 946168,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 7.4334,
+      "P95Ms": 8.1746,
+      "MedianAllocatedBytes": 578448,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "caret-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 4.8077,
+      "P95Ms": 16.3057,
+      "MedianAllocatedBytes": 2117584,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.07,
+      "P95Ms": 23.1632,
+      "MedianAllocatedBytes": 979264,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 6.2424,
+      "P95Ms": 18.9976,
+      "MedianAllocatedBytes": 1261656,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.0202,
+      "P95Ms": 29.2322,
+      "MedianAllocatedBytes": 443672,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "text-update-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 36.1626,
+      "P95Ms": 55.3681,
+      "MedianAllocatedBytes": 8158408,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.7851,
+      "P95Ms": 21.0931,
+      "MedianAllocatedBytes": 6313248,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 16.8642,
+      "P95Ms": 23.8613,
+      "MedianAllocatedBytes": 6386952,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.1285,
+      "P95Ms": 28.4976,
+      "MedianAllocatedBytes": 2185720,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "scroll",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 3.4221,
+      "P95Ms": 6.5745,
+      "MedianAllocatedBytes": 398848,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 6.0894,
+      "P95Ms": 24.673,
+      "MedianAllocatedBytes": 1865168,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 10.8927,
+      "P95Ms": 26.8108,
+      "MedianAllocatedBytes": 2072080,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.4705,
+      "P95Ms": 6.5409,
+      "MedianAllocatedBytes": 1335904,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "resize",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 140.437,
+      "P95Ms": 175.7907,
+      "MedianAllocatedBytes": 34305712,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 21.9168,
+      "P95Ms": 40.074,
+      "MedianAllocatedBytes": 5970968,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 16.2856,
+      "P95Ms": 45.6488,
+      "MedianAllocatedBytes": 6443088,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 13.1708,
+      "P95Ms": 79.4567,
+      "MedianAllocatedBytes": 4601032,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "replace-all",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 897.9727,
+      "P95Ms": 984.686,
+      "MedianAllocatedBytes": 1927569584,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 30.34,
+      "P95Ms": 53.29,
+      "MedianAllocatedBytes": 22711096,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 33.5337,
+      "P95Ms": 45.0813,
+      "MedianAllocatedBytes": 22875912,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 100.6131,
+      "P95Ms": 204.6619,
+      "MedianAllocatedBytes": 18857200,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "native-save",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 4.3582,
+      "P95Ms": 7.2199,
+      "MedianAllocatedBytes": 8173472,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.8717,
+      "P95Ms": 20.557,
+      "MedianAllocatedBytes": 8173472,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.1831,
+      "P95Ms": 16.3597,
+      "MedianAllocatedBytes": 8173472,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 4.2035,
+      "P95Ms": 29.6941,
+      "MedianAllocatedBytes": 8173472,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "native-load",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 8.7968,
+      "P95Ms": 21.5726,
+      "MedianAllocatedBytes": 18042192,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 8.5201,
+      "P95Ms": 27.9433,
+      "MedianAllocatedBytes": 18161056,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 9.3309,
+      "P95Ms": 25.0516,
+      "MedianAllocatedBytes": 18161056,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 9.6618,
+      "P95Ms": 75.5353,
+      "MedianAllocatedBytes": 18161056,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "table-heavy",
+    "Operation": "history-100",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 156.4805,
+      "P95Ms": 195.053,
+      "MedianAllocatedBytes": 159934408,
+      "MedianRetainedUndoBytes": 11451224
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 20.9066,
+      "P95Ms": 24.6665,
+      "MedianAllocatedBytes": 2575536,
+      "MedianRetainedUndoBytes": 302376
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 28.7705,
+      "P95Ms": 32.0794,
+      "MedianAllocatedBytes": 2575536,
+      "MedianRetainedUndoBytes": 302376
+    },
+    "Current": {
+      "MedianMs": 224.797,
+      "P95Ms": 267.6761,
+      "MedianAllocatedBytes": 2244776,
+      "MedianRetainedUndoBytes": 299496
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "first-viewport",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 143.5049,
+      "P95Ms": 153.2145,
+      "MedianAllocatedBytes": 26468312,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 25.4634,
+      "P95Ms": 33.9793,
+      "MedianAllocatedBytes": 13686688,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 24.1775,
+      "P95Ms": 45.8796,
+      "MedianAllocatedBytes": 13676344,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 12.7674,
+      "P95Ms": 54.8448,
+      "MedianAllocatedBytes": 7980376,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 5.2794,
+      "P95Ms": 7.3053,
+      "MedianAllocatedBytes": 2190256,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.972,
+      "P95Ms": 11.1738,
+      "MedianAllocatedBytes": 591776,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.5609,
+      "P95Ms": 14.6977,
+      "MedianAllocatedBytes": 586752,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.9265,
+      "P95Ms": 4.1252,
+      "MedianAllocatedBytes": 331240,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-start-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 8.3855,
+      "P95Ms": 20.3999,
+      "MedianAllocatedBytes": 2613560,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 4.1925,
+      "P95Ms": 6.6739,
+      "MedianAllocatedBytes": 574528,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.9242,
+      "P95Ms": 6.1826,
+      "MedianAllocatedBytes": 569496,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.7116,
+      "P95Ms": 4.1813,
+      "MedianAllocatedBytes": 314008,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 5.4005,
+      "P95Ms": 17.0109,
+      "MedianAllocatedBytes": 2182648,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.8607,
+      "P95Ms": 6.1482,
+      "MedianAllocatedBytes": 593480,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.1812,
+      "P95Ms": 4.4905,
+      "MedianAllocatedBytes": 642336,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.1357,
+      "P95Ms": 54.3689,
+      "MedianAllocatedBytes": 346968,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-middle-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 7.4974,
+      "P95Ms": 10.4455,
+      "MedianAllocatedBytes": 2619280,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.9259,
+      "P95Ms": 6.27,
+      "MedianAllocatedBytes": 592368,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.2895,
+      "P95Ms": 8.0199,
+      "MedianAllocatedBytes": 641848,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.7032,
+      "P95Ms": 3.9831,
+      "MedianAllocatedBytes": 346296,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "type-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 5.139,
+      "P95Ms": 6.7447,
+      "MedianAllocatedBytes": 2188504,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.7396,
+      "P95Ms": 22.2342,
+      "MedianAllocatedBytes": 582824,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 4.1564,
+      "P95Ms": 8.1449,
+      "MedianAllocatedBytes": 645416,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.4765,
+      "P95Ms": 35.7453,
+      "MedianAllocatedBytes": 315864,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "delete-end-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 6.9443,
+      "P95Ms": 24.1961,
+      "MedianAllocatedBytes": 2622336,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.8965,
+      "P95Ms": 4.2788,
+      "MedianAllocatedBytes": 581712,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 5.0533,
+      "P95Ms": 6.9806,
+      "MedianAllocatedBytes": 644928,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 3.5769,
+      "P95Ms": 3.9999,
+      "MedianAllocatedBytes": 314768,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "caret-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 12.4277,
+      "P95Ms": 14.2237,
+      "MedianAllocatedBytes": 2004496,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 3.0754,
+      "P95Ms": 5.5209,
+      "MedianAllocatedBytes": 87008,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 3.4448,
+      "P95Ms": 4.0686,
+      "MedianAllocatedBytes": 64696,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 2.6329,
+      "P95Ms": 3.6746,
+      "MedianAllocatedBytes": 53576,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "text-update-document",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 55.4057,
+      "P95Ms": 91.2167,
+      "MedianAllocatedBytes": 4114080,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 15.749,
+      "P95Ms": 18.5179,
+      "MedianAllocatedBytes": 7840624,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 13.5618,
+      "P95Ms": 17.0091,
+      "MedianAllocatedBytes": 7857664,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 6.2648,
+      "P95Ms": 6.9324,
+      "MedianAllocatedBytes": 1007840,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "scroll",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 3.2977,
+      "P95Ms": 4.5972,
+      "MedianAllocatedBytes": 155848,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 7.483,
+      "P95Ms": 11.2203,
+      "MedianAllocatedBytes": 1371208,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 7.1243,
+      "P95Ms": 12.2529,
+      "MedianAllocatedBytes": 1332312,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 5.7114,
+      "P95Ms": 48.1056,
+      "MedianAllocatedBytes": 774592,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "resize",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 315.5155,
+      "P95Ms": 413.2369,
+      "MedianAllocatedBytes": 52521168,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 13.8062,
+      "P95Ms": 19.4505,
+      "MedianAllocatedBytes": 2109552,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 14.7157,
+      "P95Ms": 22.0418,
+      "MedianAllocatedBytes": 2077432,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 10.4355,
+      "P95Ms": 84.6236,
+      "MedianAllocatedBytes": 1365608,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "replace-all",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 257.6887,
+      "P95Ms": 283.3012,
+      "MedianAllocatedBytes": 207178120,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 16.2361,
+      "P95Ms": 21.8885,
+      "MedianAllocatedBytes": 12336120,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 17.966,
+      "P95Ms": 23.3352,
+      "MedianAllocatedBytes": 12325160,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 11.2013,
+      "P95Ms": 54.6011,
+      "MedianAllocatedBytes": 9273520,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "native-save",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 15.1787,
+      "P95Ms": 15.8555,
+      "MedianAllocatedBytes": 18497728,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 11.2495,
+      "P95Ms": 28.0409,
+      "MedianAllocatedBytes": 18498448,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 11.8424,
+      "P95Ms": 14.104,
+      "MedianAllocatedBytes": 18497728,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 10.7395,
+      "P95Ms": 15.3465,
+      "MedianAllocatedBytes": 18497728,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "native-load",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 23.428,
+      "P95Ms": 36.9526,
+      "MedianAllocatedBytes": 40789832,
+      "MedianRetainedUndoBytes": null
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 23.2898,
+      "P95Ms": 40.4876,
+      "MedianAllocatedBytes": 41349896,
+      "MedianRetainedUndoBytes": null
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 20.4635,
+      "P95Ms": 23.1503,
+      "MedianAllocatedBytes": 41349896,
+      "MedianRetainedUndoBytes": null
+    },
+    "Current": {
+      "MedianMs": 41.7356,
+      "P95Ms": 106.2462,
+      "MedianAllocatedBytes": 41349896,
+      "MedianRetainedUndoBytes": null
+    }
+  },
+  {
+    "Workload": "run-heavy",
+    "Operation": "history-100",
+    "TextMode": "document",
+    "Phase1Compatibility": {
+      "MedianMs": 256.1281,
+      "P95Ms": 286.6926,
+      "MedianAllocatedBytes": 170628280,
+      "MedianRetainedUndoBytes": 491504
+    },
+    "InitialPhase2Compatibility": {
+      "MedianMs": 32.5315,
+      "P95Ms": 39.0189,
+      "MedianAllocatedBytes": 10074736,
+      "MedianRetainedUndoBytes": 927528
+    },
+    "WindowedPhase2Compatibility": {
+      "MedianMs": 26.9557,
+      "P95Ms": 32.6192,
+      "MedianAllocatedBytes": 10074736,
+      "MedianRetainedUndoBytes": 927528
+    },
+    "Current": {
+      "MedianMs": 57.939,
+      "P95Ms": 66.5952,
+      "MedianAllocatedBytes": 9448752,
+      "MedianRetainedUndoBytes": 927528
+    }
+  }
+]

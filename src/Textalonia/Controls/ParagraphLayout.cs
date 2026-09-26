@@ -10,6 +10,7 @@ internal sealed class ParagraphLayout : IDisposable
 {
     internal sealed class Page
     {
+        public required ParagraphLayout Owner;
         public int Start, End, InputEnd, LineCount;
         public double Top, Height;
         public TextLayout? Layout;
@@ -17,12 +18,15 @@ internal sealed class ParagraphLayout : IDisposable
         public TextStyle? RunStyle, DefaultStyle;
         public ParagraphStyle? ParagraphStyle;
         public long LastUse;
+        public int Users;
+        public LinkedListNode<Page>? CacheNode;
         public long Bytes => Layout is null ? 0 : 256L + (InputEnd - Start) * 32L;
     }
 
     internal const int WindowLength = 2048;
     private readonly Func<Paragraph, int, string, TextLayout> _shape;
     private readonly Action _disposed;
+    private readonly ShapedLayoutCache _cache;
     private readonly List<Page> _pages = [];
     private readonly HashSet<Page> _resident = [];
     private List<Page> _tail = [];
@@ -37,8 +41,8 @@ internal sealed class ParagraphLayout : IDisposable
     public double Height => Math.Max(Paragraph.DefaultStyle.FontSize * 1.25,
         MeasuredHeight + (Complete ? 0 : Estimate(Paragraph.Length - End)));
 
-    public ParagraphLayout(Paragraph paragraph, double width, Func<Paragraph, int, string, TextLayout> shape, Action disposed)
-    { Paragraph = paragraph; _width = width; _shape = shape; _disposed = disposed; }
+    public ParagraphLayout(Paragraph paragraph, double width, Func<Paragraph, int, string, TextLayout> shape, Action disposed, ShapedLayoutCache cache)
+    { Paragraph = paragraph; _width = width; _shape = shape; _disposed = disposed; _cache = cache; }
 
     private double Estimate(int length) => Math.Ceiling(length * Paragraph.DefaultStyle.FontSize * .52 / _width) * Paragraph.DefaultStyle.FontSize * 1.25;
 
@@ -80,7 +84,6 @@ internal sealed class ParagraphLayout : IDisposable
         {
             var page = _pages[i];
             if (page.Top > bottom) break;
-            Ensure(page);
             yield return page;
         }
     }
@@ -93,7 +96,6 @@ internal sealed class ParagraphLayout : IDisposable
             if (page.End <= offset && !Complete) Release(page, reuse: true);
         }
         var target = _pages[Math.Min(LowerBound(p => p.End <= offset), _pages.Count - 1)];
-        Ensure(target);
         return target;
     }
 
@@ -144,12 +146,13 @@ internal sealed class ParagraphLayout : IDisposable
         }
         end = start + (count == 0 ? 0 : layout.TextLines[count - 1].FirstTextSourceIndex + layout.TextLines[count - 1].Length);
         end = Math.Min(end, Paragraph.Length);
-        var page = new Page { Start = start, End = end, InputEnd = start + length, Top = MeasuredHeight,
+        var page = new Page { Owner = this, Start = start, End = end, InputEnd = start + length, Top = MeasuredHeight,
             Height = layout.TextLines.Take(count).Sum(l => l.Height), LineCount = count, Layout = layout, Text = text,
             RunStyle = Paragraph.Runs.Length == 1 ? Paragraph.Runs[0].Style : null,
             DefaultStyle = Paragraph.DefaultStyle, ParagraphStyle = Paragraph.Style };
         _pages.Add(page);
         _resident.Add(page);
+        _cache.Add(page);
         // Reflow stops when the new wrapping reaches an unchanged old boundary.
         // The suffix's line breaks, shapes, and heights are then reusable.
         if (end >= _suffixStart && _tail.Count > 0)
@@ -175,15 +178,22 @@ internal sealed class ParagraphLayout : IDisposable
     {
         if (_spare is { Layout: { } layout } && _spare.Text == text && Paragraph.Runs.Length == 1 &&
             _spare.RunStyle == Paragraph.Runs[0].Style && _spare.DefaultStyle == Paragraph.DefaultStyle && _spare.ParagraphStyle == Paragraph.Style)
-        { _resident.Remove(_spare); _spare = null; return layout; }
+        { _cache.Take(_spare); _spare = null; return layout; }
         return _shape(Paragraph, start, text);
     }
-    private void Ensure(Page page)
+    public ShapedLayoutCache.Lease Acquire(Page page)
     {
-        if (page.Layout is not null) return;
-        page.Text = ParagraphText.For(Paragraph).Read(page.Start, page.InputEnd - page.Start);
-        page.Layout = Shape(page.Start, page.Text);
-        _resident.Add(page);
+        var lease = _cache.Acquire(page);
+        if (page.Layout is not null) return lease;
+        try
+        {
+            page.Text = ParagraphText.For(Paragraph).Read(page.Start, page.InputEnd - page.Start);
+            page.Layout = Shape(page.Start, page.Text);
+            _resident.Add(page);
+            _cache.Add(page);
+            return lease;
+        }
+        catch { lease.Dispose(); throw; }
     }
     public void Release(Page page, bool reuse = false)
     {
@@ -191,11 +201,16 @@ internal sealed class ParagraphLayout : IDisposable
         if (reuse && page.RunStyle is not null && page.InputEnd - page.Start <= WindowLength)
         {
             if (_spare is not null) Release(_spare);
-            _spare = new Page { Layout = page.Layout, Text = page.Text, InputEnd = page.InputEnd - page.Start,
+            var text = page.Text; var layout = _cache.Take(page);
+            _spare = new Page { Owner = this, Layout = layout, Text = text, InputEnd = page.InputEnd - page.Start,
                 RunStyle = page.RunStyle, DefaultStyle = page.DefaultStyle, ParagraphStyle = page.ParagraphStyle, LastUse = page.LastUse };
             _resident.Add(_spare);
+            _cache.Add(_spare);
         }
-        else { page.Layout.Dispose(); _disposed(); }
+        else _cache.Release(page);
+    }
+    internal void Forget(Page page)
+    {
         page.Layout = null; page.Text = null;
         _resident.Remove(page);
     }

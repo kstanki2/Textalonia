@@ -1,0 +1,1878 @@
+﻿{
+    "policy":  "docs/PERFORMANCE.md Phase 2 budgets",
+    "checks":  [
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  46.086,
+                       "budget":  250,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  5054592,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  12.8668,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  261344,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  5.1356,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  131464,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  6.3093,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  153712,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  6.7788,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  148920,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  6.9468,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  145872,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  7.8594,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  136112,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  7.3085,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  38168,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "text-update-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  14.0953,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  11.1565,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  140464,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  12.095,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  131264,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  9.3892,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  157128,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  3.5066,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  146032,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  8.1979,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  136744,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  6.9103,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  129592,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-ms",
+                       "actual":  10.6908,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  34816,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "text-update-bound",
+                       "metric":  "p95-ms",
+                       "actual":  18.8789,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  17.5491,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  332864,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  20.8806,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  16.9125,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  1.1845,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  7.9751,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  205384,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  41.2589,
+                       "budget":  250,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  4518248,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  17.0014,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  473440,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  18.3865,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  466928,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  4.9612,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  479952,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  4.1075,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  476568,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  16.7002,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  471160,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  18.0264,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  460776,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  17.8272,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  38192,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "text-update-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  51.4476,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  29.7823,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  472504,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  25.7829,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  470944,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  4.0817,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  477544,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  22.417,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  476944,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  5.0725,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  467000,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  27.7989,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  463288,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-ms",
+                       "actual":  3.8963,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  26448,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "text-update-bound",
+                       "metric":  "p95-ms",
+                       "actual":  59.9102,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  39.1852,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  331240,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  47.5163,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  45.163,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  44.691,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  53.8243,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  251448,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  101.99,
+                       "budget":  250,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  24399488,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  7.7473,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3728688,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  8.1887,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3727112,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  53.0334,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3747232,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  36.359,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3739216,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  34.1391,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3734776,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  71.0064,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3730896,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  3.2123,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  26448,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "text-update-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  205.4705,
+                       "budget":  100,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  77.292,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3729064,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  71.5897,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3727488,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  65.8172,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3742704,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  82.3116,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3739328,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  68.6066,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3734888,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  96.2513,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  3728520,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-ms",
+                       "actual":  4.1737,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  26448,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "text-update-bound",
+                       "metric":  "p95-ms",
+                       "actual":  237.5024,
+                       "budget":  100,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  6.8233,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  335216,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  14.5964,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  209.3362,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  388.2892,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  473.9072,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  308216,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  121.2426,
+                       "budget":  250,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  4060096,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  77.8433,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  856864,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  79.6933,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  855808,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  214.6746,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1010864,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  70.5508,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1005592,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  13.9431,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1352984,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  13.3357,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1290728,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  4.3711,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  66448,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "text-update-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  200.4325,
+                       "budget":  100,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  230.6528,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  861920,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  9.1633,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  855920,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  77.3016,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1008208,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  7.9444,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1005968,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  29.4694,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1294528,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  15.5045,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1291104,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-ms",
+                       "actual":  3.1315,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  66448,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "text-update-bound",
+                       "metric":  "p95-ms",
+                       "actual":  88.5983,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  177.7252,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1497536,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  84.803,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  268.3127,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  0.8861,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  1.8913,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  124384,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  80.4968,
+                       "budget":  250,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  8057368,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  31.8187,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  744120,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  6.5858,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  740088,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  76.4794,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1125080,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  69.6728,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1119144,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  100.5035,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  805280,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  76.8555,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  792120,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  7.9112,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  449120,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "text-update-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  7.9491,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  167.9207,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  744232,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  190.098,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  746024,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  9.202,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1118696,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  116.1717,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1119256,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  142.1826,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  793328,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  135.9869,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  792128,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-ms",
+                       "actual":  207.9037,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  452456,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "text-update-bound",
+                       "metric":  "p95-ms",
+                       "actual":  430.9622,
+                       "budget":  100,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  298.9683,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1338584,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  444.1744,
+                       "budget":  100,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  746.0152,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  175.8352,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  118.3252,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  299448,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  694.077,
+                       "budget":  250,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  8219752,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  204.215,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  569136,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  6.7453,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-start-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  551272,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  5.9598,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  583920,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  7.1129,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-middle-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  583776,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  8.5196,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  553344,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  318.3181,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-end-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  562712,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  324.5006,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "caret-unbound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  60656,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "text-update-unbound",
+                       "metric":  "p95-ms",
+                       "actual":  6.2977,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  5.5939,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  568456,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-ms",
+                       "actual":  5.2322,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-start-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  551488,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  5.2174,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  584032,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-ms",
+                       "actual":  5.8672,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-middle-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  583624,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  4.9256,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  553192,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-ms",
+                       "actual":  7.4108,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-end-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  552360,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-ms",
+                       "actual":  4.875,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "caret-bound",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  53744,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "text-update-bound",
+                       "metric":  "p95-ms",
+                       "actual":  6.1361,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  230.9452,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  779176,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  181.8422,
+                       "budget":  100,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  406.2979,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  369.25,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  374.9746,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  927528,
+                       "budget":  67108864,
+                       "passed":  true
+                   }
+               ],
+    "failedChecks":  52
+}

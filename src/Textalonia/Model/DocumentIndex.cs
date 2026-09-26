@@ -172,12 +172,17 @@ internal static class ParagraphText
     public static int Snap(Paragraph paragraph, int position)
     {
         if (position == 0 || position == paragraph.Length) return position;
+        var text = For(paragraph);
+        if (text[position - 1] is >= ' ' and <= '~' && text[position] is >= ' ' and <= '~') return position;
         var (start, breaks, _) = Boundaries(paragraph, position);
         var index = Array.BinarySearch(breaks, position - start);
         return start + breaks[index >= 0 ? index : Math.Max(0, ~index - 1)];
     }
     public static int Next(Paragraph paragraph, int position)
     {
+        var text = For(paragraph);
+        if (position + 1 == text.Length || position + 1 < text.Length &&
+            text[position] is >= ' ' and <= '~' && text[position + 1] is >= ' ' and <= '~') return position + 1;
         var (start, breaks, end) = Boundaries(paragraph, position);
         var index = Array.BinarySearch(breaks, position - start);
         index = index >= 0 ? index + 1 : ~index;

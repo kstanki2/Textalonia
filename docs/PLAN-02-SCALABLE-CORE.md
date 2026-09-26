@@ -33,19 +33,25 @@
 - P2.2/P2.3: weighted persistent trees, ID paths, bounded string pieces, range reads,
   streaming search, local grapheme context and differential snapshot tests are in place.
   Dense sibling labels have an explicit full-index rebase at 256 fractional bits.
-- P2.4: paragraph shaping and prefix heights are separate. Table row dependencies,
-  shared caret/selection/hit-test/IME geometry, and a frozen full-measure oracle are covered.
+- P2.4: paragraph shaping and prefix heights are separate. Height nodes now
+  initialize on visited paths from subtree estimates; ordinary first-open and
+  width changes avoid constructing every paragraph's geometry metadata. Table
+  row dependencies, shared caret/selection/hit-test/IME geometry, and a frozen full-measure oracle are covered.
 - P2.5: viewport/overscan measurement, distant targets, cache eviction/disposal and
   scroll anchors are implemented. Long paragraphs now use bounded text windows,
   retained line-break checkpoints, suffix reuse and visible-line rendering. Large
-  cells propagate viewport limits. **This task remains open for strict bounds:**
-  paragraph-wide bidi context uses full shaping, an indivisible grapheme/visual
-  line may exceed the normal window size, and pinned working content can exceed
-  the reusable cache budget. First-time exact distant targets discover intervening
-  line breaks. The report records the remaining unchanged-budget failures.
+  cells propagate viewport limits. Visible and target glyphs now share a central
+  bounded LRU; short leases recreate evicted shapes, including in dense viewports.
+  Oversized exact layouts are disposed when the consumer's lease ends, and peak
+  estimates disclose their transient cost. **This task remains open for strict
+  transient bounds:** paragraph-wide bidi context uses full shaping and an
+  indivisible grapheme/visual line may exceed the normal window size. First-time
+  exact distant targets discover intervening line breaks. The report records the remaining unchanged-budget failures.
 - P2.6: history has entry and byte limits, shared ownership accounting (including
   typing styles, covered cells and merge backups), oversized-entry eviction, redo
-  accounting and deterministic coalescing-boundary tests.
+  accounting and deterministic coalescing-boundary tests. A single ownership
+  table updates both total/current references, and load/reset drops the old table
+  without an extra graph traversal.
 - P2.7: correctness, package-consumer and full-control performance evidence are
   recorded in the report. No existing budget was widened and no slow case was dropped.
 

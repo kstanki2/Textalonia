@@ -1,4 +1,5 @@
 using Textalonia.Model;
+using System.Runtime.InteropServices;
 
 namespace Textalonia.Editing;
 
@@ -6,20 +7,42 @@ namespace Textalonia.Editing;
 // traverses only newly owned/released branches; shared nodes are charged once.
 internal sealed class RetentionGraph
 {
-    private readonly Dictionary<object, int> _references = new(ReferenceEqualityComparer.Instance);
+    private struct Ownership { public int Total, Current; }
+    private readonly Dictionary<object, Ownership> _references = new(ReferenceEqualityComparer.Instance);
     public long Bytes { get; private set; }
-    public void Add(object value)
+    private long _currentBytes;
+    public long HistoryBytes => Bytes - _currentBytes;
+    public void EnsureCapacity(int count) => _references.EnsureCapacity(count);
+    public void Clear()
     {
-        if (_references.TryGetValue(value, out var count)) { _references[value] = count + 1; return; }
-        _references.Add(value, 1); Bytes += Size(value);
-        foreach (var child in Children(value)) Add(child);
+        _references.Clear(); Bytes = 0; _currentBytes = 0;
     }
-    public void Remove(object value)
+    public void Add(object value, bool current = false) => Add(value, true, current);
+    private void Add(object value, bool total, bool current)
     {
-        var count = _references[value];
-        if (count > 1) { _references[value] = count - 1; return; }
-        _references.Remove(value); Bytes -= Size(value);
-        foreach (var child in Children(value)) Remove(child);
+        // One lookup and one traversal for the two ownership domains. Do not
+        // keep the dictionary ref across recursion (a child can resize it).
+        ref var ownership = ref CollectionsMarshal.GetValueRefOrAddDefault(_references, value, out _);
+        total = total && ownership.Total++ == 0;
+        current = current && ownership.Current++ == 0;
+        if (!total && !current) return;
+        var bytes = Size(value);
+        if (total) Bytes += bytes;
+        if (current) _currentBytes += bytes;
+        foreach (var child in Children(value)) Add(child, total, current);
+    }
+    public void Remove(object value, bool current = false) => Remove(value, true, current);
+    private void Remove(object value, bool total, bool current)
+    {
+        ref var ownership = ref CollectionsMarshal.GetValueRefOrNullRef(_references, value);
+        total = total && --ownership.Total == 0;
+        current = current && --ownership.Current == 0;
+        if (!total && !current) return;
+        if (total) _references.Remove(value);
+        var bytes = Size(value);
+        if (total) Bytes -= bytes;
+        if (current) _currentBytes -= bytes;
+        foreach (var child in Children(value)) Remove(child, total, current);
     }
     private static long Size(object value) => value switch
     {

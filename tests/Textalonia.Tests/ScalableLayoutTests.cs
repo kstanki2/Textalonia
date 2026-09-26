@@ -34,6 +34,7 @@ public class ScalableLayoutTests(UiFixture fixture) : IClassFixture<UiFixture>
         using var layout = new DocumentLayout();
         Build(layout, document);
         Assert.InRange(layout.ShapedParagraphs, 1, 80);
+        Assert.InRange(layout.GeometryNodes, 1, 200);
         var count = layout.ShapedParagraphs; var geometry = layout.GeometryNodes;
         var session = new EditorSession(document);
         session.Select(session.Index.Length, session.Index.Length); session.InsertText("offscreen");
@@ -122,8 +123,10 @@ public class ScalableLayoutTests(UiFixture fixture) : IClassFixture<UiFixture>
         Assert.True(layout.DisposedLayouts > disposed);
     }, CancellationToken.None);
 
-    [Fact]
-    public Task Offscreen_execute_and_theme_changes_keep_the_scrolled_view_away_from_the_caret() => fixture.Session.Dispatch(() =>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public Task Offscreen_execute_and_theme_changes_keep_the_scrolled_view_away_from_the_caret(bool caretBelowViewport) => fixture.Session.Dispatch(() =>
     {
         var editor = new TextaloniaEditor { SynchronizeText = false, Document = BaselineDocuments.Workload("paragraphs-1000") };
         var window = new Window { Width = 800, Height = 500, Content = editor };
@@ -131,6 +134,12 @@ public class ScalableLayoutTests(UiFixture fixture) : IClassFixture<UiFixture>
         {
             window.Show(); window.UpdateLayout(); editor.FocusDocument();
             var scroller = editor.GetVisualDescendants().OfType<ScrollViewer>().Single(s => s.Name == "PART_ScrollViewer");
+            if (caretBelowViewport)
+            {
+                var caret = editor.Session.Index.Length / 2;
+                editor.Session.Select(caret, caret);
+                Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+            }
             scroller.Offset = new Vector(0, 12000); Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
             var surface = editor.GetVisualDescendants().OfType<DocumentSurface>().Single();
             var anchor = surface.Layout.Paragraphs.First(p => p.Bounds.Bottom >= scroller.Offset.Y);
@@ -138,6 +147,12 @@ public class ScalableLayoutTests(UiFixture fixture) : IClassFixture<UiFixture>
             editor.Session.Execute(d => d with { Blocks = d.Blocks.SetItem(0, new Paragraph("changed offscreen")) });
             Dispatcher.UIThread.RunJobs(); window.UpdateLayout(); Dispatcher.UIThread.RunJobs();
             var after = surface.Layout.At(editor.Session.Index.ById(anchor.Position.Paragraph.Id).Start)!;
+            Assert.Equal(relative, after.Origin.Y - scroller.Offset.Y, 4);
+            // An IME/automation-style query for the offscreen caret may refine
+            // lazy prefixes. It must preserve the same viewport anchor too.
+            _ = surface.CaretRectangle;
+            Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+            after = surface.Layout.At(editor.Session.Index.ById(anchor.Position.Paragraph.Id).Start)!;
             Assert.Equal(relative, after.Origin.Y - scroller.Offset.Y, 4);
             editor.Foreground = Brushes.DarkBlue;
             Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
@@ -344,6 +359,56 @@ public class ScalableLayoutTests(UiFixture fixture) : IClassFixture<UiFixture>
             var point = new Point(caret.X, caret.Y + .5);
             Assert.Equal(reference.HitTest(point), layout.HitTest(point));
         }
+    }, CancellationToken.None);
+
+    [Fact]
+    public Task Dense_viewports_evict_visible_glyphs_without_losing_geometry() => fixture.Session.Dispatch(() =>
+    {
+        var style = TextStyle.Default with { FontSize = 1 };
+        var document = new FlowDocument(Enumerable.Range(0, 900).Select(i =>
+            new Paragraph($"row {i}", style) { Style = new() { SpaceBefore = 0, SpaceAfter = 0 } }));
+        using var layout = new DocumentLayout(); using var reference = new ReferenceDocumentLayout();
+        reference.Build(document, 800, Font, Brushes.Black, Brushes.Gray, Padding);
+        Build(layout, document, height: reference.Height + 100);
+        Assert.True(layout.Paragraphs.Count > ShapedLayoutCache.LayoutLimit);
+        Assert.InRange(layout.CachedParagraphs, 1, 256);
+        Assert.InRange(layout.CachedLayouts, 1, ShapedLayoutCache.LayoutLimit);
+        Assert.True(layout.DisposedLayouts > 0);
+        foreach (var entry in new DocumentIndex(document).Paragraphs.Where((_, i) => i % 31 == 0))
+        {
+            SameRect(reference.Caret(entry.Start), layout.Caret(entry.Start));
+            Assert.InRange(layout.CachedLayouts, 1, ShapedLayoutCache.LayoutLimit);
+            Assert.InRange(layout.CachedLayoutBytes, 1, ShapedLayoutCache.ByteLimit);
+        }
+        var expected = reference.SelectionRects(0, document.Text.Length).Where(r => r.Y < 900).ToArray();
+        var actual = layout.SelectionRects(0, document.Text.Length).Where(r => r.Y < 900).ToArray();
+        Assert.Equal(expected.Length, actual.Length);
+        for (var i = 0; i < expected.Length; i++) SameRect(expected[i], actual[i]);
+        layout.Clear();
+        Assert.Equal(0, layout.CachedLayouts); Assert.Equal(0, layout.CachedLayoutBytes);
+    }, CancellationToken.None);
+
+    [Fact]
+    public Task Oversized_exact_layout_is_transient_and_released_after_each_consumer() => fixture.Session.Dispatch(() =>
+    {
+        var paragraph = new Paragraph("abc \u202b" + new string('x', 4000) + "\u202c tail");
+        var disposed = 0;
+        var cache = new ShapedLayoutCache(() => disposed++, byteLimit: 4096);
+        using var owner = new ParagraphLayout(paragraph, 744,
+            (p, start, text) => DocumentLayout.CreateTextLayout(p, 744, Font, Brushes.Black, start, text),
+            () => disposed++, cache);
+        var page = owner.At(2200);
+        Assert.Equal(0, cache.Count); Assert.Equal(0, cache.Bytes);
+        Rect expected;
+        using (var full = DocumentLayout.CreateTextLayout(paragraph, 744, Font, Brushes.Black))
+            expected = full.HitTestTextPosition(2200);
+        for (var i = 0; i < 3; i++)
+        {
+            using (var lease = owner.Acquire(page))
+                SameRect(expected, lease.Layout.HitTestTextPosition(2200));
+            Assert.Equal(0, cache.Count); Assert.Equal(0, cache.Bytes);
+        }
+        Assert.True(disposed >= 4); Assert.True(cache.PeakBytes > 4096);
     }, CancellationToken.None);
 
     [Fact]

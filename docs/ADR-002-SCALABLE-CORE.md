@@ -69,14 +69,20 @@ need no migration, but their O(document-size) cost remains part of the benchmark
 ## Layout and retention
 
 Geometry separates persistent document identity, estimated subtree heights and
-bounded shaped paragraphs. The viewport plus overscan and explicit caret/hit-test
+bounded shaped paragraphs. Height branches use additive subtree estimates and
+materialize nodes on visited paths; row dependencies and numbered-list summaries
+can still initialize their container metadata. Overscan is at most 160 DIP per side. The viewport plus overscan and explicit caret/hit-test
 targets drive measurement. Prefix heights locate offscreen targets. Cell spans
 depend on intersected rows; row height changes propagate to ancestor heights.
 Painting, caret, selection and IME use the same measured paragraph geometry.
 Width/font/theme changes invalidate shaping, and viewport corrections preserve a
 text-line anchor, including inside a long paragraph. Table cells pass viewport
 limits through to their paragraph contents. Cache eviction disposes TextLayout
-instances independently of their line-break checkpoints. Single-style edits reuse
+instances independently of their line-break checkpoints. Visible shapes also
+participate in the global LRU; drawing and geometry queries acquire short leases
+and recreate evicted layouts. Oversized exact layouts are released at the end of
+the lease, with their transient cost included in the peak estimate. This preserves
+compatibility but does not impose a hard cap on indivisible shaping work. Single-style edits reuse
 the measured prefix and resume an unchanged suffix when line boundaries converge;
 other formatting changes conservatively invalidate the paragraph's checkpoints.
 One discarded, identical single-style window may be reused during prefix discovery

@@ -1,0 +1,62 @@
+{
+  "tests": {
+    "total": 98,
+    "executed": 98,
+    "passed": 98,
+    "failed": 0,
+    "error": 0,
+    "timeout": 0,
+    "aborted": 0,
+    "inconclusive": 0,
+    "passedButRunAborted": 0,
+    "notRunnable": 0,
+    "notExecuted": 0,
+    "disconnected": 0,
+    "warning": 0,
+    "completed": 0,
+    "inProgress": 0,
+    "pending": 0
+  },
+  "generatedOperationsPerSeed": 2000,
+  "testSeeds": 6,
+  "nativeV1FixtureChanged": false,
+  "publicApiChanged": false,
+  "build": "Release; zero warnings/errors",
+  "packageConsumer": "passed from fresh workspace cache and offline dependency/targeting-pack feed",
+  "packageConsumerExitCode": 0,
+  "compatibilityCases": 138,
+  "documentModeCases": 90,
+  "phase1CasesAndSizesPreserved": true,
+  "compatibilityFailedBudgets": 29,
+  "documentModeFailedBudgets": 13,
+  "failedMetric": "p95-ms only; all allocation and retained-history checks passed",
+  "compatibilityEnforcedBudgetExitCode": 1,
+  "documentEnforcedBudgetExitCode": 1,
+  "phase2ExitGate": "incomplete",
+  "remaining": [
+    "Strict transient shaping bounds for paragraph-wide bidi context and indivisible graphemes/visual lines",
+    "Controlled latency qualification and any remaining fixes required by the unchanged P1.5 budgets"
+  ],
+  "boundedRetainedCache": {
+    "layouts": 256,
+    "estimatedShapeBytes": 16777216,
+    "visibleLayoutsParticipateInEviction": true
+  },
+  "assemblySha256": {
+    "src/Textalonia/bin/Release/net8.0/Textalonia.dll": "0e8c3cb5bf9ce13102ba4f1740e08eb6d39bbfd72a68b597a234865586d9c2a3",
+    "benchmarks/Textalonia.Benchmarks/bin/Release/net8.0/Textalonia.dll": "0e8c3cb5bf9ce13102ba4f1740e08eb6d39bbfd72a68b597a234865586d9c2a3",
+    "tests/Textalonia.PackageSmoke/bin/Release/net8.0/Textalonia.dll": "0e8c3cb5bf9ce13102ba4f1740e08eb6d39bbfd72a68b597a234865586d9c2a3",
+    "benchmarks/Textalonia.Benchmarks/bin/Release/net8.0/Textalonia.Benchmarks.dll": "46811fde3bed8ebfbdf930e7632cae60cbfd9af366b7889937d7d98cf400f4b5",
+    "tests/Textalonia.Tests/bin/Release/net8.0/Textalonia.Tests.dll": "d63831c1950d080b3a3435255ea27d4aa0f422a147dd6cd0d2ec963729bee777"
+  },
+  "packageSha256": "4ba8a7f8b23d364ee38a4e2afc550ea464d72bb2a5d67f8e09c75db37e990cc7",
+  "packedAssemblySha256": "0e8c3cb5bf9ce13102ba4f1740e08eb6d39bbfd72a68b597a234865586d9c2a3",
+  "packedAssemblyMatchesConsumerAndBenchmark": true,
+  "diagnostic30": {
+    "directory": "diagnostic-30",
+    "compatibilityFailedBudgets": 52,
+    "documentModeFailedBudgets": 20,
+    "finalBinary": false,
+    "difference": "Additional caret-below-viewport visibility guard; diagnostic has separate source and assembly hashes."
+  }
+}

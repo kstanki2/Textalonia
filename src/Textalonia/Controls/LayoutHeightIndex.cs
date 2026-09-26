@@ -7,20 +7,69 @@ namespace Textalonia.Controls;
 // acquire their current parent when a snapshot changes; shaping lives elsewhere.
 internal sealed class LayoutHeightIndex
 {
-    internal sealed class Branch
+    internal sealed class Branch(LayoutHeightIndex index, double width, Table? table)
     {
         public required StorageTree<OrderKey, DocumentNode> Source;
-        public required Node Value;
-        public Branch? Left, Right, Parent;
+        private Node? _value;
+        private Branch? _left, _right;
+        private bool _listsInitialized;
+        public Branch? Parent;
+        private double EstimateWidth => table is null ? width : width / table.ColumnCount;
+        public Node Value
+        {
+            get
+            {
+                if (_value is null)
+                {
+                    var available = table is null ? width : width / table.ColumnCount * ((TableCell)Source.Value.Source!).ColumnSpan;
+                    _value = index.GetNode(Source.Value, available);
+                    Adjust(_value.Height - Estimate(Source.Value.Length, Source.Value.ParagraphCount, EstimateWidth));
+                }
+                _value.Parent = this;
+                return _value;
+            }
+        }
+        public Branch? Left => Child(Source.Left, ref _left);
+        public Branch? Right => Child(Source.Right, ref _right);
+        private Branch? Child(StorageTree<OrderKey, DocumentNode>? source, ref Branch? child)
+        {
+            if (source is null) return null;
+            if (child is null)
+            {
+                child = index.GetBranch(source, width, table)!;
+                Adjust(child.Height - Estimate(source.Length, source.Paragraphs, EstimateWidth));
+            }
+            child.Parent = this; child.Owner = null;
+            return child;
+        }
+        private void Adjust(double delta)
+        {
+            if (delta == 0) return;
+            Height += delta;
+            if (Parent is not null) Parent.Adjust(delta); else Owner?.Update();
+        }
         public Node? Owner;
         public double Height;
-        public int[] ListAdds = new int[9];
-        public bool[] ListResets = new bool[9];
+        public int[]? ListAdds;
+        public int ListResets;
         public void InitializeLists()
         {
+            if (_listsInitialized) return;
+            _listsInitialized = true;
+            Left?.InitializeLists(); Right?.InitializeLists();
+            // Most text has no numbering. A reset bitmask needs no per-branch
+            // arrays; allocate counters only on paths containing numbered lists.
+            if (Left?.ListAdds is null && Right?.ListAdds is null &&
+                Value.Source.Source is not Paragraph { Style.List: ListKind.Numbered })
+            {
+                ListResets = (Left?.ListResets ?? 0) | (Right?.ListResets ?? 0) |
+                    (Value.Source.Source is Paragraph { Style.List: ListKind.None } ? 511 : 0);
+                return;
+            }
+            ListAdds = new int[9];
             for (var i = 0; i < 9; i++)
             {
-                var add = Left?.ListAdds[i] ?? 0; var reset = Left?.ListResets[i] ?? false;
+                var add = Left?.ListAdds?[i] ?? 0; var reset = ((Left?.ListResets ?? 0) & (1 << i)) != 0;
                 if (Value.Source.Source is Paragraph p)
                 {
                     if (p.Style.List == ListKind.None || p.Style.List == ListKind.Numbered && i > p.Style.ListLevel) { add = 0; reset = true; }
@@ -28,19 +77,21 @@ internal sealed class LayoutHeightIndex
                 }
                 if (Right is not null)
                 {
-                    add = Right.ListResets[i] ? Right.ListAdds[i] : add + Right.ListAdds[i];
-                    reset |= Right.ListResets[i];
+                    var resets = (Right.ListResets & (1 << i)) != 0;
+                    add = resets ? Right.ListAdds?[i] ?? 0 : add + (Right.ListAdds?[i] ?? 0);
+                    reset |= resets;
                 }
-                ListAdds[i] = add; ListResets[i] = reset;
+                ListAdds[i] = add; if (reset) ListResets |= 1 << i;
             }
         }
         public int NumberBefore(OrderKey key, int level)
         {
+            InitializeLists();
             var number = 0; Branch? branch = this;
             while (branch is not null)
             {
                 if (key.CompareTo(branch.Source.Key) <= 0) { branch = branch.Left; continue; }
-                if (branch.Left is { } left) number = left.ListResets[level] ? left.ListAdds[level] : number + left.ListAdds[level];
+                if (branch.Left is { } left) number = (left.ListResets & (1 << level)) != 0 ? left.ListAdds?[level] ?? 0 : number + (left.ListAdds?[level] ?? 0);
                 if (branch.Value.Source.Source is Paragraph p)
                 {
                     if (p.Style.List == ListKind.None || p.Style.List == ListKind.Numbered && level > p.Style.ListLevel) number = 0;
@@ -52,7 +103,9 @@ internal sealed class LayoutHeightIndex
         }
         public void Update(Node? changedCell = null)
         {
-            Height = (Left?.Height ?? 0) + Value.Height + (Right?.Height ?? 0);
+            Height = (_left?.Height ?? (Source.Left is { } l ? Estimate(l.Length, l.Paragraphs, EstimateWidth) : 0)) +
+                (_value?.Height ?? Estimate(Source.Value.Length, Source.Value.ParagraphCount, EstimateWidth)) +
+                (_right?.Height ?? (Source.Right is { } r ? Estimate(r.Length, r.Paragraphs, EstimateWidth) : 0));
             if (Parent is not null) Parent.Update(changedCell); else Owner?.Update(changedCell);
         }
         public double Prefix(OrderKey key)
@@ -176,22 +229,26 @@ internal sealed class LayoutHeightIndex
         {
             var childWidth = source.Source switch { Section s => Math.Max(16, available - s.Padding * 2), TableCell => Math.Max(16, available - 16), _ => available };
             node.Children = GetBranch(source.Children, childWidth, source.Source as Table);
-            if (node.Children is not null) { node.Children.Parent = null; node.Children.Owner = node; }
+            if (node.Children is not null) { node.Children.Parent = null; node.Children.Owner = null; }
         }
-        node.Update(); _nodes.Add(source, node); return node;
+        node.Update();
+        if (node.Children is not null) node.Children.Owner = node;
+        _nodes.Add(source, node); return node;
     }
+    private static double Estimate(int length, int paragraphs, double width) =>
+        paragraphs * 28d + length * (16 * .52 * 20 / Math.Max(16, width));
+
     private Branch? GetBranch(StorageTree<OrderKey, DocumentNode>? source, double width, Table? table)
     {
         if (source is null) return null;
         if (_branches.TryGetValue(source, out var existing)) return existing;
-        var available = table is null ? width : width / table.ColumnCount * ((TableCell)source.Value.Source!).ColumnSpan;
-        var branch = new Branch { Source = source, Value = GetNode(source.Value, available),
-            Left = GetBranch(source.Left, width, table), Right = GetBranch(source.Right, width, table) };
-        branch.Value.Parent = branch;
-        if (branch.Left is not null) { branch.Left.Parent = branch; branch.Left.Owner = null; }
-        if (branch.Right is not null) { branch.Right.Parent = branch; branch.Right.Owner = null; }
-        branch.Height = (branch.Left?.Height ?? 0) + branch.Value.Height + (branch.Right?.Height ?? 0);
-        branch.InitializeLists();
+        // Estimates are additive across tree weights. Creating a branch does not
+        // visit its descendants; measured corrections propagate through parents.
+        var branch = new Branch(this, width, table)
+        {
+            Source = source,
+            Height = Estimate(source.Length, source.Paragraphs, table is null ? width : width / table.ColumnCount)
+        };
         _branches.Add(source, branch); return branch;
     }
 }

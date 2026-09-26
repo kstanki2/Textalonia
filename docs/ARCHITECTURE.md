@@ -44,8 +44,14 @@ A changed `Text` assignment still loads plain text, and enabling synchronization
 immediately publishes current text. Automation explicitly reads current text.
 
 Layout metadata tracks estimated/measured subtree heights separately from shaping.
-Prefix queries find the viewport and distant targets. Changed document paths retain
-unaffected geometry and shapes; numbered-list counters also have prefix summaries.
+Branches initially use additive estimates from the document tree's text length and
+paragraph count. Nodes and child branches are created only as geometry paths are
+visited; refining an estimate updates its ancestors. Exact offscreen prefixes are
+not promised before measurement. Prefix queries find the viewport and distant targets. Changed document paths retain
+unaffected geometry and shapes. Numbered-list prefix summaries initialize on demand
+for their container and are then reused along unchanged branches; this first request
+can enumerate that container's metadata without shaping its text. Plain paragraphs
+do not allocate numbering arrays.
 Sections propagate child height changes. Tables measure cells intersecting required
 rows, including spans; height redistribution uses the original row-major span rule.
 Unspanned cell height changes update only their row maximum and following row
@@ -54,7 +60,9 @@ set, without reshaping unrelated cells. Per-row dependency lists find intersecti
 cells without scanning the whole table on every viewport pass. Cells pass the
 viewport limits through to their contents, even when a tall cell intersects many
 rows. Width, font or foreground changes reset shaping. A text-line anchor
-compensates for height corrections above and within the visible paragraph.
+compensates for height corrections above and within the visible paragraph, including
+corrections from explicit offscreen caret/IME queries. Painting consumes only already
+visible caret geometry; it does not discover offscreen prefixes during a render pass.
 
 Long paragraphs use windows of normally at most 2,048 UTF-16 units. Each window
 ends at a grapheme boundary and commits complete Avalonia lines; its incomplete
@@ -71,24 +79,37 @@ can reuse one discarded shape when all formatting agrees.
 
 The reusable cache is limited to 256 paragraph checkpoint sets, 256 shaped windows
 and an estimated 16 MiB (256 + 32 times input UTF-16 length per shape, including
-lookahead and the discarded-window reuse slot). Cache accounting/eviction enumerates
-resident shapes, not every measured checkpoint. The current viewport, up to 400 DIP
-of overscan on each side, and explicit target dependencies are pinned until the next
-build and may exceed those limits. Eviction and detach dispose layouts.
+lookahead and the discarded-window reuse slot). An LRU list maintains resident
+shape counts and bytes incrementally. Visible content and explicit targets are
+subject to eviction too: visuals retain geometry checkpoints and acquire a short
+lease while drawing or answering a geometry query. An evicted shape is recreated
+from its checkpoint. Paragraph-cache eviction drops that paragraph's checkpoint
+list; any already-collected visuals keep only their own page and owner. Detach
+clears the central glyph cache, including shapes recreated by those visuals.
+Viewport overscan is at most 160 DIP on each side (with an 80 DIP minimum).
+
+An oversized exact layout is not retained after its lease ends. Its temporary
+estimate can exceed 16 MiB while a consumer uses it; `PeakLayoutBytes` records this
+high-water estimate (also including the just-created layout before eviction).
+This bounds reusable ownership, not the memory required to shape an indivisible
+Unicode context. Checkpoint metadata and the height index are separate from the
+glyph estimate and remain proportional to measured text and model nodes.
 
 Paragraph-wide bidirectional text still uses the exact full Avalonia shaping path.
 The rope maintains a conservative summary for RTL scripts and directional controls,
 so ordinary local edits do not scan the complete text merely to choose the path.
 A single enormous grapheme or visual line can also exceed the normal window size.
-These fallbacks and the pinned working set prevent a universal hard shaping bound;
-P2.5 remains open for those cases. The shape byte estimate is not a native-memory
+These exact-shaping fallbacks prevent a universal hard transient shaping bound;
+P2.5 remains open for those cases. Visible glyphs no longer bypass cache eviction. The shape byte estimate is not a native-memory
 bound or a measured process-working-set guarantee.
 
 History defaults to 100 entries and 64 MiB. `HistoryByteLimit` bounds
 `RetainedHistoryBytes`, an estimate of storage owned exclusively by undo/redo.
-Two reference-counted ownership graphs count shared tree nodes, paths, string
-chunks, table row arrays, covered cells and merge backups once, subtracting current
-snapshot storage. Fixed estimates cover node/record headers, arrays, styles and
+One reference-counted ownership table tracks both total and current ownership.
+Shared tree nodes, paths, string chunks, table row arrays, covered cells and merge
+backups are counted once, subtracting current snapshot storage. A traversal updates
+both ownership domains together. Load/reset clears the old table and initializes
+the new roots without walking the discarded graph just to decrement its counts. Fixed estimates cover node/record headers, arrays, styles and
 80 bytes per state; run descriptors are conservatively charged with their paragraph.
 Allocator overhead, GC/weak-cache tables, caller-held snapshots and UI caches are
 outside this estimate. Limits are enforced after edits, undo/redo and configuration
