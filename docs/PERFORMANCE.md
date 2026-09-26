@@ -68,9 +68,10 @@ Compare medians, tails, allocations and retained history using the same input si
 
 ## Phase 2 implementation and qualification
 
-[The Phase 2 report](PHASE2-REPORT.md) compares the same six workloads and records
-remaining failures. The budgets above are unchanged. This is an implementation
-with an open performance exit gate, not a claim that every operation meets 16 ms.
+[The Phase 2 report](PHASE2-REPORT.md) compares all six workloads against a
+remeasured Phase 1 reference with matching setup isolation. The unchanged budgets
+pass in the standard seven-sample captures using the fixed full-corpus order on the Windows reference host. Longer-run table latency misses keep the Phase 2 exit gate open.
+Original and nonisolated captures, including misses, remain archived.
 
 The default harness still measures the 23 P1 operations per workload, including
 both eager unbound and two-way Text-bound controls. `--text-mode document` captures
@@ -89,10 +90,11 @@ after the timed/allocation interval. First-open uses a fresh document wrapper so
 fixture size reporting cannot warm the document index outside the timer.
 
 ```sh
-dotnet run --project benchmarks/Textalonia.Benchmarks -c Release --no-build -- --output artifacts/phase2/compatibility
-dotnet run --project benchmarks/Textalonia.Benchmarks -c Release --no-build -- --text-mode document --output artifacts/phase2/document
+dotnet run --project benchmarks/Textalonia.Benchmarks -c Release --no-build -- --isolate-samples true --output artifacts/phase2/compatibility
+dotnet run --project benchmarks/Textalonia.Benchmarks -c Release --no-build -- --isolate-samples true --text-mode document --max-shaping-characters 4096 --output artifacts/phase2/document
 dotnet run --project benchmarks/Textalonia.Benchmarks -c Release --no-build -- --core-probe artifacts/phase2/probe
 pwsh -File scripts/Compare-BaselineBudgets.ps1 -Results artifacts/phase2/compatibility -Enforce
+pwsh -File scripts/Compare-BaselineBudgets.ps1 -Results artifacts/phase2/document -Enforce
 ```
 
 The core probe separately measures 100-edit batches with a copying/grapheme-scan
@@ -108,10 +110,35 @@ Table row dependencies and first-use numbered-list summaries can enumerate their
 container's metadata. First viewport shaping uses visible text windows and at most
 160 DIP of overscan on each side. `GeometryNodes` records nodes created since the
 current height index was initialized; it is not an operation delta or a live heap count.
-Exact distant targets may discover previously unmeasured line breaks; paragraph-wide
-bidi context and oversized graphemes/visual lines retain a larger shaping fallback.
-Visible and target layouts now share the bounded reusable cache. A lease for one
-oversized exact layout can temporarily exceed that estimate and releases it when
-finished; peak counters disclose that cost. See the
+Exact distant targets may discover previously unmeasured line breaks. Default
+compatibility rendering retains larger inputs for paragraph-wide bidi context and
+oversized graphemes/visual lines. Hosts can set `MaxShapingCharacters` to reject
+those inputs before allocation, with a typed rendering-limit error. Visible and
+target layouts share the bounded cache; peak counters include construction and
+active-lease estimates, including discarded lookahead attempts. See the
 [architecture](ARCHITECTURE.md#performance-boundaries) for exact history/cache
 estimate meanings and ownership exclusions.
+
+### Isolating setup collections
+
+The optional `--isolate-samples true` switch finishes pending GC/finalizer work
+with two blocking full collections after preparation and before each timer.
+Each sample creates a fresh editor/window during preparation and closes it during cleanup. A background
+collection started there can otherwise suspend the next timed action. The runner
+now records `GcPauseMilliseconds` as well as generation counts: a collection can
+pause an action even when its start was outside the sample's generation-count
+interval. No pause is subtracted from elapsed time, and collections triggered by
+the measured operation are still counted and timed.
+
+Isolation changes the heap state, so comparisons must use the same setting.
+The final Phase 2 qualification remeasures Phase 1 from commit `ccae784`, applying
+only the same setup-isolation switch and additive GC observations to its harness.
+Original captures and nonisolated diagnostics are preserved. This controlled
+comparison uses the original full-corpus order and two warmups per case. Standalone
+workload startup and nonisolated results are disclosed separately; it does not qualify sustained
+native input latency or eliminate the need for application workload measurements.
+
+Use `--max-shaping-characters 4096` with document mode to exercise the strict
+shaping policy on the full corpus. It is recorded in `environment.json`; zero
+(the default) keeps compatibility rendering. Neither flag changes corpus sizes,
+operations, budget thresholds or the requirement to disclose all samples.

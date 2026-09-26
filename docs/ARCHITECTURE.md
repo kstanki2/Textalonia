@@ -63,6 +63,8 @@ rows. Width, font or foreground changes reset shaping. A text-line anchor
 compensates for height corrections above and within the visible paragraph, including
 corrections from explicit offscreen caret/IME queries. Painting consumes only already
 visible caret geometry; it does not discover offscreen prefixes during a render pass.
+Distant caret navigation settles refined extent measurements before sending its
+scroll request, so the scroll viewer uses the current height rather than an old estimate.
 
 Long paragraphs use windows of normally at most 2,048 UTF-16 units. Each window
 ends at a grapheme boundary and commits complete Avalonia lines; its incomplete
@@ -79,7 +81,8 @@ can reuse one discarded shape when all formatting agrees.
 
 The reusable cache is limited to 256 paragraph checkpoint sets, 256 shaped windows
 and an estimated 16 MiB (256 + 32 times input UTF-16 length per shape, including
-lookahead and the discarded-window reuse slot). An LRU list maintains resident
+lookahead and the discarded-window reuse slot). The bounded paragraph cache evicts its oldest entry without sorting temporary arrays.
+An LRU list maintains resident
 shape counts and bytes incrementally. Visible content and explicit targets are
 subject to eviction too: visuals retain geometry checkpoints and acquire a short
 lease while drawing or answering a geometry query. An evicted shape is recreated
@@ -99,16 +102,35 @@ Paragraph-wide bidirectional text still uses the exact full Avalonia shaping pat
 The rope maintains a conservative summary for RTL scripts and directional controls,
 so ordinary local edits do not scan the complete text merely to choose the path.
 A single enormous grapheme or visual line can also exceed the normal window size.
-These exact-shaping fallbacks prevent a universal hard transient shaping bound;
-P2.5 remains open for those cases. Visible glyphs no longer bypass cache eviction. The shape byte estimate is not a native-memory
+These exact-shaping fallbacks preserve the default rendering contract. Visible glyphs never bypass cache eviction. The shape byte estimate is not a native-memory
 bound or a measured process-working-set guarantee.
+
+Hosts needing a strict transient-input policy set `MaxShapingCharacters` to a
+positive value (at least 2,048); zero remains the compatibility default. The
+limit is checked before each text read, grapheme buffer and shaping attempt,
+including window growth and recreated evicted layouts. Growth tries the remaining
+allowance before rejecting a request. A rejected exact context is reported through
+`LayoutError` and `OperationFailed`, without altering text or inventing approximate
+geometry. The surface releases partial layouts and displays a limit message until
+layout succeeds again. See [migration](COMPATIBILITY.md#optional-shaping-limit).
+
+For a limit L, every document-paragraph shaping input is at most L UTF-16 units. Reusable glyph
+ownership stays within 16 MiB/256 layouts; construction or one active lease adds
+at most `256 + 32 * L` estimated bytes. `PeakLayoutBytes` includes unsuccessful
+lookahead attempts as well as committed layouts. This is an explicit bound on
+engine inputs and its accounting model, not native allocations. Height metadata,
+line checkpoints, document storage, export and IME surrounding-text materialization
+remain separate. First-time exact distant targets can still discover all preceding
+line breaks, one bounded input at a time.
 
 History defaults to 100 entries and 64 MiB. `HistoryByteLimit` bounds
 `RetainedHistoryBytes`, an estimate of storage owned exclusively by undo/redo.
 One reference-counted ownership table tracks both total and current ownership.
 Shared tree nodes, paths, string chunks, table row arrays, covered cells and merge
-backups are counted once, subtracting current snapshot storage. A traversal updates
-both ownership domains together. Load/reset clears the old table and initializes
+backups are counted once, subtracting current snapshot storage. Reference visitors
+avoid per-node iterator allocations while updating
+both ownership domains together, using callbacks reused by the ownership table.
+Load/reset clears the old table and initializes
 the new roots without walking the discarded graph just to decrement its counts. Fixed estimates cover node/record headers, arrays, styles and
 80 bytes per state; run descriptors are conservatively charged with their paragraph.
 Allocator overhead, GC/weak-cache tables, caller-held snapshots and UI caches are

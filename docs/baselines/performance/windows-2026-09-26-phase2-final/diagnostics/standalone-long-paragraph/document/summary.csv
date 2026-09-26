@@ -1,0 +1,16 @@
+workload,operation,paragraphs,utf16_length,native_bytes,median_ms,p95_ms,median_allocated_bytes,median_retained_undo_bytes,budget_ms,within_latency_budget
+long-paragraph,first-viewport,1,90000,211234,41.1025,56.4654,5480328,,250,True
+long-paragraph,type-start-document,1,90000,211234,13.6158,17.8804,1475840,,16,False
+long-paragraph,delete-start-document,1,90000,211234,8.6392,9.5357,674584,,16,True
+long-paragraph,type-middle-document,1,90000,211234,8.0845,9.3210,815312,,16,True
+long-paragraph,delete-middle-document,1,90000,211234,5.7883,8.3155,815128,,16,True
+long-paragraph,type-end-document,1,90000,211234,8.3401,11.0998,496824,,16,True
+long-paragraph,delete-end-document,1,90000,211234,8.3401,10.4424,496784,,16,True
+long-paragraph,caret-document,1,90000,211234,2.8248,3.5414,70376,,16,True
+long-paragraph,text-update-document,1,90000,211234,7.0987,9.8312,2265808,,100,True
+long-paragraph,scroll,1,90000,211234,8.0260,11.0483,1487648,,16,True
+long-paragraph,resize,1,90000,211234,15.6098,20.9199,2317224,,100,True
+long-paragraph,replace-all,1,90000,211234,18.8918,22.8726,20267400,,2000,True
+long-paragraph,native-save,1,90000,211234,1.1818,2.7836,2112576,,2000,True
+long-paragraph,native-load,1,90000,211234,2.2317,3.0205,3185592,,2000,True
+long-paragraph,history-100,1,90000,211234,13.3900,18.8661,615968,124384,,

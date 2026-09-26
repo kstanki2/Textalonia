@@ -1,0 +1,6 @@
+﻿{
+    "src/Textalonia/bin/Release/net8.0/Textalonia.dll":  "0dd97c0d41de1993c4db2604e98c5e0bd5a6d7dd90f433732c4450b0a44d9a8b",
+    "benchmarks/Textalonia.Benchmarks/bin/Release/net8.0/Textalonia.dll":  "0dd97c0d41de1993c4db2604e98c5e0bd5a6d7dd90f433732c4450b0a44d9a8b",
+    "benchmarks/Textalonia.Benchmarks/bin/Release/net8.0/Textalonia.Benchmarks.dll":  "3938894f50774938882d98711154ac9562fe579165fd724f092e4b79a4e95789",
+    "tests/Textalonia.Tests/bin/Release/net8.0/Textalonia.Tests.dll":  "a4b381494764ce7abbb50fdbe92d6df8abe52285535e6fd348908611e9336abf"
+}

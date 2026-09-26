@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="da5fb455-1391-463c-abf5-4eba7b968471" name="JackBauer@DESKTOP-0GDCOSC 2026-09-26 16:27:58" runUser="DESKTOP-0GDCOSC\CodexSandboxOffline" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-26T16:27:58.1581796-04:00" queuing="2026-09-26T16:27:58.1581798-04:00" start="2026-09-26T16:27:56.3578875-04:00" finish="2026-09-26T16:27:58.1628095-04:00" />
+  <TestSettings name="default" id="35c2769a-dfde-46b2-90b1-f8d69455d471">
+    <Deployment runDeploymentRoot="JackBauer_DESKTOP-0GDCOSC_2026-09-26_16_27_58" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="2785e3dc-0475-4901-b6e6-a09b1ace0583" testId="54152edd-4823-f56a-488f-0df16fed6ed4" testName="Textalonia.Tests.ScalableLayoutTests.Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows(insert: True)" computerName="DESKTOP-0GDCOSC" duration="00:00:00.1317148" startTime="2026-09-26T16:27:57.9382168-04:00" endTime="2026-09-26T16:27:58.0546718-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2785e3dc-0475-4901-b6e6-a09b1ace0583">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.InRange() Failure: Value not in range&#xD;
+Range:  (19980 - 20393)&#xD;
+Actual: 23387.4296875</Message>
+          <StackTrace>   at Textalonia.Tests.ScalableLayoutTests.&lt;Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows&gt;g__CaretIsVisible|13_3(&lt;&gt;c__DisplayClass13_2&amp;) in C:\Users\JackBauer\source\repos\Textalonia\tests\Textalonia.Tests\ScalableLayoutTests.cs:line 209&#xD;
+   at Textalonia.Tests.ScalableLayoutTests.&lt;&gt;c__DisplayClass13_0.&lt;Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows&gt;b__0() in C:\Users\JackBauer\source\repos\Textalonia\tests\Textalonia.Tests\ScalableLayoutTests.cs:line 213&#xD;
+   at Avalonia.Headless.HeadlessUnitTestSession.&lt;&gt;c__DisplayClass9_0.&lt;Dispatch&gt;b__0()&#xD;
+   at Avalonia.Headless.HeadlessUnitTestSession.&lt;&gt;c__DisplayClass12_0`1.&lt;DispatchCore&gt;b__0()&#xD;
+--- End of stack trace from previous location ---&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="31c5ea9a-dac7-46e6-9fab-675006b2e508" testId="693801cd-460f-908b-72b1-483985003741" testName="Textalonia.Tests.ScalableLayoutTests.Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows(insert: False)" computerName="DESKTOP-0GDCOSC" duration="00:00:00.9146924" startTime="2026-09-26T16:27:56.9942220-04:00" endTime="2026-09-26T16:27:57.9217952-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="31c5ea9a-dac7-46e6-9fab-675006b2e508">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.InRange() Failure: Value not in range&#xD;
+Range:  (19980 - 20393)&#xD;
+Actual: 23387.4296875</Message>
+          <StackTrace>   at Textalonia.Tests.ScalableLayoutTests.&lt;Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows&gt;g__CaretIsVisible|13_3(&lt;&gt;c__DisplayClass13_2&amp;) in C:\Users\JackBauer\source\repos\Textalonia\tests\Textalonia.Tests\ScalableLayoutTests.cs:line 209&#xD;
+   at Textalonia.Tests.ScalableLayoutTests.&lt;&gt;c__DisplayClass13_0.&lt;Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows&gt;b__0() in C:\Users\JackBauer\source\repos\Textalonia\tests\Textalonia.Tests\ScalableLayoutTests.cs:line 213&#xD;
+   at Avalonia.Headless.HeadlessUnitTestSession.&lt;&gt;c__DisplayClass9_0.&lt;Dispatch&gt;b__0()&#xD;
+   at Avalonia.Headless.HeadlessUnitTestSession.&lt;&gt;c__DisplayClass12_0`1.&lt;DispatchCore&gt;b__0()&#xD;
+--- End of stack trace from previous location ---&#xD;
+--- End of stack trace from previous location ---</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Textalonia.Tests.ScalableLayoutTests.Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows(insert: True)" storage="c:\users\jackbauer\source\repos\textalonia\tests\textalonia.tests\bin\release\net8.0\textalonia.tests.dll" id="54152edd-4823-f56a-488f-0df16fed6ed4">
+      <Execution id="2785e3dc-0475-4901-b6e6-a09b1ace0583" />
+      <TestMethod codeBase="C:\Users\JackBauer\source\repos\Textalonia\tests\Textalonia.Tests\bin\Release\net8.0\Textalonia.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Textalonia.Tests.ScalableLayoutTests" name="Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows" />
+    </UnitTest>
+    <UnitTest name="Textalonia.Tests.ScalableLayoutTests.Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows(insert: False)" storage="c:\users\jackbauer\source\repos\textalonia\tests\textalonia.tests\bin\release\net8.0\textalonia.tests.dll" id="693801cd-460f-908b-72b1-483985003741">
+      <Execution id="31c5ea9a-dac7-46e6-9fab-675006b2e508" />
+      <TestMethod codeBase="C:\Users\JackBauer\source\repos\Textalonia\tests\Textalonia.Tests\bin\Release\net8.0\Textalonia.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Textalonia.Tests.ScalableLayoutTests" name="Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="54152edd-4823-f56a-488f-0df16fed6ed4" executionId="2785e3dc-0475-4901-b6e6-a09b1ace0583" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="693801cd-460f-908b-72b1-483985003741" executionId="31c5ea9a-dac7-46e6-9fab-675006b2e508" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="2" executed="2" passed="0" failed="2" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 8.0.31)&#xD;
+[xUnit.net 00:00:00.07]   Discovering: Textalonia.Tests&#xD;
+[xUnit.net 00:00:00.11]   Discovered:  Textalonia.Tests&#xD;
+[xUnit.net 00:00:00.13]   Starting:    Textalonia.Tests&#xD;
+[xUnit.net 00:00:01.09]       Assert.InRange() Failure: Value not in range&#xD;
+[xUnit.net 00:00:01.09]       Range:  (19980 - 20393)&#xD;
+[xUnit.net 00:00:01.09]       Actual: 23387.4296875&#xD;
+[xUnit.net 00:00:01.09]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.09]         C:\Users\JackBauer\source\repos\Textalonia\tests\Textalonia.Tests\ScalableLayoutTests.cs(209,0): at Textalonia.Tests.ScalableLayoutTests.&lt;Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows&gt;g__CaretIsVisible|13_3(&lt;&gt;c__DisplayClass13_2&amp;)&#xD;
+[xUnit.net 00:00:01.09]         C:\Users\JackBauer\source\repos\Textalonia\tests\Textalonia.Tests\ScalableLayoutTests.cs(213,0): at Textalonia.Tests.ScalableLayoutTests.&lt;&gt;c__DisplayClass13_0.&lt;Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows&gt;b__0()&#xD;
+[xUnit.net 00:00:01.09]            at Avalonia.Headless.HeadlessUnitTestSession.&lt;&gt;c__DisplayClass9_0.&lt;Dispatch&gt;b__0()&#xD;
+[xUnit.net 00:00:01.09]            at Avalonia.Headless.HeadlessUnitTestSession.&lt;&gt;c__DisplayClass12_0`1.&lt;DispatchCore&gt;b__0()&#xD;
+[xUnit.net 00:00:01.09]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.09]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.22]       Assert.InRange() Failure: Value not in range&#xD;
+[xUnit.net 00:00:01.22]       Range:  (19980 - 20393)&#xD;
+[xUnit.net 00:00:01.22]       Actual: 23387.4296875&#xD;
+[xUnit.net 00:00:01.22]       Stack Trace:&#xD;
+[xUnit.net 00:00:01.22]         C:\Users\JackBauer\source\repos\Textalonia\tests\Textalonia.Tests\ScalableLayoutTests.cs(209,0): at Textalonia.Tests.ScalableLayoutTests.&lt;Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows&gt;g__CaretIsVisible|13_3(&lt;&gt;c__DisplayClass13_2&amp;)&#xD;
+[xUnit.net 00:00:01.22]         C:\Users\JackBauer\source\repos\Textalonia\tests\Textalonia.Tests\ScalableLayoutTests.cs(213,0): at Textalonia.Tests.ScalableLayoutTests.&lt;&gt;c__DisplayClass13_0.&lt;Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows&gt;b__0()&#xD;
+[xUnit.net 00:00:01.22]            at Avalonia.Headless.HeadlessUnitTestSession.&lt;&gt;c__DisplayClass9_0.&lt;Dispatch&gt;b__0()&#xD;
+[xUnit.net 00:00:01.22]            at Avalonia.Headless.HeadlessUnitTestSession.&lt;&gt;c__DisplayClass12_0`1.&lt;DispatchCore&gt;b__0()&#xD;
+[xUnit.net 00:00:01.22]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.22]         --- End of stack trace from previous location ---&#xD;
+[xUnit.net 00:00:01.22]   Finished:    Textalonia.Tests&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="DESKTOP-0GDCOSC" outcome="Error" timestamp="2026-09-26T16:27:57.9239777-04:00">
+        <Text>[xUnit.net 00:00:01.09]     Textalonia.Tests.ScalableLayoutTests.Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows(insert: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-0GDCOSC" outcome="Error" timestamp="2026-09-26T16:27:58.0551897-04:00">
+        <Text>[xUnit.net 00:00:01.22]     Textalonia.Tests.ScalableLayoutTests.Distant_caret_scrolls_after_extent_measurement_and_edits_reuse_visible_windows(insert: True) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

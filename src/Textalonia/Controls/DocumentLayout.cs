@@ -49,6 +49,7 @@ internal sealed class DocumentLayout : IDisposable
     private Rect _viewport;
     private double _previousViewportY = double.NaN;
     private long _clock;
+    private int _maxShapingCharacters;
     public int ShapedParagraphs { get; private set; }
     public int DisposedLayouts { get; private set; }
     public int CachedParagraphs => _cache.Count;
@@ -65,8 +66,9 @@ internal sealed class DocumentLayout : IDisposable
     internal event Action<double>? AnchorShifted;
 
     public void Build(FlowDocument document, double width, FontFamily font, IBrush foreground, IBrush border,
-        Thickness padding, Rect? viewport = null)
+        Thickness padding, Rect? viewport = null, int maxShapingCharacters = 0)
     {
+        if (maxShapingCharacters != _maxShapingCharacters) { Clear(); _maxShapingCharacters = maxShapingCharacters; }
         _building = true;
         try { BuildCore(document, width, font, foreground, border, padding, viewport); }
         finally { _building = false; }
@@ -166,7 +168,7 @@ internal sealed class DocumentLayout : IDisposable
                 ShapedParagraphs++; ShapedCharacters += text.Length;
                 LargestShapingWindow = Math.Max(LargestShapingWindow, text.Length);
                 return CreateTextLayout(p, width, _font, _foreground, start, text);
-            }, () => DisposedLayouts++, _glyphs));
+            }, () => DisposedLayouts++, _glyphs, _maxShapingCharacters));
             _cache[paragraph.Id] = cached;
         }
         else cached.Layout.Update(paragraph);
@@ -192,7 +194,7 @@ internal sealed class DocumentLayout : IDisposable
                 {
                     page.LastUse = ++_clock;
                     var visual = new ParagraphVisual(_index!.ById(paragraph.Id), page, new(x + node.Indent, originY + page.Top), Math.Max(16, node.Available - node.Indent), page.Start == 0 ? marker : null);
-                    var existing = Paragraphs.FindIndex(p => p.Position.Paragraph.Id == paragraph.Id && p.Page.Start == page.Start);
+                    var existing = _collectDecorations ? -1 : Paragraphs.FindIndex(p => p.Position.Paragraph.Id == paragraph.Id && p.Page.Start == page.Start);
                     if (existing >= 0) Paragraphs[existing] = visual; else Paragraphs.Add(visual);
                 }
                 UpdateHeight(node, layout);
@@ -237,14 +239,17 @@ internal sealed class DocumentLayout : IDisposable
     {
         var path = _index!.Tree.Paths!.Find(id)!.Value;
         var node = _heights.Root; var x = _padding.Left; var y = _padding.Top;
-        foreach (var key in path.Keys())
+        Visit(path);
+        void Visit(DocumentPath current)
         {
+            if (current.Parent is not null) Visit(current.Parent);
+            var key = current.Key;
             if (node.Source.Source is Table table)
             {
                 var cell = node.Children!.Find(key);
                 x += cell.Source.Column * node.Available / table.ColumnCount;
                 y += node.RowOffsets[cell.Source.Row];
-                node = cell; continue;
+                node = cell; return;
             }
             if (node.Source.Source is Section section) { x += section.Padding; y += section.Padding; }
             else if (node.Source.Source is TableCell) { x += 8; y += 8; }
@@ -272,10 +277,11 @@ internal sealed class DocumentLayout : IDisposable
     }
     private void Evict()
     {
-        if (_cache.Count <= CacheLimit) return;
-        foreach (var id in _cache.Keys.OrderBy(id => _uses.GetValueOrDefault(id)).ToArray())
+        while (_cache.Count > CacheLimit)
         {
-            if (_cache.Count <= CacheLimit) break;
+            var id = Guid.Empty; var oldest = long.MaxValue;
+            foreach (var use in _uses)
+                if (use.Value < oldest) { id = use.Key; oldest = use.Value; }
             _cache[id].Layout.Dispose(); _cache.Remove(id); _uses.Remove(id);
         }
     }

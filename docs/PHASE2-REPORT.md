@@ -1,63 +1,187 @@
 # Phase 2 implementation and evidence
 
-**Status: retained viewport caches bounded; strict transient shaping and performance exit gates remain incomplete.** No P1 budget was widened. The final implementation passes 98 correctness tests, but both enforced performance comparisons still return nonzero.
+**Status: implementation complete; performance exit gate remains open.**
+Both standard seven-sample controlled captures pass, but the longer strict-mode
+confirmation still exceeds table latency budgets.
+The optional strict shaping policy closes P2.5 without changing default rendering.
+No adopted budget was widened, no workload was removed, and no sample was discarded.
+The 30-sample confirmation and package verification are recorded in the linked evidence.
 
-The engine retains weighted persistent document/ID trees, shared bounded text pieces, local grapheme context, range reads, streaming search and byte-budgeted history. This follow-up closes the visible-content cache exception and removes eager height-metadata construction from ordinary first viewport and width changes. It preserves exact Unicode rendering, including the remaining large-context shaping paths.
+The core provides persistent document/ID indexes, shared text pieces, local grapheme
+context, range reads, streaming search, viewport layout and byte-budgeted history.
+Existing `Text` bindings remain eager. `SynchronizeText=false` avoids those full-text
+notifications; `MaxShapingCharacters` independently enables strict shaping inputs.
+See [ADR 002](ADR-002-SCALABLE-CORE.md), [migration](COMPATIBILITY.md#phase-2-additive-api-migration)
+and [bounds](ARCHITECTURE.md#performance-boundaries).
 
-See [ADR 002](ADR-002-SCALABLE-CORE.md), [migration and compatibility](COMPATIBILITY.md#phase-2-additive-api-migration), and [architecture/bounds](ARCHITECTURE.md#performance-boundaries). Existing Text bindings stay eager; Document consumers opt into `SynchronizeText=false`.
+## Remaining implementation completed
 
-## Changes and correctness
+- `MaxShapingCharacters` defaults to zero for exact compatibility rendering.
+  Positive values of at least 2,048 bound text reads, grapheme discovery and every
+  shaping attempt, including bidi context, window growth and recreation after
+  eviction. A request exceeding the limit produces `ShapingLimitExceededException`.
+  The surface releases partial layouts, exposes `LayoutError`, reports
+  `OperationFailed`, and displays an explicit rendering-limit message. It preserves
+  the document, logical selection, undo/redo, copy and export. Successful layout
+  after changing the policy/content clears the error. Geometry-dependent input
+  is suspended while exact geometry is unavailable; IME receives an empty caret
+  rectangle. Text edits and undo remain available.
+- Reusable glyph ownership remains limited to 256 layouts and a 16 MiB estimate.
+  With limit L, construction or one active lease adds at most `256 + 32 * L`
+  estimated bytes. Peak observations now include discarded lookahead attempts.
+  Default unlimited rendering retains its explicitly documented transient exception.
+- History reference visitors reuse callbacks instead of allocating iterators per
+  node. Single-run text reads avoid a weak-table lookup. Paragraph length reads,
+  geometry path traversal and paragraph-cache eviction avoid temporary enumeration
+  and sorting allocations. Empty preedit cancellation no longer rebuilds layout.
+  The retained-history estimate and undo/redo policy are unchanged.
 
-- Glyph layouts use a central LRU limited to 256 layouts and a 16 MiB estimate. Visible/target layouts can be evicted; drawing and geometry queries acquire a short lease and recreate an evicted shape. Oversized exact layouts are released when the lease ends. Detach also clears shapes recreated by visuals whose paragraph metadata was evicted.
-- Height branches begin with additive subtree estimates and materialize on visited paths. Table row dependencies and first-use numbered-list summaries may still enumerate their container metadata. Plain paragraphs avoid numbering-array allocations. Overscan is bounded to 160 DIP per side.
-- Anchors include corrections caused by offscreen caret/IME queries. Painting does not discover offscreen caret geometry. Selection changes avoid unnecessary layout rebuilding. A final regression covers carets both above and below the viewport.
-- One ownership table updates total/current history references in a single traversal. Load/reset clears discarded ownership without traversing the old graph to decrement every entry. The estimate, limits and undo/redo semantics are unchanged.
-- Release build: zero warnings/errors. **98 tests passed, none failed or skipped.** Six generated seeds ran 2,000 operations each. The frozen full-measure oracle, window seams, styles, bidi, graphemes, table spans, long cells, width/theme changes, Home/End and IME checks pass. New regressions cover 900 visible paragraphs with a 256-layout cache, transient oversized layouts, lazy first-open metadata and offscreen-query anchoring.
-- Native v1 and public API fixtures are unchanged. The independent package consumer is checked using a fresh workspace cache and offline dependency feed; execution status and loaded/packed library hashes are recorded in [verification](baselines/performance/windows-2026-09-26-phase2-cache/verification.json).
+- Distant caret navigation now publishes a refined document extent before asking
+  the scroll viewer to bring the caret into view. Previously that request could
+  be clamped against the old estimate, leaving the caret offscreen until the next
+  edit. A failing visibility regression established the bug; insertion and deletion
+  now both keep the caret visible and reshape only the changed final window.
+## Correctness and package contract
 
-## Full control comparison
+Release build: **zero warnings/errors; 107 tests passed, none failed or skipped**.
+Six generated seeds each ran 2,000 operations. Tests include the frozen full-measure
+geometry oracle, window seams, styles, bidi, graphemes, table spans, long cells,
+width/theme changes, Home/End, IME, offscreen anchoring, 900 visible paragraphs with
+cache eviction, sustained history limits and snapshot export during edits.
 
-Same Windows host/CPU signature, .NET 8.0.31, SDK 10.0.204, Avalonia 12.1.3, headless Skia, Inter and 800 x 500 DIP as P1. The final capture uses the original two warmups/seven samples, preserves every one of the 138 compatibility cases, and separately records all 90 document-mode cases. Inputs, timing boundaries and adopted budgets are unchanged. Seven-sample p95 is a descriptive maximum, not a robust tail estimate.
+Closing-control coverage confirms every cached glyph layout is released.
+New regressions cover rejected bidi/grapheme/visual-line inputs before oversized
+shaping, partial-layout disposal, exact geometry within the allowance, an offscreen
+target, error notification deduplication, retained content/history and recovery via
+policy changes, load and undo/redo. The benchmark fails if any frame reports a
+rendering-limit error, so the strict corpus cannot pass by displaying an error message.
 
-| Workload / operation | P1 median ms | Previous windowed P2 median ms | Current median ms | Current p95 ms |
-| --- | ---: | ---: | ---: | ---: |
-| paragraphs-10000 / first-viewport | 776.10 | 73.74 | 32.28 | 66.72 |
-| paragraphs-10000 / type-start-unbound | 24.87 | 4.97 | 5.68 | 14.04 |
-| paragraphs-10000 / text-update-unbound | 1087.42 | 119.26 | 41.37 | 43.60 |
-| paragraphs-10000 / text-update-bound | 924.86 | 125.31 | 75.15 | 89.22 |
-| paragraphs-10000 / resize | 2795.89 | 29.57 | 7.39 | 10.10 |
-| long-paragraph / first-viewport | 352.17 | 11.44 | 18.36 | 64.28 |
-| long-paragraph / scroll | 19.67 | 18.11 | 7.11 | 7.58 |
-| table-heavy / scroll | 3.42 | 10.89 | 5.22 | 6.50 |
-| table-heavy / type-middle-unbound | 5.28 | 7.26 | 22.88 | 54.53 |
+The native-v1 fixture is byte-for-byte unchanged. The API snapshot adds only the
+shaping property, observable error and exception type. The independent package
+consumer exercises those APIs, including error/recovery, through a fresh workspace
+package cache and offline dependency feed. Exact results and loaded/packed assembly
+hashes are in [verification](baselines/performance/windows-2026-09-26-phase2-final/verification.json).
 
-For 10,000 paragraphs, the final first viewport creates **34 geometry nodes and 21 glyph layouts**, rather than constructing all paragraph geometry. Its median managed allocation is 23.26 MiB (P1: 133.96 MiB; previous windowed P2: 40.50 MiB). Resize allocates 0.55 MiB at the median. Initial ingestion still constructs the document index and ownership graph, and eager Text materialization remains linear.
+## Paired performance qualification
 
-Long-paragraph first viewport shapes 4,094 UTF-16 units out of 90,000; its largest input is 2,047 units. The final corpus high-water observations are 150 resident layouts and 357,728 estimated resident shape bytes. The 900-paragraph regression separately exercises eviction beyond the count budget. These estimates do not measure native glyph allocations or process working set.
+The Windows host, .NET 8.0.31, SDK 10.0.204, Avalonia 12.1.3, headless Skia, Inter,
+800 x 500 DIP, corpus, operations and thresholds are unchanged. Both engines were
+remeasured with two warmups and seven samples. All 138 compatibility cases and
+90 document-mode cases are present, with identical input sizes to the reference.
+Document mode uses `SynchronizeText=false` and `MaxShapingCharacters=4096`.
 
-The [complete comparison](baselines/performance/windows-2026-09-26-phase2-cache/comparison.json) includes all cases and memory results, including regressions. Document-mode comparison entries explicitly identify the P1 compatibility comparator; they do not substitute for eager binding results.
+The harness now offers explicit **setup isolation**. Each sample creates a fresh
+editor/window during preparation. Diagnostic GC-pause observations showed that a
+collection started there could suspend the next timed action for 50–85 ms even
+when no collection started inside that action's generation-count interval.
+`--isolate-samples true` settles GC/finalizers after preparation, before timing.
+No pause is subtracted from elapsed time; GC caused by the action remains timed.
+This is a changed heap preparation method, so Phase 1 was rebuilt from `ccae784`
+and run with exactly the same isolation and additive counters. The
+[small reference-harness patch](baselines/performance/windows-2026-09-26-phase2-final/p1-harness.patch)
+changes no engine code or workload. Its application was checked against the original.
 
-## Budget outcome and remaining work
-
-| Mode | Cases | Checks passed | Checks exceeded |
+| Workload / operation | Paired P1 median ms | P2 median ms | P2 p95 ms |
 | --- | ---: | ---: | ---: |
-| compatibility | 138 | 205 | 29 |
-| document | 90 | 131 | 13 |
+| paragraphs-10000 / first-viewport | 627.04 | 15.65 | 16.82 |
+| paragraphs-10000 / type-middle-unbound | 14.09 | 3.95 | 4.11 |
+| paragraphs-10000 / text-update-unbound | 643.30 | 15.72 | 17.19 |
+| paragraphs-10000 / text-update-bound | 643.37 | 15.38 | 19.10 |
+| paragraphs-10000 / resize | 1925.92 | 7.52 | 8.26 |
+| long-paragraph / first-viewport | 228.83 | 12.66 | 13.19 |
+| long-paragraph / type-middle-unbound | 232.06 | 5.37 | 6.08 |
+| long-paragraph / scroll | 16.24 | 8.05 | 8.42 |
+| table-heavy / type-middle-bound | 4.35 | 6.63 | 7.81 |
+| table-heavy / scroll | 3.04 | 5.92 | 6.72 |
 
-**All final allocation and retained-history checks pass; the failures are p95 latency. Both enforced budget commands exit 1.** Whole-text replacement at 10,000 paragraphs passes its 100 ms limit in the final seven-sample capture, but it fails in the separately preserved 30-sample diagnostic run. Local edits and some table/resize cases also remain above budget. No slow sample was excluded.
+Some table geometry operations are slower than P1 while meeting their budgets.
+The compatibility history batch also measures 217.53 ms versus P1's 139.18 ms;
+that batch includes forced GC and has a memory gate, not a keystroke-latency gate.
+The [complete comparison](baselines/performance/windows-2026-09-26-phase2-final/comparison.json)
+includes every case and the regressions. Document-mode entries explicitly identify
+the P1 unbound compatibility comparator rather than replacing eager binding evidence.
 
-The [30-sample diagnostic](baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/compatibility/results.json) has 52 compatibility and 20 document-mode failures, also latency only. It preceded the final offscreen-caret visibility guard and has separate hashes. CPU readings during that run reached 77% and 100%; the latter is [archived](baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/host-load.json). GC counts accompany each sample. These observations show that the timings need controlled reruns; they do not prove that all misses are external or justify declaring acceptance. The final binary's separate capture above also fails.
+For 10,000 paragraphs, first viewport creates **34 geometry nodes and 21 glyph
+layouts**. Median managed allocation is **13.93 MiB**, versus P1's 133.97 MiB.
+A middle edit with eager text allocates 2,032,864 bytes; full Text materialization
+remains intentionally linear. Long-paragraph first viewport shapes 4,094 of 90,000
+UTF-16 units in two inputs, each at most 2,047 units. The compatibility corpus peaks
+at 150 resident layouts, 328,800 estimated resident shape bytes and 394,560 estimated
+peak shape bytes. Dense-viewport tests independently exercise the 256-layout limit.
+These counters do not measure native glyph allocations or process working set.
 
-P2.5 still needs a strict transient-work policy or a compatible bounded shaping implementation. Paragraph-wide bidi context and an indivisible grapheme/visual line can require a larger input than the normal 2,048-unit window. Such shapes no longer remain in an over-budget reusable cache, but their construction/active lease can exceed the estimate. `PeakLayoutBytes` discloses this high-water estimate. Checkpoints remain proportional to measured text, and first-time exact targets within a long paragraph may discover intervening line breaks. A fixed cap with a placeholder/rejection would change existing rendering behavior; no such compatibility change was made.
+## Budget outcome and scope
 
-Acceptance therefore still requires resolving that shaping contract and demonstrating the unchanged budgets on a controlled reference run, then fixing any remaining measured misses. Native platform qualification remains separate.
+| Capture | Cases | Checks passed | Checks exceeded |
+| --- | ---: | ---: | ---: |
+| Paired P1 reference | 138 | 175 | 59 |
+| P2 compatibility, seven samples | 138 | 234 | 0 |
+| P2 strict document mode, seven samples | 90 | 144 | 0 |
+| P2 strict document mode, 30 samples | 90 | 142 | 2 |
+
+Both P2 `Compare-BaselineBudgets.ps1 -Enforce` commands return **0**. This covers
+latency, allocation and retained history. Seven-sample p95 is a descriptive maximum;
+[30-sample confirmation](baselines/performance/windows-2026-09-26-phase2-final/confirmation-30)
+repeats the complete strict document-mode corpus after the scroll fix. No budgets or slow cases are suppressed in either run.
+
+The longer strict confirmation returns a nonzero enforcement result:
+`table-heavy/delete-middle-document` is **19.84 ms p95**, and
+`table-heavy/caret-document` is **16.33 ms p95**, against **16 ms**. All its
+allocation and history checks pass. These two latency misses keep P2.7 and the
+Phase 2 exit gate open. The slow samples record no GC pause; a host CPU sample
+was 17.56% with other applications active. That observation does not establish
+load as the sole cause. An idle-host rerun can separate host variance from
+remaining engine latency before choosing another implementation change.
+A [focused CPU probe](baselines/performance/windows-2026-09-26-phase2-final/diagnostics/cpu-probe)
+did not reproduce either miss across 64 samples per operation, so it does not
+establish a cause or replace the failed full-corpus confirmation.
+The [nonisolated diagnostics](baselines/performance/windows-2026-09-26-phase2-final/diagnostics)
+remain archived: the starting engine has 40 misses, the first allocation stage 20,
+and the next stage 21, all latency. Their GC pauses remain in their elapsed times.
+The [final binary without setup isolation](baselines/performance/windows-2026-09-26-phase2-final/nonisolated-final)
+has 23 latency misses and is retained separately. Controlled acceptance uses the fixed full-corpus order
+and two warmups per case on this host; it does not promise the same tail latency during
+continuous allocation, arbitrary application activity or native compositor/input.
+
+The [first candidate](baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate)
+passed both standard captures and its complete compatibility 30-sample run. Its
+strict 30-sample run was stopped after 77 complete cases when end deletion in the
+long paragraph reached 16.6832 ms p95. The caret regression established that the
+old extent clamped the initial scroll; the first edit then finished scrolling and
+rebuilt an extra window. The fix reduces that edit from 2,941 shaped UTF-16 units
+to 894 and passes both visibility regressions. End deletion is 8.42 ms p95 in the
+new full-corpus 30-sample confirmation. All completed samples are preserved.
+
+The final binary's [standalone long-paragraph probes](baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph)
+also remain disclosed: first insertion exceeds 16 ms when that workload starts the
+process (17.88 ms in document mode, 20.96 ms unbound). These probes use a different
+workload order and do not replace the paired full-corpus qualification. Startup
+and application workload latency need their own measurements.
+
+Strictness is opt-in: default rendering may shape a whole bidi paragraph or an
+indivisible long grapheme/line. Enabling the cap chooses an explicit error over
+unbounded exact shaping. Checkpoints and height metadata remain proportional to
+measured text/model nodes, and first-time distant targets can discover preceding
+line breaks. Ingestion, validation, arbitrary snapshots, structural table changes,
+complete exports and compatibility text/array reads retain documented linear costs.
+Native platform qualification and native-memory/working-set budgets remain separate.
 
 ## Evidence and reproduction
 
-- [Final compatibility samples](baselines/performance/windows-2026-09-26-phase2-cache/compatibility/results.json), [budget checks](baselines/performance/windows-2026-09-26-phase2-cache/compatibility/budgets.json).
-- [Final document-mode samples](baselines/performance/windows-2026-09-26-phase2-cache/document/results.json), [budget checks](baselines/performance/windows-2026-09-26-phase2-cache/document/budgets.json).
-- [All comparisons](baselines/performance/windows-2026-09-26-phase2-cache/comparison.json), [source hashes](baselines/performance/windows-2026-09-26-phase2-cache/source-hashes.json), [verification](baselines/performance/windows-2026-09-26-phase2-cache/verification.json), [host notes](baselines/performance/windows-2026-09-26-phase2-cache/host-notes.txt).
-- [Diagnostic compatibility samples](baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/compatibility/results.json), [diagnostic document samples](baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/document/results.json). These complete runs are retained separately and are not substituted case by case.
-- [Previous windowed P2 evidence](baselines/performance/windows-2026-09-26-phase2-windows/verification.json), [initial P2 evidence](baselines/performance/windows-2026-09-26-phase2/verification.json), and [P1 results](baselines/performance/windows-2026-09-26/results.json) remain unchanged.
+- [Compatibility samples](baselines/performance/windows-2026-09-26-phase2-final/compatibility/results.json)
+  and [enforced budgets](baselines/performance/windows-2026-09-26-phase2-final/compatibility/budgets.json).
+- [Strict document-mode samples](baselines/performance/windows-2026-09-26-phase2-final/document/results.json)
+  and [enforced budgets](baselines/performance/windows-2026-09-26-phase2-final/document/budgets.json).
+- [Remeasured P1](baselines/performance/windows-2026-09-26-phase2-final/reference/results.json),
+  [source hashes](baselines/performance/windows-2026-09-26-phase2-final/source-hashes.json),
+  [host notes](baselines/performance/windows-2026-09-26-phase2-final/host-notes.txt),
+  and [reproduction commands](baselines/performance/windows-2026-09-26-phase2-final/README.md).
+- The [original P1](baselines/performance/windows-2026-09-26/results.json),
+  [initial P2](baselines/performance/windows-2026-09-26-phase2/verification.json),
+  [windowed P2](baselines/performance/windows-2026-09-26-phase2-windows/verification.json),
+  and [cache follow-up](baselines/performance/windows-2026-09-26-phase2-cache/verification.json)
+  remain unchanged, including their earlier failures.
 
-Use the commands in [PERFORMANCE](PERFORMANCE.md#phase-2-implementation-and-qualification). Set `TEXTALONIA_FUZZ_STEPS=2000` for the long corpus. The budget script ran with a process-local Windows PowerShell execution-policy override. Package restore uses a fresh workspace cache and the new local nupkg to avoid testing an older build with the same preview version.
+Use the commands in [PERFORMANCE](PERFORMANCE.md#phase-2-implementation-and-qualification).
+Set `TEXTALONIA_FUZZ_STEPS=2000` for the long correctness corpus. The budget script
+uses a process-local PowerShell execution-policy override on this Windows host.

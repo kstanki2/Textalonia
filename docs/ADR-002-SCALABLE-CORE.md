@@ -19,6 +19,9 @@ units. Only complete lines are committed; the trailing line provides lookahead
 and is reshaped in the next window. Compact line-break checkpoints survive glyph
 eviction. Paragraph-wide bidi context retains the exact full-shaping fallback;
 a single oversized grapheme or visual line can also require a larger window.
+An additive, opt-in `MaxShapingCharacters` policy now bounds those requests before
+allocation. Its default is zero for compatibility; a limit error suspends rendering
+without truncating content. See [the contract](COMPATIBILITY.md#optional-shaping-limit).
 
 ## Coordinates and edits
 
@@ -81,8 +84,7 @@ limits through to their paragraph contents. Cache eviction disposes TextLayout
 instances independently of their line-break checkpoints. Visible shapes also
 participate in the global LRU; drawing and geometry queries acquire short leases
 and recreate evicted layouts. Oversized exact layouts are released at the end of
-the lease, with their transient cost included in the peak estimate. This preserves
-compatibility but does not impose a hard cap on indivisible shaping work. Single-style edits reuse
+the lease, with their transient cost included in the peak estimate. This preserves default compatibility. Hosts can opt into a strict per-input cap and a typed rendering-limit error for indivisible contexts. Single-style edits reuse
 the measured prefix and resume an unchanged suffix when line boundaries converge;
 other formatting changes conservatively invalidate the paragraph's checkpoints.
 One discarded, identical single-style window may be reused during prefix discovery

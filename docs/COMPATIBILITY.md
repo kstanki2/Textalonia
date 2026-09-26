@@ -1,6 +1,6 @@
 # Compatibility baseline
 
-This records the current preview contract before Phase 2 changes the engine. Test names below are in [EditingTests](../tests/Textalonia.Tests/EditingTests.cs), [ControlTests](../tests/Textalonia.Tests/ControlTests.cs), [SerializationTests](../tests/Textalonia.Tests/SerializationTests.cs), and the new baseline classes. A missing test is explicitly a gap, not evidence of support.
+This records the preview contract preserved by the Phase 2 engine changes. Test names below are in [EditingTests](../tests/Textalonia.Tests/EditingTests.cs), [ControlTests](../tests/Textalonia.Tests/ControlTests.cs), [SerializationTests](../tests/Textalonia.Tests/SerializationTests.cs), and the new baseline classes. A missing test is explicitly a gap, not evidence of support.
 
 ## Invariants and coverage
 
@@ -46,10 +46,43 @@ Phase 2 is a private engine change and must continue emitting/reading version 1.
 
 The API snapshot adds `SynchronizeText`, `HistoryByteLimit`,
 `RetainedHistoryBytes`, `DocumentPosition`, `CreatePosition`, `TryResolvePosition`,
-and index `ReadText`, `CharAt`, `ParagraphCount`. No P1 public member was removed.
+index `ReadText`, `CharAt`, `ParagraphCount`, and the optional shaping policy below.
+No P1 public member was removed.
 The independent package consumer exercises these contracts. Existing native-v1
 fixtures remain unchanged. Public model arrays and init/with expressions remain
 available; internal edits materialize compatibility arrays on demand. RichRun
 retains its string constructor, init-capable Text, deconstruction and value equality.
 See [ADR 002](ADR-002-SCALABLE-CORE.md) for linear compatibility operations and
 [architecture](ARCHITECTURE.md#performance-boundaries) for budget semantics.
+
+### Optional shaping limit
+
+`TextaloniaEditor.MaxShapingCharacters` is independent of `SynchronizeText`.
+It defaults to `0`, retaining exact unrestricted rendering. The policy applies
+to document paragraphs, not host-supplied template controls or placeholder text.
+A positive value
+(at least 2,048) limits each shaping input, including bidi context, grapheme
+boundary discovery, lookahead and retries. Ordinary long paragraphs still use
+small windows; this is not a paragraph-length or document-length limit.
+
+If exact rendering would exceed the allowance, the control releases partial
+layouts, suspends document rendering, and shows a rendering-limit message.
+`LayoutError` exposes a `ShapingLimitExceededException` with `ParagraphId`,
+`CharacterLimit` and `RequestedCharacters`; `OperationFailed` also reports it.
+The same error is not reported on every repaint. No text is truncated or replaced,
+and the document, logical selection, history, copy and export remain available.
+Geometry-dependent pointer/navigation operations are ignored and the IME caret
+rectangle is empty while rendering is suspended. Text edits and undo still work.
+
+Changing the limit, editing/undoing the offending content, or loading another
+document retries layout; a successful build clears `LayoutError`. Hosts can
+bind this property to their own error UI. For example:
+
+```xml
+<textalonia:TextaloniaEditor Document="{Binding Document}"
+    SynchronizeText="False" MaxShapingCharacters="65536" />
+```
+
+The bound covers shaping inputs and the documented engine memory estimate,
+not native font-library allocations, total process memory or total time spent
+finding a distant line. See [performance boundaries](ARCHITECTURE.md#performance-boundaries).

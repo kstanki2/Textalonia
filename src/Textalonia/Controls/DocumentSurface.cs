@@ -23,6 +23,7 @@ public class DocumentSurface : Control
     private TextaloniaEditor? _editor;
     private FlowDocument? _layoutDocument;
     private double _layoutWidth;
+    private double _measuredLayoutHeight;
     private bool _dirty = true;
     private bool _caretVisible = true;
     private bool _dragging;
@@ -95,7 +96,17 @@ public class DocumentSurface : Control
                 if (Editor is not null && TopLevel.GetTopLevel(this) is not null)
                 {
                     EnsureLayout(Bounds.Width);
-                    this.BringIntoView(CaretRectangle.Inflate(4));
+                    var caret = CaretRectangle;
+                    // Resolving a distant caret can refine the document extent.
+                    // Publish that measurement before the scroll viewer clamps
+                    // the request against its previous, estimated extent.
+                    for (var pass = 0; pass < 4 && Editor.LayoutError is null &&
+                        Math.Abs(_measuredLayoutHeight - _layout.Height) > .1; pass++)
+                    {
+                        InvalidateMeasure(); this.UpdateLayout();
+                        caret = CaretRectangle;
+                    }
+                    if (Editor.LayoutError is null) this.BringIntoView(caret.Inflate(4));
                 }
             }, DispatcherPriority.Loaded);
     }
@@ -105,8 +116,11 @@ public class DocumentSurface : Control
         get
         {
             EnsureLayout(Bounds.Width);
+            if (Editor?.LayoutError is not null) return default;
             var height = _layout.Height;
-            var caret = _layout.Caret(DisplayCaret);
+            Rect caret;
+            try { caret = _layout.Caret(DisplayCaret); }
+            catch (ShapingLimitExceededException error) { RejectLayout(error); return default; }
             if (Math.Abs(height - _layout.Height) > .1)
                 Dispatcher.UIThread.Post(InvalidateMeasure, DispatcherPriority.Loaded);
             return caret;
@@ -122,11 +136,32 @@ public class DocumentSurface : Control
         width = double.IsFinite(width) && width > 48 ? width : 800;
         var document = _composition ?? Editor.Document;
         if (!_dirty && ReferenceEquals(_layoutDocument, document) && Math.Abs(_layoutWidth - width) < .1) return;
-        _layout.Build(document, width, Editor.FontFamily, Editor.Foreground ?? Brushes.Black,
-            Editor.BorderBrush ?? Brushes.Gray, Editor.DocumentPadding,
-            _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, Editor.Scroller?.Offset.Y ?? 0, width, 500));
         _layoutDocument = document; _layoutWidth = width; _dirty = false;
+        try
+        {
+            _layout.Build(document, width, Editor.FontFamily, Editor.Foreground ?? Brushes.Black,
+                Editor.BorderBrush ?? Brushes.Gray, Editor.DocumentPadding,
+                _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, Editor.Scroller?.Offset.Y ?? 0, width, 500),
+                Editor.MaxShapingCharacters);
+        }
+        catch (ShapingLimitExceededException error) { RejectLayout(error); return; }
+        Editor.SetLayoutError(null);
         ApplyAnchorAdjustment(_layout.AnchorAdjustment);
+    }
+    private void RejectLayout(ShapingLimitExceededException error)
+    {
+        // No partial or approximate text geometry is exposed after rejection.
+        // Retain the extent so an offscreen target cannot jump the scroll view.
+        _layout.Clear(); _dragging = false;
+        Editor?.SetLayoutError(error);
+        InvalidateVisual();
+    }
+    private bool TryHitTest(Point point, out int position)
+    {
+        position = 0;
+        if (Editor?.LayoutError is not null) return false;
+        try { position = _layout.HitTest(point); return true; }
+        catch (ShapingLimitExceededException error) { RejectLayout(error); return false; }
     }
     private void ApplyAnchorAdjustment(double adjustment)
     {
@@ -137,7 +172,8 @@ public class DocumentSurface : Control
     protected override Size MeasureOverride(Size availableSize)
     {
         EnsureLayout(availableSize.Width);
-        return new(double.IsFinite(availableSize.Width) ? availableSize.Width : _layout.Width, Math.Max(90, _layout.Height));
+        _measuredLayoutHeight = _layout.Height;
+        return new(double.IsFinite(availableSize.Width) ? availableSize.Width : _layout.Width, Math.Max(90, _measuredLayoutHeight));
     }
 
     public override void Render(DrawingContext context)
@@ -147,6 +183,14 @@ public class DocumentSurface : Control
         EnsureLayout(Bounds.Width);
         context.FillRectangle(Brushes.Transparent, new Rect(Bounds.Size));
         var viewport = _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(Bounds.Size);
+        if (Editor.LayoutError is not null)
+        {
+            using var message = new TextLayout("This content exceeds the configured rendering limit.",
+                new Typeface(Editor.FontFamily), 16, Editor.Foreground, textWrapping: TextWrapping.Wrap,
+                maxWidth: Math.Max(20, viewport.Width - Editor.DocumentPadding.Left - Editor.DocumentPadding.Right));
+            message.Draw(context, new Point(Editor.DocumentPadding.Left, viewport.Top + Editor.DocumentPadding.Top));
+            return;
+        }
         foreach (var decoration in _layout.Decorations)
         {
             if (!decoration.Bounds.Intersects(viewport)) continue;
@@ -238,74 +282,80 @@ public class DocumentSurface : Control
             if (e.Key == Key.F) { Editor.RequestFind(); e.Handled = true; return; }
         }
         EnsureLayout(Bounds.Width);
-        switch (e.Key)
+        try
         {
-            case Key.Left:
-                Move(!shift && !session.Selection.IsEmpty ? session.Selection.Start :
-                    word ? session.PreviousWord(session.Selection.Active) : session.PreviousCaret(session.Selection.Active));
-                _preferredX = null; break;
-            case Key.Right:
-                Move(!shift && !session.Selection.IsEmpty ? session.Selection.End :
-                    word ? session.NextWord(session.Selection.Active) : session.NextCaret(session.Selection.Active));
-                _preferredX = null; break;
-            case Key.Up:
-            case Key.Down:
-            case Key.PageUp:
-            case Key.PageDown:
-                var caret = CaretRectangle;
-                _preferredX ??= caret.X;
-                var direction = e.Key is Key.Up or Key.PageUp ? -1 : 1;
-                var distance = e.Key is Key.PageUp or Key.PageDown ? Math.Max(40, Editor.Scroller?.Viewport.Height ?? 300) : caret.Height;
-                Move(_layout.HitTest(new Point(_preferredX.Value, caret.Y + caret.Height / 2 + direction * distance)));
-                break;
-            case Key.Home:
-            case Key.End:
-                if (command) Move(e.Key == Key.Home ? 0 : session.Index.Length);
-                else
-                {
-                    var p = _layout.At(session.Selection.Active);
-                    if (p is not null)
+            switch (e.Key)
+            {
+                case Key.Left:
+                    Move(!shift && !session.Selection.IsEmpty ? session.Selection.Start :
+                        word ? session.PreviousWord(session.Selection.Active) : session.PreviousCaret(session.Selection.Active));
+                    _preferredX = null; break;
+                case Key.Right:
+                    Move(!shift && !session.Selection.IsEmpty ? session.Selection.End :
+                        word ? session.NextWord(session.Selection.Active) : session.NextCaret(session.Selection.Active));
+                    _preferredX = null; break;
+                case Key.Up:
+                case Key.Down:
+                case Key.PageUp:
+                case Key.PageDown:
+                    var caret = CaretRectangle;
+                    if (Editor.LayoutError is not null) return;
+                    _preferredX ??= caret.X;
+                    var direction = e.Key is Key.Up or Key.PageUp ? -1 : 1;
+                    var distance = e.Key is Key.PageUp or Key.PageDown ? Math.Max(40, Editor.Scroller?.Viewport.Height ?? 300) : caret.Height;
+                    if (TryHitTest(new Point(_preferredX.Value, caret.Y + caret.Height / 2 + direction * distance), out var hitTarget)) Move(hitTarget);
+                    break;
+                case Key.Home:
+                case Key.End:
+                    if (command) Move(e.Key == Key.Home ? 0 : session.Index.Length);
+                    else
                     {
-                        using var lease = p.Acquire();
-                        var lineIndex = lease.Layout.GetLineIndexFromCharacterIndex(session.Selection.Active - p.TextStart, false);
-                        var line = lease.Layout.TextLines[Math.Clamp(lineIndex, 0, p.Page.LineCount - 1)];
-                        Move(p.TextStart + line.FirstTextSourceIndex + (e.Key == Key.End ? line.Length - line.NewLineLength : 0));
-                    }
-                }
-                _preferredX = null; break;
-            case Key.Back: CancelComposition(); session.DeleteBackward(word); _preferredX = null; break;
-            case Key.Delete: CancelComposition(); session.DeleteForward(word); _preferredX = null; break;
-            case Key.Enter: CancelComposition(); if (shift) session.InsertText("\u2028"); else session.InsertParagraph(); _preferredX = null; break;
-            case Key.Tab:
-                if (session.CurrentCell() is { } cell)
-                {
-                    var cellIds = cell.Table.Rows.SelectMany(r => r).Select(c => c.Id).ToHashSet();
-                    var cells = session.Index.Paragraphs.Where(p => cellIds.Contains(p.ContainerId)).GroupBy(p => p.ContainerId).ToArray();
-                    var current = Array.FindIndex(cells, g => g.Key == cell.Table.Rows[cell.Row][cell.Column].Id);
-                    var next = current + (shift ? -1 : 1);
-                    if (next >= 0 && next < cells.Length) Move(cells[next].First().Start);
-                    else if (!shift && !Editor.IsReadOnly && cell.Table.Rows.SelectMany(r => r).All(c => c.RowSpan == 1 && c.ColumnSpan == 1))
-                    {
-                        var rowIndex = cell.Table.Rows.Length;
-                        session.UpdateCurrentTable((table, _, _) => table.InsertRow(rowIndex));
-                        var table = session.CurrentCell()?.Table;
-                        if (table is not null)
+                        if (Editor.LayoutError is not null) return;
+                        var p = _layout.At(session.Selection.Active);
+                        if (p is not null)
                         {
-                            var target = session.Index.Paragraphs.First(p => p.ContainerId == table.Rows[rowIndex][0].Id);
-                            session.Select(target.Start, target.Start);
+                            using var lease = p.Acquire();
+                            var lineIndex = lease.Layout.GetLineIndexFromCharacterIndex(session.Selection.Active - p.TextStart, false);
+                            var line = lease.Layout.TextLines[Math.Clamp(lineIndex, 0, p.Page.LineCount - 1)];
+                            Move(p.TextStart + line.FirstTextSourceIndex + (e.Key == Key.End ? line.Length - line.NewLineLength : 0));
                         }
                     }
+                    _preferredX = null; break;
+                case Key.Back: CancelComposition(); session.DeleteBackward(word); _preferredX = null; break;
+                case Key.Delete: CancelComposition(); session.DeleteForward(word); _preferredX = null; break;
+                case Key.Enter: CancelComposition(); if (shift) session.InsertText("\u2028"); else session.InsertParagraph(); _preferredX = null; break;
+                case Key.Tab:
+                    if (session.CurrentCell() is { } cell)
+                    {
+                        var cellIds = cell.Table.Rows.SelectMany(r => r).Select(c => c.Id).ToHashSet();
+                        var cells = session.Index.Paragraphs.Where(p => cellIds.Contains(p.ContainerId)).GroupBy(p => p.ContainerId).ToArray();
+                        var current = Array.FindIndex(cells, g => g.Key == cell.Table.Rows[cell.Row][cell.Column].Id);
+                        var next = current + (shift ? -1 : 1);
+                        if (next >= 0 && next < cells.Length) Move(cells[next].First().Start);
+                        else if (!shift && !Editor.IsReadOnly && cell.Table.Rows.SelectMany(r => r).All(c => c.RowSpan == 1 && c.ColumnSpan == 1))
+                        {
+                            var rowIndex = cell.Table.Rows.Length;
+                            session.UpdateCurrentTable((table, _, _) => table.InsertRow(rowIndex));
+                            var table = session.CurrentCell()?.Table;
+                            if (table is not null)
+                            {
+                                var target = session.Index.Paragraphs.First(p => p.ContainerId == table.Rows[rowIndex][0].Id);
+                                session.Select(target.Start, target.Start);
+                            }
+                        }
+                        else return;
+                    }
+                    else if (Editor.AcceptsTab) session.InsertText("\t");
                     else return;
-                }
-                else if (Editor.AcceptsTab) session.InsertText("\t");
-                else return;
-                break;
-            case Key.Escape:
-                if (_preedit is not null) CancelComposition();
-                else session.Select(session.Selection.Active, session.Selection.Active);
-                break;
-            default: return;
+                    break;
+                case Key.Escape:
+                    if (_preedit is not null) CancelComposition();
+                    else session.Select(session.Selection.Active, session.Selection.Active);
+                    break;
+                default: return;
+            }
         }
+        catch (ShapingLimitExceededException error) { RejectLayout(error); }
         e.Handled = true;
     }
 
@@ -316,7 +366,7 @@ public class DocumentSurface : Control
         var properties = e.GetCurrentPoint(this).Properties;
         if (!properties.IsLeftButtonPressed && !properties.IsRightButtonPressed) return;
         Focus(); CancelComposition(); EnsureLayout(Bounds.Width);
-        var position = _layout.HitTest(e.GetPosition(this));
+        if (!TryHitTest(e.GetPosition(this), out var position)) return;
         var session = Editor.Session;
         if (properties.IsRightButtonPressed)
         {
@@ -346,7 +396,7 @@ public class DocumentSurface : Control
         base.OnPointerMoved(e);
         if (!_dragging || Editor is null || e.Pointer.Captured != this) return;
         EnsureLayout(Bounds.Width);
-        Editor.Session.Select(Editor.Session.Selection.Anchor, _layout.HitTest(e.GetPosition(this)));
+        if (TryHitTest(e.GetPosition(this), out var position)) Editor.Session.Select(Editor.Session.Selection.Anchor, position);
     }
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
@@ -366,6 +416,7 @@ public class DocumentSurface : Control
     {
         if (Editor is null) return;
         if (Editor.IsReadOnly) text = null;
+        if (string.IsNullOrEmpty(text) && _preedit is null) return;
         _preedit = string.IsNullOrEmpty(text) ? null : text;
         _preeditCursor = cursor;
         if (_preedit is null) { _composition = null; _compositionBase = null; }

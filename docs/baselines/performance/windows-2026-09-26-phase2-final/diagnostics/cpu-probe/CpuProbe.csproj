@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><AssemblyName>Textalonia.Benchmarks</AssemblyName></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Textalonia" Version="$(Version)" />
+    <PackageReference Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+    <Compile Include="../../../../../../tests/Textalonia.Tests/Fixtures/BaselineDocuments.cs" Link="BaselineDocuments.cs" />
+  </ItemGroup>
+</Project>

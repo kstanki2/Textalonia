@@ -8,7 +8,7 @@ namespace Textalonia.Model;
 internal interface IRetained
 {
     long Bytes { get; }
-    IEnumerable<object> References { get; }
+    void VisitReferences(Action<object> visit);
 }
 
 internal readonly record struct OrderKey(BigInteger Numerator, int Scale) : IComparable<OrderKey>
@@ -170,10 +170,8 @@ internal sealed class StorageTree<TKey, TValue> : IRetained where TKey : ICompar
         return result;
     }
     public long Bytes => 112 + (Key is OrderKey order ? order.Numerator.GetByteCount() : 0);
-    public IEnumerable<object> References
-    {
-        get { if (Left is not null) yield return Left; if (Right is not null) yield return Right; if (Value is object value) yield return value; }
-    }
+    public void VisitReferences(Action<object> visit)
+    { if (Left is not null) visit(Left); if (Right is not null) visit(Right); if (Value is object value) visit(value); }
 }
 
 /// <summary>Persistent AVL rope. Leaves own bounded, immutable strings.</summary>
@@ -309,8 +307,8 @@ internal sealed class PieceText : IRetained
     }
     public override string ToString() => _buffer is not null && _start == 0 && Length == _buffer.Length ? _buffer : Read(0, Length);
     public long Bytes => 64;
-    public IEnumerable<object> References
-    { get { if (_buffer is not null) yield return _buffer; else { yield return _left!; yield return _right!; } } }
+    public void VisitReferences(Action<object> visit)
+    { if (_buffer is not null) visit(_buffer); else { visit(_left!); visit(_right!); } }
 }
 
 // Compatibility views materialize only on explicit access, then preserve array

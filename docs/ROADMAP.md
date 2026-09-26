@@ -14,12 +14,12 @@ The target is the feature set described by [Avalonia's editor announcement](http
 | Embedded content | Image alt text on HTML import | Inline images, arbitrary Avalonia controls, resource lifetime/serialization rules |
 | Display | Viewer mode, light/dark, replaceable theme/toolbar, text highlights | Independent input components, complete accessibility text providers |
 | Markdown | No dedicated implementation | Markdown codec/viewer and optional code highlighting |
-| Scale | Persistent indexes, shared text pieces, windowed viewport shaping, entry/byte-budgeted history | Bidi/indivisible-line shaping bounds and the remaining Phase 2 performance exit gate |
+| Scale | Persistent indexes, shared text pieces, windowed viewport shaping, entry/byte-budgeted history | Opt-in strict shaping limits; controlled Windows budgets qualified; native latency/working-set qualification remains |
 | Distribution | Local NuGet + symbols, docs, tests, CI workflow, package consumer smoke test | Ownership/license metadata and package ID availability, platform certification, public release |
 
 ## Implementation phases
 
-The plans below turn the remaining work into ordered deliverables. Phase 1 baseline tooling, fixtures and local automated measurements are implemented; [its report](BASELINE-REPORT.md) records passing checks, budget gaps and pending native evidence. The Phase 2 core is implemented, with [an open performance exit gate](PHASE2-REPORT.md); phases 3-8 remain **planned**. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
+The plans below turn the remaining work into ordered deliverables. Phase 1 baseline tooling, fixtures and local automated measurements are implemented; [its report](BASELINE-REPORT.md) records passing checks, budget gaps and pending native evidence. Phase 2 implementation is complete, with [longer-run latency qualification still open](PHASE2-REPORT.md); phases 3-8 remain **planned**. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
 
 | Phase | Outcome and detailed plan | Prerequisites |
 | --- | --- | --- |
@@ -36,7 +36,7 @@ The default implementation order is 1 through 8. Dependencies permit earlier cor
 
 ## Review findings that determine the order
 
-- **Measure the complete editing path.** Phase 1 exposed whole-document indexes, grapheme scans, eager text synchronization and complete shaping. Phase 2 adds persistent indexing/storage and windowed viewport measurement while keeping eager `Text` compatibility explicit. Both compatibility and opt-in document modes have full-control measurements; the remaining shaping fallbacks and measured budget misses keep the phase open.
+- **Measure the complete editing path.** Phase 1 exposed whole-document indexes, grapheme scans, eager text synchronization and complete shaping. Phase 2 adds persistent indexing/storage and windowed viewport measurement while keeping eager `Text` compatibility explicit. Both compatibility and opt-in document modes have full-control measurements; the optional strict shaping policy and paired performance qualification are documented in the Phase 2 report. Default unlimited rendering and nonisolated timing results remain explicit.
 - **Decide schema evolution before extending the model.** The version-1 JSON reader rejects unknown members and other versions. Lists, cell blocks, typography, and resources need explicit reader migration, writer-version, and old-file fixtures. Existing native files must remain readable; older readers must not silently misread newer files.
 - **Finish structural semantics before expanding codecs.** Cells currently contain paragraphs only, row/column edits reject all merged tables, and rich fragments flatten structure. Nesting, merge transformations, and inline resource descriptors belong in the model before interchange code can preserve them.
 - **Extract input behind existing behavior tests.** `DocumentSurface` currently owns keyboard, pointer, caret, IME, and value-only automation behavior. Splitting it without a baseline would make regressions difficult to distinguish from new behavior.

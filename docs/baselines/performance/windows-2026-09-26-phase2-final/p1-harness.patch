@@ -1,0 +1,64 @@
+diff --git a/benchmarks/Textalonia.Benchmarks/Program.cs b/benchmarks/Textalonia.Benchmarks/Program.cs
+index e0f220f..20ccbb5 100644
+--- a/benchmarks/Textalonia.Benchmarks/Program.cs
++++ b/benchmarks/Textalonia.Benchmarks/Program.cs
+@@ -43,7 +43,8 @@ internal static class Program
+ {
+     private static readonly string[] Workloads = ["paragraphs-100", "paragraphs-1000", "paragraphs-10000", "long-paragraph", "table-heavy", "run-heavy"];
+     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+-    private sealed record Sample(double Milliseconds, long AllocatedBytes, long? RetainedUndoBytes);
++    private sealed record Collections(int Gen0, int Gen1, int Gen2);
++    private sealed record Sample(double Milliseconds, long AllocatedBytes, long? RetainedUndoBytes, Collections Collections, double GcPauseMilliseconds);
+     private sealed record Result(string Workload, string Operation, int Paragraphs, int Utf16Length, int NativeBytes,
+         double MedianMs, double P95Ms, long MedianAllocatedBytes, long? MedianRetainedUndoBytes, double? BudgetMs, bool? WithinLatencyBudget, List<Sample> Samples);
+     private sealed record Operation(Func<long?> Run, Action Cleanup);
+@@ -75,6 +76,7 @@ internal static class Program
+             var warmups = int.Parse(options.GetValueOrDefault("--warmups", "2"), CultureInfo.InvariantCulture);
+             var repetitions = int.Parse(options.GetValueOrDefault("--repetitions", "7"), CultureInfo.InvariantCulture);
+             if (warmups is < 1 or > 100 || repetitions is < 3 or > 200) throw new ArgumentException("Use 1-100 warmups and 3-200 repetitions.");
++            var isolateSamples = bool.Parse(options.GetValueOrDefault("--isolate-samples", "false"));
+             var chosen = options.TryGetValue("--workload", out var single) ? new[] { single } : Workloads;
+             if (chosen.Any(w => !Workloads.Contains(w))) throw new ArgumentException("Unknown workload.");
+             var environment = new
+@@ -87,7 +89,7 @@ internal static class Program
+                 avalonia = typeof(Application).Assembly.GetName().Version?.ToString(),
+                 backend = "Avalonia.Headless + Skia software drawing (not native compositor latency)",
+                 font = "Inter, 16 DIP; OS fallback for missing glyphs", theme = "Fluent Light", viewport = "800 x 500 DIP", dpiScale = 1,
+-                configuration = "Release required", warmups, repetitions, workloads = chosen,
++                configuration = "Release required", isolateSamples, warmups, repetitions, workloads = chosen,
+                 percentile = "nearest rank ceil(0.95 * n); median averages central pair", historyEntries = 100,
+                 allocationMethod = "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
+                 historyMethod = "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
+@@ -112,12 +114,21 @@ internal static class Program
+                         var operation = prepare();
+                         try
+                         {
+-                            var allocated = GC.GetTotalAllocatedBytes(true);
++                            if (isolateSamples)
++                            {
++                                GC.Collect(2, GCCollectionMode.Forced, blocking: true);
++                                GC.WaitForPendingFinalizers();
++                                GC.Collect(2, GCCollectionMode.Forced, blocking: true);
++                            }
++                            var gen0 = GC.CollectionCount(0); var gen1 = GC.CollectionCount(1); var gen2 = GC.CollectionCount(2);
++                            var allocated = GC.GetTotalAllocatedBytes(true);
++                            var paused = GC.GetTotalPauseDuration();
+                             var start = Stopwatch.GetTimestamp();
+                             var retained = operation.Run();
+                             var elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
++                            var gcPause = (GC.GetTotalPauseDuration() - paused).TotalMilliseconds;
+                             var bytes = GC.GetTotalAllocatedBytes(true) - allocated;
+-                            if (i >= 0) samples.Add(new(elapsed, bytes, retained));
++                            if (i >= 0) samples.Add(new(elapsed, bytes, retained, new(GC.CollectionCount(0) - gen0, GC.CollectionCount(1) - gen1, GC.CollectionCount(2) - gen2), gcPause));
+                         }
+                         finally { operation.Cleanup(); }
+                     }
+@@ -214,7 +225,7 @@ internal static class Program
+         var options = new Dictionary<string, string>();
+         for (var i = 0; i < args.Length; i += 2)
+         {
+-            if (i + 1 >= args.Length || args[i] is not ("--output" or "--warmups" or "--repetitions" or "--workload"))
++            if (i + 1 >= args.Length || args[i] is not ("--output" or "--warmups" or "--repetitions" or "--workload" or "--isolate-samples"))
+                 throw new ArgumentException("Options: --output PATH --warmups N --repetitions N --workload NAME; or --export-fixtures PATH; or --capture-contracts PATH.");
+             options.Add(args[i], args[i + 1]);
+         }

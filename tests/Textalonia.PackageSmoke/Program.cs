@@ -70,9 +70,18 @@ internal static class Program
                     throw new InvalidOperationException("Packaged document mode/history budget failed.");
                 editor.SynchronizeText = true;
                 if (editor.Text != published + "!") throw new InvalidOperationException("Text synchronization failed.");
+                editor.MaxShapingCharacters = 2048;
+                editor.Text = "abc \u202b" + new string('x', 8000) + "\u202c";
+                window.UpdateLayout();
+                if (editor.LayoutError is not { CharacterLimit: 2048 } || editor.LastError is not Textalonia.Controls.ShapingLimitExceededException)
+                    throw new InvalidOperationException("Packaged shaping limit did not report oversized content.");
+                editor.MaxShapingCharacters = 0;
+                window.UpdateLayout();
+                if (editor.LayoutError is not null || !editor.Text.Contains('\u202b'))
+                    throw new InvalidOperationException("Packaged shaping limit did not recover without changing the document.");
                 using var frame = window.CaptureRenderedFrame()
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
-                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, JSON, range/position APIs, document mode, history budget, and rendering.");
+                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, JSON, range/position APIs, document mode, history budget, shaping limits, and rendering.");
             }
             finally { window.Close(); }
         }, CancellationToken.None).GetAwaiter().GetResult();

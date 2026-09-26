@@ -1,0 +1,6 @@
+﻿{
+    "status":  "interrupted",
+    "cases":  77,
+    "reason":  "Stopped after the long-paragraph/delete-end-document p95 of 16.6832 ms exceeded 16 ms; retained all completed samples and moved to focused diagnosis.",
+    "latencyMisses":  1
+}

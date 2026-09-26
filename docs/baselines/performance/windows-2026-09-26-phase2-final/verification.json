@@ -1,0 +1,59 @@
+﻿{
+    "tests":  {
+                  "total":  107,
+                  "passed":  107,
+                  "failed":  0,
+                  "skipped":  0
+              },
+    "generatedOperationsPerSeed":  2000,
+    "generatedSeeds":  6,
+    "build":  "Release; zero warnings/errors; reused MSBuild/compiler processes disabled for the filesystem sandbox",
+    "nativeV1FixtureChanged":  false,
+    "publicApi":  "Additive MaxShapingCharacters, LayoutError, ShapingLimitExceededException; no existing member removed",
+    "packageConsumer":  "Passed using fresh workspace package cache and offline dependency feed",
+    "packageConsumerExitCode":  0,
+    "assemblySha256":  {
+                           "src/Textalonia/bin/Release/net8.0/Textalonia.dll":  "d6787d1a25641a1940958c317f33d967a6889b662ecb1bcc7a5dadecf1189194",
+                           "benchmarks/Textalonia.Benchmarks/bin/Release/net8.0/Textalonia.dll":  "d6787d1a25641a1940958c317f33d967a6889b662ecb1bcc7a5dadecf1189194",
+                           "benchmarks/Textalonia.Benchmarks/bin/Release/net8.0/Textalonia.Benchmarks.dll":  "d0b7c67b4051a3f8d0be2d2bd4e5ef93a68aa913bf1cf45f22875f19b879e6b4",
+                           "tests/Textalonia.Tests/bin/Release/net8.0/Textalonia.Tests.dll":  "6e4752e1b63abc8cf323c18f881138dff16517377ad5e9db6249e60ca6092a1e"
+                       },
+    "consumerAssemblySha256":  "d6787d1a25641a1940958c317f33d967a6889b662ecb1bcc7a5dadecf1189194",
+    "packedAssemblySha256":  "d6787d1a25641a1940958c317f33d967a6889b662ecb1bcc7a5dadecf1189194",
+    "packageSha256":  "6044f0053804d53326d8f45db71773592e99466667af067831e07c79b925a21b",
+    "packedAssemblyMatchesConsumerAndBenchmarks":  true,
+    "captures":  {
+                     "reference":  {
+                                       "cases":  138,
+                                       "passed":  175,
+                                       "exceeded":  59
+                                   },
+                     "compatibility":  {
+                                           "cases":  138,
+                                           "passed":  234,
+                                           "exceeded":  0
+                                       },
+                     "document":  {
+                                      "cases":  90,
+                                      "passed":  144,
+                                      "exceeded":  0
+                                  },
+                     "confirmation-30/document":  {
+                                                      "cases":  90,
+                                                      "passed":  142,
+                                                      "exceeded":  2
+                                                  },
+                     "nonisolated-final":  {
+                                               "cases":  138,
+                                               "passed":  211,
+                                               "exceeded":  23
+                                           }
+                 },
+    "corpus":  "All 138 compatibility and 90 document cases match paired P1 operations and exact paragraph/UTF-16/native-byte sizes",
+    "budgetsChanged":  false,
+    "samplesDiscarded":  false,
+    "setupIsolation":  "Explicit opt-in full GC/finalizer settlement before timing, applied identically to rebuilt P1 and final P2",
+    "strictShaping":  "Document mode enables MaxShapingCharacters=4096; default rendering stays unrestricted; typed recoverable error tested",
+    "qualificationScope":  "Warm headless actions in the fixed full-corpus order on the Windows reference host; standalone startup, nonisolated/native latency and total native memory remain separate",
+    "phase2ExitGate":  "incomplete: longer strict-mode confirmation still exceeds latency budgets"
+}

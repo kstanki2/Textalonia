@@ -34,6 +34,8 @@ internal sealed class ShapedLayoutCache(Action disposed, int layoutLimit = 256, 
         Trim();
     }
 
+    public void RecordTransient(int characters) => PeakBytes = Math.Max(PeakBytes, Bytes + 256L + characters * 32L);
+
     public TextLayout Take(ParagraphLayout.Page page)
     {
         var layout = page.Layout!;
