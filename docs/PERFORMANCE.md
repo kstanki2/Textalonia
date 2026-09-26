@@ -55,7 +55,7 @@ Adopted in D03 for this corpus, evaluated on the same Windows reference host/con
 | Incremental retained undo for 100 non-coalesced edits | Median at most 64 MiB, with all raw samples disclosed; future configurable byte-budget accounting within 10% of the chosen budget under sustained edits |
 | History eviction/reclamation | P2.6 must add sustained over-budget eviction and redo-retention cases. The Phase 1 paired heap estimate alone cannot prove a resource lifetime or eviction bound. |
 
-Native caches, total working set and mobile device budgets remain unmeasured and cannot be advertised. A Phase 2 budget miss needs either a fix or a recorded maintainer decision changing the target; do not silently widen budgets or drop slow workloads.
+Native caches, total working set and mobile device budgets remain unmeasured and cannot be advertised. A Phase 2 budget miss needs either a fix or a recorded maintainer decision identifying a target change or tracked deferral; do not silently widen budgets or drop slow workloads. The [Phase 2 completion decision](PHASE2-REPORT.md#completion-decision) defers residual latency qualification without changing these numeric targets.
 
 Run `pwsh -File scripts/Compare-BaselineBudgets.ps1 -Results artifacts/benchmarks/local` to generate `budgets.json` from the raw observations. It assesses both memory and latency against this table. Add `-Enforce` for the Phase 2 acceptance gate; baseline CI deliberately reports current gaps without treating them as new regressions.
 
@@ -70,7 +70,7 @@ Compare medians, tails, allocations and retained history using the same input si
 
 [The Phase 2 report](PHASE2-REPORT.md) compares all six workloads against a
 remeasured Phase 1 reference with matching setup isolation. The unchanged budgets
-pass in the standard seven-sample captures using the fixed full-corpus order on the Windows reference host. Longer-run table latency misses keep the Phase 2 exit gate open.
+pass in the standard seven-sample captures using the fixed full-corpus order on the Windows reference host. Phase 2 is complete with longer-run table latency misses tracked in [PERF-01](#perf-01-residual-latency-qualification).
 Original and nonisolated captures, including misses, remain archived.
 
 The default harness still measures the 23 P1 operations per workload, including
@@ -142,3 +142,22 @@ Use `--max-shaping-characters 4096` with document mode to exercise the strict
 shaping policy on the full corpus. It is recorded in `environment.json`; zero
 (the default) keeps compatibility rendering. Neither flag changes corpus sizes,
 operations, budget thresholds or the requirement to disclose all samples.
+
+## PERF-01: Residual latency qualification
+
+- [ ] **Status: deferred from Phase 2; does not block Phase 3.** Review with P3.5/P3.6 table changes and resolve or explicitly scope performance claims during P8.2 release qualification. Responsible role: performance/core maintainer.
+
+The 30-sample strict-mode capture records table deletion at 19.84 ms p95 and
+caret movement at 16.33 ms against the unchanged 16 ms target. The final
+nonisolated capture has 23 latency misses, and standalone long-paragraph startup
+probes also miss the target. These are unresolved performance gaps; the passing
+focused probe does not establish that host noise caused them. See the
+[full evidence](PHASE2-REPORT.md#budget-outcome-and-scope).
+
+1. Repeat the full corpus with 30+ samples across multiple processes on a recorded idle host, preserving the paired setup and all raw observations.
+2. Profile reproducible misses and compare subsequent table/layout changes against the existing corpus, including startup and nonisolated application workloads.
+3. Close this follow-up when the targets pass in the documented scope, or record a separate reviewed target/scope decision before making release performance claims. Keep any remaining native platform and working-set qualification explicit.
+
+The [Phase 2 completion decision](PHASE2-REPORT.md#completion-decision) accepts
+this work as a later qualification task. It changes no numeric threshold and
+waives no correctness, data compatibility, allocation or history check.
