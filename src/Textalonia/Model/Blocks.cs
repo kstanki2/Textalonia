@@ -27,7 +27,7 @@ public sealed record Paragraph : Block
     public Paragraph(IEnumerable<RichRun> runs) => Runs = Normalize(runs);
 
     [JsonIgnore] public string Text => string.Concat(Runs.Select(x => x.Text));
-    [JsonIgnore] public int Length => Runs.Sum(x => x.Text.Length);
+    [JsonIgnore] public int Length => Runs.Sum(x => x.Storage.Length);
 
     public TextStyle StyleAt(int offset)
     {
@@ -35,7 +35,7 @@ public sealed record Paragraph : Block
         var position = 0;
         foreach (var run in Runs)
         {
-            position += run.Text.Length;
+            position += run.Storage.Length;
             if (offset < position) return run.Style;
         }
         return Runs[^1].Style;
@@ -48,9 +48,10 @@ public sealed record Paragraph : Block
         foreach (var run in Runs)
         {
             var from = Math.Max(0, start - position);
-            var to = Math.Min(run.Text.Length, start + length - position);
-            if (to > from) result.Add(run with { Text = run.Text[from..to] });
-            position += run.Text.Length;
+            var to = Math.Min(run.Storage.Length, start + length - position);
+            if (to > from) result.Add(run.Slice(from, to - from));
+            position += run.Storage.Length;
+            if (position >= start + length) break;
         }
         return result.ToImmutable();
     }
@@ -70,9 +71,9 @@ public sealed record Paragraph : Block
         var result = ImmutableArray.CreateBuilder<RichRun>();
         foreach (var run in runs)
         {
-            if (string.IsNullOrEmpty(run.Text)) continue;
+            if (run.Storage.Length == 0) continue;
             if (result.Count > 0 && result[^1].Style == run.Style)
-                result[^1] = result[^1] with { Text = result[^1].Text + run.Text };
+                result[^1] = result[^1].Append(run);
             else result.Add(run);
         }
         return result.ToImmutable();
@@ -81,7 +82,10 @@ public sealed record Paragraph : Block
 
 public sealed record Section : Block
 {
-    public ImmutableArray<Block> Blocks { get; init; } = [new Paragraph()];
+    private SnapshotArray<Block> _blocks = SnapshotArray<Block>.From([new Paragraph()]);
+    public ImmutableArray<Block> Blocks { get => _blocks.Read(); init => _blocks = SnapshotArray<Block>.From(value); }
+    internal Section WithChildren(StorageTree<OrderKey, DocumentNode>? children) => this with
+    { _blocks = new(() => children!.Items().Select(p => (Block)p.Value.Source!).ToImmutableArray()) };
     public string? Background { get; init; }
     public string? BorderColor { get; init; }
     public double Padding { get; init; } = 12;
@@ -90,7 +94,10 @@ public sealed record Section : Block
 public sealed record TableCell
 {
     public Guid Id { get; init; } = Guid.NewGuid();
-    public ImmutableArray<Paragraph> Paragraphs { get; init; } = [new Paragraph()];
+    private SnapshotArray<Paragraph> _paragraphs = SnapshotArray<Paragraph>.From([new Paragraph()]);
+    public ImmutableArray<Paragraph> Paragraphs { get => _paragraphs.Read(); init => _paragraphs = SnapshotArray<Paragraph>.From(value); }
+    internal TableCell WithChildren(StorageTree<OrderKey, DocumentNode>? children) => this with
+    { _paragraphs = new(() => children!.Items().Select(p => (Paragraph)p.Value.Source!).ToImmutableArray()) };
     public int ColumnSpan { get; init; } = 1;
     public int RowSpan { get; init; } = 1;
     public string? Background { get; init; }

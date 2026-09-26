@@ -106,6 +106,21 @@ Documents and their arrays are immutable snapshots. An edit publishes a new `Doc
 
 `Text` is a plain-text convenience binding: **assigning Text replaces all document structure and formatting**. Bind either `Document` or `Text`, rather than both to competing sources.
 
+For large structured documents, opt out of eager full-text synchronization:
+
+```xml
+<text:TextaloniaEditor Document="{Binding Document, Mode=TwoWay}"
+                      SynchronizeText="False" />
+```
+
+In this mode `Text` retains its last published/assigned value. Read `Document.Text`
+explicitly for complete current text, or `Session.Index.ReadText(start, length)`
+for a range. Re-enabling synchronization immediately updates `Text`. The default
+mode preserves existing text bindings and their linear materialization cost.
+See [the engine decision](docs/ADR-002-SCALABLE-CORE.md) and
+[performance limits](docs/PERFORMANCE.md), including long-paragraph shaping.
+
+
 ## Editing API
 
 ```csharp
@@ -117,6 +132,7 @@ editor.Undo();
 editor.Redo();
 
 editor.Session.UndoLimit = 100;
+editor.Session.HistoryByteLimit = 64 * 1024 * 1024; // exclusive retained-history estimate
 editor.FindNext("Avalonia");
 editor.ReplaceAll("old", "new");
 
@@ -126,7 +142,7 @@ editor.Session.Execute(document => document with { /* replace Blocks here */ });
 
 Available commands: `BoldCommand`, `ItalicCommand`, `UnderlineCommand`, `StrikethroughCommand`, `UndoCommand`, `RedoCommand`, `CutCommand`, `CopyCommand`, `PasteCommand`, and `SelectAllCommand`. Set `ShowToolbar="False"` to supply your own toolbar.
 
-`EditorSession` can be used without creating any UI. `DocumentChanged`, `SelectionChanged`, and `Session.Changed` expose change notifications. UI controls and their sessions must be accessed on the UI thread; immutable documents can be passed to worker threads.
+`EditorSession` can be used without creating any UI. `DocumentChanged`, `SelectionChanged`, and `Session.Changed` expose change notifications. UI controls and their sessions must be accessed on the UI thread; immutable documents can be passed to worker threads. `CreatePosition` returns a session/revision-scoped position; `TryResolvePosition` rejects it after edits, load, undo or redo. History byte limits can evict even a single oversized entry; `RetainedHistoryBytes` reports the estimate, excluding the current document and caller-owned snapshots.
 
 Selection uses UTF-16 offsets in `Document.Text`, with one LF between visible paragraphs. Caret navigation and deletion respect .NET grapheme boundaries. A soft line break is U+2028. Drag, double-click word selection, triple-click paragraph selection, Shift selection, and standard Ctrl/Cmd editing shortcuts are supported. Shift+Enter inserts a soft break; Enter splits a paragraph. Tab moves between table cells or inserts a tab when `AcceptsTab` is enabled.
 

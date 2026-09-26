@@ -56,9 +56,23 @@ internal static class Program
                 var serialized = DocumentFormats.Json.Serialize(editor.Document);
                 if (DocumentFormats.Json.Parse(serialized).Text != editor.Text)
                     throw new InvalidOperationException("Packaged serializer failed.");
+                var position = editor.Session.CreatePosition(2);
+                if (!editor.Session.TryResolvePosition(position, out var offset) || offset != 2 ||
+                    editor.Session.Index.ReadText(0, 9) != "Installed" || editor.Session.Index.ParagraphCount != 1)
+                    throw new InvalidOperationException("Packaged range/position APIs failed.");
+                editor.SynchronizeText = false;
+                editor.Session.HistoryByteLimit = 8192;
+                var published = editor.Text;
+                editor.Session.Select(editor.Session.Index.Length, editor.Session.Index.Length);
+                editor.InsertText("!");
+                if (editor.Text != published || editor.Document.Text != published + "!" ||
+                    editor.Session.TryResolvePosition(position, out _) || editor.Session.RetainedHistoryBytes > 8192)
+                    throw new InvalidOperationException("Packaged document mode/history budget failed.");
+                editor.SynchronizeText = true;
+                if (editor.Text != published + "!") throw new InvalidOperationException("Text synchronization failed.");
                 using var frame = window.CaptureRenderedFrame()
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
-                Console.WriteLine("Package consumer passed: compiled XAML, theme resources, native input, formatting, JSON, and rendering.");
+                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, JSON, range/position APIs, document mode, history budget, and rendering.");
             }
             finally { window.Close(); }
         }, CancellationToken.None).GetAwaiter().GetResult();

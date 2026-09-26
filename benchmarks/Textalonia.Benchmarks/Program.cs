@@ -43,10 +43,12 @@ internal static class Program
 {
     private static readonly string[] Workloads = ["paragraphs-100", "paragraphs-1000", "paragraphs-10000", "long-paragraph", "table-heavy", "run-heavy"];
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-    private sealed record Sample(double Milliseconds, long AllocatedBytes, long? RetainedUndoBytes);
+    private sealed record Counters(int ShapedParagraphs, int CachedParagraphs, int UpdatedIndexNodes, long RetainedHistoryBytes);
+    private sealed record Sample(double Milliseconds, long AllocatedBytes, long? RetainedUndoBytes, Counters? Counters);
     private sealed record Result(string Workload, string Operation, int Paragraphs, int Utf16Length, int NativeBytes,
         double MedianMs, double P95Ms, long MedianAllocatedBytes, long? MedianRetainedUndoBytes, double? BudgetMs, bool? WithinLatencyBudget, List<Sample> Samples);
-    private sealed record Operation(Func<long?> Run, Action Cleanup);
+    private sealed record Operation(Func<long?> Run, Action Cleanup, Func<Counters?>? Observe = null);
+    private static bool _synchronizeText = true;
 
     public static int Main(string[] args)
     {
@@ -54,6 +56,7 @@ internal static class Program
         CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
         try
         {
+            if (args is ["--core-probe", var probeDestination]) { CoreProbe.Run(probeDestination); return 0; }
             if (args is ["--capture-contracts", var destination])
             {
                 Directory.CreateDirectory(destination);
@@ -70,6 +73,9 @@ internal static class Program
                 return 0;
             }
             var options = Parse(args);
+            var textMode = options.GetValueOrDefault("--text-mode", "compatibility");
+            if (textMode is not ("compatibility" or "document")) throw new ArgumentException("Text mode must be compatibility or document.");
+            _synchronizeText = textMode == "compatibility";
             var output = Path.GetFullPath(options.GetValueOrDefault("--output", "artifacts/benchmarks/latest"));
             Directory.CreateDirectory(output);
             var warmups = int.Parse(options.GetValueOrDefault("--warmups", "2"), CultureInfo.InvariantCulture);
@@ -87,7 +93,7 @@ internal static class Program
                 avalonia = typeof(Application).Assembly.GetName().Version?.ToString(),
                 backend = "Avalonia.Headless + Skia software drawing (not native compositor latency)",
                 font = "Inter, 16 DIP; OS fallback for missing glyphs", theme = "Fluent Light", viewport = "800 x 500 DIP", dpiScale = 1,
-                configuration = "Release required", warmups, repetitions, workloads = chosen,
+                configuration = "Release required", textMode, warmups, repetitions, workloads = chosen,
                 percentile = "nearest rank ceil(0.95 * n); median averages central pair", historyEntries = 100,
                 allocationMethod = "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
                 historyMethod = "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
@@ -117,7 +123,7 @@ internal static class Program
                             var retained = operation.Run();
                             var elapsed = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
                             var bytes = GC.GetTotalAllocatedBytes(true) - allocated;
-                            if (i >= 0) samples.Add(new(elapsed, bytes, retained));
+                            if (i >= 0) samples.Add(new(elapsed, bytes, retained, operation.Observe?.Invoke()));
                         }
                         finally { operation.Cleanup(); }
                     }
@@ -139,11 +145,13 @@ internal static class Program
                     Measure("first-viewport", () =>
                     {
                         EditorHost? host = null;
-                        return new(() => { host = new(document, false); host.Frame(); return null; }, () => host?.Dispose());
+                        // Input-size reporting may have indexed the fixture. A fresh wrapper
+                        // keeps first-open indexing inside the timer, as it was in P1.
+                        return new(() => { host = new(document with { }, false); host.Frame(); return null; }, () => host?.Dispose(), () => host?.Observe());
                     });
-                    foreach (var bound in new[] { false, true })
+                    foreach (var bound in _synchronizeText ? new[] { false, true } : new[] { false })
                     {
-                        var mode = bound ? "bound" : "unbound";
+                        var mode = !_synchronizeText ? "document" : bound ? "bound" : "unbound";
                         foreach (var position in new[] { "start", "middle", "end" })
                         {
                             var offset = position == "start" ? 0 : position == "middle" ? text.Length / 2 : text.Length;
@@ -214,7 +222,7 @@ internal static class Program
         var options = new Dictionary<string, string>();
         for (var i = 0; i < args.Length; i += 2)
         {
-            if (i + 1 >= args.Length || args[i] is not ("--output" or "--warmups" or "--repetitions" or "--workload"))
+            if (i + 1 >= args.Length || args[i] is not ("--output" or "--warmups" or "--repetitions" or "--workload" or "--text-mode"))
                 throw new ArgumentException("Options: --output PATH --warmups N --repetitions N --workload NAME; or --export-fixtures PATH; or --capture-contracts PATH.");
             options.Add(args[i], args[i + 1]);
         }
@@ -223,7 +231,7 @@ internal static class Program
 
     private static double? Budget(string operation) => operation switch
     {
-        "first-viewport" => 250, "resize" or "text-update-bound" or "text-update-unbound" => 100,
+        "first-viewport" => 250, "resize" or "text-update-bound" or "text-update-unbound" or "text-update-document" => 100,
         "replace-all" or "native-save" or "native-load" => 2000, "history-100" => null, _ => 16
     };
 
@@ -241,7 +249,13 @@ internal static class Program
         var host = new EditorHost(document, bound);
         try { setup(host); host.Frame(); }
         catch { host.Dispose(); throw; }
-        return new(() => { action(host); host.Frame(); return null; }, host.Dispose);
+        var before = host.Observe(); var revision = host.Editor.Session.Revision;
+        return new(() => { action(host); host.Frame(); return null; }, host.Dispose, () =>
+        {
+            var after = host.Observe();
+            return after with { ShapedParagraphs = after.ShapedParagraphs - before.ShapedParagraphs,
+                UpdatedIndexNodes = revision == host.Editor.Session.Revision ? 0 : after.UpdatedIndexNodes };
+        });
     }
 
     private sealed class TextModel : INotifyPropertyChanged
@@ -259,6 +273,7 @@ internal static class Program
         public ScrollViewer Scroller => Editor.GetVisualDescendants().OfType<ScrollViewer>().Single(s => s.Name == "PART_ScrollViewer");
         public EditorHost(FlowDocument document, bool bound)
         {
+            Editor.SynchronizeText = _synchronizeText;
             if (bound)
             {
                 Editor.DataContext = Model;
@@ -267,6 +282,11 @@ internal static class Program
             Editor.Document = document;
             Window = new Window { Width = 800, Height = 500, Content = Editor };
             Window.Show(); Window.UpdateLayout(); Editor.FocusDocument();
+        }
+        public Counters Observe()
+        {
+            var layout = Editor.GetVisualDescendants().OfType<DocumentSurface>().Single().Layout;
+            return new(layout.ShapedParagraphs, layout.CachedParagraphs, Editor.Session.Index.Tree.UpdatedNodes, Editor.Session.RetainedHistoryBytes);
         }
         public void Frame()
         {

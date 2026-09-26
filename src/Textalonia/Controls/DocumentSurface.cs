@@ -32,6 +32,7 @@ public class DocumentSurface : Control
     private FlowDocument? _composition;
     private FlowDocument? _compositionBase;
     private Rect _viewport;
+    internal DocumentLayout Layout => _layout;
 
     public DocumentSurface()
     {
@@ -45,7 +46,11 @@ public class DocumentSurface : Control
         {
             if (Editor is { IsReadOnly: false }) e.Client = _inputClient;
         });
-        EffectiveViewportChanged += (_, e) => { _viewport = e.EffectiveViewport; InvalidateVisual(); };
+        EffectiveViewportChanged += (_, e) =>
+        {
+            if (_viewport == e.EffectiveViewport) return;
+            _viewport = e.EffectiveViewport; _dirty = true; InvalidateMeasure(); InvalidateVisual();
+        };
     }
 
     public TextaloniaEditor? Editor
@@ -72,7 +77,7 @@ public class DocumentSurface : Control
         }
     }
 
-    internal void Refresh()
+    internal void Refresh(bool bringCaret = false)
     {
         if (_composition is not null && (Editor is null || Editor.IsReadOnly || !ReferenceEquals(_compositionBase, Editor.Document)))
         {
@@ -83,7 +88,7 @@ public class DocumentSurface : Control
         _caretVisible = true;
         InvalidateMeasure(); InvalidateVisual();
         _inputClient.Notify();
-        if (IsFocused && Editor is not null)
+        if (bringCaret && IsFocused && Editor is not null)
             Dispatcher.UIThread.Post(() =>
             {
                 if (Editor is not null && TopLevel.GetTopLevel(this) is not null)
@@ -99,7 +104,11 @@ public class DocumentSurface : Control
         get
         {
             EnsureLayout(Bounds.Width);
-            return _layout.Caret(DisplayCaret);
+            var height = _layout.Height;
+            var caret = _layout.Caret(DisplayCaret);
+            if (Math.Abs(height - _layout.Height) > .1)
+                Dispatcher.UIThread.Post(InvalidateMeasure, DispatcherPriority.Loaded);
+            return caret;
         }
     }
     private int DisplayCaret => Editor is null ? 0 : _composition is not null
@@ -113,8 +122,11 @@ public class DocumentSurface : Control
         var document = _composition ?? Editor.Document;
         if (!_dirty && ReferenceEquals(_layoutDocument, document) && Math.Abs(_layoutWidth - width) < .1) return;
         _layout.Build(document, width, Editor.FontFamily, Editor.Foreground ?? Brushes.Black,
-            Editor.BorderBrush ?? Brushes.Gray, Editor.DocumentPadding);
+            Editor.BorderBrush ?? Brushes.Gray, Editor.DocumentPadding,
+            _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, Editor.Scroller?.Offset.Y ?? 0, width, 500));
         _layoutDocument = document; _layoutWidth = width; _dirty = false;
+        if (Math.Abs(_layout.AnchorAdjustment) > .1 && Editor.Scroller is { } scroller)
+            scroller.Offset = new Vector(scroller.Offset.X, Math.Max(0, scroller.Offset.Y + _layout.AnchorAdjustment));
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -309,9 +321,9 @@ public class DocumentSurface : Control
         else if (e.ClickCount == 2)
         {
             var start = position;
-            while (start > paragraph.Start && !char.IsWhiteSpace(session.Index.Text[start - 1])) start = session.PreviousCaret(start);
+            while (start > paragraph.Start && !char.IsWhiteSpace(session.Index.CharAt(start - 1))) start = session.PreviousCaret(start);
             var end = position;
-            while (end < paragraph.End && !char.IsWhiteSpace(session.Index.Text[end])) end = session.NextCaret(end);
+            while (end < paragraph.End && !char.IsWhiteSpace(session.Index.CharAt(end))) end = session.NextCaret(end);
             session.Select(start, end);
         }
         else session.Select(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? session.Selection.Anchor : position, position);
@@ -356,7 +368,7 @@ public class DocumentSurface : Control
             _composition = preview.Document;
             _compositionBase = Editor.Document;
         }
-        Refresh();
+        Refresh(true);
     }
 
     protected override AutomationPeer OnCreateAutomationPeer() => new SurfaceAutomationPeer(this);
@@ -364,7 +376,7 @@ public class DocumentSurface : Control
     private sealed class SurfaceAutomationPeer(DocumentSurface owner) : ControlAutomationPeer(owner), IValueProvider
     {
         public bool IsReadOnly => owner.Editor?.IsReadOnly ?? true;
-        public string Value => owner.Editor?.Text ?? "";
+        public string Value => owner.Editor?.Session.Index.Text ?? "";
         public void SetValue(string? value)
         {
             if (IsReadOnly) throw new InvalidOperationException("The document is read-only.");

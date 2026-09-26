@@ -64,3 +64,40 @@ Run `pwsh -File scripts/Compare-BaselineBudgets.ps1 -Results artifacts/benchmark
 See the [baseline report](BASELINE-REPORT.md) and [raw Windows archive](baselines/performance/windows-2026-09-26). Environment: Windows build 26100 x64, .NET runtime 8.0.31, SDK 10.0.204, Avalonia 12.1.3, 24 logical processors. The archive is the authoritative measurement record. Linux/macOS performance is pending execution by their QA/performance maintainers; the Windows result is not a portability claim.
 
 Compare medians, tails, allocations and retained history using the same input sizes and harness revision. Report source hash changes when evolving the harness, and repeat both old/new engine versions if measurement semantics change. Whole-document index construction, UTF-16 grapheme scans, tree/layout rebuilds and eager text synchronization are the P2.1 candidates; no storage replacement is selected by this phase.
+
+
+## Phase 2 implementation and qualification
+
+[The Phase 2 report](PHASE2-REPORT.md) compares the same six workloads and records
+remaining failures. The budgets above are unchanged. This is an implementation
+with an open performance exit gate, not a claim that every operation meets 16 ms.
+
+The default harness still measures the 23 P1 operations per workload, including
+both eager unbound and two-way Text-bound controls. `--text-mode document` captures
+15 cases per workload separately, using `SynchronizeText=false`; its local edit
+names end in `-document`, and it does not claim to support an eager Text binding.
+Each raw UI sample additionally records shapes created, resident cached paragraphs,
+updated document index nodes and the retained-history estimate. Observation occurs
+after the timed/allocation interval. First-open uses a fresh document wrapper so
+fixture size reporting cannot warm the document index outside the timer.
+
+```sh
+dotnet run --project benchmarks/Textalonia.Benchmarks -c Release --no-build -- --output artifacts/phase2/compatibility
+dotnet run --project benchmarks/Textalonia.Benchmarks -c Release --no-build -- --text-mode document --output artifacts/phase2/document
+dotnet run --project benchmarks/Textalonia.Benchmarks -c Release --no-build -- --core-probe artifacts/phase2/probe
+pwsh -File scripts/Compare-BaselineBudgets.ps1 -Results artifacts/phase2/compatibility -Enforce
+```
+
+The core probe separately measures 100-edit batches with a copying/grapheme-scan
+prototype, the persistent session, and that session plus eager Text reads. Its
+copying comparator models the bottleneck; it is not the historical P1 binary.
+Only full control captures are compared with the P1 release budgets.
+
+Intentional linear operations include ingestion/validation, arbitrary Execute
+snapshots, structural table changes, dense-label rebasing, complete exports and
+compatibility text/array materialization. Layout metadata initializes for the full
+model, but first viewport shaping is bounded by visible paragraphs and overscan.
+A complete long paragraph is still a shaping unit, and the current viewport plus
+required row/target dependencies can exceed reusable-cache limits. See the
+[architecture](ARCHITECTURE.md#performance-boundaries) for exact history/cache
+estimate meanings and ownership exclusions.
