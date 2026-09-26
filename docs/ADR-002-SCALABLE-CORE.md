@@ -14,8 +14,11 @@ Use a persistent AVL tree of document nodes, weighted by visible UTF-16 length
 and paragraph count, and an AVL rope of shared string slices inside rich runs.
 An indexed prototype and deterministic operation/allocation checks precede the
 end-to-end comparison. Do not infer control performance from the rope alone.
-Paragraph shaping remains an Avalonia TextLayout operation; one very long
-paragraph is an explicitly indivisible shaping unit in this implementation.
+Paragraph shaping uses Avalonia TextLayout over windows of up to 2,048 UTF-16
+units. Only complete lines are committed; the trailing line provides lookahead
+and is reshaped in the next window. Compact line-break checkpoints survive glyph
+eviction. Paragraph-wide bidi context retains the exact full-shaping fallback;
+a single oversized grapheme or visual line can also require a larger window.
 
 ## Coordinates and edits
 
@@ -71,7 +74,14 @@ targets drive measurement. Prefix heights locate offscreen targets. Cell spans
 depend on intersected rows; row height changes propagate to ancestor heights.
 Painting, caret, selection and IME use the same measured paragraph geometry.
 Width/font/theme changes invalidate shaping, and viewport corrections preserve a
-paragraph anchor. Cache eviction disposes TextLayout instances.
+text-line anchor, including inside a long paragraph. Table cells pass viewport
+limits through to their paragraph contents. Cache eviction disposes TextLayout
+instances independently of their line-break checkpoints. Single-style edits reuse
+the measured prefix and resume an unchanged suffix when line boundaries converge;
+other formatting changes conservatively invalidate the paragraph's checkpoints.
+One discarded, identical single-style window may be reused during prefix discovery
+and is included in cache accounting. Exact first-time distant targets can require
+discovering the intervening line breaks; this is not constant-time random access.
 
 History has entry and byte limits. The byte count estimates objects retained
 exclusively by undo/redo, using reference-counted shared storage graphs; current

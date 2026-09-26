@@ -77,7 +77,12 @@ both eager unbound and two-way Text-bound controls. `--text-mode document` captu
 15 cases per workload separately, using `SynchronizeText=false`; its local edit
 names end in `-document`, and it does not claim to support an eager Text binding.
 Each raw UI sample additionally records shapes created, resident cached paragraphs,
-updated document index nodes and the retained-history estimate. Observation occurs
+updated document index nodes and the retained-history estimate. Window-layout
+captures add shaped UTF-16 units, the largest shaping input, resident window count
+and estimated resident shape bytes. The legacy `ShapedParagraphs` counter counts
+TextLayout creations (now windows); `CachedParagraphs` counts paragraph checkpoint
+sets. `ShapedCharacters` is an operation delta, while `LargestShapingWindow` is the
+surface's high-water input length. Observation occurs
 after the timed/allocation interval. First-open uses a fresh document wrapper so
 fixture size reporting cannot warm the document index outside the timer.
 
@@ -96,8 +101,9 @@ Only full control captures are compared with the P1 release budgets.
 Intentional linear operations include ingestion/validation, arbitrary Execute
 snapshots, structural table changes, dense-label rebasing, complete exports and
 compatibility text/array materialization. Layout metadata initializes for the full
-model, but first viewport shaping is bounded by visible paragraphs and overscan.
-A complete long paragraph is still a shaping unit, and the current viewport plus
-required row/target dependencies can exceed reusable-cache limits. See the
+model, but ordinary first viewport shaping uses visible text windows and overscan.
+Exact distant targets may discover previously unmeasured line breaks; paragraph-wide
+bidi context and oversized graphemes/visual lines retain a larger shaping fallback.
+The current viewport plus required targets can exceed reusable-cache limits. See the
 [architecture](ARCHITECTURE.md#performance-boundaries) for exact history/cache
 estimate meanings and ownership exclusions.

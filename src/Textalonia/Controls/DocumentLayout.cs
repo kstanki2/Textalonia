@@ -6,16 +6,31 @@ using Textalonia.Model;
 
 namespace Textalonia.Controls;
 
-internal sealed record ParagraphVisual(ParagraphPosition Position, TextLayout Layout, Point Origin, double AvailableWidth, string? Marker)
+internal sealed record ParagraphVisual(ParagraphPosition Position, ParagraphLayout.Page Page, Point Origin, double AvailableWidth, string? Marker)
 {
-    public Rect Bounds => new(Origin, new Size(AvailableWidth, Math.Max(Layout.Height, Position.Paragraph.DefaultStyle.FontSize * 1.25)));
+    public TextLayout Layout => Page.Layout!;
+    public int TextStart => Position.Start + Page.Start;
+    public int TextEnd => Position.Start + Page.End;
+    public Rect Bounds => new(Origin, new Size(AvailableWidth, Page.Height +
+        (Page.End == Position.Paragraph.Length ? Math.Max(0, Position.Paragraph.DefaultStyle.FontSize * 1.25 - Page.Top - Page.Height) : 0)));
+    public void Draw(DrawingContext context, Rect viewport)
+    {
+        var y = Origin.Y;
+        for (var i = 0; i < Page.LineCount; i++)
+        {
+            var line = Layout.TextLines[i];
+            if (y > viewport.Bottom) break;
+            if (y + line.Height >= viewport.Top) line.Draw(context, new Point(Origin.X, y));
+            y += line.Height;
+        }
+    }
 }
 internal sealed record BlockDecoration(Rect Bounds, IBrush? Fill, IBrush? Border, bool LeftBorderOnly);
 
 /// <summary>Viewport shaping over incremental prefix heights, with a bounded reusable layout cache.</summary>
 internal sealed class DocumentLayout : IDisposable
 {
-    private sealed record Cached(Paragraph Paragraph, double Width, TextLayout Layout);
+    private sealed record Cached(double Width, ParagraphLayout Layout);
     private readonly Dictionary<Guid, Cached> _cache = [];
     public List<ParagraphVisual> Paragraphs { get; } = [];
     public List<BlockDecoration> Decorations { get; } = [];
@@ -34,6 +49,10 @@ internal sealed class DocumentLayout : IDisposable
     public int ShapedParagraphs { get; private set; }
     public int DisposedLayouts { get; private set; }
     public int CachedParagraphs => _cache.Count;
+    public int CachedLayouts => _cache.Values.Sum(c => c.Layout.Pages.Count(p => p.Layout is not null));
+    public long CachedLayoutBytes => _cache.Values.Sum(c => c.Layout.Pages.Sum(p => p.Bytes));
+    public long ShapedCharacters { get; private set; }
+    public int LargestShapingWindow { get; private set; }
     public int GeometryNodes => _heights.CreatedNodes;
     public double AnchorAdjustment { get; private set; }
     private const int CacheLimit = 256;
@@ -48,7 +67,16 @@ internal sealed class DocumentLayout : IDisposable
         var reset = !Equals(_font, font) || !Equals(_foreground, foreground) || Math.Abs(Width - width) > .1 || _padding != padding;
         var view = viewport ?? new Rect(0, 0, width, 600);
         var anchor = Math.Abs(view.Y - _previousViewportY) < .1
-            ? Paragraphs.FirstOrDefault(p => p.Bounds.Bottom >= view.Top && p.Bounds.Top <= view.Bottom) : null;
+            ? Paragraphs.FirstOrDefault(p => p.Bounds.Bottom > view.Top && p.Bounds.Top <= view.Bottom) : null;
+        var anchorOffset = anchor?.Page.Start ?? 0;
+        var anchorY = anchor?.Origin.Y ?? 0;
+        if (anchor is not null)
+            foreach (var line in anchor.Layout.TextLines.Take(anchor.Page.LineCount))
+            {
+                anchorOffset = anchor.Page.Start + line.FirstTextSourceIndex;
+                if (anchorY + line.Height > view.Top) break;
+                anchorY += line.Height;
+            }
         if (reset) Clear();
         _font = font; _foreground = foreground; _border = border; _padding = padding;
         Width = width; _viewport = view; _previousViewportY = view.Y;
@@ -58,8 +86,16 @@ internal sealed class DocumentLayout : IDisposable
         MeasureViewport();
         if (anchor is not null && _index.Tree.Paths?.Find(anchor.Position.Paragraph.Id) is not null)
         {
-            var location = Locate(anchor.Position.Paragraph.Id);
-            AnchorAdjustment = location.Origin.Y - anchor.Origin.Y;
+            var entry = _index.ById(anchor.Position.Paragraph.Id);
+            if (!ReferenceEquals(entry.Paragraph, anchor.Position.Paragraph))
+            {
+                var before = ParagraphText.For(anchor.Position.Paragraph); var after = ParagraphText.For(entry.Paragraph);
+                var prefix = before.CommonPrefix(after);
+                var suffix = before.CommonSuffix(after, Math.Min(before.Length, after.Length) - prefix);
+                if (anchorOffset >= before.Length - suffix) anchorOffset += after.Length - before.Length;
+                else if (anchorOffset > prefix) anchorOffset = prefix;
+            }
+            AnchorAdjustment = Caret(entry.Start + Math.Min(anchorOffset, entry.Paragraph.Length)).Y - anchorY;
             if (Math.Abs(AnchorAdjustment) > .1)
             {
                 _viewport = _viewport.Translate(new Vector(0, AnchorAdjustment));
@@ -88,20 +124,29 @@ internal sealed class DocumentLayout : IDisposable
         // Recompute origins after the final height corrections without more shaping.
         Reposition();
     }
-    private TextLayout Shape(LayoutHeightIndex.Node node)
+    private ParagraphLayout Shape(LayoutHeightIndex.Node node)
     {
         var paragraph = (Paragraph)node.Source.Source!;
         var width = Math.Max(16, node.Available - node.Indent);
-        if (!_cache.TryGetValue(paragraph.Id, out var cached) || !ReferenceEquals(cached.Paragraph, paragraph) || Math.Abs(cached.Width - width) > .1)
+        if (!_cache.TryGetValue(paragraph.Id, out var cached) || Math.Abs(cached.Width - width) > .1)
         {
-            if (cached is not null) { cached.Layout.Dispose(); DisposedLayouts++; }
-            cached = new(paragraph, width, CreateTextLayout(paragraph, width, _font, _foreground));
-            _cache[paragraph.Id] = cached; ShapedParagraphs++;
+            cached?.Layout.Dispose();
+            cached = new(width, new(paragraph, width, (p, start, text) =>
+            {
+                ShapedParagraphs++; ShapedCharacters += text.Length;
+                LargestShapingWindow = Math.Max(LargestShapingWindow, text.Length);
+                return CreateTextLayout(p, width, _font, _foreground, start, text);
+            }, () => DisposedLayouts++));
+            _cache[paragraph.Id] = cached;
         }
+        else cached.Layout.Update(paragraph);
         _uses[paragraph.Id] = ++_clock;
-        var height = Math.Max(cached.Layout.Height, paragraph.DefaultStyle.FontSize * 1.25);
-        if (Math.Abs(node.ContentHeight - height) > .01) { node.ContentHeight = height; node.Update(); }
         return cached.Layout;
+    }
+    private static void UpdateHeight(LayoutHeightIndex.Node node, ParagraphLayout layout)
+    {
+        var height = layout.Height;
+        if (Math.Abs(node.ContentHeight - height) > .01) { node.ContentHeight = height; node.Update(); }
     }
     private void Collect(LayoutHeightIndex.Node node, double x, double y, double top, double bottom)
     {
@@ -111,9 +156,15 @@ internal sealed class DocumentLayout : IDisposable
             case Paragraph paragraph:
                 var layout = Shape(node);
                 var marker = paragraph.Style.List switch { ListKind.Bullet => "\u2022", ListKind.Numbered => Number(paragraph.Id) + ".", _ => null };
-                var visual = new ParagraphVisual(_index!.ById(paragraph.Id), layout, new(x + node.Indent, y + paragraph.Style.SpaceBefore), Math.Max(16, node.Available - node.Indent), marker);
-                var existing = Paragraphs.FindIndex(p => p.Position.Paragraph.Id == paragraph.Id);
-                if (existing >= 0) Paragraphs[existing] = visual; else Paragraphs.Add(visual);
+                var originY = y + paragraph.Style.SpaceBefore;
+                foreach (var page in layout.View(top - originY, bottom - originY))
+                {
+                    page.LastUse = ++_clock;
+                    var visual = new ParagraphVisual(_index!.ById(paragraph.Id), page, new(x + node.Indent, originY + page.Top), Math.Max(16, node.Available - node.Indent), page.Start == 0 ? marker : null);
+                    var existing = Paragraphs.FindIndex(p => p.Position.Paragraph.Id == paragraph.Id && p.Page.Start == page.Start);
+                    if (existing >= 0) Paragraphs[existing] = visual; else Paragraphs.Add(visual);
+                }
+                UpdateHeight(node, layout);
                 break;
             case Section section:
                 var slot = Decorations.Count;
@@ -129,7 +180,7 @@ internal sealed class DocumentLayout : IDisposable
                     var cellY = y + node.RowOffsets[cell.Source.Row];
                     var cellHeight = node.RowOffsets[cell.Source.Row + model.RowSpan] - node.RowOffsets[cell.Source.Row];
                     if (cellY > bottom || cellY + cellHeight < top) continue;
-                    Collect(cell, x + cell.Source.Column * cellWidth, cellY, double.MinValue, double.MaxValue);
+                    Collect(cell, x + cell.Source.Column * cellWidth, cellY, top, bottom);
                     cellHeight = node.RowOffsets[cell.Source.Row + model.RowSpan] - node.RowOffsets[cell.Source.Row];
                     if (_collectDecorations) Decorations.Add(new(new Rect(x + cell.Source.Column * cellWidth, cellY, cellWidth * model.ColumnSpan, cellHeight), Brush(model.Background), _border, false));
                 }
@@ -174,7 +225,7 @@ internal sealed class DocumentLayout : IDisposable
     private void Reposition()
     {
         for (var i = 0; i < Paragraphs.Count; i++)
-            Paragraphs[i] = Paragraphs[i] with { Origin = Locate(Paragraphs[i].Position.Paragraph.Id).Origin };
+            Paragraphs[i] = Paragraphs[i] with { Origin = Locate(Paragraphs[i].Position.Paragraph.Id).Origin + new Vector(0, Paragraphs[i].Page.Top) };
         Height = _padding.Top + _heights.Root.Height + _padding.Bottom;
     }
     private int Number(Guid id)
@@ -188,22 +239,35 @@ internal sealed class DocumentLayout : IDisposable
     private void Evict()
     {
         var pinned = Paragraphs.Select(p => p.Position.Paragraph.Id).ToHashSet();
-        var bytes = _cache.Values.Sum(c => 256L + c.Paragraph.Length * 32L);
         foreach (var id in _cache.Keys.OrderBy(id => _uses.GetValueOrDefault(id)).ToArray())
         {
-            if (_cache.Count <= CacheLimit && bytes <= CacheBytes) break;
+            if (_cache.Count <= CacheLimit) break;
             if (pinned.Contains(id)) continue;
-            var cached = _cache[id]; bytes -= 256L + cached.Paragraph.Length * 32L;
-            cached.Layout.Dispose(); DisposedLayouts++; _cache.Remove(id); _uses.Remove(id);
+            _cache[id].Layout.Dispose(); _cache.Remove(id); _uses.Remove(id);
+        }
+        var pages = _cache.Values.SelectMany(c => c.Layout.Pages.Select(p => (Owner: c.Layout, Page: p))).Where(p => p.Page.Layout is not null).ToArray();
+        var pinnedPages = Paragraphs.Select(p => p.Page).ToHashSet();
+        var count = pages.Length; var bytes = pages.Sum(p => p.Page.Bytes);
+        foreach (var item in pages.OrderBy(p => p.Page.LastUse))
+        {
+            if (count <= CacheLimit && bytes <= CacheBytes) break;
+            if (pinnedPages.Contains(item.Page)) continue;
+            bytes -= item.Page.Bytes; count--; item.Owner.Release(item.Page);
         }
     }
 
-    internal static TextLayout CreateTextLayout(Paragraph paragraph, double width, FontFamily font, IBrush foreground)
+    internal static TextLayout CreateTextLayout(Paragraph paragraph, double width, FontFamily font, IBrush foreground,
+        int start = 0, string? text = null)
     {
+        text ??= ParagraphText.For(paragraph).ToString();
+        var count = text.Length;
         var overrides = new List<ValueSpan<TextRunProperties>>();
         var offset = 0;
         foreach (var run in paragraph.Runs)
         {
+            var from = Math.Max(start, offset); var to = Math.Min(start + count, offset + run.Storage.Length);
+            offset += run.Storage.Length;
+            if (to <= from) continue;
             var style = run.Style;
             var decorations = new TextDecorationCollection();
             // Preset decorations are mutable AvaloniaObjects shared globally. Own
@@ -215,10 +279,9 @@ internal sealed class DocumentLayout : IDisposable
                 decorations, Brush(style.Foreground) ?? (style.Hyperlink is not null ? Brush("#3478CE") : foreground),
                 Brush(style.Background), style.Baseline switch
                 { Baseline.Subscript => BaselineAlignment.Subscript, Baseline.Superscript => BaselineAlignment.Superscript, _ => BaselineAlignment.Baseline });
-            overrides.Add(new(offset, run.Storage.Length, properties));
-            offset += run.Storage.Length;
+            overrides.Add(new(from - start, to - from, properties));
         }
-        return new TextLayout(paragraph.Text, Typeface(paragraph.DefaultStyle, font), paragraph.DefaultStyle.FontSize, foreground,
+        return new TextLayout(text, Typeface(paragraph.DefaultStyle, font), paragraph.DefaultStyle.FontSize, foreground,
             textAlignment: paragraph.Style.Alignment switch
             {
                 ParagraphAlignment.Center => TextAlignment.Center, ParagraphAlignment.Right => TextAlignment.Right,
@@ -237,18 +300,24 @@ internal sealed class DocumentLayout : IDisposable
     {
         if (_index is null) return null;
         var entry = _index.At(position);
-        var existing = Paragraphs.FirstOrDefault(p => p.Position.Paragraph.Id == entry.Paragraph.Id);
+        var existing = Paragraphs.FirstOrDefault(p => p.Position.Paragraph.Id == entry.Paragraph.Id &&
+            position >= p.TextStart && (position < p.TextEnd || p.TextEnd == entry.End));
         if (existing is not null) return existing;
         PruneTargets();
         var location = Locate(entry.Paragraph.Id);
+        var layout = Shape(location.Node);
+        var page = layout.At(Math.Clamp(position - entry.Start, 0, entry.Paragraph.Length));
+        page.LastUse = ++_clock;
+        UpdateHeight(location.Node, layout);
+        location = Locate(entry.Paragraph.Id);
         // Measure the target and its intersecting row dependencies, even offscreen.
-        Collect(_heights.Root, _padding.Left, _padding.Top, location.Origin.Y, location.Origin.Y + 1);
+        Collect(_heights.Root, _padding.Left, _padding.Top, location.Origin.Y + page.Top, location.Origin.Y + page.Top + 1);
         Reposition();
-        existing = Paragraphs.FirstOrDefault(p => p.Position.Paragraph.Id == entry.Paragraph.Id);
+        existing = Paragraphs.FirstOrDefault(p => p.Position.Paragraph.Id == entry.Paragraph.Id && p.Page.Start == page.Start);
         if (existing is null)
         {
-            var layout = Shape(location.Node); location = Locate(entry.Paragraph.Id);
-            existing = new(entry, layout, location.Origin, Math.Max(16, location.Node.Available - location.Node.Indent), null);
+            location = Locate(entry.Paragraph.Id);
+            existing = new(entry, page, location.Origin + new Vector(0, page.Top), Math.Max(16, location.Node.Available - location.Node.Indent), null);
             Paragraphs.Add(existing); Reposition();
         }
         Evict(); return existing;
@@ -257,7 +326,7 @@ internal sealed class DocumentLayout : IDisposable
     {
         var visual = At(position);
         if (visual is null) return new Rect(0, 0, 1.5, 20);
-        var rect = visual.Layout.HitTestTextPosition(Math.Clamp(position - visual.Position.Start, 0, visual.Position.Paragraph.Length));
+        var rect = visual.Layout.HitTestTextPosition(Math.Clamp(position - visual.TextStart, 0, visual.Page.End - visual.Page.Start));
         return new Rect(visual.Origin.X + rect.X, visual.Origin.Y + rect.Y, 1.5, Math.Max(rect.Height, visual.Position.Paragraph.DefaultStyle.FontSize * 1.1));
     }
 
@@ -277,7 +346,8 @@ internal sealed class DocumentLayout : IDisposable
         })!;
         var local = point - visual.Origin;
         var hit = visual.Layout.HitTestPoint(new Point(local.X, local.Y));
-        return visual.Position.Start + Math.Clamp(hit.TextPosition, 0, visual.Position.Paragraph.Length);
+        Evict();
+        return visual.TextStart + Math.Clamp(hit.TextPosition, 0, visual.Page.End - visual.Page.Start);
     }
 
     private void PruneTargets()
@@ -290,12 +360,12 @@ internal sealed class DocumentLayout : IDisposable
     {
         foreach (var p in Paragraphs)
         {
-            var from = Math.Max(start, p.Position.Start);
-            var to = Math.Min(start + length, p.Position.End);
+            var from = Math.Max(start, p.TextStart);
+            var to = Math.Min(start + length, p.TextEnd);
             if (to > from)
-                foreach (var rect in p.Layout.HitTestTextRange(from - p.Position.Start, to - from))
+                foreach (var rect in p.Layout.HitTestTextRange(from - p.TextStart, to - from))
                     yield return rect.Translate(new Vector(p.Origin.X, p.Origin.Y));
-            if (start <= p.Position.End && start + length > p.Position.End)
+            if (p.TextEnd == p.Position.End && start <= p.Position.End && start + length > p.Position.End)
             {
                 var caret = Caret(p.Position.End);
                 yield return caret.WithWidth(5);
@@ -306,7 +376,6 @@ internal sealed class DocumentLayout : IDisposable
     public void Clear()
     {
         foreach (var cached in _cache.Values) cached.Layout.Dispose();
-        DisposedLayouts += _cache.Count;
         _cache.Clear(); _uses.Clear(); Paragraphs.Clear(); Decorations.Clear();
         _heights = new(); _index = null;
         _previousViewportY = double.NaN;

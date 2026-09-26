@@ -159,7 +159,7 @@ public class DocumentSurface : Control
         foreach (var paragraph in _layout.Paragraphs)
         {
             if (!paragraph.Bounds.Intersects(viewport)) continue;
-            paragraph.Layout.Draw(context, paragraph.Origin);
+            paragraph.Draw(context, viewport);
             if (paragraph.Marker is not null)
             {
                 var marker = new FormattedText(paragraph.Marker, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
@@ -257,9 +257,9 @@ public class DocumentSurface : Control
                     var p = _layout.At(session.Selection.Active);
                     if (p is not null)
                     {
-                        var lineIndex = p.Layout.GetLineIndexFromCharacterIndex(session.Selection.Active - p.Position.Start, false);
-                        var line = p.Layout.TextLines[Math.Clamp(lineIndex, 0, p.Layout.TextLines.Count - 1)];
-                        Move(p.Position.Start + line.FirstTextSourceIndex + (e.Key == Key.End ? line.Length - line.NewLineLength : 0));
+                        var lineIndex = p.Layout.GetLineIndexFromCharacterIndex(session.Selection.Active - p.TextStart, false);
+                        var line = p.Layout.TextLines[Math.Clamp(lineIndex, 0, p.Page.LineCount - 1)];
+                        Move(p.TextStart + line.FirstTextSourceIndex + (e.Key == Key.End ? line.Length - line.NewLineLength : 0));
                     }
                 }
                 _preferredX = null; break;

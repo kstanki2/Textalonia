@@ -186,10 +186,21 @@ internal sealed class PieceText : IRetained
     private readonly PieceText? _left, _right;
     public int Length { get; }
     private int Height { get; }
+    public bool RequiresBidiContext { get; }
     private PieceText(string buffer, int start = 0, int? length = null)
-    { _buffer = buffer; _start = start; Length = length ?? buffer.Length; Height = 1; }
+    {
+        _buffer = buffer; _start = start; Length = length ?? buffer.Length; Height = 1;
+        foreach (var ch in buffer.AsSpan(start, Length))
+            if (ch is >= '\u0590' and <= '\u08ff' or '\u200f' or >= '\u202a' and <= '\u202e' or
+                >= '\u2066' and <= '\u2069' or >= '\ufb1d' and <= '\ufdff' or >= '\ufe70' and <= '\ufeff' or
+                '\ud802' or '\ud803' or '\ud83a' or '\ud83b')
+            { RequiresBidiContext = true; break; }
+    }
     private PieceText(PieceText left, PieceText right)
-    { _left = left; _right = right; Length = checked(left.Length + right.Length); Height = 1 + Math.Max(left.Height, right.Height); }
+    {
+        _left = left; _right = right; Length = checked(left.Length + right.Length); Height = 1 + Math.Max(left.Height, right.Height);
+        RequiresBidiContext = left.RequiresBidiContext || right.RequiresBidiContext;
+    }
     public static PieceText From(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -238,6 +249,37 @@ internal sealed class PieceText : IRetained
     }
     public char this[int index] => _buffer is not null ? _buffer[_start + index] :
         index < _left!.Length ? _left[index] : _right![index - _left.Length];
+    private IEnumerable<ReadOnlyMemory<char>> ReverseChunks()
+    {
+        if (_buffer is not null) { yield return _buffer.AsMemory(_start, Length); yield break; }
+        foreach (var chunk in _right!.ReverseChunks()) yield return chunk;
+        foreach (var chunk in _left!.ReverseChunks()) yield return chunk;
+    }
+    public int CommonPrefix(PieceText other) => CommonEdge(other, false, Math.Min(Length, other.Length));
+    public int CommonSuffix(PieceText other, int limit) => CommonEdge(other, true, limit);
+    private int CommonEdge(PieceText other, bool reverse, int limit)
+    {
+        if (ReferenceEquals(this, other)) return limit;
+        using var left = (reverse ? ReverseChunks() : Chunks(0, Length)).GetEnumerator();
+        using var right = (reverse ? other.ReverseChunks() : other.Chunks(0, other.Length)).GetEnumerator();
+        var a = ReadOnlyMemory<char>.Empty; var b = ReadOnlyMemory<char>.Empty; var matched = 0;
+        while (matched < limit)
+        {
+            if (a.IsEmpty) { if (!left.MoveNext()) break; a = left.Current; }
+            if (b.IsEmpty) { if (!right.MoveNext()) break; b = right.Current; }
+            var count = Math.Min(limit - matched, Math.Min(a.Length, b.Length));
+            var aa = reverse ? a.Span[^count..] : a.Span[..count];
+            var bb = reverse ? b.Span[^count..] : b.Span[..count];
+            if (!aa.SequenceEqual(bb))
+            {
+                for (var i = 0; i < count; i++)
+                    if (aa[reverse ? count - i - 1 : i] != bb[reverse ? count - i - 1 : i]) return matched + i;
+            }
+            matched += count;
+            a = reverse ? a[..^count] : a[count..]; b = reverse ? b[..^count] : b[count..];
+        }
+        return matched;
+    }
     public IEnumerable<ReadOnlyMemory<char>> Chunks(int start, int length)
     {
         if (length == 0) yield break;
