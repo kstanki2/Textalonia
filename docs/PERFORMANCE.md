@@ -79,7 +79,9 @@ names end in `-document`, and it does not claim to support an eager Text binding
 Each raw UI sample additionally records shapes created, resident cached paragraphs,
 updated document index nodes and the retained-history estimate. Window-layout
 captures add shaped UTF-16 units, the largest shaping input, resident window count
-and estimated resident shape bytes. The legacy `ShapedParagraphs` counter counts
+and estimated resident shape bytes. Follow-up captures also record the peak shape
+estimate and per-sample generation 0/1/2 collection counts. Collection counters are
+read outside the timed interval; the workloads and budget rules are unchanged. The legacy `ShapedParagraphs` counter counts
 TextLayout creations (now windows); `CachedParagraphs` counts paragraph checkpoint
 sets. `ShapedCharacters` is an operation delta, while `LargestShapingWindow` is the
 surface's high-water input length. Observation occurs
@@ -100,10 +102,16 @@ Only full control captures are compared with the P1 release budgets.
 
 Intentional linear operations include ingestion/validation, arbitrary Execute
 snapshots, structural table changes, dense-label rebasing, complete exports and
-compatibility text/array materialization. Layout metadata initializes for the full
-model, but ordinary first viewport shaping uses visible text windows and overscan.
+compatibility text/array materialization. Height metadata initializes lazily from
+subtree estimates for ordinary text.
+Table row dependencies and first-use numbered-list summaries can enumerate their
+container's metadata. First viewport shaping uses visible text windows and at most
+160 DIP of overscan on each side. `GeometryNodes` records nodes created since the
+current height index was initialized; it is not an operation delta or a live heap count.
 Exact distant targets may discover previously unmeasured line breaks; paragraph-wide
 bidi context and oversized graphemes/visual lines retain a larger shaping fallback.
-The current viewport plus required targets can exceed reusable-cache limits. See the
+Visible and target layouts now share the bounded reusable cache. A lease for one
+oversized exact layout can temporarily exceed that estimate and releases it when
+finished; peak counters disclose that cost. See the
 [architecture](ARCHITECTURE.md#performance-boundaries) for exact history/cache
 estimate meanings and ownership exclusions.

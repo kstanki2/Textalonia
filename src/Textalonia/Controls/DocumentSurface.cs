@@ -40,6 +40,7 @@ public class DocumentSurface : Control
         Cursor = new Cursor(StandardCursorType.Ibeam);
         ClipToBounds = true;
         _inputClient = new(this);
+        _layout.AnchorShifted += ApplyAnchorAdjustment;
         _blink = new DispatcherTimer(TimeSpan.FromMilliseconds(530), DispatcherPriority.Background, (_, _) =>
         { _caretVisible = !_caretVisible; InvalidateVisual(); });
         AddHandler(TextInputMethodClientRequestedEvent, (_, e) =>
@@ -77,14 +78,14 @@ public class DocumentSurface : Control
         }
     }
 
-    internal void Refresh(bool bringCaret = false)
+    internal void Refresh(bool bringCaret = false, bool invalidateLayout = true)
     {
         if (_composition is not null && (Editor is null || Editor.IsReadOnly || !ReferenceEquals(_compositionBase, Editor.Document)))
         {
             _preedit = null; _preeditCursor = null; _composition = null; _compositionBase = null;
             _inputClient.Reset();
         }
-        _dirty = true;
+        _dirty |= invalidateLayout;
         _caretVisible = true;
         InvalidateMeasure(); InvalidateVisual();
         _inputClient.Notify();
@@ -125,8 +126,12 @@ public class DocumentSurface : Control
             Editor.BorderBrush ?? Brushes.Gray, Editor.DocumentPadding,
             _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, Editor.Scroller?.Offset.Y ?? 0, width, 500));
         _layoutDocument = document; _layoutWidth = width; _dirty = false;
-        if (Math.Abs(_layout.AnchorAdjustment) > .1 && Editor.Scroller is { } scroller)
-            scroller.Offset = new Vector(scroller.Offset.X, Math.Max(0, scroller.Offset.Y + _layout.AnchorAdjustment));
+        ApplyAnchorAdjustment(_layout.AnchorAdjustment);
+    }
+    private void ApplyAnchorAdjustment(double adjustment)
+    {
+        if (Math.Abs(adjustment) > .1 && Editor?.Scroller is { } scroller)
+            scroller.Offset = new Vector(scroller.Offset.X, Math.Max(0, scroller.Offset.Y + adjustment));
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -173,7 +178,11 @@ public class DocumentSurface : Control
                 new SolidColorBrush(Color.FromArgb(135, 128, 128, 128)), maxWidth: Math.Max(20, Bounds.Width - Editor.DocumentPadding.Left - Editor.DocumentPadding.Right));
             placeholder.Draw(context, new Point(Editor.DocumentPadding.Left, Editor.DocumentPadding.Top));
         }
-        if (IsFocused && !Editor.IsReadOnly && _caretVisible) context.FillRectangle(Editor.Foreground ?? Brushes.Black, CaretRectangle);
+        // Rendering must not discover an offscreen caret's geometry: doing so
+        // can refine prefix heights and invalidate scrolling during this pass.
+        if (IsFocused && !Editor.IsReadOnly && _caretVisible && _layout.Paragraphs.Any(p =>
+            DisplayCaret >= p.TextStart && (DisplayCaret < p.TextEnd || DisplayCaret == p.TextEnd && p.TextEnd == p.Position.End) && p.Bounds.Intersects(viewport)))
+            context.FillRectangle(Editor.Foreground ?? Brushes.Black, CaretRectangle);
     }
 
     protected override void OnGotFocus(FocusChangedEventArgs e)
@@ -257,8 +266,9 @@ public class DocumentSurface : Control
                     var p = _layout.At(session.Selection.Active);
                     if (p is not null)
                     {
-                        var lineIndex = p.Layout.GetLineIndexFromCharacterIndex(session.Selection.Active - p.TextStart, false);
-                        var line = p.Layout.TextLines[Math.Clamp(lineIndex, 0, p.Page.LineCount - 1)];
+                        using var lease = p.Acquire();
+                        var lineIndex = lease.Layout.GetLineIndexFromCharacterIndex(session.Selection.Active - p.TextStart, false);
+                        var line = lease.Layout.TextLines[Math.Clamp(lineIndex, 0, p.Page.LineCount - 1)];
                         Move(p.TextStart + line.FirstTextSourceIndex + (e.Key == Key.End ? line.Length - line.NewLineLength : 0));
                     }
                 }
