@@ -27,6 +27,7 @@ public sealed record Paragraph : Block
     public Paragraph(IEnumerable<RichRun> runs) => Runs = Normalize(runs);
 
     [JsonIgnore] public string Text => string.Concat(Runs.Select(x => x.Text));
+    [JsonIgnore] public string PlainText => string.Concat(Runs.Select(x => x.PlainText));
     [JsonIgnore] public int Length
     {
         get
@@ -80,7 +81,7 @@ public sealed record Paragraph : Block
         foreach (var run in runs)
         {
             if (run.Storage.Length == 0) continue;
-            if (result.Count > 0 && result[^1].Style == run.Style)
+            if (result.Count > 0 && result[^1].Inline is null && run.Inline is null && result[^1].Style == run.Style)
                 result[^1] = result[^1].Append(run);
             else result.Add(run);
         }

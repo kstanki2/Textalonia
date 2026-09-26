@@ -8,7 +8,7 @@
 
 `Editing.EditorSession` owns the current snapshot, directional selection, insertion style, and bounded undo/redo stacks. Each edit replaces affected paragraph content and publishes a snapshot. Adjacent typed characters coalesce until navigation, formatting, another operation, or an 800 ms pause breaks the group. Application operations enter the same history through Execute.
 
-`Serialization.IDocumentFormat` operates on snapshots and caller-owned streams. Native JSON writes schema v2 and explicitly migrates v1, preserving the entire model. External formats intentionally map only supported features. Codecs parse data; they do not instantiate XAML or execute document code. See [document semantics](DOCUMENT-MODEL.md) for list identity, style precedence, nested cells and structural merge rules.
+`Serialization.IDocumentFormat` operates on snapshots and caller-owned streams. Native JSON writes schema v3 and explicitly migrates v1/v2, preserving the entire model. External formats intentionally map only supported features. Codecs parse data; they do not instantiate XAML or execute document code. See [document semantics](DOCUMENT-MODEL.md) for list identity, style precedence, nested cells and structural merge rules.
 
 `Controls.TextaloniaEditor` exposes Avalonia styled properties, binding, commands, clipboard and notifications. Its template composes TextaloniaToolbar, ScrollViewer, and DocumentSurface. TextaloniaViewer starts the same control in read-only mode.
 
@@ -35,7 +35,7 @@ complete view is intentionally linear on first materialization. Compatibility
 arrays memoize their identity after explicit access; their potential allocation
 is included in retention estimates. Complete text is not cached by history. `ReadText(start, length)`,
 `CharAt`, search and position lookup avoid document flattening. Native export still
-writes schema v2 and is necessarily linear in exported content.
+writes schema v3 and is necessarily linear in exported content.
 
 `TextaloniaEditor.SynchronizeText` defaults to true. It publishes complete text
 on each document revision. Set it to false when binding `Document` to avoid that
@@ -149,7 +149,7 @@ not a promise about total managed heap size.
 - Draw offset-based TextHighlights and handle HyperlinkActivated.
 - Use EditorSession without UI, or immutable snapshots without an editing session.
 
-The keyboard/mouse implementation is currently in DocumentSurface; a swappable input-component system is future work. The automation peer exposes a value provider, not full text-range automation.
+Keyboard, pointer, caret and composition defaults are independently replaceable through owned components. Inline descriptors shape as atomic embedded text runs; view-owned caches resolve images asynchronously and explicit registered factories create only visible controls. See [input contracts](INPUT-COMPONENTS.md) and [inline ownership](INLINE-CONTENT.md). The editor exposes a managed text-range contract, while the native automation peer remains value-only pending an Avalonia text-provider bridge; see [accessibility evidence](PHASE4-ACCESSIBILITY.md).
 
 ## Verification
 

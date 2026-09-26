@@ -50,7 +50,7 @@ internal sealed class DocumentNode(object? source, StorageTree<OrderKey, Documen
         if (Source is Paragraph p)
         {
             visit(p.DefaultStyle); visit(p.Style);
-            foreach (var run in p.Runs) { visit(run.Storage); visit(run.Style); }
+            foreach (var run in p.Runs) { visit(run.Storage); visit(run.Style); if (run.Inline is not null) visit(run.Inline); }
             visit(ParagraphText.For(p));
         }
         // Table snapshots also own covered cells and merge backups, outside visible indexing.
@@ -103,7 +103,7 @@ internal sealed class HiddenBlockStorage(Block block) : IRetained
         {
             case Paragraph paragraph:
                 visit(paragraph.Style); visit(paragraph.DefaultStyle);
-                foreach (var run in paragraph.Runs) { visit(run.Storage); visit(run.Style); }
+                foreach (var run in paragraph.Runs) { visit(run.Storage); visit(run.Style); if (run.Inline is not null) visit(run.Inline); }
                 visit(ParagraphText.For(paragraph));
                 break;
             case Section section:

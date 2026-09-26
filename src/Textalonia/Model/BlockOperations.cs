@@ -8,7 +8,8 @@ public static class BlockOperations
     /// <summary>Copies a block with fresh identifiers for every descendant and retained merge backup.</summary>
     public static Block CloneWithNewIds(Block block) => block switch
     {
-        Paragraph paragraph => paragraph with { Id = Guid.NewGuid() },
+        Paragraph paragraph => paragraph with { Id = Guid.NewGuid(), Runs = paragraph.Runs.Select(run => run.Inline is null ? run :
+            run with { Inline = run.Inline with { Id = Guid.NewGuid() } }).ToImmutableArray() },
         Section section => section with { Id = Guid.NewGuid(), Blocks = Clone(section.Blocks) },
         Table table => table with
         {
@@ -34,7 +35,9 @@ public static class BlockOperations
             if (ReferenceEquals(left, right)) return true;
             return (left, right) switch
             {
-                (Paragraph a, Paragraph b) => a.Style == b.Style && a.DefaultStyle == b.DefaultStyle && a.Runs.SequenceEqual(b.Runs),
+                (Paragraph a, Paragraph b) => a.Style == b.Style && a.DefaultStyle == b.DefaultStyle && a.Runs.Length == b.Runs.Length &&
+                    a.Runs.Zip(b.Runs).All(pair => pair.First.Style == pair.Second.Style && pair.First.Text == pair.Second.Text &&
+                        (pair.First.Inline is { } inline ? inline with { Id = pair.Second.Inline?.Id ?? Guid.Empty } == pair.Second.Inline : pair.Second.Inline is null)),
                 (Section a, Section b) => a.Background == b.Background && a.BorderColor == b.BorderColor &&
                     a.Padding == b.Padding && a.PaddingEdges == b.PaddingEdges && a.Borders == b.Borders && ContentEquals(a.Blocks, b.Blocks),
                 (Table a, Table b) => a.ColumnWidths.SequenceEqual(b.ColumnWidths) && a.RowSizing.SequenceEqual(b.RowSizing) &&

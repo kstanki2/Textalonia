@@ -14,6 +14,9 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Editor.KeyboardComponent = new DemoKeyboardComponent();
+        Editor.CaretComponent = new DemoCaretComponent();
+        SampleInlineControls.Configure(Editor);
         Editor.Document = SampleDocument.Create();
         Editor.DocumentChanged += (_, _) =>
         {

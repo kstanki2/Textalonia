@@ -192,7 +192,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                     .Append(s.Baseline switch { Baseline.Subscript => "\\sub", Baseline.Superscript => "\\super", _ => "" })
                     .Append("\\cf").Append(s.Foreground is null ? 0 : Array.IndexOf(colors, s.Foreground) + 1)
                     .Append("\\highlight").Append(s.Background is null ? 0 : Array.IndexOf(colors, s.Background) + 1)
-                    .Append(' ').Append(Escape(run.Text)).Append('}');
+                    .Append(' ').Append(Escape(run.PlainText)).Append('}');
             }
             b.Append("\\par\n");
         }

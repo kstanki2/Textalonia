@@ -22,7 +22,7 @@ public sealed class EditorErrorEventArgs(Exception exception) : EventArgs { publ
 [TemplatePart("PART_Surface", typeof(DocumentSurface), IsRequired = true)]
 [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer), IsRequired = true)]
 [TemplatePart("PART_Toolbar", typeof(TextaloniaToolbar))]
-public class TextaloniaEditor : TemplatedControl
+public partial class TextaloniaEditor : TemplatedControl
 {
     public static readonly StyledProperty<FlowDocument?> DocumentProperty =
         AvaloniaProperty.Register<TextaloniaEditor, FlowDocument?>(nameof(Document), defaultBindingMode: BindingMode.TwoWay);
@@ -128,6 +128,8 @@ public class TextaloniaEditor : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == InlineResourceResolverProperty || change.Property == InlineImageOptionsProperty || change.Property == InlineControlFactoriesProperty)
+        { _surface?.ResetInlineViews(); _surface?.Refresh(); return; }
         if (change.Property == MaxShapingCharactersProperty) { _surface?.Refresh(); return; }
         if (_synchronizing) return;
         if (change.Property == DocumentProperty)

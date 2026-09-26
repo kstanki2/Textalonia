@@ -238,7 +238,7 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                         s.Background is not null ? new XElement(W + "shd", new XAttribute(W + "fill", s.Background[^6..])) : null,
                         s.Baseline != Baseline.Normal ? Val("vertAlign", s.Baseline == Baseline.Subscript ? "subscript" : "superscript") : null);
                     var r = new XElement(W + "r", rp);
-                    var segments = System.Text.RegularExpressions.Regex.Split(run.Text, "([\t\u2028])");
+                    var segments = System.Text.RegularExpressions.Regex.Split(run.PlainText, "([\t\u2028])");
                     foreach (var segment in segments)
                         if (segment == "\t") r.Add(new XElement(W + "tab"));
                         else if (segment == "\u2028") r.Add(new XElement(W + "br"));
@@ -323,4 +323,3 @@ public sealed class DocxDocumentFormat : IDocumentFormat
         return result.ToArray();
     }
 }
-

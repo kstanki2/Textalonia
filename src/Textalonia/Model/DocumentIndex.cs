@@ -83,6 +83,23 @@ public sealed class DocumentIndex
         return string.Create(length, (Index: this, Start: start), static (span, state) =>
         { var written = 0; CopyNode(state.Index.Tree.Root, 0, state.Start, state.Start + span.Length, span, ref written); });
     }
+    /// <summary>Exports a range using alternative text while accepting index UTF-16 coordinates.</summary>
+    public string ReadPlainText(int start, int length)
+    {
+        if (start < 0 || length < 0 || start > Length - length) throw new ArgumentOutOfRangeException(nameof(start));
+        var result = new StringBuilder();
+        if (length == 0) return "";
+        var end = start + length;
+        foreach (var entry in Enumerate(start, end - 1))
+        {
+            var from = Math.Max(0, start - entry.Start);
+            var to = Math.Min(entry.Paragraph.Length, end - entry.Start);
+            if (to > from)
+                foreach (var run in entry.Paragraph.Slice(from, to - from)) result.Append(run.PlainText);
+            if (entry.End >= start && entry.End < end && entry.End < Length) result.Append('\n');
+        }
+        return result.ToString();
+    }
     private static void CopyNode(DocumentNode node, int offset, int start, int end, Span<char> target, ref int written)
     {
         if (offset >= end || offset + node.Length <= start) return;
@@ -163,6 +180,7 @@ internal static class ParagraphText
     {
         var text = For(paragraph);
         bool Safe(int at) => at == 0 || at == text.Length ||
+            text[at - 1] == InlineDescriptor.ObjectReplacementCharacter || text[at] == InlineDescriptor.ObjectReplacementCharacter ||
             text[at - 1] is >= ' ' and <= '~' && text[at] is >= ' ' and <= '~';
         var start = Math.Min(position, text.Length);
         while (!Safe(start)) start--;
@@ -174,6 +192,7 @@ internal static class ParagraphText
     {
         if (position == 0 || position == paragraph.Length) return position;
         var text = For(paragraph);
+        if (text[position - 1] == InlineDescriptor.ObjectReplacementCharacter || text[position] == InlineDescriptor.ObjectReplacementCharacter) return position;
         if (text[position - 1] is >= ' ' and <= '~' && text[position] is >= ' ' and <= '~') return position;
         var (start, breaks, _) = Boundaries(paragraph, position);
         var index = Array.BinarySearch(breaks, position - start);
@@ -182,6 +201,7 @@ internal static class ParagraphText
     public static int Next(Paragraph paragraph, int position)
     {
         var text = For(paragraph);
+        if (text[position] == InlineDescriptor.ObjectReplacementCharacter || position + 1 < text.Length && text[position + 1] == InlineDescriptor.ObjectReplacementCharacter) return position + 1;
         if (position + 1 == text.Length || position + 1 < text.Length &&
             text[position] is >= ' ' and <= '~' && text[position + 1] is >= ' ' and <= '~') return position + 1;
         var (start, breaks, end) = Boundaries(paragraph, position);

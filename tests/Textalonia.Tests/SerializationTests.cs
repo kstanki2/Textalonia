@@ -111,7 +111,7 @@ public class SerializationTests
     public void Invalid_native_documents_and_unsupported_versions_are_rejected()
     {
         var json = DocumentFormats.Json.Serialize(new FlowDocument());
-        Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 2", "\"version\": 99")));
+        Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 3", "\"version\": 99")));
         Assert.Throws<FormatException>(() => new FlowDocument([new Paragraph("a\nb")]).Validate());
         Assert.Throws<FormatException>(() => new FlowDocument([new Paragraph("x", TextStyle.Default with { FontSize = double.NaN })]).Validate());
     }

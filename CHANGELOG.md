@@ -2,6 +2,7 @@
 
 ## 0.1.0-preview.1
 
+- Added replaceable input components; atomic inline images/host controls with immutable resources, native schema v3 and bounded view ownership; managed text accessibility ranges with the native Avalonia bridge limitation documented. See `docs/PHASE4-REPORT.md`.
 - Added native schema v2 with explicit v1 migration; mixed-selection formatting state; identified multilevel lists with restart/continuation; richer typography and independent container borders/padding; persisted table sizing, merge-aware structural edits, and nested cell blocks. See `docs/DOCUMENT-MODEL.md` for migration and editing semantics.
 - Established the Textalonia package, namespaces, editor/viewer/toolbar controls, and `.textalonia` native file extension (with legacy `.art` support).
 - Added an Avalonia 12 control library targeting .NET 8.

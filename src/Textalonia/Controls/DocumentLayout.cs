@@ -330,6 +330,20 @@ internal sealed class DocumentLayout : IDisposable
         int start = 0, string? text = null)
     {
         text ??= ParagraphText.For(paragraph).ToString();
+        if (paragraph.Runs.Any(r => r.Inline is not null))
+        {
+            var properties = new GenericTextParagraphProperties(
+                paragraph.Style.RightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight,
+                paragraph.Style.Alignment switch
+                {
+                    ParagraphAlignment.Center => TextAlignment.Center, ParagraphAlignment.Right => TextAlignment.Right,
+                    ParagraphAlignment.Justify => TextAlignment.Justify, _ => TextAlignment.Left
+                }, true, false, InlineTextSource.Properties(paragraph.DefaultStyle, font, foreground),
+                TextWrapping.Wrap, paragraph.Style.LineHeight ?? double.NaN, 0, paragraph.Style.LetterSpacing);
+            return new TextLayout(new InlineTextSource(paragraph, start, text, font, foreground), properties,
+                maxWidth: Math.Max(16, width - (start == 0 ? paragraph.Style.FirstLineIndent : 0)),
+                maxLines: start == 0 && paragraph.Style.FirstLineIndent != 0 ? 2 : 0);
+        }
         var count = text.Length;
         List<ValueSpan<TextRunProperties>>? overrides = null;
         var offset = 0;
@@ -460,6 +474,26 @@ internal sealed class DocumentLayout : IDisposable
                 var caret = Caret(p.Position.End).WithWidth(5);
                 if (p.Clip is { } clip) caret = caret.Intersect(clip);
                 if (caret.Width > 0 && caret.Height > 0) yield return caret;
+            }
+        }
+    }
+
+    public IEnumerable<InlineVisual> InlineVisuals()
+    {
+        foreach (var visual in Paragraphs)
+        {
+            if (!visual.Position.Paragraph.Runs.Any(r => r.Inline is not null)) continue;
+            using var lease = visual.Acquire();
+            var top = visual.Origin.Y;
+            foreach (var line in lease.Layout.TextLines.Take(visual.Page.LineCount))
+            {
+                foreach (var bounds in line.GetTextBounds(line.FirstTextSourceIndex, line.Length))
+                    foreach (var run in bounds.TextRunBounds)
+                        if (run.TextRun is InlineObjectRun inline)
+                            yield return new(inline.Descriptor, visual.TextStart + run.TextSourceCharacterIndex,
+                                new Rect(visual.Origin.X + run.Rectangle.X, top + line.Baseline - inline.Baseline,
+                                    inline.Size.Width, inline.Size.Height), visual.Clip);
+                top += line.Height;
             }
         }
     }

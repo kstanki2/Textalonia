@@ -308,9 +308,8 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
         if (s.Background is not null) b.Append(";background-color:").Append(CssColor(s.Background));
         if (s.Underline || s.Strikethrough) b.Append(";text-decoration:").Append(s.Underline ? "underline " : "").Append(s.Strikethrough ? "line-through" : "");
         if (s.Baseline != Baseline.Normal) b.Append(";vertical-align:").Append(s.Baseline == Baseline.Subscript ? "sub" : "super");
-        b.Append("\">").Append(WebUtility.HtmlEncode(run.Text).Replace("\u2028", "<br>")).Append("</span>");
+        b.Append("\">").Append(WebUtility.HtmlEncode(run.PlainText).Replace("\u2028", "<br>")).Append("</span>");
         if (s.Hyperlink is not null) b.Append("</a>");
     }
     private static string CssColor(string value) => value.Length == 9 ? "#" + value[3..] + value[1..3] : value;
 }
-
