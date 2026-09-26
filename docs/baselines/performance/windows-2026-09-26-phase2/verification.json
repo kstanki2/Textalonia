@@ -1,0 +1,38 @@
+{
+  "tests": {
+    "total": "83",
+    "executed": "83",
+    "passed": "83",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "generatedOperationsPerSeed": 2000,
+  "testSeeds": 6,
+  "nativeV1FixtureChanged": false,
+  "publicApiRemovedMembers": 0,
+  "packageConsumer": "passed from isolated workspace cache; zero build warnings/errors",
+  "compatibilityCases": 138,
+  "documentModeCases": 90,
+  "compatibilityFailedBudgets": 49,
+  "documentModeFailedBudgets": 24,
+  "phase2ExitGate": "incomplete",
+  "assemblySha256": {
+    "src/Textalonia/bin/Release/net8.0/Textalonia.dll": "f7547913d4aa7fe96d780f985281f8aaebfa4e66af95913d0b223bbd8e585fd5",
+    "tests/Textalonia.PackageSmoke/bin/Release/net8.0/Textalonia.dll": "f7547913d4aa7fe96d780f985281f8aaebfa4e66af95913d0b223bbd8e585fd5",
+    "benchmarks/Textalonia.Benchmarks/bin/Release/net8.0/Textalonia.Benchmarks.dll": "546e8fff8d21e854c05fac3f1f2f7cfe8393c3df79af9f358fd381f0d52f5c33",
+    "tests/Textalonia.Tests/bin/Release/net8.0/Textalonia.Tests.dll": "f1dd8e1e2c00f2ea0944796d5d2cc6c78a9946891fd91d73925a68c842e016bb"
+  },
+  "packageSha256": "efca5e509e95c72732631b6a5ba858921bd17b93e4dc0d5251bee591bd8ae5e7",
+  "packedAssemblyMatchesConsumer": true
+}

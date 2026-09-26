@@ -7,7 +7,10 @@ namespace Textalonia.Model;
 /// <summary>An immutable document snapshot, safe to serialize on a background thread.</summary>
 public sealed record FlowDocument
 {
-    public ImmutableArray<Block> Blocks { get; init; } = [new Paragraph()];
+    private SnapshotArray<Block> _blocks = SnapshotArray<Block>.From([new Paragraph()]);
+    public ImmutableArray<Block> Blocks { get => _blocks.Read(); init => _blocks = SnapshotArray<Block>.From(value); }
+    internal FlowDocument WithChildren(StorageTree<OrderKey, DocumentNode>? children) => this with
+    { _blocks = new(() => children!.Items().Select(p => (Block)p.Value.Source!).ToImmutableArray()) };
     public FlowDocument() { }
     public FlowDocument(IEnumerable<Block> blocks)
     {
@@ -151,55 +154,4 @@ public sealed record FlowDocument
 public sealed record ParagraphPosition(Paragraph Paragraph, int Start, Guid ContainerId, Guid TopLevelBlockId)
 {
     public int End => Start + Paragraph.Length;
-}
-
-/// <summary>Maps UTF-16 text positions to visible paragraphs, including table cells.</summary>
-public sealed class DocumentIndex
-{
-    public ImmutableArray<ParagraphPosition> Paragraphs { get; }
-    public string Text { get; }
-    public int Length => Text.Length;
-
-    public DocumentIndex(FlowDocument document)
-    {
-        var result = ImmutableArray.CreateBuilder<ParagraphPosition>();
-        var offset = 0;
-        void Visit(IEnumerable<Block> blocks, Guid container, Guid top)
-        {
-            foreach (var block in blocks)
-            {
-                var owner = top == Guid.Empty ? block.Id : top;
-                switch (block)
-                {
-                    case Paragraph p:
-                        result.Add(new(p, offset, container, owner));
-                        offset += p.Length + 1;
-                        break;
-                    case Section s: Visit(s.Blocks, s.Id, owner); break;
-                    case Table t:
-                        for (var r = 0; r < t.Rows.Length; r++)
-                            for (var c = 0; c < t.ColumnCount; c++)
-                                if (!t.IsCovered(r, c)) Visit(t.Rows[r][c].Paragraphs, t.Rows[r][c].Id, owner);
-                        break;
-                }
-            }
-        }
-        Visit(document.Blocks, Guid.Empty, Guid.Empty);
-        Paragraphs = result.ToImmutable();
-        Text = string.Join("\n", Paragraphs.Select(p => p.Paragraph.Text));
-    }
-
-    public ParagraphPosition At(int offset)
-    {
-        if (Paragraphs.IsEmpty) throw new InvalidOperationException("Document has no paragraphs.");
-        offset = Math.Clamp(offset, 0, Length);
-        var low = 0; var high = Paragraphs.Length - 1;
-        while (low < high)
-        {
-            var mid = (low + high + 1) / 2;
-            if (Paragraphs[mid].Start <= offset) low = mid;
-            else high = mid - 1;
-        }
-        return Paragraphs[low];
-    }
 }

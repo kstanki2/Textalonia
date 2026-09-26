@@ -33,8 +33,20 @@ public sealed record ParagraphStyle
     public bool RightToLeft { get; init; }
 }
 
-[method: System.Text.Json.Serialization.JsonConstructor]
-public sealed record RichRun(string Text, TextStyle Style)
+public sealed record RichRun
 {
+    private PieceText _storage;
+    public string Text { get => _storage.ToString(); init => _storage = PieceText.From(value); }
+    public TextStyle Style { get; init; }
+    [System.Text.Json.Serialization.JsonConstructor]
+    public RichRun(string Text, TextStyle Style) { _storage = PieceText.From(Text); this.Style = Style; }
     public RichRun(string text) : this(text, TextStyle.Default) { }
+    private RichRun(PieceText storage, TextStyle style) { _storage = storage; Style = style; }
+    internal PieceText Storage => _storage;
+    internal RichRun Slice(int start, int length) => new(_storage.Slice(start, length), Style);
+    internal RichRun Append(RichRun other) => new(PieceText.Join(_storage, other._storage), Style);
+    public void Deconstruct(out string Text, out TextStyle Style) { Text = this.Text; Style = this.Style; }
+    public bool Equals(RichRun? other) => other is not null && Style == other.Style &&
+        (ReferenceEquals(_storage, other._storage) || Text == other.Text);
+    public override int GetHashCode() => HashCode.Combine(Text, Style);
 }

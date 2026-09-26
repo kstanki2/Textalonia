@@ -1,0 +1,1158 @@
+﻿{
+    "policy":  "docs/PERFORMANCE.md Phase 2 budgets",
+    "checks":  [
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  42.3929,
+                       "budget":  250,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  6630056,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  4.201,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  104472,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  11.4766,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  104440,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  4.0561,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  113432,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  9.6972,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  111048,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  9.4904,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  100872,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  9.5953,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  97936,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "caret-document",
+                       "metric":  "p95-ms",
+                       "actual":  2.9971,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "caret-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  57328,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "text-update-document",
+                       "metric":  "p95-ms",
+                       "actual":  8.5368,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  8.2859,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  418912,
+                       "budget":  4233128,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  15.8008,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  9.1428,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  1.1169,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  2.5959,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-100",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  205384,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  37.3843,
+                       "budget":  250,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  6038104,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  5.1168,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  103704,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  3.6353,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  95064,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  3.3105,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  113976,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  4.3045,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  116960,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  5.6825,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  100368,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  4.415,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  100632,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "caret-document",
+                       "metric":  "p95-ms",
+                       "actual":  10.0366,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "caret-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  62672,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "text-update-document",
+                       "metric":  "p95-ms",
+                       "actual":  26.743,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  12.8849,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  427672,
+                       "budget":  4582580,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  31.3527,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  16.9586,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  12.8227,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  26.5831,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-1000",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  256992,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  114.6018,
+                       "budget":  250,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  38764112,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  3.5828,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  104800,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  3.5641,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  103488,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  2.7288,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  120648,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  2.9955,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  117104,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  10.9337,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  111832,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  3.1271,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  98392,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "caret-document",
+                       "metric":  "p95-ms",
+                       "actual":  2.3105,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "caret-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  56472,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "text-update-document",
+                       "metric":  "p95-ms",
+                       "actual":  112.4528,
+                       "budget":  100,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  5.021,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  415928,
+                       "budget":  8077100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  78.4961,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  23.0595,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  59.641,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  104.5811,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "paragraphs-10000",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  313904,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  295.9074,
+                       "budget":  250,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  39239160,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  339.872,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  39131280,
+                       "budget":  4554304,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  344.6771,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  39138528,
+                       "budget":  4554304,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  303.017,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  39137216,
+                       "budget":  4554304,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  307.5023,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  39129248,
+                       "budget":  4554304,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  321.4763,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  41810872,
+                       "budget":  4554304,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  329.1416,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  41807696,
+                       "budget":  4554304,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "caret-document",
+                       "metric":  "p95-ms",
+                       "actual":  21.2751,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "caret-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  2674032,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "text-update-document",
+                       "metric":  "p95-ms",
+                       "actual":  336.3894,
+                       "budget":  100,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  46.9062,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  2705432,
+                       "budget":  4554304,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  874.4325,
+                       "budget":  100,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  341.1811,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  0.7257,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  23.4595,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "long-paragraph",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  127072,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  30.8421,
+                       "budget":  250,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  10612632,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  4.372,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  439632,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  21.8523,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  448912,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  10.7997,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1177440,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  21.3336,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1180864,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  19.407,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  568736,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  18.2545,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  567704,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "caret-document",
+                       "metric":  "p95-ms",
+                       "actual":  18.6222,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "caret-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  983760,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "text-update-document",
+                       "metric":  "p95-ms",
+                       "actual":  20.6993,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  27.0074,
+                       "budget":  16,
+                       "passed":  false
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1879368,
+                       "budget":  4274316,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  40.0053,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  53.4502,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  6.4955,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  11.2064,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "table-heavy",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  302376,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-ms",
+                       "actual":  46.7891,
+                       "budget":  250,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "first-viewport",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  13454728,
+                       "budget":  67108864,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  4.2009,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  354672,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-ms",
+                       "actual":  12.0231,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-start-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  337584,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  6.4275,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  366464,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-ms",
+                       "actual":  3.9244,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-middle-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  355264,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  3.875,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "type-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  346304,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-ms",
+                       "actual":  5.7843,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "delete-end-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  349528,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "caret-document",
+                       "metric":  "p95-ms",
+                       "actual":  3.1906,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "caret-document",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  87008,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "text-update-document",
+                       "metric":  "p95-ms",
+                       "actual":  23.0325,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "scroll",
+                       "metric":  "p95-ms",
+                       "actual":  7.3967,
+                       "budget":  16,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "scroll",
+                       "metric":  "p95-managed-allocated-bytes",
+                       "actual":  1371208,
+                       "budget":  4634700,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "resize",
+                       "metric":  "p95-ms",
+                       "actual":  23.3913,
+                       "budget":  100,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "replace-all",
+                       "metric":  "p95-ms",
+                       "actual":  35.6957,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "native-save",
+                       "metric":  "p95-ms",
+                       "actual":  26.0686,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "native-load",
+                       "metric":  "p95-ms",
+                       "actual":  41.2565,
+                       "budget":  2000,
+                       "passed":  true
+                   },
+                   {
+                       "workload":  "run-heavy",
+                       "operation":  "history-100",
+                       "metric":  "median-retained-undo-bytes",
+                       "actual":  927528,
+                       "budget":  67108864,
+                       "passed":  true
+                   }
+               ],
+    "failedChecks":  24
+}

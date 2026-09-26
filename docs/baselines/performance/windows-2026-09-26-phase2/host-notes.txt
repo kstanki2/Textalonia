@@ -1,0 +1,8 @@
+Same Windows x64 host as the P1 capture: CPU signature, processor count, OS, SDK and runtime match environment.json.
+Release; Avalonia.Headless + Skia; Inter; 800 x 500 DIP; scale 1; Fluent Light.
+Two warmups and seven measured repetitions. No simultaneous benchmark processes.
+Power plan and unrelated host activity were not pinned/audited. Seven-sample p95 is descriptive (the maximum).
+Build used --disable-build-servers -m:1 -p:UsedAvaloniaProducts= -p:UseSharedCompilation=false because telemetry output/shared compiler permissions were restricted.
+The core probe matches final editing/model source; the last control-only change preserved scroll anchors after Execute/theme changes.
+No native compositor, IME, clipboard or accessibility qualification is claimed.
+Package consumer: offline feed of the new nupkg plus 20 cached dependencies and four .NET 8.0.27 reference/host packs; fresh workspace package cache and process-local APPDATA/DOTNET_CLI_HOME. No global package cache was deleted or modified.

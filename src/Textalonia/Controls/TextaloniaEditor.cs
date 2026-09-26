@@ -28,12 +28,14 @@ public class TextaloniaEditor : TemplatedControl
         AvaloniaProperty.Register<TextaloniaEditor, FlowDocument?>(nameof(Document), defaultBindingMode: BindingMode.TwoWay);
     public static readonly StyledProperty<string> TextProperty =
         AvaloniaProperty.Register<TextaloniaEditor, string>(nameof(Text), "", defaultBindingMode: BindingMode.TwoWay);
+    public static readonly StyledProperty<bool> SynchronizeTextProperty =
+        AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(SynchronizeText), true);
     public static readonly StyledProperty<bool> IsReadOnlyProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(IsReadOnly));
     public static readonly StyledProperty<bool> ShowToolbarProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(ShowToolbar), true);
     public static readonly StyledProperty<bool> AcceptsTabProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(AcceptsTab));
     public static readonly StyledProperty<string> PlaceholderTextProperty = AvaloniaProperty.Register<TextaloniaEditor, string>(nameof(PlaceholderText), "Start writing...");
     public static readonly StyledProperty<IBrush> SelectionBrushProperty =
-        AvaloniaProperty.Register<TextaloniaEditor, IBrush>(nameof(SelectionBrush), new SolidColorBrush(Color.FromArgb(85, 59, 130, 246)));
+        AvaloniaProperty.Register<TextaloniaEditor, IBrush>(nameof(SelectionBrush), new Avalonia.Media.Immutable.ImmutableSolidColorBrush(Color.FromArgb(85, 59, 130, 246)));
     public static readonly StyledProperty<int> SelectionStartProperty =
         AvaloniaProperty.Register<TextaloniaEditor, int>(nameof(SelectionStart), defaultBindingMode: BindingMode.TwoWay);
     public static readonly StyledProperty<int> SelectionEndProperty =
@@ -45,6 +47,7 @@ public class TextaloniaEditor : TemplatedControl
     private static readonly DataFormat<string> HtmlClipboardFormat = DataFormat.CreateStringPlatformFormat(OperatingSystem.IsMacOS() ? "public.html" : "text/html");
 
     private bool _synchronizing;
+    private int _textRevision = -1;
     private readonly List<EditorCommand> _commands = [];
     private DocumentSurface? _surface;
     private TextaloniaToolbar? _toolbar;
@@ -71,6 +74,8 @@ public class TextaloniaEditor : TemplatedControl
     public ObservableCollection<TextHighlight> Highlights { get; } = [];
     public FlowDocument Document { get => GetValue(DocumentProperty) ?? Session.Document; set => SetValue(DocumentProperty, value); }
     public string Text { get => GetValue(TextProperty); set => SetValue(TextProperty, value); }
+    /// <summary>False opts into document binding without eager full-text notifications. Text retains its last published value.</summary>
+    public bool SynchronizeText { get => GetValue(SynchronizeTextProperty); set => SetValue(SynchronizeTextProperty, value); }
     public bool IsReadOnly { get => GetValue(IsReadOnlyProperty); set => SetValue(IsReadOnlyProperty, value); }
     public bool ShowToolbar { get => GetValue(ShowToolbarProperty); set => SetValue(ShowToolbarProperty, value); }
     public bool AcceptsTab { get => GetValue(AcceptsTabProperty); set => SetValue(AcceptsTabProperty, value); }
@@ -123,6 +128,7 @@ public class TextaloniaEditor : TemplatedControl
             if ((string?)change.NewValue != Session.Index.Text) Session.Load(FlowDocument.FromText((string?)change.NewValue ?? ""));
         }
         else if (change.Property == IsReadOnlyProperty) Session.IsReadOnly = IsReadOnly;
+        else if (change.Property == SynchronizeTextProperty && SynchronizeText) OnSessionChanged(this, EventArgs.Empty);
         else if (change.Property == SelectionStartProperty || change.Property == SelectionEndProperty)
             Session.Select(SelectionStart, SelectionEnd);
         else if (change.Property == ForegroundProperty || change.Property == FontFamilyProperty ||
@@ -138,14 +144,15 @@ public class TextaloniaEditor : TemplatedControl
         try
         {
             SetCurrentValue(DocumentProperty, Session.Document);
-            SetCurrentValue(TextProperty, Session.Index.Text);
+            if (SynchronizeText && (_textRevision != Session.Revision || sender == this))
+            { SetCurrentValue(TextProperty, Session.Index.Text); _textRevision = Session.Revision; }
             SetCurrentValue(SelectionStartProperty, Session.Selection.Anchor);
             SetCurrentValue(SelectionEndProperty, Session.Selection.Active);
             SetCurrentValue(IsReadOnlyProperty, Session.IsReadOnly);
         }
         finally { _synchronizing = false; }
         foreach (var command in _commands) command.RaiseCanExecuteChanged();
-        _surface?.Refresh();
+        _surface?.Refresh(selectionChanged || documentChanged && Session.LastEdit is { Reset: false });
         if (documentChanged) DocumentChanged?.Invoke(this, EventArgs.Empty);
         if (selectionChanged) SelectionChanged?.Invoke(this, EventArgs.Empty);
     }

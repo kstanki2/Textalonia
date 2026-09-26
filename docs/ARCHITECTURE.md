@@ -16,11 +16,64 @@
 
 ## Performance boundaries
 
-Paragraph shaping is cached. Painting skips content outside the effective viewport. Undo shares immutable paragraph/run objects and has an entry limit. Exports capture a snapshot before background encoding.
+The editing engine uses a persistent AVL document tree with subtree UTF-16 lengths,
+paragraph counts, stable fractional sibling keys and an ID-to-path tree. Built-in
+text/style edits rebuild affected paths. `Session.Execute`, external loads and
+structural table operations validate and index arbitrary snapshots through the
+full fallback. Dense sibling labels also use that fallback after 256 fractional
+bits, bounding label size without changing saved snapshots. Undo/redo restore indexed snapshots. See [ADR 002](ADR-002-SCALABLE-CORE.md).
 
-**This is not full document virtualization.** Text indexing, snapshot tree rebuilding, and geometric layout still visit the document. Large replacements can copy substantial text. The first layout shapes every visible-model paragraph, and a width change reshapes them all. Undo is bounded by entry count, not bytes. Extremely large documents need a rope/piece table, incremental position index, viewport-driven measurement, and a byte-budgeted history before production use.
+Run text uses a persistent rope of immutable string slices. Input chunks are at
+most 2,048 code units; adjacent small pieces coalesce with at most 128 units copied.
+Splits/joins preserve snapshots and styles. Grapheme queries use .NET segmentation
+with context across all adjacent pieces/styles. A conservative context scan may
+cover a whole uninterrupted non-ASCII sequence, but never unrelated paragraphs.
 
-Table ownership maps are cached by table object identity with a weak cache. This avoids repeated scans of the entire table for every cell without changing immutable record equality.
+Public immutable arrays, `RichRun.Text`, `Paragraph.Text`, `DocumentIndex.Text`
+and `DocumentIndex.Paragraphs` remain complete compatibility views. Reading a
+complete view is intentionally linear on first materialization. Compatibility
+arrays memoize their identity after explicit access; their potential allocation
+is included in retention estimates. Complete text is not cached by history. `ReadText(start, length)`,
+`CharAt`, search and position lookup avoid document flattening. Native export still
+writes the unchanged v1 schema and is necessarily linear in exported content.
+
+`TextaloniaEditor.SynchronizeText` defaults to true. It publishes complete text
+on each document revision. Set it to false when binding `Document` to avoid that
+cost; the Avalonia `Text` property then retains its last assigned/published value.
+A changed `Text` assignment still loads plain text, and enabling synchronization
+immediately publishes current text. Automation explicitly reads current text.
+
+Layout metadata tracks estimated/measured subtree heights separately from shaping.
+Prefix queries find the viewport and distant targets. Changed document paths retain
+unaffected geometry and shapes; numbered-list counters also have prefix summaries.
+Sections propagate child height changes. Tables measure cells intersecting required
+rows, including spans; height redistribution uses the original row-major span rule.
+Unspanned cell height changes update only their row maximum and following row
+offsets; spanning cells redistribute row heights through the full span dependency
+set, without reshaping unrelated cells. Per-row dependency lists find intersecting
+cells without scanning the whole table on every viewport pass. Width, font or foreground changes reset shaping. A paragraph anchor
+compensates for height corrections above the viewport.
+
+The reusable shape cache is limited to 256 paragraphs and an estimated 16 MiB
+(256 + 32 times UTF-16 length per shape). The current viewport, up to 400 DIP of
+overscan on each side, and required target/row dependencies are pinned until the
+next build and may exceed those limits. Eviction and detach dispose layouts.
+One paragraph is still an indivisible Avalonia TextLayout shaping unit: long
+paragraphs remain the outstanding latency/allocation bottleneck. The shape byte
+estimate is not a native-memory bound or a measured process-working-set guarantee.
+
+History defaults to 100 entries and 64 MiB. `HistoryByteLimit` bounds
+`RetainedHistoryBytes`, an estimate of storage owned exclusively by undo/redo.
+Two reference-counted ownership graphs count shared tree nodes, paths, string
+chunks, table row arrays, covered cells and merge backups once, subtracting current
+snapshot storage. Fixed estimates cover node/record headers, arrays, styles and
+80 bytes per state; run descriptors are conservatively charged with their paragraph.
+Allocator overhead, GC/weak-cache tables, caller-held snapshots and UI caches are
+outside this estimate. Limits are enforced after edits, undo/redo and configuration
+changes; oldest undo entries are evicted first, then farthest redo entries. An
+oversized entry can leave no undo/redo. Coalesced typing is checked on every edit;
+load and `UndoLimit=0` release all history. This budget is an engine-owned estimate,
+not a promise about total managed heap size.
 
 ## Public extension points
 

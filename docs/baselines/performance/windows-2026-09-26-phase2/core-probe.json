@@ -1,0 +1,635 @@
+{
+  "note": "Copying comparator models flattening, whole-text grapheme scan, immutable paragraph array and string copying; use P1/P2 full control archives for release decisions.",
+  "samples": [
+    {
+      "workload": "paragraphs-100",
+      "mode": "copying-prototype",
+      "repetition": 0,
+      "edits": 100,
+      "milliseconds": 19.9911,
+      "allocatedBytes": 7922360,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "copying-prototype",
+      "repetition": 1,
+      "edits": 100,
+      "milliseconds": 20.744,
+      "allocatedBytes": 7922360,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "copying-prototype",
+      "repetition": 2,
+      "edits": 100,
+      "milliseconds": 20.7555,
+      "allocatedBytes": 7922360,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "copying-prototype",
+      "repetition": 3,
+      "edits": 100,
+      "milliseconds": 21.6495,
+      "allocatedBytes": 7922360,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "copying-prototype",
+      "repetition": 4,
+      "edits": 100,
+      "milliseconds": 20.8957,
+      "allocatedBytes": 7922360,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "copying-prototype",
+      "repetition": 5,
+      "edits": 100,
+      "milliseconds": 21.2419,
+      "allocatedBytes": 7922360,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "copying-prototype",
+      "repetition": 6,
+      "edits": 100,
+      "milliseconds": 21.0234,
+      "allocatedBytes": 7922360,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session",
+      "repetition": 0,
+      "edits": 100,
+      "milliseconds": 6.6536,
+      "allocatedBytes": 2171120,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session",
+      "repetition": 1,
+      "edits": 100,
+      "milliseconds": 5.2795,
+      "allocatedBytes": 2201840,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session",
+      "repetition": 2,
+      "edits": 100,
+      "milliseconds": 5.1234,
+      "allocatedBytes": 2171120,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session",
+      "repetition": 3,
+      "edits": 100,
+      "milliseconds": 4.9531,
+      "allocatedBytes": 2181360,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session",
+      "repetition": 4,
+      "edits": 100,
+      "milliseconds": 5.3363,
+      "allocatedBytes": 2160776,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session",
+      "repetition": 5,
+      "edits": 100,
+      "milliseconds": 5.4361,
+      "allocatedBytes": 2160776,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session",
+      "repetition": 6,
+      "edits": 100,
+      "milliseconds": 5.4964,
+      "allocatedBytes": 2242800,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session-eager-text",
+      "repetition": 0,
+      "edits": 100,
+      "milliseconds": 11.9199,
+      "allocatedBytes": 5794576,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session-eager-text",
+      "repetition": 1,
+      "edits": 100,
+      "milliseconds": 9.9803,
+      "allocatedBytes": 5794576,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session-eager-text",
+      "repetition": 2,
+      "edits": 100,
+      "milliseconds": 10.2712,
+      "allocatedBytes": 5794576,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session-eager-text",
+      "repetition": 3,
+      "edits": 100,
+      "milliseconds": 10.6264,
+      "allocatedBytes": 5794576,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session-eager-text",
+      "repetition": 4,
+      "edits": 100,
+      "milliseconds": 9.9049,
+      "allocatedBytes": 5794576,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session-eager-text",
+      "repetition": 5,
+      "edits": 100,
+      "milliseconds": 9.4395,
+      "allocatedBytes": 5794576,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-100",
+      "mode": "persistent-session-eager-text",
+      "repetition": 6,
+      "edits": 100,
+      "milliseconds": 11.889,
+      "allocatedBytes": 5794576,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 338612
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "copying-prototype",
+      "repetition": 0,
+      "edits": 100,
+      "milliseconds": 2030.8821,
+      "allocatedBytes": 784652560,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "copying-prototype",
+      "repetition": 1,
+      "edits": 100,
+      "milliseconds": 2151.8933,
+      "allocatedBytes": 784644736,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "copying-prototype",
+      "repetition": 2,
+      "edits": 100,
+      "milliseconds": 2184.735,
+      "allocatedBytes": 784652712,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "copying-prototype",
+      "repetition": 3,
+      "edits": 100,
+      "milliseconds": 2239.3778,
+      "allocatedBytes": 784644736,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "copying-prototype",
+      "repetition": 4,
+      "edits": 100,
+      "milliseconds": 2231.7332,
+      "allocatedBytes": 784652712,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "copying-prototype",
+      "repetition": 5,
+      "edits": 100,
+      "milliseconds": 2162.8921,
+      "allocatedBytes": 784644736,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "copying-prototype",
+      "repetition": 6,
+      "edits": 100,
+      "milliseconds": 2164.2051,
+      "allocatedBytes": 784652712,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session",
+      "repetition": 0,
+      "edits": 100,
+      "milliseconds": 3.8392,
+      "allocatedBytes": 3265704,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session",
+      "repetition": 1,
+      "edits": 100,
+      "milliseconds": 3.9018,
+      "allocatedBytes": 3224640,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session",
+      "repetition": 2,
+      "edits": 100,
+      "milliseconds": 2.9138,
+      "allocatedBytes": 3224640,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session",
+      "repetition": 3,
+      "edits": 100,
+      "milliseconds": 2.7535,
+      "allocatedBytes": 3224640,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session",
+      "repetition": 4,
+      "edits": 100,
+      "milliseconds": 2.8443,
+      "allocatedBytes": 3224640,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session",
+      "repetition": 5,
+      "edits": 100,
+      "milliseconds": 4.4074,
+      "allocatedBytes": 3224640,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session",
+      "repetition": 6,
+      "edits": 100,
+      "milliseconds": 3.1151,
+      "allocatedBytes": 3224640,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session-eager-text",
+      "repetition": 0,
+      "edits": 100,
+      "milliseconds": 219.7013,
+      "allocatedBytes": 365377120,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session-eager-text",
+      "repetition": 1,
+      "edits": 100,
+      "milliseconds": 255.0365,
+      "allocatedBytes": 365377136,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session-eager-text",
+      "repetition": 2,
+      "edits": 100,
+      "milliseconds": 208.3294,
+      "allocatedBytes": 365377120,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session-eager-text",
+      "repetition": 3,
+      "edits": 100,
+      "milliseconds": 233.4578,
+      "allocatedBytes": 365377168,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session-eager-text",
+      "repetition": 4,
+      "edits": 100,
+      "milliseconds": 219.3644,
+      "allocatedBytes": 365377120,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session-eager-text",
+      "repetition": 5,
+      "edits": 100,
+      "milliseconds": 213.3922,
+      "allocatedBytes": 365377120,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "paragraphs-10000",
+      "mode": "persistent-session-eager-text",
+      "repetition": 6,
+      "edits": 100,
+      "milliseconds": 223.7057,
+      "allocatedBytes": 365377112,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 8410230
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "copying-prototype",
+      "repetition": 0,
+      "edits": 100,
+      "milliseconds": 148.9531,
+      "allocatedBytes": 49240360,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "copying-prototype",
+      "repetition": 1,
+      "edits": 100,
+      "milliseconds": 157.7877,
+      "allocatedBytes": 49240360,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "copying-prototype",
+      "repetition": 2,
+      "edits": 100,
+      "milliseconds": 150.0673,
+      "allocatedBytes": 49248528,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "copying-prototype",
+      "repetition": 3,
+      "edits": 100,
+      "milliseconds": 157.1738,
+      "allocatedBytes": 49248528,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "copying-prototype",
+      "repetition": 4,
+      "edits": 100,
+      "milliseconds": 155.513,
+      "allocatedBytes": 49248528,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "copying-prototype",
+      "repetition": 5,
+      "edits": 100,
+      "milliseconds": 151.0358,
+      "allocatedBytes": 49248528,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "copying-prototype",
+      "repetition": 6,
+      "edits": 100,
+      "milliseconds": 149.4853,
+      "allocatedBytes": 49241048,
+      "maxUpdatedNodes": 0,
+      "retainedHistoryEstimate": 0
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session",
+      "repetition": 0,
+      "edits": 100,
+      "milliseconds": 0.7558,
+      "allocatedBytes": 1229280,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session",
+      "repetition": 1,
+      "edits": 100,
+      "milliseconds": 0.8022,
+      "allocatedBytes": 1229280,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session",
+      "repetition": 2,
+      "edits": 100,
+      "milliseconds": 0.7999,
+      "allocatedBytes": 1229280,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session",
+      "repetition": 3,
+      "edits": 100,
+      "milliseconds": 0.7698,
+      "allocatedBytes": 1229280,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session",
+      "repetition": 4,
+      "edits": 100,
+      "milliseconds": 0.7513,
+      "allocatedBytes": 1229280,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session",
+      "repetition": 5,
+      "edits": 100,
+      "milliseconds": 0.8077,
+      "allocatedBytes": 1229280,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session",
+      "repetition": 6,
+      "edits": 100,
+      "milliseconds": 1.076,
+      "allocatedBytes": 1229280,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session-eager-text",
+      "repetition": 0,
+      "edits": 100,
+      "milliseconds": 2.7157,
+      "allocatedBytes": 19265120,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session-eager-text",
+      "repetition": 1,
+      "edits": 100,
+      "milliseconds": 2.3406,
+      "allocatedBytes": 19266864,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session-eager-text",
+      "repetition": 2,
+      "edits": 100,
+      "milliseconds": 2.5028,
+      "allocatedBytes": 19266616,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session-eager-text",
+      "repetition": 3,
+      "edits": 100,
+      "milliseconds": 2.2848,
+      "allocatedBytes": 19263848,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session-eager-text",
+      "repetition": 4,
+      "edits": 100,
+      "milliseconds": 2.2371,
+      "allocatedBytes": 19262976,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session-eager-text",
+      "repetition": 5,
+      "edits": 100,
+      "milliseconds": 2.5388,
+      "allocatedBytes": 19263136,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    },
+    {
+      "workload": "long-paragraph",
+      "mode": "persistent-session-eager-text",
+      "repetition": 6,
+      "edits": 100,
+      "milliseconds": 2.1492,
+      "allocatedBytes": 19263040,
+      "maxUpdatedNodes": 1,
+      "retainedHistoryEstimate": 152004
+    }
+  ]
+}

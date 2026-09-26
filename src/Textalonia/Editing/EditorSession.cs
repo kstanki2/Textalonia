@@ -8,9 +8,17 @@ namespace Textalonia.Editing;
 /// <summary>UI-independent editing, selection, formatting, search, and bounded undo/redo.</summary>
 public sealed class EditorSession
 {
-    private sealed record State(FlowDocument Document, TextSelection Selection, TextStyle TypingStyle);
+    private sealed record State(FlowDocument Document, DocumentIndex Index, TextSelection Selection, TextStyle TypingStyle) : IRetained
+    {
+        public long Bytes => 80;
+        public IEnumerable<object> References { get { yield return Index.Tree; yield return TypingStyle; } }
+    }
     private readonly List<State> _undo = [];
-    private readonly Stack<State> _redo = [];
+    private readonly List<State> _redo = [];
+    private readonly RetentionGraph _retained = new();
+    private readonly RetentionGraph _current = new();
+    private long _historyByteLimit = 64 * 1024 * 1024;
+    private readonly Guid _positionScope = Guid.NewGuid();
     private int _undoLimit = 100;
     private long _lastTypingTick;
     private bool _typingGroup;
@@ -19,12 +27,49 @@ public sealed class EditorSession
     public FlowDocument Document { get; private set; } = new();
     public DocumentIndex Index { get; private set; }
     public TextSelection Selection { get; private set; }
-    public TextStyle TypingStyle { get; private set; } = TextStyle.Default;
+    private TextStyle _typingStyle = TextStyle.Default;
+    public TextStyle TypingStyle
+    {
+        get => _typingStyle;
+        private set
+        {
+            if (ReferenceEquals(value, _typingStyle)) return;
+            _retained.Add(value); _current.Add(value);
+            _retained.Remove(_typingStyle); _current.Remove(_typingStyle); _typingStyle = value;
+        }
+    }
     public bool CanUndo => !IsReadOnly && _undo.Count > 0;
     public bool CanRedo => !IsReadOnly && _redo.Count > 0;
-    public string SelectedText => Index.Text.Substring(Selection.Start, Selection.Length);
+    public string SelectedText => Index.ReadText(Selection.Start, Selection.Length);
     public int Revision { get; private set; }
     public event EventHandler? Changed;
+    internal DocumentEdit? LastEdit { get; private set; }
+    internal Func<long> Timestamp { get; set; } = Stopwatch.GetTimestamp;
+    /// <summary>Estimated bytes owned exclusively by undo/redo, including shared storage only once.</summary>
+    public long RetainedHistoryBytes => _retained.Bytes - _current.Bytes;
+    /// <summary>History estimate budget, in bytes. Oversized entries are evicted; current document is excluded.</summary>
+    public long HistoryByteLimit
+    {
+        get => _historyByteLimit;
+        set
+        {
+            if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
+            _historyByteLimit = value; TrimUndo(); BreakUndoGroup(); OnChanged();
+        }
+    }
+    public DocumentPosition CreatePosition(int offset)
+    {
+        var position = Index.At(Snap(offset));
+        return new(Revision, position.Paragraph.Id, Snap(offset) - position.Start) { Scope = _positionScope };
+    }
+    public bool TryResolvePosition(DocumentPosition position, out int offset)
+    {
+        offset = 0;
+        if (position.Scope != _positionScope || position.Revision != Revision || Index.Tree.Paths?.Find(position.ParagraphId) is null) return false;
+        var entry = Index.Tree.Locate(position.ParagraphId);
+        if (entry.Node.Source is not Paragraph paragraph || position.Offset < 0 || position.Offset > paragraph.Length) return false;
+        offset = entry.Start + position.Offset; return true;
+    }
 
     public bool IsReadOnly
     {
@@ -39,20 +84,24 @@ public sealed class EditorSession
         {
             if (value < 0) throw new ArgumentOutOfRangeException(nameof(value));
             _undoLimit = value;
-            TrimUndo(); _redo.Clear(); BreakUndoGroup(); OnChanged();
+            ClearRedo(); TrimUndo(); BreakUndoGroup(); OnChanged();
         }
     }
 
-    public EditorSession() => Index = new DocumentIndex(Document);
+    public EditorSession()
+    {
+        Index = new DocumentIndex(Document); _retained.Add(Index.Tree); _current.Add(Index.Tree);
+        _retained.Add(TypingStyle); _current.Add(TypingStyle);
+    }
     public EditorSession(FlowDocument document) : this() => Load(document);
 
     public void Load(FlowDocument document)
     {
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
-        Document = document; Index = new(document);
+        ClearHistory(); SetDocument(document, new(document));
         Selection = default; TypingStyle = Index.At(0).Paragraph.StyleAt(0);
-        _undo.Clear(); _redo.Clear(); BreakUndoGroup(); Revision++; OnChanged();
+        BreakUndoGroup(); Revision++; LastEdit = new(Revision - 1, Revision, 0, 0, Index.Length, [], true); OnChanged();
     }
 
     public void Select(int anchor, int active)
@@ -61,7 +110,7 @@ public sealed class EditorSession
         var paragraph = Index.At(Selection.Active);
         var local = Selection.Active - paragraph.Start;
         TypingStyle = paragraph.Paragraph.StyleAt(Math.Max(0, local - (local > 0 ? 1 : 0)));
-        BreakUndoGroup(); OnChanged();
+        TrimUndo(); BreakUndoGroup(); OnChanged();
     }
 
     public void SelectAll() => Select(0, Index.Length);
@@ -75,7 +124,7 @@ public sealed class EditorSession
         var style = Index.At(Selection.Start).Paragraph.Style;
         var fragment = text.Split('\n').Select(s => new Paragraph(s, TypingStyle) { Style = style }).ToImmutableArray();
         var (document, caret) = ReplaceRange(Document, Selection, fragment);
-        Commit(document, new(caret, caret), coalesceTyping && Selection.IsEmpty && !text.Contains('\n'));
+        Commit(document, new(caret, caret), coalesceTyping && Selection.IsEmpty && !text.Contains('\n'), Selection);
     }
 
     public void InsertDocument(FlowDocument fragment)
@@ -84,14 +133,14 @@ public sealed class EditorSession
         fragment.Validate();
         var paragraphs = new DocumentIndex(fragment).Paragraphs.Select(p => p.Paragraph with { Id = Guid.NewGuid() }).ToImmutableArray();
         var (document, caret) = ReplaceRange(Document, Selection, paragraphs);
-        Commit(document, new(caret, caret));
+        Commit(document, new(caret, caret), editedRange: Selection);
     }
 
     public FlowDocument CopySelection()
     {
         if (Selection.IsEmpty) return new();
         var result = new List<Block>();
-        foreach (var entry in Index.Paragraphs)
+        foreach (var entry in Index.Enumerate(Selection.Start, Selection.End))
         {
             if (entry.Start > Selection.End || entry.End < Selection.Start) continue;
             if (entry.Start == Selection.End && entry.Start != Selection.Start) break;
@@ -103,7 +152,7 @@ public sealed class EditorSession
             });
         }
         // Preserve a selected trailing paragraph separator.
-        if (Selection.End > 0 && Index.Text[Selection.End - 1] == '\n') result.Add(new Paragraph());
+        if (Selection.End > 0 && Index.CharAt(Selection.End - 1) == '\n') result.Add(new Paragraph());
         return new FlowDocument(result);
     }
 
@@ -129,7 +178,7 @@ public sealed class EditorSession
     {
         var paragraph = Index.At(range.Start).Paragraph;
         var (document, caret) = ReplaceRange(Document, range, [new Paragraph("", TypingStyle) { Style = paragraph.Style }]);
-        Commit(document, new(caret, caret));
+        Commit(document, new(caret, caret), editedRange: range);
     }
 
     public void InsertParagraph()
@@ -149,20 +198,19 @@ public sealed class EditorSession
         new FlowDocument([new Paragraph("", newStyle)]).Validate();
         if (Selection.IsEmpty)
         {
-            TypingStyle = newStyle; BreakUndoGroup(); OnChanged(); return;
+            TypingStyle = newStyle; TrimUndo(); BreakUndoGroup(); OnChanged(); return;
         }
         var selection = Selection;
-        var positions = Index.Paragraphs.ToDictionary(x => x.Paragraph.Id);
-        var document = Document.RewriteParagraphs(p =>
+        var document = ChangeParagraphs(position =>
         {
-            if (!positions.TryGetValue(p.Id, out var position)) return [p];
+            var p = position.Paragraph;
             var start = Math.Max(0, selection.Start - position.Start);
             var end = Math.Min(p.Length, selection.End - position.Start);
-            return end > start ? [p.Format(start, end - start, change)] : [p];
+            return end > start ? p.Format(start, end - start, change) : p;
         });
-        document.Validate();
-        Commit(document, selection);
+        Commit(document, selection, editedRange: selection);
         TypingStyle = newStyle;
+        TrimUndo();
         OnChanged();
     }
 
@@ -175,27 +223,24 @@ public sealed class EditorSession
     public void ApplyParagraphStyle(Func<ParagraphStyle, ParagraphStyle> change)
     {
         if (IsReadOnly) return;
-        var selected = Index.Paragraphs.Where(p => p.End >= Selection.Start &&
-            (Selection.IsEmpty ? p.Start <= Selection.End : p.Start < Selection.End)).Select(p => p.Paragraph.Id).ToHashSet();
-        var document = Document.RewriteParagraphs(p => selected.Contains(p.Id) ? [p with { Style = change(p.Style) }] : [p]);
-        document.Validate();
-        Commit(document, Selection);
+        var document = ChangeParagraphs(p => p.Paragraph with { Style = change(p.Paragraph.Style) });
+        Commit(document, Selection, editedRange: Selection);
     }
 
     public void SetHeading(int level)
     {
         if (level is < 0 or > 6) throw new ArgumentOutOfRangeException(nameof(level));
         if (IsReadOnly) return;
-        var selected = Index.Paragraphs.Where(p => p.End >= Selection.Start &&
-            (Selection.IsEmpty ? p.Start <= Selection.End : p.Start < Selection.End)).Select(p => p.Paragraph.Id).ToHashSet();
         var size = level switch { 1 => 32, 2 => 26, 3 => 22, 4 => 20, 5 => 18, _ => 16 };
         TextStyle Change(TextStyle style) => style with { FontSize = size, Bold = level > 0 };
-        var document = Document.RewriteParagraphs(p => selected.Contains(p.Id)
-            ? [p.Format(0, p.Length, Change) with
-            { Style = p.Style with { HeadingLevel = level, SpaceBefore = level > 0 ? 12 : 0 }, DefaultStyle = Change(p.DefaultStyle) }]
-            : [p]);
-        Commit(document, Selection);
-        TypingStyle = Change(TypingStyle); OnChanged();
+        var document = ChangeParagraphs(entry =>
+        {
+            var p = entry.Paragraph;
+            return p.Format(0, p.Length, Change) with
+            { Style = p.Style with { HeadingLevel = level, SpaceBefore = level > 0 ? 12 : 0 }, DefaultStyle = Change(p.DefaultStyle) };
+        });
+        Commit(document, Selection, editedRange: Selection);
+        TypingStyle = Change(TypingStyle); TrimUndo(); OnChanged();
     }
 
     public void ToggleList(ListKind kind)
@@ -204,18 +249,25 @@ public sealed class EditorSession
         ApplyParagraphStyle(s => s with { List = active == kind ? ListKind.None : kind });
     }
 
+    private FlowDocument ChangeParagraphs(Func<ParagraphPosition, Paragraph> change)
+    {
+        var replacements = new Dictionary<Guid, ImmutableArray<Paragraph>>();
+        foreach (var entry in Index.Enumerate(Selection.Start, Selection.End))
+        {
+            if (!Selection.IsEmpty && entry.Start >= Selection.End) break;
+            var paragraph = change(entry);
+            if (ReferenceEquals(paragraph, entry.Paragraph)) continue;
+            new FlowDocument([paragraph]).Validate();
+            replacements.Add(paragraph.Id, [paragraph]);
+        }
+        return Index.Tree.Rewrite(Document, replacements);
+    }
+
     public IEnumerable<TextSelection> FindAll(string query, bool matchCase = false)
     {
         if (string.IsNullOrEmpty(query)) yield break;
         var comparison = matchCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-        var start = 0;
-        while (start <= Index.Length - query.Length)
-        {
-            var found = Index.Text.IndexOf(query, start, comparison);
-            if (found < 0) yield break;
-            yield return new(found, found + query.Length);
-            start = found + query.Length;
-        }
+        foreach (var found in Index.Find(query, comparison)) yield return new(found, found + query.Length);
     }
 
     public bool FindNext(string query, bool matchCase = false)
@@ -270,17 +322,16 @@ public sealed class EditorSession
     public (Table Table, int Row, int Column)? CurrentCell()
     {
         var container = Index.At(Selection.Active).ContainerId;
-        IEnumerable<Table> Tables(IEnumerable<Block> blocks)
+        var path = Index.Tree.Paths?.Find(container)?.Value;
+        if (path is null) return null;
+        var node = Index.Tree.Root;
+        Table? table = null;
+        foreach (var key in path.Keys())
         {
-            foreach (var b in blocks)
-                if (b is Table t) yield return t;
-                else if (b is Section s)
-                    foreach (var nested in Tables(s.Blocks)) yield return nested;
+            node = node.Children!.Find(key)!.Value;
+            if (node.Source is Table t) table = t;
         }
-        foreach (var table in Tables(Document.Blocks))
-            for (var r = 0; r < table.Rows.Length; r++)
-                for (var c = 0; c < table.ColumnCount; c++)
-                    if (table.Rows[r][c].Id == container) return (table, r, c);
+        if (table is not null && node.Source is TableCell) return (table, node.Row, node.Column);
         return null;
     }
 
@@ -302,76 +353,80 @@ public sealed class EditorSession
     public void Undo()
     {
         if (!CanUndo) return;
-        _redo.Push(Capture());
-        var state = _undo[^1]; _undo.RemoveAt(_undo.Count - 1); Restore(state);
+        var current = Capture(); _redo.Add(current); _retained.Add(current);
+        var state = _undo[^1]; _undo.RemoveAt(_undo.Count - 1);
+        Restore(state); _retained.Remove(state); TrimUndo(); OnChanged();
     }
     public void Redo()
     {
         if (!CanRedo) return;
-        _undo.Add(Capture()); TrimUndo(); Restore(_redo.Pop());
+        var current = Capture(); _undo.Add(current); _retained.Add(current);
+        var state = _redo[^1]; _redo.RemoveAt(_redo.Count - 1);
+        Restore(state); _retained.Remove(state); TrimUndo(); OnChanged();
     }
 
-    public int PreviousCaret(int position)
-    {
-        var elements = StringInfo.ParseCombiningCharacters(Index.Text);
-        var i = Array.BinarySearch(elements, Math.Clamp(position, 0, Index.Length));
-        i = i >= 0 ? i - 1 : ~i - 1;
-        return i < 0 ? 0 : elements[i];
-    }
-    public int NextCaret(int position)
-    {
-        var elements = StringInfo.ParseCombiningCharacters(Index.Text);
-        var i = Array.BinarySearch(elements, Math.Clamp(position, 0, Index.Length));
-        i = i >= 0 ? i + 1 : ~i;
-        return i >= elements.Length ? Index.Length : elements[i];
-    }
+    public int PreviousCaret(int position) => Index.PreviousCaret(position);
+    public int NextCaret(int position) => Index.NextCaret(position);
     public int PreviousWord(int position)
     {
         var i = Math.Clamp(position, 0, Index.Length);
-        while (i > 0 && char.IsWhiteSpace(Index.Text[i - 1])) i = PreviousCaret(i);
-        while (i > 0 && !char.IsWhiteSpace(Index.Text[i - 1])) i = PreviousCaret(i);
+        while (i > 0 && char.IsWhiteSpace(Index.CharAt(i - 1))) i = PreviousCaret(i);
+        while (i > 0 && !char.IsWhiteSpace(Index.CharAt(i - 1))) i = PreviousCaret(i);
         return i;
     }
     public int NextWord(int position)
     {
         var i = Math.Clamp(position, 0, Index.Length);
-        while (i < Index.Length && !char.IsWhiteSpace(Index.Text[i])) i = NextCaret(i);
-        while (i < Index.Length && char.IsWhiteSpace(Index.Text[i])) i = NextCaret(i);
+        while (i < Index.Length && !char.IsWhiteSpace(Index.CharAt(i))) i = NextCaret(i);
+        while (i < Index.Length && char.IsWhiteSpace(Index.CharAt(i))) i = NextCaret(i);
         return i;
     }
 
     public void BreakUndoGroup() => _typingGroup = false;
-    private int Snap(int position)
-    {
-        position = Math.Clamp(position, 0, Index.Length);
-        if (position == Index.Length || position == 0) return position;
-        var elements = StringInfo.ParseCombiningCharacters(Index.Text);
-        var i = Array.BinarySearch(elements, position);
-        return i >= 0 ? position : elements[Math.Max(0, ~i - 1)];
-    }
-    private State Capture() => new(Document, Selection, TypingStyle);
+    private int Snap(int position) => Index.Snap(position);
+    private State Capture() => new(Document, Index, Selection, TypingStyle);
     private void Restore(State state)
     {
-        Document = state.Document; Index = new(Document); Selection = state.Selection;
-        TypingStyle = state.TypingStyle; BreakUndoGroup(); Revision++; OnChanged();
+        SetDocument(state.Document, state.Index); Selection = state.Selection;
+        TypingStyle = state.TypingStyle; BreakUndoGroup(); Revision++;
+        LastEdit = new(Revision - 1, Revision, 0, 0, Index.Length, [], true);
     }
-    private void Commit(FlowDocument document, TextSelection selection, bool typing = false)
+    private void Commit(FlowDocument document, TextSelection selection, bool typing = false, TextSelection? editedRange = null)
     {
-        var now = Stopwatch.GetTimestamp();
+        var oldLength = Index.Length;
+        var changed = editedRange is { } range ? Index.Enumerate(range.Start, range.End).Select(p => p.Paragraph.Id).ToArray() : [];
+        var now = Timestamp();
         if (!(typing && _typingGroup && Stopwatch.GetElapsedTime(_lastTypingTick, now).TotalMilliseconds < 800))
         {
-            if (UndoLimit > 0) _undo.Add(Capture());
-            TrimUndo();
+            if (UndoLimit > 0) { var state = Capture(); _undo.Add(state); _retained.Add(state); }
         }
-        _redo.Clear();
-        Document = document; Index = new(Document);
+        ClearRedo(); SetDocument(document, new(document)); TrimUndo();
         Selection = new(Math.Clamp(selection.Anchor, 0, Index.Length), Math.Clamp(selection.Active, 0, Index.Length));
-        _typingGroup = typing; _lastTypingTick = now; Revision++; OnChanged();
+        _typingGroup = typing && _undo.Count > 0; _lastTypingTick = now; Revision++;
+        LastEdit = new(Revision - 1, Revision, editedRange?.Start ?? 0, editedRange?.Length ?? oldLength,
+            editedRange is { } edit ? Index.Length - oldLength + edit.Length : Index.Length, changed, editedRange is null);
+        OnChanged();
     }
     private void TrimUndo()
     {
-        if (_undo.Count > UndoLimit) _undo.RemoveRange(0, _undo.Count - UndoLimit);
+        while (_undo.Count + _redo.Count > 0 &&
+            (_undo.Count + _redo.Count > UndoLimit || RetainedHistoryBytes > HistoryByteLimit))
+        {
+            // Farthest undo first; when only redo remains, discard its farthest future.
+            var list = _undo.Count > 0 ? _undo : _redo;
+            _retained.Remove(list[0]); list.RemoveAt(0);
+        }
     }
+    private void SetDocument(FlowDocument document, DocumentIndex index)
+    {
+        _retained.Add(index.Tree); _current.Add(index.Tree);
+        _retained.Remove(Index.Tree); _current.Remove(Index.Tree);
+        Document = document; Index = index;
+    }
+    private void ClearRedo()
+    { foreach (var state in _redo) _retained.Remove(state); _redo.Clear(); }
+    private void ClearHistory()
+    { ClearRedo(); foreach (var state in _undo) _retained.Remove(state); _undo.Clear(); }
     private void OnChanged() => Changed?.Invoke(this, EventArgs.Empty);
 
     private static (FlowDocument Document, int Caret) ReplaceRange(
@@ -381,7 +436,7 @@ public sealed class EditorSession
         if (selection.Start == 0 && selection.End == index.Length && !selection.IsEmpty)
         {
             var replacement = new FlowDocument(fragment.Select(p => p with { Id = Guid.NewGuid() }));
-            return (replacement, replacement.Text.Length);
+            return (replacement, new DocumentIndex(replacement).Length);
         }
         var first = index.At(selection.Start);
         var last = index.At(selection.End);
@@ -398,16 +453,15 @@ public sealed class EditorSession
         var caretLocal = replacements[^1].Length;
         if (sameContainer)
             replacements[^1] = replacements[^1] with { Runs = Paragraph.Normalize(replacements[^1].Runs.Concat(suffix)) };
-        var selectedIds = index.Paragraphs.Where(p => p.Start >= first.Start && p.Start <= last.Start)
-            .Select(p => p.Paragraph.Id).ToHashSet();
-        var changed = document.RewriteParagraphs(p =>
+        var changes = new Dictionary<Guid, ImmutableArray<Paragraph>>();
+        foreach (var entry in index.Enumerate(first.Start, last.Start))
         {
-            if (p.Id == first.Paragraph.Id) return replacements;
-            if (!selectedIds.Contains(p.Id)) return [p];
-            if (!sameContainer && p.Id == last.Paragraph.Id) return [p with { Runs = suffix }];
-            return [];
-        });
-        var newEntry = new DocumentIndex(changed).Paragraphs.First(p => p.Paragraph.Id == replacements[^1].Id);
+            var p = entry.Paragraph;
+            changes[p.Id] = p.Id == first.Paragraph.Id ? replacements.ToImmutableArray() :
+                !sameContainer && p.Id == last.Paragraph.Id ? [p with { Runs = suffix }] : [];
+        }
+        var changed = index.Tree.Rewrite(document, changes);
+        var newEntry = new DocumentIndex(changed).ById(replacements[^1].Id);
         return (changed, newEntry.Start + caretLocal);
     }
 }

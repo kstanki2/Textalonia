@@ -85,6 +85,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   field Avalonia.StyledProperty<System.Boolean> AcceptsTabProperty static readonly
   field Avalonia.StyledProperty<System.Boolean> IsReadOnlyProperty static readonly
   field Avalonia.StyledProperty<System.Boolean> ShowToolbarProperty static readonly
+  field Avalonia.StyledProperty<System.Boolean> SynchronizeTextProperty static readonly
   field Avalonia.StyledProperty<System.Int32> SelectionEndProperty static readonly
   field Avalonia.StyledProperty<System.Int32> SelectionStartProperty static readonly
   field Avalonia.StyledProperty<System.String> PlaceholderTextProperty static readonly
@@ -111,6 +112,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property System.Boolean AcceptsTab { public get; public set; }
   property System.Boolean IsReadOnly { public get; public set; }
   property System.Boolean ShowToolbar { public get; public set; }
+  property System.Boolean SynchronizeText { public get; public set; }
   property System.Collections.ObjectModel.ObservableCollection<Textalonia.Controls.TextHighlight> Highlights { public get; }
   property System.Exception LastError { public get; }
   property System.Int32 SelectionEnd { public get; public set; }
@@ -177,11 +179,23 @@ type Textalonia.Controls.TextaloniaViewer : Textalonia.Controls.TextaloniaEditor
   interface System.ComponentModel.ISupportInitialize
   ctor public ()
   property System.Type StyleKeyOverride { protected get; }
+type Textalonia.Editing.DocumentPosition : System.ValueType sealed
+  interface System.IEquatable<Textalonia.Editing.DocumentPosition>
+  ctor public (System.Int32 Revision, System.Guid ParagraphId, System.Int32 Offset)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Editing.DocumentPosition other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Int32& Revision, System.Guid& ParagraphId, System.Int32& Offset)
+  property System.Guid ParagraphId { public get; public set; }
+  property System.Int32 Offset { public get; public set; }
+  property System.Int32 Revision { public get; public set; }
 type Textalonia.Editing.EditorSession : System.Object sealed
   ctor public ()
   ctor public (Textalonia.Model.FlowDocument document)
   event System.EventHandler Changed
   method public System.Boolean FindNext(System.String query, System.Boolean matchCase = False)
+  method public System.Boolean TryResolvePosition(Textalonia.Editing.DocumentPosition position, System.Int32& offset)
   method public System.Collections.Generic.IEnumerable<Textalonia.Editing.TextSelection> FindAll(System.String query, System.Boolean matchCase = False)
   method public System.Int32 NextCaret(System.Int32 position)
   method public System.Int32 NextWord(System.Int32 position)
@@ -213,12 +227,15 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Void ToggleUnderline()
   method public System.Void Undo()
   method public System.Void UpdateCurrentTable(System.Func<Textalonia.Model.Table,System.Int32,System.Int32,Textalonia.Model.Table> update)
+  method public Textalonia.Editing.DocumentPosition CreatePosition(System.Int32 offset)
   method public Textalonia.Model.FlowDocument CopySelection()
   property System.Boolean CanRedo { public get; }
   property System.Boolean CanUndo { public get; }
   property System.Boolean IsReadOnly { public get; public set; }
   property System.Int32 Revision { public get; }
   property System.Int32 UndoLimit { public get; public set; }
+  property System.Int64 HistoryByteLimit { public get; public set; }
+  property System.Int64 RetainedHistoryBytes { public get; }
   property System.String SelectedText { public get; }
   property Textalonia.Editing.TextSelection Selection { public get; }
   property Textalonia.Model.DocumentIndex Index { public get; }
@@ -261,9 +278,12 @@ type Textalonia.Model.Block : System.Object abstract
   property System.Type EqualityContract { protected get; }
 type Textalonia.Model.DocumentIndex : System.Object sealed
   ctor public (Textalonia.Model.FlowDocument document)
+  method public System.Char CharAt(System.Int32 offset)
+  method public System.String ReadText(System.Int32 start, System.Int32 length)
   method public Textalonia.Model.ParagraphPosition At(System.Int32 offset)
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.ParagraphPosition> Paragraphs { public get; }
   property System.Int32 Length { public get; }
+  property System.Int32 ParagraphCount { public get; }
   property System.String Text { public get; }
 type Textalonia.Model.FlowDocument : System.Object sealed
   interface System.IEquatable<Textalonia.Model.FlowDocument>
