@@ -1,17 +1,17 @@
 # Compatibility baseline
 
-This records the preview contract preserved by the Phase 2 engine changes. Test names below are in [EditingTests](../tests/Textalonia.Tests/EditingTests.cs), [ControlTests](../tests/Textalonia.Tests/ControlTests.cs), [SerializationTests](../tests/Textalonia.Tests/SerializationTests.cs), and the new baseline classes. A missing test is explicitly a gap, not evidence of support.
+This records the preview contract preserved by the Phase 2 engine and extended by the [Phase 3 document model](DOCUMENT-MODEL.md). Test names below are in [EditingTests](../tests/Textalonia.Tests/EditingTests.cs), [ControlTests](../tests/Textalonia.Tests/ControlTests.cs), [SerializationTests](../tests/Textalonia.Tests/SerializationTests.cs), and the baseline classes. A missing test is explicitly a gap, not evidence of support.
 
 ## Invariants and coverage
 
 | Invariant | Current behavior and evidence |
 | --- | --- |
 | Immutable snapshots | Editing publishes a new `FlowDocument`; old block/run arrays and strings are never mutated. Unchanged objects may be shared. `Deterministic_fixtures_validate_round_trip_and_keep_original_snapshots` and `Fixed_seed_edits_validate_every_snapshot_and_restore_content_and_selection` compare old JSON after every operation. Model/session use requires no controls. |
-| IDs and limits | All live blocks/cells, including covered cells, need unique nonempty IDs. Merge backups are separately validated historical snapshots and may reuse their original IDs. Validation limits: 100,000 live elements, depth 32, table 1-1,000 rows and 1-100 columns; native import is at most 32 MiB. `Duplicate_and_empty_IDs_are_rejected_including_hidden_cells`; missing boundary tests for every depth/size limit remain with P3/P5. |
+| IDs and limits | All live blocks/cells, including covered cells, need unique nonempty IDs. Merge backups are separately validated historical snapshots and may reuse their original IDs. Validation limits: 100,000 elements including retained backups, depth 32, table 1-1,000 rows and 1-100 columns; native import is at most 32 MiB. `Duplicate_and_empty_IDs_are_rejected_including_hidden_cells`; missing boundary tests for every depth/size limit remain with P3/P5. |
 | Coordinates | `DocumentIndex.Text`, selection, search, highlights and editing use UTF-16 code units. CRLF/CR normalize to LF; one LF separates visible paragraphs, including cells; U+2028 stays inside a paragraph. Hidden cells are excluded from visible coordinates. `Coordinates_are_UTF16_with_LF_and_soft_breaks_and_reverse_selection`, fixture round trips and cross-cell editing tests. `InsertText` strips NUL; `FromText` does not. |
 | Directional selection | Anchor is the fixed endpoint; Active is the caret. `Start/End` are sorted views, not a loss of direction. `Select` clamps and snaps backward to a .NET grapheme boundary. Undo/redo must restore the original direction, content, and typing style. Baseline corpus checks every committed operation, including reversed selections. |
 | Graphemes and bidi | Caret/deletion use .NET text elements (including combining sequences and emoji). `Grapheme_navigation_and_deletion_keep_emoji_and_combining_marks_intact` and the independent string oracle in the corpus. Arrow navigation currently follows logical offsets; visual bidi navigation is missing (P6.1), and native N05 remains pending. Explicit edits may form a new cluster across the insertion boundary; Phase 2 must preserve text and not split surrogate pairs. |
-| Merge restoration | Physical hidden cells remain. Unedited split restores original paragraphs/IDs; edited split keeps edited anchor paragraphs and restores other cells. `Merging_and_splitting_cells_is_lossless_and_keeps_edited_merged_text`, `Frozen_v1_fixture_preserves_all_fields_and_merge_restoration`, generated merge/split/round trips. Row/column edits on merged tables still reject (P3.5). |
+| Merge restoration | Physical hidden cells remain. Unedited split restores original paragraphs/IDs; edited split keeps edited anchor paragraphs and restores other cells. `Merging_and_splitting_cells_is_lossless_and_keeps_edited_merged_text`, `Frozen_v1_fixture_preserves_all_fields_and_merge_restoration`, generated merge/split/round trips. Phase 3 supports merge-aware structural edits; `TableModelTests` covers every insertion/deletion boundary and exact history restoration. |
 | Undo grouping | Adjacent `InsertText(..., true)` calls coalesce for less than 800 ms until navigation, formatting, explicit `BreakUndoGroup`, or another operation. New edits clear redo. Phase 2 retains the default 100-entry limit and adds a 64 MiB estimate budget across undo/redo; shared storage is counted once, excluding the current snapshot. Existing typing, history-limit and replace-all tests plus corpus undo/redo. Phase 2 adds an injectable internal timestamp and a deterministic test of the 799/800 ms boundary, navigation breaks and coalescing under a byte limit. |
 | Read-only | User/session edits and undo/redo are blocked; selection/copy are allowed. Host `Load`, `Document` and `Text` assignment still replace content and reset history, even in read-only mode. Existing read-only tests plus `Host_load_is_allowed_in_readonly_and_resets_history_and_selection`. Native clipboard/read-only interaction still needs N06. |
 | Streams | Caller owns streams on success, cancellation and error. Codecs read from current position, never rewind/close the caller stream. `Formats_round_trip_text_and_leave_streams_open` and `Cancelled_codecs_leave_caller_streams_open`. **Missing:** injected mid-write I/O failure test (P5.1/P8.1). |
@@ -29,7 +29,7 @@ This reflection snapshot is an early change detector. It does not encode nullabl
 
 ## Native schema policy
 
-The writer emits envelope `{ "version": 1, "document": ... }`. The current reader strictly deserializes the v1 model and rejects unknown members and unsupported versions. A newer envelope containing unknown members can fail with `JsonException` before the explicit version check; both are rejection, never silent partial import. Tests cover unknown, missing and newer versions. There is no v2 writer or migration in Phase 1.
+The writer emits envelope `{ "version": 2, "document": ... }`. The reader dispatches on the version before decoding the document: frozen strict v1 DTOs explicitly migrate old documents, while v2 reads the current model. Both reject unknown members. Missing or unsupported versions throw `NotSupportedException`, including newer envelopes with unknown document members. See [schema tests](../tests/Textalonia.Tests/SchemaEvolutionTests.cs), the unchanged v1 fixture and the new v2 fixture.
 
 Before extending the schema:
 
@@ -39,7 +39,25 @@ Before extending the schema:
 4. Bump writer version when a new persisted member/meaning cannot be read by v1. Do not silently write extra fields into version 1: its reader rejects them. Any down-export must be explicit about lost features.
 5. Run the frozen corpus, API check, all serializers, control tests and independent package consumer. Document the version/support window and publish migration notes before changing the writer default. Migration never overwrites the caller's source file automatically.
 
-Phase 2 is a private engine change and must continue emitting/reading version 1. Phase 3 owns the first schema extension. License/package ownership decisions do not block this compatibility policy.
+Phase 2 retained schema v1. Phase 3 introduces v2 and continues reading v1. License/package ownership decisions do not block this compatibility policy.
+
+## Phase 3 additive API migration
+
+The public surface adds selection formatting aggregation, list definitions and
+model numbering, richer styles, table sizing, recursive cloning and cell block
+collections. Existing public members remain available. `TableCell.Paragraphs` and
+`MergeOriginal` are init-capable paragraph projections over authoritative `Blocks`
+and `MergeOriginalBlocks`; use the block properties to preserve nested content.
+The v2 wire format rejects legacy paragraph collection names rather than accepting
+competing representations. The package consumer exercises nested editing,
+merge-aware insertion, schema v2 round trips and exact undo restoration.
+
+Collapsed caret formatting now creates an undoable typing-style operation.
+Mixed emphasis toggles apply a uniform chosen value, preserving unrelated styles.
+Merged row/column edits are supported with documented deletion/promotion rules;
+backups retain historical ID scopes while sharing the document depth/element
+budget. See [document semantics](DOCUMENT-MODEL.md) for details and
+[codec gaps](PHASE-03-CODEC-GAPS.md) for losses in external formats.
 
 
 ## Phase 2 additive API migration

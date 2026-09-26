@@ -196,9 +196,9 @@ Highlights use snapshot offsets: update or clear them after edits. Ctrl/Cmd-clic
 
 ## Table behavior
 
-Table text participates in normal selection, formatting, and undo. Insert/delete rows and columns, merge/split cells, and change cell backgrounds through the toolbar or model APIs. Row/column structure changes require unmerged cells.
+Table text participates in normal selection, formatting, and undo. Insert/delete rows and columns through merged spans, merge/split cells, and change cell backgrounds through the toolbar or model APIs. Cell `Blocks` can contain nested tables and sections; table commands target the innermost cell. Persisted column widths, row sizing, cell padding and independent borders are available through model APIs.
 
-Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited paragraphs in the anchor cell and restores the other original cells. Undo always restores the exact previous state.
+Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited blocks in the anchor cell and restores the other original cells. Undo always restores the exact previous state. See [document semantics](docs/DOCUMENT-MODEL.md) for structural deletion rules, schema v1-to-v2 migration, list restart/continuation, mixed-selection state and typography APIs.
 
 Cross-cell text replacement preserves table structure; selecting and replacing the entire document clears its structure. Rich clipboard fragments preserve paragraph/run formatting but flatten tables/sections. Use native document save/load to retain full structure.
 

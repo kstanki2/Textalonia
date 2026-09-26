@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Textalonia.Model;
 
 namespace Textalonia.Serialization;
@@ -78,28 +79,53 @@ public sealed class PlainTextDocumentFormat : TextDocumentFormat
 /// <summary>Versioned, lossless native storage, including hidden cells retained by table merges.</summary>
 public sealed class JsonDocumentFormat : TextDocumentFormat
 {
-    private sealed record Envelope(int Version, FlowDocument Document);
+    private const int CurrentVersion = 2;
+    private sealed record EnvelopeV2(int Version, FlowDocument Document);
     private static readonly JsonSerializerOptions Options = new()
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        MaxDepth = 128,
+        MaxDepth = 256,
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver
+        {
+            Modifiers = { type =>
+            {
+                if (type.Type != typeof(TableCell)) return;
+                // Ignored compatibility setters are not valid members of the v2 wire
+                // vocabulary; accepting both would silently discard one collection.
+                foreach (var property in type.Properties.Where(p => p.Name is "paragraphs" or "mergeOriginal").ToArray())
+                    type.Properties.Remove(property);
+            } }
+        },
         Converters = { new JsonStringEnumConverter() }
     };
     public override string Name => "Textalonia document";
     public override IReadOnlyList<string> Extensions => [".textalonia", ".json", ".art"];
     public override FlowDocument Parse(string text)
     {
-        var envelope = JsonSerializer.Deserialize<Envelope>(text, Options) ?? throw new FormatException("Empty document.");
-        if (envelope.Version != 1) throw new NotSupportedException($"Document version {envelope.Version} is not supported.");
-        if (envelope.Document is null) throw new FormatException("Missing document.");
-        envelope.Document.Validate();
-        return envelope.Document;
+        // Inspect only the envelope before choosing a reader. Future document shapes must
+        // report an unsupported version rather than a misleading unknown-member error.
+        using var json = JsonDocument.Parse(text, new JsonDocumentOptions { MaxDepth = Options.MaxDepth });
+        if (json.RootElement.ValueKind != JsonValueKind.Object) throw new FormatException("Missing document envelope.");
+        var versions = json.RootElement.EnumerateObject().Where(p => p.NameEquals("version")).ToArray();
+        if (versions.Length == 0) throw new NotSupportedException("Document version is missing. Supported versions are 1 and 2.");
+        if (versions.Length != 1 || versions[0].Value.ValueKind != JsonValueKind.Number ||
+            !versions[0].Value.TryGetInt32(out var version))
+            throw new FormatException("Document version must be one integer.");
+        var document = version switch
+        {
+            1 => NativeDocumentV1.Read(json.RootElement, Options),
+            CurrentVersion => json.RootElement.Deserialize<EnvelopeV2>(Options)?.Document
+                ?? throw new FormatException("Missing document."),
+            _ => throw new NotSupportedException($"Document version {version} is not supported. Supported versions are 1 and 2.")
+        };
+        document.Validate();
+        return document;
     }
     public override string Serialize(FlowDocument document)
     {
         document.Validate();
-        return JsonSerializer.Serialize(new Envelope(1, document), Options);
+        return JsonSerializer.Serialize(new EnvelopeV2(CurrentVersion, document), Options);
     }
 }

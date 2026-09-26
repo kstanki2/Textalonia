@@ -63,7 +63,7 @@ internal static class Program
             if (args is ["--capture-contracts", var destination])
             {
                 Directory.CreateDirectory(destination);
-                File.WriteAllText(Path.Combine(destination, "native-v1.json"), DocumentFormats.Json.Serialize(BaselineDocuments.Structured()) + "\n");
+                File.WriteAllText(Path.Combine(destination, "native-current.json"), DocumentFormats.Json.Serialize(BaselineDocuments.Structured()) + "\n");
                 File.WriteAllText(Path.Combine(destination, "public-api.txt"), PublicApi.Capture());
                 return 0;
             }

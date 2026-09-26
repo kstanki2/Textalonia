@@ -6,27 +6,64 @@ using Textalonia.Model;
 
 namespace Textalonia.Controls;
 
-internal sealed record ParagraphVisual(ParagraphPosition Position, ParagraphLayout.Page Page, Point Origin, double AvailableWidth, string? Marker)
+internal sealed record ParagraphVisual(ParagraphPosition Position, ParagraphLayout.Page Page, Point Origin, double AvailableWidth, string? Marker, Rect? Clip = null)
 {
     public ShapedLayoutCache.Lease Acquire() => Page.Owner.Acquire(Page);
     public int TextStart => Position.Start + Page.Start;
     public int TextEnd => Position.Start + Page.End;
-    public Rect Bounds => new(Origin, new Size(AvailableWidth, Page.Height +
-        (Page.End == Position.Paragraph.Length ? Math.Max(0, Position.Paragraph.DefaultStyle.FontSize * 1.25 - Page.Top - Page.Height) : 0)));
+    public Rect Bounds
+    {
+        get
+        {
+            var bounds = new Rect(Origin, new Size(AvailableWidth, Page.Height +
+                (Page.End == Position.Paragraph.Length ? Math.Max(0, (Position.Paragraph.Style.LineHeight ?? Position.Paragraph.DefaultStyle.FontSize * 1.25) - Page.Top - Page.Height) : 0)));
+            return Clip?.Intersect(bounds) ?? bounds;
+        }
+    }
     public void Draw(DrawingContext context, Rect viewport)
     {
-        var y = Origin.Y;
-        using var lease = Acquire();
-        for (var i = 0; i < Page.LineCount; i++)
+        if (Clip is { } bounds)
         {
-            var line = lease.Layout.TextLines[i];
-            if (y > viewport.Bottom) break;
-            if (y + line.Height >= viewport.Top) line.Draw(context, new Point(Origin.X, y));
-            y += line.Height;
+            using var clip = context.PushClip(bounds);
+            DrawLines();
+        }
+        else DrawLines();
+        void DrawLines()
+        {
+            var y = Origin.Y;
+            using var lease = Acquire();
+            for (var i = 0; i < Page.LineCount; i++)
+            {
+                var line = lease.Layout.TextLines[i];
+                if (y > viewport.Bottom) break;
+                if (y + line.Height >= viewport.Top) line.Draw(context, new Point(Origin.X, y));
+                y += line.Height;
+            }
         }
     }
 }
-internal sealed record BlockDecoration(Rect Bounds, IBrush? Fill, IBrush? Border, bool LeftBorderOnly);
+internal sealed record BlockDecoration(Rect Bounds, IBrush? Fill, IBrush? Border, bool LeftBorderOnly, BlockBorders? Borders = null, Rect? Clip = null)
+{
+    public void Draw(DrawingContext context)
+    {
+        using var clip = context.PushClip(Clip ?? Bounds);
+        if (Fill is not null) context.FillRectangle(Fill, Bounds);
+        if (Borders is null)
+        {
+            if (LeftBorderOnly && Border is not null) context.FillRectangle(Border, Bounds.WithWidth(3));
+            else if (!LeftBorderOnly) context.DrawRectangle(null, new Pen(Border, 1), Bounds);
+            return;
+        }
+        Side(Borders.Left, new Rect(Bounds.X, Bounds.Y, Math.Min(Bounds.Width, Borders.Left?.Width ?? 0), Bounds.Height));
+        Side(Borders.Top, new Rect(Bounds.X, Bounds.Y, Bounds.Width, Math.Min(Bounds.Height, Borders.Top?.Width ?? 0)));
+        Side(Borders.Right, new Rect(Math.Max(Bounds.X, Bounds.Right - (Borders.Right?.Width ?? 0)), Bounds.Y, Math.Min(Bounds.Width, Borders.Right?.Width ?? 0), Bounds.Height));
+        Side(Borders.Bottom, new Rect(Bounds.X, Math.Max(Bounds.Y, Bounds.Bottom - (Borders.Bottom?.Width ?? 0)), Bounds.Width, Math.Min(Bounds.Height, Borders.Bottom?.Width ?? 0)));
+        void Side(BorderSide? side, Rect bounds)
+        {
+            if (side is { Width: > 0 } && (DocumentLayout.Brush(side.Color) ?? Border) is { } brush) context.FillRectangle(brush, bounds);
+        }
+    }
+}
 
 /// <summary>Viewport shaping over incremental prefix heights, with a bounded reusable layout cache.</summary>
 internal sealed class DocumentLayout : IDisposable
@@ -45,6 +82,7 @@ internal sealed class DocumentLayout : IDisposable
 
     private LayoutHeightIndex _heights = new();
     private DocumentIndex? _index;
+    private FlowDocument? _document;
     private Thickness _padding;
     private Rect _viewport;
     private double _previousViewportY = double.NaN;
@@ -98,6 +136,7 @@ internal sealed class DocumentLayout : IDisposable
         _font = font; _foreground = foreground; _border = border; _padding = padding;
         Width = width; _viewport = view; _previousViewportY = view.Y;
         _index = new(document);
+        _document = document;
         _heights.Synchronize(_index.Tree, Math.Max(24, width - padding.Left - padding.Right));
         AnchorAdjustment = 0;
         MeasureViewport();
@@ -159,7 +198,7 @@ internal sealed class DocumentLayout : IDisposable
     private ParagraphLayout Shape(LayoutHeightIndex.Node node)
     {
         var paragraph = (Paragraph)node.Source.Source!;
-        var width = Math.Max(16, node.Available - node.Indent);
+        var width = node.TextWidth;
         if (!_cache.TryGetValue(paragraph.Id, out var cached) || Math.Abs(cached.Width - width) > .1)
         {
             cached?.Layout.Dispose();
@@ -181,19 +220,20 @@ internal sealed class DocumentLayout : IDisposable
         var height = layout.Height;
         if (Math.Abs(node.ContentHeight - height) > .01) { node.ContentHeight = height; node.Update(); }
     }
-    private void Collect(LayoutHeightIndex.Node node, double x, double y, double top, double bottom)
+    private void Collect(LayoutHeightIndex.Node node, double x, double y, double top, double bottom, Rect? clip = null)
     {
         if (y > bottom || y + node.Height < top) return;
         switch (node.Source.Source)
         {
             case Paragraph paragraph:
                 var layout = Shape(node);
-                var marker = paragraph.Style.List switch { ListKind.Bullet => "\u2022", ListKind.Numbered => Number(paragraph.Id) + ".", _ => null };
+                var marker = paragraph.Style.List == ListKind.None ? null :
+                    ListNumbering.GetMarker(_document!, paragraph.Id)?.Text;
                 var originY = y + paragraph.Style.SpaceBefore;
                 foreach (var page in layout.View(top - originY, bottom - originY))
                 {
                     page.LastUse = ++_clock;
-                    var visual = new ParagraphVisual(_index!.ById(paragraph.Id), page, new(x + node.Indent, originY + page.Top), Math.Max(16, node.Available - node.Indent), page.Start == 0 ? marker : null);
+                    var visual = new ParagraphVisual(_index!.ById(paragraph.Id), page, new(x + node.Indent + page.XOffset, originY + page.Top), Math.Max(16, node.TextWidth - page.XOffset), page.Start == 0 ? marker : null, clip);
                     var existing = _collectDecorations ? -1 : Paragraphs.FindIndex(p => p.Position.Paragraph.Id == paragraph.Id && p.Page.Start == page.Start);
                     if (existing >= 0) Paragraphs[existing] = visual; else Paragraphs.Add(visual);
                 }
@@ -202,38 +242,46 @@ internal sealed class DocumentLayout : IDisposable
             case Section section:
                 var slot = Decorations.Count;
                 if (_collectDecorations) Decorations.Add(new(default, null, null, false));
-                CollectBranch(node.Children, x + section.Padding, y + section.Padding, top, bottom);
-                if (_collectDecorations) Decorations[slot] = new(new Rect(x, y, node.Available, node.Height - 10), Brush(section.Background), Brush(section.BorderColor), true);
+                var sectionPadding = LayoutHeightIndex.SectionPadding(section);
+                CollectBranch(node.Children, x + sectionPadding.Left, y + sectionPadding.Top, top, bottom, clip);
+                if (_collectDecorations) Decorations[slot] = new(new Rect(x, y, node.Available, node.Height - 10), Brush(section.Background), Brush(section.BorderColor) ?? (section.Borders is null ? null : _border), true, section.Borders, clip);
                 break;
             case Table table:
-                var cellWidth = node.Available / table.ColumnCount;
                 foreach (var cell in node.IntersectingCells(top - y, bottom - y))
                 {
                     var model = (TableCell)cell.Source.Source!;
                     var cellY = y + node.RowOffsets[cell.Source.Row];
                     var cellHeight = node.RowOffsets[cell.Source.Row + model.RowSpan] - node.RowOffsets[cell.Source.Row];
                     if (cellY > bottom || cellY + cellHeight < top) continue;
-                    Collect(cell, x + cell.Source.Column * cellWidth, cellY, top, bottom);
+                    var cellX = x + LayoutHeightIndex.ColumnOffset(table, node.Available, cell.Source.Column);
+                    var cellWidth = LayoutHeightIndex.ColumnWidth(table, node.Available, cell.Source.Column, model.ColumnSpan);
+                    var cellBounds = new Rect(cellX, cellY, cellWidth, cellHeight);
+                    var exact = !table.RowSizing.IsDefaultOrEmpty && Enumerable.Range(cell.Source.Row, model.RowSpan).All(r => table.RowSizing[r].Mode == TableRowHeightMode.Exact);
+                    var cellClip = exact ? (clip?.Intersect(cellBounds) ?? cellBounds) : clip;
+                    var cellSlot = Decorations.Count;
+                    if (_collectDecorations) Decorations.Add(new(default, null, null, false));
+                    Collect(cell, cellX, cellY, top, bottom, cellClip);
                     cellHeight = node.RowOffsets[cell.Source.Row + model.RowSpan] - node.RowOffsets[cell.Source.Row];
-                    if (_collectDecorations) Decorations.Add(new(new Rect(x + cell.Source.Column * cellWidth, cellY, cellWidth * model.ColumnSpan, cellHeight), Brush(model.Background), _border, false));
+                    if (_collectDecorations) Decorations[cellSlot] = new(new Rect(cellX, cellY, cellWidth, cellHeight), Brush(model.Background), _border, false, model.Borders, clip);
                 }
                 break;
-            case TableCell:
-                CollectBranch(node.Children, x + 8, y + 8, top, bottom);
+            case TableCell tableCell:
+                var cellPadding = LayoutHeightIndex.CellPadding(tableCell);
+                CollectBranch(node.Children, x + cellPadding.Left, y + cellPadding.Top, top, bottom, clip);
                 break;
             default:
-                CollectBranch(node.Children, x, y, top, bottom);
+                CollectBranch(node.Children, x, y, top, bottom, clip);
                 break;
         }
     }
-    private void CollectBranch(LayoutHeightIndex.Branch? branch, double x, double y, double top, double bottom)
+    private void CollectBranch(LayoutHeightIndex.Branch? branch, double x, double y, double top, double bottom, Rect? clip = null)
     {
         if (branch is null || y > bottom || y + branch.Height < top) return;
-        CollectBranch(branch.Left, x, y, top, bottom);
+        CollectBranch(branch.Left, x, y, top, bottom, clip);
         y += branch.Left?.Height ?? 0;
-        Collect(branch.Value, x, y, top, bottom);
+        Collect(branch.Value, x, y, top, bottom, clip);
         y += branch.Value.Height;
-        CollectBranch(branch.Right, x, y, top, bottom);
+        CollectBranch(branch.Right, x, y, top, bottom, clip);
     }
     private (LayoutHeightIndex.Node Node, Point Origin) Locate(Guid id)
     {
@@ -247,12 +295,12 @@ internal sealed class DocumentLayout : IDisposable
             if (node.Source.Source is Table table)
             {
                 var cell = node.Children!.Find(key);
-                x += cell.Source.Column * node.Available / table.ColumnCount;
+                x += LayoutHeightIndex.ColumnOffset(table, node.Available, cell.Source.Column);
                 y += node.RowOffsets[cell.Source.Row];
                 node = cell; return;
             }
-            if (node.Source.Source is Section section) { x += section.Padding; y += section.Padding; }
-            else if (node.Source.Source is TableCell) { x += 8; y += 8; }
+            if (node.Source.Source is Section section) { var inset = LayoutHeightIndex.SectionPadding(section); x += inset.Left; y += inset.Top; }
+            else if (node.Source.Source is TableCell tableCell) { var inset = LayoutHeightIndex.CellPadding(tableCell); x += inset.Left; y += inset.Top; }
             y += node.Children!.Prefix(key); node = node.Children.Find(key);
         }
         if (node.Source.Source is Paragraph paragraph) { x += node.Indent; y += paragraph.Style.SpaceBefore; }
@@ -264,16 +312,8 @@ internal sealed class DocumentLayout : IDisposable
         // path can refine a shared prefix used by an earlier visual.
         foreach (var paragraph in Paragraphs) Locate(paragraph.Position.Paragraph.Id);
         for (var i = 0; i < Paragraphs.Count; i++)
-            Paragraphs[i] = Paragraphs[i] with { Origin = Locate(Paragraphs[i].Position.Paragraph.Id).Origin + new Vector(0, Paragraphs[i].Page.Top) };
+            Paragraphs[i] = Paragraphs[i] with { Origin = Locate(Paragraphs[i].Position.Paragraph.Id).Origin + new Vector(Paragraphs[i].Page.XOffset, Paragraphs[i].Page.Top) };
         Height = _padding.Top + _heights.Root.Height + _padding.Bottom;
-    }
-    private int Number(Guid id)
-    {
-        var keys = _index!.Tree.Paths!.Find(id)!.Value.Keys().ToArray();
-        var node = _heights.Root;
-        for (var i = 0; i < keys.Length - 1; i++) node = node.Children!.Find(keys[i]);
-        var paragraph = (Paragraph)node.Children!.Find(keys[^1]).Source.Source!;
-        return node.Children.NumberBefore(keys[^1], paragraph.Style.ListLevel) + 1;
     }
     private void Evict()
     {
@@ -320,13 +360,16 @@ internal sealed class DocumentLayout : IDisposable
                 ParagraphAlignment.Center => TextAlignment.Center, ParagraphAlignment.Right => TextAlignment.Right,
                 ParagraphAlignment.Justify => TextAlignment.Justify, _ => TextAlignment.Left
             },
-            textWrapping: TextWrapping.Wrap, maxWidth: width,
+            textWrapping: TextWrapping.Wrap, maxWidth: Math.Max(16, width - (start == 0 ? paragraph.Style.FirstLineIndent : 0)),
+            // Keep a lookahead line so a wrapped first line retains paragraph justification.
+            maxLines: start == 0 && paragraph.Style.FirstLineIndent != 0 ? 2 : 0,
+            lineHeight: paragraph.Style.LineHeight ?? double.NaN, letterSpacing: paragraph.Style.LetterSpacing,
             flowDirection: paragraph.Style.RightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight,
             textStyleOverrides: overrides);
     }
 
-    private static Typeface Typeface(TextStyle style, FontFamily fallback) =>
-        new(style.FontFamily is null ? fallback : new FontFamily(style.FontFamily), style.Italic ? FontStyle.Italic : FontStyle.Normal, style.Bold ? FontWeight.Bold : FontWeight.Normal);
+    internal static Typeface Typeface(TextStyle style, FontFamily fallback) =>
+        new(style.FontFamily is null ? fallback : new FontFamily(style.FontFamily), style.Italic ? FontStyle.Italic : FontStyle.Normal, (FontWeight)style.EffectiveFontWeight, (FontStretch)style.FontStretch);
     internal static IBrush? Brush(string? color) => color is null ? null : new SolidColorBrush(Color.Parse(color));
 
     public ParagraphVisual? At(int position)
@@ -351,7 +394,7 @@ internal sealed class DocumentLayout : IDisposable
         if (existing is null)
         {
             location = Locate(entry.Paragraph.Id);
-            existing = new(entry, page, location.Origin + new Vector(0, page.Top), Math.Max(16, location.Node.Available - location.Node.Indent), null);
+            existing = new(entry, page, location.Origin + new Vector(page.XOffset, page.Top), Math.Max(16, location.Node.TextWidth - page.XOffset), null);
             Paragraphs.Add(existing); Reposition();
         }
         RestoreViewportAnchor(anchor);
@@ -363,7 +406,7 @@ internal sealed class DocumentLayout : IDisposable
         if (visual is null) return new Rect(0, 0, 1.5, 20);
         using var lease = visual.Acquire();
         var rect = lease.Layout.HitTestTextPosition(Math.Clamp(position - visual.TextStart, 0, visual.Page.End - visual.Page.Start));
-        return new Rect(visual.Origin.X + rect.X, visual.Origin.Y + rect.Y, 1.5, Math.Max(rect.Height, visual.Position.Paragraph.DefaultStyle.FontSize * 1.1));
+        return new Rect(visual.Origin.X + rect.X, visual.Origin.Y + rect.Y, 1.5, Math.Max(rect.Height, visual.Position.Paragraph.Style.LineHeight ?? visual.Position.Paragraph.DefaultStyle.FontSize * 1.1));
     }
 
     public int HitTest(Point point)
@@ -375,13 +418,14 @@ internal sealed class DocumentLayout : IDisposable
         Reposition();
         point += new Vector(0, RestoreViewportAnchor(anchor));
         if (Paragraphs.Count == 0) return 0;
-        var visual = Paragraphs.MinBy(p =>
+        var visual = Paragraphs.Where(p => p.Bounds.Height > 0 && p.Bounds.Width > 0).MinBy(p =>
         {
             var r = p.Bounds;
             var dx = Math.Max(Math.Max(r.Left - point.X, 0), point.X - r.Right);
             var dy = Math.Max(Math.Max(r.Top - point.Y, 0), point.Y - r.Bottom);
             return dy * dy * 16 + dx * dx;
-        })!;
+        });
+        if (visual is null) return 0;
         var local = point - visual.Origin;
         using var lease = visual.Acquire();
         var hit = lease.Layout.HitTestPoint(new Point(local.X, local.Y));
@@ -405,12 +449,17 @@ internal sealed class DocumentLayout : IDisposable
             {
                 using var lease = p.Acquire();
                 foreach (var rect in lease.Layout.HitTestTextRange(from - p.TextStart, to - from))
-                    yield return rect.Translate(new Vector(p.Origin.X, p.Origin.Y));
+                {
+                    var bounds = rect.Translate(new Vector(p.Origin.X, p.Origin.Y));
+                    if (p.Clip is { } clip) bounds = bounds.Intersect(clip);
+                    if (bounds.Width > 0 && bounds.Height > 0) yield return bounds;
+                }
             }
             if (p.TextEnd == p.Position.End && start <= p.Position.End && start + length > p.Position.End)
             {
-                var caret = Caret(p.Position.End);
-                yield return caret.WithWidth(5);
+                var caret = Caret(p.Position.End).WithWidth(5);
+                if (p.Clip is { } clip) caret = caret.Intersect(clip);
+                if (caret.Width > 0 && caret.Height > 0) yield return caret;
             }
         }
     }
@@ -420,7 +469,7 @@ internal sealed class DocumentLayout : IDisposable
         foreach (var cached in _cache.Values) cached.Layout.Dispose();
         _glyphs.Clear();
         _cache.Clear(); _uses.Clear(); Paragraphs.Clear(); Decorations.Clear();
-        _heights = new(); _index = null;
+        _heights = new(); _index = null; _document = null;
         _previousViewportY = double.NaN;
     }
     public void Dispose() => Clear();

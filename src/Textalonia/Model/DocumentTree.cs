@@ -55,18 +55,74 @@ internal sealed class DocumentNode(object? source, StorageTree<OrderKey, Documen
         }
         // Table snapshots also own covered cells and merge backups, outside visible indexing.
         if (Source is Table table)
+        {
             foreach (var row in table.Rows) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(row)!);
+            VisitTableSizing(table, visit);
+        }
         if (Source is TableCell cell)
-            foreach (var paragraph in cell.MergeOriginal) visit(HiddenParagraph(paragraph));
+            foreach (var block in cell.MergeOriginalBlocks) visit(HiddenBlock(block));
         if (Source is Section section)
         {
             if (section.Background is not null) visit(section.Background);
             if (section.BorderColor is not null) visit(section.BorderColor);
         }
         if (Source is TableCell { Background: { } background }) visit(background);
+        if (Source is TableCell styledCell)
+        {
+            if (styledCell.Borders is not null) visit(styledCell.Borders);
+            if (styledCell.Padding is not null) visit(styledCell.Padding);
+        }
+        if (Source is Section styledSection)
+        {
+            if (styledSection.Borders is not null) visit(styledSection.Borders);
+            if (styledSection.PaddingEdges is not null) visit(styledSection.PaddingEdges);
+        }
     }
-    private static readonly ConditionalWeakTable<Paragraph, DocumentNode> HiddenParagraphs = new();
-    internal static DocumentNode HiddenParagraph(Paragraph paragraph) => HiddenParagraphs.GetValue(paragraph, p => new(p));
+    internal static void VisitTableSizing(Table table, Action<object> visit)
+    {
+        if (!table.ColumnWidths.IsDefaultOrEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(table.ColumnWidths)!);
+        if (!table.RowSizing.IsDefaultOrEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(table.RowSizing)!);
+    }
+    private static readonly ConditionalWeakTable<Block, HiddenBlockStorage> HiddenBlocks = new();
+    internal static HiddenBlockStorage HiddenBlock(Block block) => HiddenBlocks.GetValue(block, b => new(b));
+}
+
+// Retains full hidden subtrees without adding them to visible positions or paths.
+internal sealed class HiddenBlockStorage(Block block) : IRetained
+{
+    public long Bytes => block switch
+    {
+        Paragraph paragraph => 96 + paragraph.Runs.Length * 48L,
+        Section section => 96 + section.Blocks.Length * 8L,
+        Table table => 112 + table.Rows.Length * 16L,
+        _ => 80
+    };
+    public void VisitReferences(Action<object> visit)
+    {
+        switch (block)
+        {
+            case Paragraph paragraph:
+                visit(paragraph.Style); visit(paragraph.DefaultStyle);
+                foreach (var run in paragraph.Runs) { visit(run.Storage); visit(run.Style); }
+                visit(ParagraphText.For(paragraph));
+                break;
+            case Section section:
+                foreach (var child in section.Blocks) visit(DocumentNode.HiddenBlock(child));
+                if (section.Background is not null) visit(section.Background);
+                if (section.BorderColor is not null) visit(section.BorderColor);
+                if (section.Borders is not null) visit(section.Borders);
+                if (section.PaddingEdges is not null) visit(section.PaddingEdges);
+                break;
+            case Table table:
+                DocumentNode.VisitTableSizing(table, visit);
+                foreach (var row in table.Rows)
+                {
+                    visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(row)!);
+                    foreach (var cell in row) visit(cell);
+                }
+                break;
+        }
+    }
 }
 
 internal sealed class HiddenCellStorage(IReadOnlyList<TableCell> cells) : IRetained
@@ -112,8 +168,8 @@ internal sealed class DocumentTree : IRetained
                             else hiddenCells.Add(table.Rows[r][c]);
                     break;
                 case TableCell cell:
-                    var paragraphs = cell.Paragraphs;
-                    for (var i = 0; i < paragraphs.Length; i++) Add(paragraphs[i], i);
+                    var cellBlocks = cell.Blocks;
+                    for (var i = 0; i < cellBlocks.Length; i++) Add(cellBlocks[i], i);
                     break;
             }
             var result = new DocumentNode(source, StorageTree<OrderKey, DocumentNode>.FromOrdered(children), row, column, hiddenCells.Count == 0 ? null : new(hiddenCells));

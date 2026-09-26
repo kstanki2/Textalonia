@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Textalonia.Model;
+using Textalonia.Editing;
 
 namespace Textalonia.Controls;
 
@@ -13,7 +14,7 @@ public class TextaloniaToolbar : WrapPanel
 {
     public static readonly StyledProperty<TextaloniaEditor?> EditorProperty =
         AvaloniaProperty.Register<TextaloniaToolbar, TextaloniaEditor?>(nameof(Editor));
-    private readonly List<(ToggleButton Button, Func<bool> Read)> _toggles = [];
+    private readonly List<(ToggleButton Button, Func<SelectionFormattingState, bool?> Read)> _toggles = [];
     private readonly List<Control> _editingControls = [];
     private ComboBox? _font;
     private ComboBox? _size;
@@ -57,10 +58,10 @@ public class TextaloniaToolbar : WrapPanel
             if (!_updating && _size.SelectedItem is string size)
                 editor.Run(() => editor.ApplyStyle(s => s with { FontSize = double.Parse(size, System.Globalization.CultureInfo.InvariantCulture) }));
         };
-        Toggle("B", "Bold", editor.BoldCommand, () => editor.Session.TypingStyle.Bold).FontWeight = FontWeight.Bold;
-        Toggle("I", "Italic", editor.ItalicCommand, () => editor.Session.TypingStyle.Italic).FontStyle = FontStyle.Italic;
-        Toggle("U", "Underline", editor.UnderlineCommand, () => editor.Session.TypingStyle.Underline);
-        Toggle("S", "Strikethrough", editor.StrikethroughCommand, () => editor.Session.TypingStyle.Strikethrough);
+        Toggle("B", "Bold", editor.BoldCommand, state => Indicator(state.Bold)).FontWeight = FontWeight.Bold;
+        Toggle("I", "Italic", editor.ItalicCommand, state => Indicator(state.Italic)).FontStyle = FontStyle.Italic;
+        Toggle("U", "Underline", editor.UnderlineCommand, state => Indicator(state.Underline));
+        Toggle("S", "Strikethrough", editor.StrikethroughCommand, state => Indicator(state.Strikethrough));
         AddFlyout("Color", "Text color", Palette(false));
         AddFlyout("Highlight", "Text highlight", Palette(true));
         AddFlyout("Paragraph", "Paragraph formatting", ParagraphMenu());
@@ -77,9 +78,9 @@ public class TextaloniaToolbar : WrapPanel
         ToolTip.SetTip(box, name); AutomationProperties.SetName(box, name);
         Children.Add(box); _editingControls.Add(box); return box;
     }
-    private ToggleButton Toggle(string text, string name, System.Windows.Input.ICommand command, Func<bool> read)
+    private ToggleButton Toggle(string text, string name, System.Windows.Input.ICommand command, Func<SelectionFormattingState, bool?> read)
     {
-        var button = new ToggleButton { Content = text, Command = command, MinWidth = 32, MinHeight = 32, Margin = new Thickness(2), Padding = new Thickness(8, 4) };
+        var button = new ToggleButton { Content = text, Command = command, IsThreeState = true, MinWidth = 32, MinHeight = 32, Margin = new Thickness(2), Padding = new Thickness(8, 4) };
         ToolTip.SetTip(button, name); AutomationProperties.SetName(button, name);
         Children.Add(button); _toggles.Add((button, read)); return button;
     }
@@ -138,11 +139,11 @@ public class TextaloniaToolbar : WrapPanel
         panel.Children.Add(new Separator());
         panel.Children.Add(MenuAction("Bulleted list", () => Editor!.Session.ToggleList(ListKind.Bullet)));
         panel.Children.Add(MenuAction("Numbered list", () => Editor!.Session.ToggleList(ListKind.Numbered)));
-        panel.Children.Add(MenuAction("Increase indent", () => Editor!.Session.ApplyParagraphStyle(s => s.List == ListKind.None ? s with { Indent = Math.Min(1000, s.Indent + 24) } : s with { ListLevel = Math.Min(8, s.ListLevel + 1) })));
-        panel.Children.Add(MenuAction("Decrease indent", () => Editor!.Session.ApplyParagraphStyle(s => s.List == ListKind.None ? s with { Indent = Math.Max(0, s.Indent - 24) } : s with { ListLevel = Math.Max(0, s.ListLevel - 1) })));
-        panel.Children.Add(MenuAction("Toggle right-to-left", () => Editor!.Session.ApplyParagraphStyle(s => s with { RightToLeft = !s.RightToLeft })));
-        panel.Children.Add(MenuAction("Subscript", () => Editor!.ApplyStyle(s => s with { Baseline = s.Baseline == Baseline.Subscript ? Baseline.Normal : Baseline.Subscript })));
-        panel.Children.Add(MenuAction("Superscript", () => Editor!.ApplyStyle(s => s with { Baseline = s.Baseline == Baseline.Superscript ? Baseline.Normal : Baseline.Superscript })));
+        panel.Children.Add(MenuAction("Increase indent", () => Editor!.Session.ApplyParagraphStyle(s => s.List == ListKind.None ? s with { Indent = Math.Min(1000, s.Indent + 24) } : s with { ListLevel = Math.Min(8, s.ListLevel + 1), ListStart = null, ListRestart = false })));
+        panel.Children.Add(MenuAction("Decrease indent", () => Editor!.Session.ApplyParagraphStyle(s => s.List == ListKind.None ? s with { Indent = Math.Max(0, s.Indent - 24) } : s with { ListLevel = Math.Max(0, s.ListLevel - 1), ListStart = null, ListRestart = false })));
+        panel.Children.Add(MenuAction("Toggle right-to-left", ToggleRightToLeft));
+        panel.Children.Add(MenuAction("Subscript", () => ToggleBaseline(Baseline.Subscript)));
+        panel.Children.Add(MenuAction("Superscript", () => ToggleBaseline(Baseline.Superscript)));
         return panel;
     }
 
@@ -222,17 +223,33 @@ public class TextaloniaToolbar : WrapPanel
         _query?.Focus();
     }
 
+    private void ToggleRightToLeft()
+    {
+        var value = Editor!.Session.FormattingState.Paragraph(s => s.RightToLeft);
+        var enabled = value.IsMixed || !value.Value;
+        Editor.Session.ApplyParagraphStyle(s => s with { RightToLeft = enabled });
+    }
+    private void ToggleBaseline(Baseline baseline)
+    {
+        var value = Editor!.Session.FormattingState.Text(s => s.Baseline);
+        var selected = !value.IsMixed && value.Value == baseline ? Baseline.Normal : baseline;
+        Editor.ApplyStyle(s => s with { Baseline = selected });
+    }
+
+    private static bool? Indicator(FormattingValue<bool> value) => value.IsMixed ? null : value.Value;
+
     private void Refresh()
     {
         if (Editor is not { } editor) return;
         _updating = true;
         try
         {
-            foreach (var (button, read) in _toggles) button.IsChecked = read();
+            var state = editor.Session.FormattingState;
+            foreach (var (button, read) in _toggles) button.IsChecked = read(state);
             foreach (var control in _editingControls) control.IsEnabled = !editor.IsReadOnly;
-            if (_heading is not null) _heading.SelectedIndex = Math.Min(3, editor.Session.Index.At(editor.Session.Selection.Active).Paragraph.Style.HeadingLevel);
-            if (_font is not null) _font.SelectedItem = editor.Session.TypingStyle.FontFamily ?? "Default";
-            if (_size is not null) _size.SelectedItem = editor.Session.TypingStyle.FontSize.ToString("0", System.Globalization.CultureInfo.InvariantCulture);
+            if (_heading is not null) _heading.SelectedIndex = state.HeadingLevel.IsMixed ? -1 : Math.Min(3, state.HeadingLevel.Value);
+            if (_font is not null) _font.SelectedItem = state.FontFamily.IsMixed ? null : state.FontFamily.Value ?? "Default";
+            if (_size is not null) _size.SelectedItem = state.FontSize.IsMixed ? null : state.FontSize.Value.ToString("0", System.Globalization.CultureInfo.InvariantCulture);
         }
         finally { _updating = false; }
     }

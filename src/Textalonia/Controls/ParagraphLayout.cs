@@ -13,6 +13,7 @@ internal sealed class ParagraphLayout : IDisposable
         public required ParagraphLayout Owner;
         public int Start, End, InputEnd, LineCount;
         public double Top, Height;
+        public double XOffset => Start == 0 ? Owner.Paragraph.Style.FirstLineIndent : 0;
         public TextLayout? Layout;
         public string? Text;
         public TextStyle? RunStyle, DefaultStyle;
@@ -39,7 +40,8 @@ internal sealed class ParagraphLayout : IDisposable
     private double MeasuredHeight => _pages.Count == 0 ? 0 : _pages[^1].Top + _pages[^1].Height;
     private bool Complete => _pages.Count > 0 && End == Paragraph.Length;
     private readonly double _width;
-    public double Height => Math.Max(Paragraph.DefaultStyle.FontSize * 1.25,
+    public double MinimumHeight => Paragraph.Style.LineHeight ?? Paragraph.DefaultStyle.FontSize * 1.25;
+    public double Height => Math.Max(MinimumHeight,
         MeasuredHeight + (Complete ? 0 : Estimate(Paragraph.Length - End)));
 
     public ParagraphLayout(Paragraph paragraph, double width, Func<Paragraph, int, string, TextLayout> shape, Action disposed,
@@ -49,7 +51,7 @@ internal sealed class ParagraphLayout : IDisposable
         _maxShapingCharacters = maxShapingCharacters;
     }
 
-    private double Estimate(int length) => Math.Ceiling(length * Paragraph.DefaultStyle.FontSize * .52 / _width) * Paragraph.DefaultStyle.FontSize * 1.25;
+    private double Estimate(int length) => Math.Ceiling(length * Math.Max(1, Paragraph.DefaultStyle.FontSize * .52 + Paragraph.Style.LetterSpacing) / _width) * MinimumHeight;
 
     public void Update(Paragraph paragraph)
     {
@@ -117,7 +119,8 @@ internal sealed class ParagraphLayout : IDisposable
 
     private Page Append()
     {
-        var start = End; var length = Math.Min(WindowLength, Paragraph.Length - start);
+        var start = End; var firstLineOnly = start == 0 && Paragraph.Style.FirstLineIndent != 0;
+        var length = Math.Min(WindowLength, Paragraph.Length - start);
         // Unicode bidi resolution is paragraph scoped. Keep the exact Avalonia
         // path for RTL/embedding controls instead of treating a window as a new
         // bidi paragraph. The rope carries this conservative summary per subtree.
@@ -145,8 +148,11 @@ internal sealed class ParagraphLayout : IDisposable
             }
             length = inputEnd - start;
             layout = Shape(start, text);
-            count = layout.TextLines.Count;
-            if (inputEnd < Paragraph.Length) count--; // incomplete trailing line is lookahead only
+            count = firstLineOnly ? Math.Min(1, layout.TextLines.Count) : layout.TextLines.Count;
+            if (inputEnd < Paragraph.Length && !firstLineOnly) count--; // incomplete trailing line is lookahead only
+            if (firstLineOnly && inputEnd < Paragraph.Length && count == 1 &&
+                layout.TextLines[0].Length == text.Length && layout.TextLines[0].NewLineLength == 0)
+                count = 0; // the first line still needs more lookahead before its boundary is known
             if (count > 0 || inputEnd == Paragraph.Length) break;
             layout.Dispose(); _disposed();
             length = GrowInput(start, requestedLength);
@@ -198,7 +204,7 @@ internal sealed class ParagraphLayout : IDisposable
 
     private TextLayout Shape(int start, string text)
     {
-        if (_spare is { Layout: { } layout } && _spare.Text == text && Paragraph.Runs.Length == 1 &&
+        if (Paragraph.Style.FirstLineIndent == 0 && _spare is { Layout: { } layout } && _spare.Text == text && Paragraph.Runs.Length == 1 &&
             _spare.RunStyle == Paragraph.Runs[0].Style && _spare.DefaultStyle == Paragraph.DefaultStyle && _spare.ParagraphStyle == Paragraph.Style)
         { _cache.Take(_spare); _spare = null; return layout; }
         _cache.RecordTransient(text.Length);
