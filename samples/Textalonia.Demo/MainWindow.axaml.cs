@@ -11,6 +11,7 @@ public partial class MainWindow : Window
 {
     private bool _dirty;
     private bool _loading;
+    private ConversionReport _lastConversionReport = ConversionReport.Empty;
     public MainWindow()
     {
         InitializeComponent();
@@ -25,6 +26,8 @@ public partial class MainWindow : Window
             UpdateCounts();
         };
         Editor.OperationFailed += (_, e) => Status.Text = e.Exception.Message;
+        Editor.ConversionCompleted += (_, e) => RecordConversionReport(e.Report);
+        ConversionReportButton.Click += async (_, _) => await ShowConversionReportAsync(_lastConversionReport);
         Editor.HyperlinkActivated += (_, e) => Status.Text = "Link selected: " + e.Uri;
         ReadOnlyToggle.IsCheckedChanged += (_, _) => Editor.IsReadOnly = ReadOnlyToggle.IsChecked == true;
         ThemeToggle.IsCheckedChanged += (_, _) => RequestedThemeVariant = ThemeToggle.IsChecked == true ? ThemeVariant.Dark : ThemeVariant.Light;
@@ -59,10 +62,11 @@ public partial class MainWindow : Window
             using var file = files[0];
             await using var stream = await file.OpenReadAsync();
             var revision = Editor.Session.Revision;
-            var document = await DocumentFormats.ForPath(file.Name).LoadAsync(stream);
+            var result = await DocumentFormats.ForPath(file.Name).LoadWithReportAsync(stream);
             if (revision != Editor.Session.Revision) throw new InvalidOperationException("The document changed while loading. Open the file again to replace it.");
-            ReplaceDocument(document);
+            ReplaceDocument(result.Document);
             Status.Text = "Opened " + file.Name;
+            await ShowConversionReportAsync(result.Report);
         }
         catch (Exception ex) { Status.Text = ex.Message; }
     }
@@ -79,11 +83,48 @@ public partial class MainWindow : Window
             var snapshot = Editor.Document;
             await using var stream = await file.OpenWriteAsync();
             stream.SetLength(0);
-            await DocumentFormats.ForPath(file.Name).SaveAsync(snapshot, stream);
+            var result = await DocumentFormats.ForPath(file.Name).SaveWithReportAsync(snapshot, stream);
             if (ReferenceEquals(snapshot, Editor.Document) && DocumentFormats.ForPath(file.Name) == DocumentFormats.Json) _dirty = false;
             Status.Text = "Saved " + file.Name + (DocumentFormats.ForPath(file.Name) == DocumentFormats.Json ? "" : " · Use Textalonia format to preserve all editor features.");
+            await ShowConversionReportAsync(result.Report);
         }
         catch (Exception ex) { Status.Text = ex.Message; }
+    }
+    private void RecordConversionReport(ConversionReport report)
+    {
+        _lastConversionReport = report;
+        ConversionReportButton.IsEnabled = !report.Diagnostics.IsEmpty;
+        if (!report.Diagnostics.IsEmpty)
+            Status.Text = $"{report.Diagnostics.Length} conversion notice(s) · Open Conversion report for details.";
+    }
+    private async Task ShowConversionReportAsync(ConversionReport report)
+    {
+        RecordConversionReport(report);
+        if (report.Diagnostics.IsEmpty) return;
+        var dialog = new Window
+        {
+            Title = "Conversion report", Width = 680, Height = 440,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner
+        };
+        var close = new Button { Content = "Close", HorizontalAlignment = HorizontalAlignment.Right };
+        close.Click += (_, _) => dialog.Close();
+        var content = new DockPanel { Margin = new Avalonia.Thickness(20), LastChildFill = true };
+        DockPanel.SetDock(close, Dock.Bottom);
+        content.Children.Add(close);
+        content.Children.Add(new ScrollViewer
+        {
+            Content = new TextBlock
+            {
+                Text = string.Join("\n\n", report.Diagnostics.Select(d =>
+                    $"{d.Severity}: {d.Code}\n{d.UnsupportedFeature}\n{d.Fallback}" +
+                    (d.SourceLocation is { } location ? $"\nSource: {location}" : "") +
+                    (d.ModelId is { } id ? $"\nModel: {id}" : ""))),
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                Margin = new Avalonia.Thickness(0, 0, 0, 16)
+            }
+        });
+        dialog.Content = content;
+        await dialog.ShowDialog(this);
     }
     private void ReplaceDocument(FlowDocument document)
     {

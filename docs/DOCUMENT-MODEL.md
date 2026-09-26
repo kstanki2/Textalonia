@@ -43,7 +43,7 @@ restart on the new item. Enter in an empty list item exits the list. Indenting
 changes the level while preserving identity. Deleting items recomputes numbering
 from surviving metadata. Pasted fragments receive new list identities, preserving
 relationships inside the fragment without joining a destination list accidentally.
-Structured clipboard preservation remains Phase 5 work.
+Versioned fragments preserve clipped sections, nested/merged tables and resources. See [clipboard boundary and destination rules](INTERCHANGE.md).
 
 ## Typography and container styles
 
@@ -105,5 +105,4 @@ The Phase 2 persistent edit/index paths and viewport shaping remain in use.
 Structural operations and native import/export traverse their affected snapshots.
 `ListNumbering.GetMarker` reuses numbering transitions on unchanged persistent
 subtrees; `Compute` enumerates and caches the full marker map for a snapshot.
-See [codec gaps](PHASE-03-CODEC-GAPS.md) for external format losses
-pending Phase 5.
+See the [current interchange support matrix](PHASE5-REPORT.md) for supported mappings, loss diagnostics and application qualification gaps.

@@ -34,8 +34,33 @@ public partial class SmokeWindow : Window
 
 internal static class Program
 {
+    private static void VerifyInterchange()
+    {
+        var document = new FlowDocument([new Section { Blocks = [new Paragraph("Structured paste"), Table.Create(1, 1)] }]);
+        using var output = new MemoryStream();
+        var saved = DocumentFormats.Json.SaveWithReportAsync(document, output, new() { Mode = ConversionMode.Strict }).GetAwaiter().GetResult();
+        output.Position = 0;
+        var loaded = DocumentFormats.Json.LoadWithReportAsync(output, new() { Mode = ConversionMode.Strict }).GetAwaiter().GetResult();
+        if (saved.Report.HasLoss || loaded.Report.HasLoss || DocumentFormats.Json.Serialize(loaded.Document) != DocumentFormats.Json.Serialize(document))
+            throw new InvalidOperationException("Packaged strict native conversion failed.");
+        var source = new Textalonia.Editing.EditorSession(document);
+        source.SelectAll();
+        var fragment = source.CopyFragment();
+        var target = new Textalonia.Editing.EditorSession();
+        target.InsertFragment(fragment);
+        target.InsertFragment(fragment);
+        target.Document.Validate();
+        if (target.Document.Blocks[0] is not Section ||
+            target.Index.Paragraphs.Count(p => p.Paragraph.Text == "Structured paste") != 2)
+            throw new InvalidOperationException("Packaged structural fragment insertion failed.");
+        using var plain = new MemoryStream();
+        var losses = DocumentFormats.PlainText.SaveWithReportAsync(document, plain).GetAwaiter().GetResult();
+        if (!losses.Report.Diagnostics.Any(d => d.Code == "text.section"))
+            throw new InvalidOperationException("Packaged conversion reports failed.");
+    }
     public static void Main()
     {
+        VerifyInterchange();
         using var session = HeadlessUnitTestSession.StartNew(typeof(Bootstrap));
         // Keep disposal on the entry thread, outside the headless dispatcher.
         session.Dispatch(() =>
@@ -115,7 +140,7 @@ internal static class Program
                 window.UpdateLayout();
                 using var frame = window.CaptureRenderedFrame()
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
-                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, schema v3, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, and rendering.");
+                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, schema v3, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, and rendering.");
             }
             finally { window.Close(); }
         }, CancellationToken.None).GetAwaiter().GetResult();

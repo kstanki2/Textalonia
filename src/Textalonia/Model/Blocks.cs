@@ -189,7 +189,7 @@ public sealed record Table : Block
     public Table MergeCells(int row, int column, int rowCount, int columnCount)
     {
         if (rowCount < 1 || columnCount < 1 || row < 0 || column < 0 ||
-            row + rowCount > Rows.Length || column + columnCount > ColumnCount)
+            (long)row + rowCount > Rows.Length || (long)column + columnCount > ColumnCount)
             throw new ArgumentOutOfRangeException(nameof(rowCount));
         if (rowCount == 1 && columnCount == 1) return this;
         var blocks = ImmutableArray.CreateBuilder<Block>();

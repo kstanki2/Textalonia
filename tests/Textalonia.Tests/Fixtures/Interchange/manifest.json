@@ -1,0 +1,12 @@
+[
+  { "id": "browser-flow", "profile": "Browser HTML", "format": "html", "file": "browser-flow.html", "text": "Browser-shaped α  β\nthird\nfourth\nouter\ninner\nlink", "lossCodes": [], "semantics": ["section", "bold", "list-start", "nested-table", "hyperlink"] },
+  { "id": "browser-loss", "profile": "Browser HTML", "format": "html", "file": "browser-loss.html", "text": "safelinkremote", "lossCodes": ["html.unsupported-element", "html.unsafe-link", "html.resource"], "semantics": [] },
+  { "id": "writer-flow", "profile": "LibreOffice Writer RTF", "format": "rtf", "file": "writer-flow.rtf", "text": "Writer-shaped α", "lossCodes": [], "semantics": ["bold"] },
+  { "id": "writer-loss", "profile": "LibreOffice Writer RTF", "format": "rtf", "file": "writer-loss.rtf", "text": "safe", "lossCodes": ["rtf.unsupported-destination"], "semantics": [] },
+  { "id": "writer-malformed", "profile": "LibreOffice Writer RTF", "format": "rtf", "file": "writer-malformed.rtf", "error": true },
+  { "id": "word-flow", "profile": "Microsoft Word WordprocessingML", "format": "docx-xml", "file": "word-flow.xml", "text": "Word-shaped α\nouter\ninner", "lossCodes": [], "semantics": ["bold", "nested-table"] },
+  { "id": "word-revision", "profile": "Microsoft Word WordprocessingML", "format": "docx-xml", "file": "word-revision.xml", "text": "kept", "lossCodes": ["docx.revision"], "semantics": [] },
+  { "id": "word-malformed", "profile": "Microsoft Word WordprocessingML", "format": "docx-xml", "file": "word-malformed.xml", "error": true },
+  { "id": "native-inline", "profile": "Textalonia native schema 3", "format": "json", "file": "native-inline.json", "text": "one pixel", "lossCodes": [], "semantics": ["image"] },
+  { "id": "native-malformed", "profile": "Textalonia native schema 3", "format": "json", "file": "native-malformed.json", "error": true }
+]

@@ -38,8 +38,20 @@ Open `mixed-scripts.textalonia`, select its Arabic/Hebrew paragraph, and repeat 
 
 ## N06 — Native rich clipboard
 
-Open `structured.textalonia`; select the styled paragraph (bold, italic/underline link, colored text and soft break), copy into a second demo and paste back. Expect exact visible text, run emphasis, link target, colors and U+2028; one undo removes the paste. Open [`clipboard-source.html`](baselines/clipboard-source.html) in the named browser and copy its **rendered** paragraphs into the demo; copy the same content through the named word processor in both directions. Record application builds, screenshots and saved native result. Expect supported run formatting and paragraphs; do not claim unsupported external-format fidelity. Tables/sections flatten in the current rich fragment: record this as P5.5 scope limitation, not structure-preservation success. In read-only mode copy must work and cut/paste must not modify the document. Corrective owner: interchange maintainer, P5.5/P5.6.
+Open `structured.textalonia`; select the styled paragraph (bold, italic/underline link, colored text and soft break), copy into a second demo and paste back. Expect exact visible text, run emphasis, link target, colors and U+2028; one undo removes the paste. Open [`clipboard-source.html`](baselines/clipboard-source.html) in the named browser and copy its **rendered** paragraphs into the demo; copy the same content through the named word processor in both directions. Record application builds, screenshots and saved native result. Expect supported run formatting and paragraphs; do not claim unsupported external-format fidelity. Repeat with a partial paragraph inside a section, a whole section, a merged/nested table and an embedded image. Native-to-native transfer must retain structure, resources and split restoration for whole cells; repeated paste must regenerate IDs. External transfers use the declared subset and must report losses. Record the selected flavor and notices from the Conversion report button. In read-only mode copy must work and cut/paste must not modify the document. Corrective owner: interchange maintainer, P5.5/P5.6.
 
+
+For Phase 5 qualification, paste non-ASCII text such as `é 中文 👩‍💻` through
+Windows HTML Format and verify that byte offsets select only the fragment. Exercise
+versioned-native → legacy-native → HTML → text fallback using invalid/future native
+payloads and record the rejection report. Delay or fail clipboard access through a
+test host: cut must not delete after failed copy or a changed revision/selection,
+and stale paste must not overwrite new edits. Confirm one undo restores each cut
+and paste; replacing selected cell text retains the established destination shell.
+Export DOCX and open it in the recorded Word/LibreOffice versions, recording whether
+repair is requested and attaching rendered comparisons. No pair passes solely on
+the automated synthetic corpus. Record exact application versions and both transfer
+directions in the native run record.
 ## N07 — Screen-reader value and selection announcements
 
 Start the target screen reader, focus the editor and use its current-value/read control command. Expected value contract: announce an editable text control named Textalonia editor with visible document text; in read-only mode expose read-only state and allow reading. Type a word, reverse-select it and move the caret between paragraphs. Desired text-accessibility contract: announce changed value, selection text/direction and caret context; allow character/word/line navigation and query offscreen range bounds. Save speech viewer output/transcript with action timestamps. **Known Phase 4 gap:** the editor has a tested managed text-range contract, but the native peer implements only `IValueProvider`; Avalonia 12.1.3 lacks the public native text-provider bridge. See [verified dependency and platform gates](PHASE4-ACCESSIBILITY.md). Value availability does not imply selection announcements. Track missing announcements and backend bridges against P4.6, and repeat after P6.6 integration before advertising accessibility.

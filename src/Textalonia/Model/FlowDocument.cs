@@ -186,7 +186,7 @@ public sealed record FlowDocument
                                     Visit(cell.MergeOriginalBlocks, depth + 1);
                                     ids = liveIds;
                                 }
-                                if (cell.RowSpan < 1 || cell.ColumnSpan < 1 || r + cell.RowSpan > t.Rows.Length || c + cell.ColumnSpan > t.ColumnCount)
+                                if (cell.RowSpan < 1 || cell.ColumnSpan < 1 || cell.RowSpan > t.Rows.Length - r || cell.ColumnSpan > t.ColumnCount - c)
                                     throw new FormatException("Invalid cell span.");
                                 Visit(cell.Blocks, depth + 1);
                                 if (occupied[r, c])

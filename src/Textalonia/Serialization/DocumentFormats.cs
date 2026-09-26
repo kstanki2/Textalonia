@@ -54,7 +54,7 @@ public abstract class TextDocumentFormat : IDocumentFormat
         var bytes = await DocumentFormats.ReadLimitedAsync(stream, cancellationToken);
         return await Task.Run(() =>
         {
-            using var reader = new StreamReader(new MemoryStream(bytes), Encoding.UTF8, true);
+            using var reader = new StreamReader(new MemoryStream(bytes), new UTF8Encoding(false, true), true);
             var document = Parse(reader.ReadToEnd());
             document.Validate();
             return document;

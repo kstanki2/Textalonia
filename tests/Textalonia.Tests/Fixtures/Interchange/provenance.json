@@ -1,0 +1,12 @@
+{
+  "generator": "Textalonia locally authored interchange corpus",
+  "generatorVersion": "1",
+  "created": "2026-09-26",
+  "sourceApplication": null,
+  "sourceApplicationVersion": null,
+  "provenance": "Authored locally as minimal format specimens. Profile names identify intended consumers, not the application that produced the files. DOCX packages are assembled from the checked-in XML by InterchangeCorpusTests.",
+  "redistribution": "Original fixture content; no third-party application documents were copied. Repository licensing policy still applies.",
+  "nativeApplicationQualification": "unqualified",
+  "comparison": "Expected visible text, tree and declared formatting semantics, resource bytes and diagnostic codes. Generated IDs and ZIP/XML byte layout are excluded. Native model save/load additionally uses canonical serialization equality.",
+  "visualComparison": "Pending native application opening and rendering; no screenshots or repair-prompt evidence have been recorded."
+}
