@@ -4,9 +4,9 @@ The target is the feature set described by [Avalonia's editor announcement](http
 
 | Area | Current preview | Remaining work |
 | --- | --- | --- |
-| Character formatting | Fonts, size, bold, italic, underline, strike, colors, baseline, links | Mixed-selection formatting indicators, more typographic controls |
-| Document structure | Paragraphs, headings, list metadata, sections, tables | List restart/continuation model, richer block styles |
-| Tables | Editable cell paragraphs, rectangular merges, split, backgrounds, add/remove rows/columns | Interactive resizing, border/padding UI, structural edits through existing merges, nested tables |
+| Character formatting | Fonts, weight/stretch, size, emphasis, colors, baseline, links, paragraph tracking/line height, mixed-selection indicators | Richer toolbar controls, per-run tracking and advanced font features |
+| Document structure | Paragraphs, headings, identified multilevel lists with restart/continuation, independently styled sections, tables | Inline resources and richer interaction controls |
+| Tables | Nested cell blocks, merge-aware structural edits, split restoration, column widths, row sizing, independent cell borders/padding | Interactive resizing and border/padding UI |
 | Editing | Native text layout, keyboard, pointer selection, grapheme deletion, readonly, bounded history, find/replace | Visual bidi navigation, drag autoscroll refinement, drag/drop content, touch selection handles |
 | IME | Composition client, transient preedit and committed text | Native Windows/macOS/Linux and mobile keyboard qualification |
 | Clipboard | Native rich fragments, platform HTML adapter, plain text | Structured table/section fragments; native cross-application tests on every platform |
@@ -19,7 +19,7 @@ The target is the feature set described by [Avalonia's editor announcement](http
 
 ## Implementation phases
 
-The plans below turn the remaining work into ordered deliverables. Phase 1 baseline tooling, fixtures and local automated measurements are implemented; [its report](BASELINE-REPORT.md) records passing checks, budget gaps and pending native evidence. Phase 2 is **complete**, with [residual latency qualification accepted as a follow-up](PHASE2-REPORT.md#completion-decision); phases 3-8 remain **planned**. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
+The plans below turn the remaining work into ordered deliverables. Phase 1 baseline tooling, fixtures and local automated measurements are implemented; [its report](BASELINE-REPORT.md) records passing checks, budget gaps and pending native evidence. Phase 2 is **complete**, with [residual latency qualification accepted as a follow-up](PHASE2-REPORT.md#completion-decision). Phase 3 is **complete**, with [schema, semantics and verification evidence](PHASE3-REPORT.md); phases 4-8 remain **planned**. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
 
 | Phase | Outcome and detailed plan | Prerequisites |
 | --- | --- | --- |
@@ -38,7 +38,7 @@ The default implementation order is 1 through 8. Dependencies permit earlier cor
 
 - **Measure the complete editing path.** Phase 1 exposed whole-document indexes, grapheme scans, eager text synchronization and complete shaping. Phase 2 adds persistent indexing/storage and windowed viewport measurement while keeping eager `Text` compatibility explicit. Both compatibility and opt-in document modes have full-control measurements; the optional strict shaping policy and paired performance qualification are documented in the Phase 2 report. Default unlimited rendering and nonisolated timing results remain explicit.
 - **Decide schema evolution before extending the model.** The version-1 JSON reader rejects unknown members and other versions. Lists, cell blocks, typography, and resources need explicit reader migration, writer-version, and old-file fixtures. Existing native files must remain readable; older readers must not silently misread newer files.
-- **Finish structural semantics before expanding codecs.** Cells currently contain paragraphs only, row/column edits reject all merged tables, and rich fragments flatten structure. Nesting, merge transformations, and inline resource descriptors belong in the model before interchange code can preserve them.
+- **Finish structural semantics before expanding codecs.** Phase 3 adds nested blocks, sizing and merge transformations; rich fragments still flatten structure. Inline resource descriptors follow in Phase 4. Phase 5 can now preserve the richer structures, with current [codec gaps](PHASE-03-CODEC-GAPS.md) explicitly recorded.
 - **Extract input behind existing behavior tests.** `DocumentSurface` currently owns keyboard, pointer, caret, IME, and value-only automation behavior. Splitting it without a baseline would make regressions difficult to distinguish from new behavior.
 - **Separate evidence from claims.** The existing CI matrix and headless tests are useful, but do not certify native IME, clipboard, touch, or screen readers. Conversion fidelity must be demonstrated against named fixtures and applications. Full arbitrary RTF/DOCX fidelity remains an aspiration beyond any declared subset; known losses cannot be counted as completed parity.
 

@@ -34,7 +34,7 @@ public sealed record FlowDocument
                 Section s => [s with { Blocks = EnsureBlocks(Rewrite(s.Blocks)) }],
                 Table t => [t with { Rows = t.Rows.Select((row, r) => row.Select((cell, c) =>
                     t.IsCovered(r, c) ? cell : cell with
-                    { Paragraphs = EnsureParagraphs(cell.Paragraphs.SelectMany(change).ToImmutableArray()) }
+                    { Blocks = EnsureBlocks(Rewrite(cell.Blocks)) }
                     ).ToImmutableArray()).ToImmutableArray() }],
                 _ => throw new NotSupportedException()
             }).ToImmutableArray();
@@ -44,7 +44,13 @@ public sealed record FlowDocument
     public FlowDocument ReplaceBlock(Guid id, Block replacement)
     {
         ImmutableArray<Block> Rewrite(ImmutableArray<Block> blocks) => blocks.Select(b =>
-            b.Id == id ? replacement : b is Section s ? s with { Blocks = Rewrite(s.Blocks) } : b).ToImmutableArray();
+            b.Id == id ? replacement : b switch
+            {
+                Section section => section with { Blocks = Rewrite(section.Blocks) },
+                Table table => table with { Rows = table.Rows.Select((row, r) => row.Select((cell, c) =>
+                    table.IsCovered(r, c) ? cell : cell with { Blocks = Rewrite(cell.Blocks) }).ToImmutableArray()).ToImmutableArray() },
+                _ => b
+            }).ToImmutableArray();
         return this with { Blocks = Rewrite(Blocks) };
     }
 
@@ -67,6 +73,8 @@ public sealed record FlowDocument
         {
             if (!double.IsFinite(style.FontSize) || style.FontSize is < 1 or > 512)
                 throw new FormatException("Font size must be between 1 and 512.");
+            if (style.FontWeight is < 1 or > 1000 || style.FontStretch is < 1 or > 9)
+                throw new FormatException("Invalid font weight or stretch.");
             if (!Enum.IsDefined(style.Baseline)) throw new FormatException("Unknown baseline.");
             ValidateColor(style.Foreground); ValidateColor(style.Background);
             if (style.Hyperlink is not null && !IsSafeHyperlink(style.Hyperlink))
@@ -85,11 +93,16 @@ public sealed record FlowDocument
                         if (p.Runs.IsDefault || p.Style is null || p.DefaultStyle is null)
                             throw new FormatException("Invalid paragraph.");
                         ValidateTextStyle(p.DefaultStyle);
+                        ListNumbering.ValidateStyle(p.Style);
                         if (!Enum.IsDefined(p.Style.Alignment) || !Enum.IsDefined(p.Style.List) ||
                             p.Style.HeadingLevel is < 0 or > 6 || p.Style.ListLevel is < 0 or > 8 ||
                             !double.IsFinite(p.Style.Indent) || p.Style.Indent is < 0 or > 1000 ||
                             !double.IsFinite(p.Style.SpaceBefore) || p.Style.SpaceBefore is < 0 or > 1000 ||
-                            !double.IsFinite(p.Style.SpaceAfter) || p.Style.SpaceAfter is < 0 or > 1000)
+                            !double.IsFinite(p.Style.SpaceAfter) || p.Style.SpaceAfter is < 0 or > 1000 ||
+                            !double.IsFinite(p.Style.RightIndent) || p.Style.RightIndent is < 0 or > 100000 ||
+                            !double.IsFinite(p.Style.FirstLineIndent) || p.Style.FirstLineIndent is < -100000 or > 100000 ||
+                            !double.IsFinite(p.Style.LetterSpacing) || p.Style.LetterSpacing is < -1000 or > 1000 ||
+                            p.Style.LineHeight is { } lineHeight && (!double.IsFinite(lineHeight) || lineHeight <= 0 || lineHeight > 10000))
                             throw new FormatException("Invalid paragraph formatting.");
                         foreach (var run in p.Runs)
                         {
@@ -100,6 +113,7 @@ public sealed record FlowDocument
                         break;
                     case Section s:
                         ValidateColor(s.Background); ValidateColor(s.BorderColor);
+                        ValidateEdges(s.PaddingEdges); ValidateBorders(s.Borders);
                         if (!double.IsFinite(s.Padding) || s.Padding is < 0 or > 1000) throw new FormatException("Invalid section padding.");
                         Visit(s.Blocks, depth + 1);
                         break;
@@ -107,6 +121,13 @@ public sealed record FlowDocument
                         if (t.Rows.IsDefaultOrEmpty || t.Rows.Length > 1000 || t.ColumnCount is < 1 or > 100 ||
                             t.Rows.Any(row => row.IsDefault || row.Length != t.ColumnCount))
                             throw new FormatException("Tables must have a rectangular cell grid.");
+                        if (t.ColumnWidths.IsDefault || !t.ColumnWidths.IsEmpty &&
+                            (t.ColumnWidths.Length != t.ColumnCount || t.ColumnWidths.Any(width => !double.IsFinite(width) || width <= 0 || width > 100000)))
+                            throw new FormatException("Column widths must be positive and match the table columns.");
+                        if (t.RowSizing.IsDefault || !t.RowSizing.IsEmpty && (t.RowSizing.Length != t.Rows.Length ||
+                            t.RowSizing.Any(sizing => sizing is null || !Enum.IsDefined(sizing.Mode) || !double.IsFinite(sizing.Height) ||
+                                sizing.Height < 0 || sizing.Height > 100000 || sizing.Mode != TableRowHeightMode.Auto && sizing.Height == 0)))
+                            throw new FormatException("Invalid row sizing policies.");
                         var occupied = new bool[t.Rows.Length, t.ColumnCount];
                         for (var r = 0; r < t.Rows.Length; r++)
                             for (var c = 0; c < t.ColumnCount; c++)
@@ -114,12 +135,21 @@ public sealed record FlowDocument
                                 var cell = t.Rows[r][c];
                                 if (cell is null) throw new FormatException("Null table cell.");
                                 Identify(cell.Id); ValidateColor(cell.Background);
-                                if (cell.Paragraphs.IsDefaultOrEmpty || cell.MergeOriginal.IsDefault)
+                                ValidateEdges(cell.Padding); ValidateBorders(cell.Borders);
+                                if (cell.Blocks.IsDefaultOrEmpty || cell.MergeOriginalBlocks.IsDefault)
                                     throw new FormatException("Invalid table cell content.");
-                                if (!cell.MergeOriginal.IsEmpty) new FlowDocument(cell.MergeOriginal).Validate();
+                                if (!cell.MergeOriginalBlocks.IsEmpty)
+                                {
+                                    // Backups are historical snapshots: v1 allowed their IDs to
+                                    // overlap live content, but their own structure must be unique.
+                                    var liveIds = ids;
+                                    ids = [];
+                                    Visit(cell.MergeOriginalBlocks, depth + 1);
+                                    ids = liveIds;
+                                }
                                 if (cell.RowSpan < 1 || cell.ColumnSpan < 1 || r + cell.RowSpan > t.Rows.Length || c + cell.ColumnSpan > t.ColumnCount)
                                     throw new FormatException("Invalid cell span.");
-                                Visit(cell.Paragraphs.Cast<Block>().ToImmutableArray(), depth + 1);
+                                Visit(cell.Blocks, depth + 1);
                                 if (occupied[r, c])
                                 {
                                     if (cell.RowSpan != 1 || cell.ColumnSpan != 1) throw new FormatException("Overlapping merged cells.");
@@ -138,6 +168,24 @@ public sealed record FlowDocument
             }
         }
         Visit(Blocks, 0);
+    }
+
+    private static void ValidateEdges(EdgeInsets? edges)
+    {
+        if (edges is null) return;
+        foreach (var value in new[] { edges.Left, edges.Top, edges.Right, edges.Bottom })
+            if (!double.IsFinite(value) || value < 0 || value > 1000) throw new FormatException("Invalid padding.");
+    }
+
+    private static void ValidateBorders(BlockBorders? borders)
+    {
+        if (borders is null) return;
+        foreach (var side in new[] { borders.Left, borders.Top, borders.Right, borders.Bottom })
+        {
+            if (side is null) continue;
+            if (!double.IsFinite(side.Width) || side.Width < 0 || side.Width > 1000) throw new FormatException("Invalid border width.");
+            ValidateColor(side.Color);
+        }
     }
 
     public static bool IsSafeHyperlink(string value) =>

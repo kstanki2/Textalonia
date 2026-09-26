@@ -10,9 +10,10 @@ internal sealed class LayoutHeightIndex
     internal sealed class Branch(LayoutHeightIndex index, double width, Table? table)
     {
         public required StorageTree<OrderKey, DocumentNode> Source;
+        public double Width => width;
+        public Table? Table => table;
         private Node? _value;
         private Branch? _left, _right;
-        private bool _listsInitialized;
         public Branch? Parent;
         private double EstimateWidth => table is null ? width : width / table.ColumnCount;
         public Node Value
@@ -21,7 +22,7 @@ internal sealed class LayoutHeightIndex
             {
                 if (_value is null)
                 {
-                    var available = table is null ? width : width / table.ColumnCount * ((TableCell)Source.Value.Source!).ColumnSpan;
+                    var available = table is null ? width : ColumnWidth(table, width, Source.Value.Column, ((TableCell)Source.Value.Source!).ColumnSpan);
                     _value = index.GetNode(Source.Value, available);
                     Adjust(_value.Height - Estimate(Source.Value.Length, Source.Value.ParagraphCount, EstimateWidth));
                 }
@@ -50,57 +51,6 @@ internal sealed class LayoutHeightIndex
         }
         public Node? Owner;
         public double Height;
-        public int[]? ListAdds;
-        public int ListResets;
-        public void InitializeLists()
-        {
-            if (_listsInitialized) return;
-            _listsInitialized = true;
-            Left?.InitializeLists(); Right?.InitializeLists();
-            // Most text has no numbering. A reset bitmask needs no per-branch
-            // arrays; allocate counters only on paths containing numbered lists.
-            if (Left?.ListAdds is null && Right?.ListAdds is null &&
-                Value.Source.Source is not Paragraph { Style.List: ListKind.Numbered })
-            {
-                ListResets = (Left?.ListResets ?? 0) | (Right?.ListResets ?? 0) |
-                    (Value.Source.Source is Paragraph { Style.List: ListKind.None } ? 511 : 0);
-                return;
-            }
-            ListAdds = new int[9];
-            for (var i = 0; i < 9; i++)
-            {
-                var add = Left?.ListAdds?[i] ?? 0; var reset = ((Left?.ListResets ?? 0) & (1 << i)) != 0;
-                if (Value.Source.Source is Paragraph p)
-                {
-                    if (p.Style.List == ListKind.None || p.Style.List == ListKind.Numbered && i > p.Style.ListLevel) { add = 0; reset = true; }
-                    if (p.Style.List == ListKind.Numbered && i == p.Style.ListLevel) add++;
-                }
-                if (Right is not null)
-                {
-                    var resets = (Right.ListResets & (1 << i)) != 0;
-                    add = resets ? Right.ListAdds?[i] ?? 0 : add + (Right.ListAdds?[i] ?? 0);
-                    reset |= resets;
-                }
-                ListAdds[i] = add; if (reset) ListResets |= 1 << i;
-            }
-        }
-        public int NumberBefore(OrderKey key, int level)
-        {
-            InitializeLists();
-            var number = 0; Branch? branch = this;
-            while (branch is not null)
-            {
-                if (key.CompareTo(branch.Source.Key) <= 0) { branch = branch.Left; continue; }
-                if (branch.Left is { } left) number = (left.ListResets & (1 << level)) != 0 ? left.ListAdds?[level] ?? 0 : number + (left.ListAdds?[level] ?? 0);
-                if (branch.Value.Source.Source is Paragraph p)
-                {
-                    if (p.Style.List == ListKind.None || p.Style.List == ListKind.Numbered && level > p.Style.ListLevel) number = 0;
-                    if (p.Style.List == ListKind.Numbered && level == p.Style.ListLevel) number++;
-                }
-                branch = branch.Right;
-            }
-            return number;
-        }
         public void Update(Node? changedCell = null)
         {
             Height = (_left?.Height ?? (Source.Left is { } l ? Estimate(l.Length, l.Paragraphs, EstimateWidth) : 0)) +
@@ -143,14 +93,15 @@ internal sealed class LayoutHeightIndex
         public double[] Rows = [], RowOffsets = [];
         private Node[][] _rowCells = [], _rowDependencies = [];
         private Node[] _spans = [];
+        public double TextWidth => Math.Max(16, Available - Indent - (Source.Source is Paragraph p ? p.Style.RightIndent : 0));
         public double Indent => Source.Source is Paragraph p ? p.Style.Indent + (p.Style.List == ListKind.None ? 0 : 28 + p.Style.ListLevel * 24) : 0;
         public void Update(Node? changedCell = null)
         {
             Height = Source.Source switch
             {
                 Paragraph p => ContentHeight + p.Style.SpaceBefore + p.Style.SpaceAfter,
-                Section s => (Children?.Height ?? 0) + s.Padding * 2 + 10,
-                TableCell => (Children?.Height ?? 0) + 12,
+                Section s => (Children?.Height ?? 0) + SectionPadding(s).Top + SectionPadding(s).Bottom + 10,
+                TableCell cell => (Children?.Height ?? 0) + CellPadding(cell).Top + CellPadding(cell).Bottom,
                 Table => TableHeight(changedCell),
                 _ => Children?.Height ?? 0
             };
@@ -179,15 +130,20 @@ internal sealed class LayoutHeightIndex
             var last = changedCell is not null && _spans.Length == 0 ? first + 1 : Rows.Length;
             for (var r = first; r < last; r++)
             {
-                Rows[r] = 36;
-                foreach (var cell in _rowCells[r]) Rows[r] = Math.Max(Rows[r], cell.Height);
+                var sizing = table.RowSizing.IsDefaultOrEmpty ? new TableRowSizing() : table.RowSizing[r];
+                Rows[r] = sizing.Mode == TableRowHeightMode.Auto ? 36 : sizing.Height;
+                if (sizing.Mode != TableRowHeightMode.Exact)
+                    foreach (var cell in _rowCells[r]) Rows[r] = Math.Max(Rows[r], cell.Height);
             }
             foreach (var cell in _spans)
             {
                 var span = ((TableCell)cell.Source.Source!).RowSpan;
                 var height = 0d;
                 for (var r = cell.Source.Row; r < cell.Source.Row + span; r++) height += Rows[r];
-                if (height < cell.Height) Rows[cell.Source.Row + span - 1] += cell.Height - height;
+                if (height < cell.Height)
+                    for (var r = cell.Source.Row + span - 1; r >= cell.Source.Row; r--)
+                        if (table.RowSizing.IsDefaultOrEmpty || table.RowSizing[r].Mode != TableRowHeightMode.Exact)
+                        { Rows[r] += cell.Height - height; break; }
             }
             for (var r = first; r < Rows.Length; r++) RowOffsets[r + 1] = RowOffsets[r] + Rows[r];
             return RowOffsets[^1] + 12;
@@ -217,17 +173,21 @@ internal sealed class LayoutHeightIndex
     }
     private Node GetNode(DocumentNode source, double available)
     {
-        if (_nodes.TryGetValue(source, out var existing)) return existing;
+        if (_nodes.TryGetValue(source, out var existing))
+        {
+            if (Math.Abs(existing.Available - available) < .01) return existing;
+            _nodes.Remove(source);
+        }
         CreatedNodes++;
         var node = new Node { Source = source, Available = available };
         if (source.Source is Paragraph paragraph)
         {
             var fontSize = paragraph.DefaultStyle.FontSize;
-            node.ContentHeight = Math.Max(1, Math.Ceiling(paragraph.Length * fontSize * .52 / Math.Max(16, available - node.Indent))) * fontSize * 1.25;
+            node.ContentHeight = Math.Max(1, Math.Ceiling(paragraph.Length * fontSize * .52 / node.TextWidth)) * (paragraph.Style.LineHeight ?? fontSize * 1.25);
         }
         else
         {
-            var childWidth = source.Source switch { Section s => Math.Max(16, available - s.Padding * 2), TableCell => Math.Max(16, available - 16), _ => available };
+            var childWidth = source.Source switch { Section s => Math.Max(16, available - SectionPadding(s).Left - SectionPadding(s).Right), TableCell cell => Math.Max(16, available - CellPadding(cell).Left - CellPadding(cell).Right), _ => available };
             node.Children = GetBranch(source.Children, childWidth, source.Source as Table);
             if (node.Children is not null) { node.Children.Parent = null; node.Children.Owner = null; }
         }
@@ -235,13 +195,29 @@ internal sealed class LayoutHeightIndex
         if (node.Children is not null) node.Children.Owner = node;
         _nodes.Add(source, node); return node;
     }
+    internal static EdgeInsets SectionPadding(Section section) => section.PaddingEdges ?? new(section.Padding, section.Padding, section.Padding, section.Padding);
+    internal static EdgeInsets CellPadding(TableCell cell) => cell.Padding ?? new(8, 8, 8, 4);
+    internal static double ColumnWidth(Table table, double available, int column, int span = 1)
+    {
+        if (table.ColumnWidths.IsDefaultOrEmpty) return available * span / table.ColumnCount;
+        var total = table.ColumnWidths.Sum();
+        var weight = 0d;
+        for (var i = column; i < column + span; i++) weight += table.ColumnWidths[i];
+        return available * weight / total;
+    }
+    internal static double ColumnOffset(Table table, double available, int column) => column == 0 ? 0 : ColumnWidth(table, available, 0, column);
+
     private static double Estimate(int length, int paragraphs, double width) =>
         paragraphs * 28d + length * (16 * .52 * 20 / Math.Max(16, width));
 
     private Branch? GetBranch(StorageTree<OrderKey, DocumentNode>? source, double width, Table? table)
     {
         if (source is null) return null;
-        if (_branches.TryGetValue(source, out var existing)) return existing;
+        if (_branches.TryGetValue(source, out var existing))
+        {
+            if (Math.Abs(existing.Width - width) < .01 && ReferenceEquals(existing.Table, table)) return existing;
+            _branches.Remove(source);
+        }
         // Estimates are additive across tree weights. Creating a branch does not
         // visit its descendants; measured corrections propagate through parents.
         var branch = new Branch(this, width, table)

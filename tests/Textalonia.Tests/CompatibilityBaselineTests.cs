@@ -35,10 +35,10 @@ public class CompatibilityBaselineTests
     [Fact]
     public void V1_reader_rejects_unknown_members_and_missing_or_new_versions()
     {
-        var json = DocumentFormats.Json.Serialize(new FlowDocument());
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "native-v1.json"));
         Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 1", "\"unknown\": true, \"version\": 1")));
         Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 1,", "")));
-        Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 1", "\"version\": 2")));
+        Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 1", "\"version\": 99")));
     }
 
     [Fact]

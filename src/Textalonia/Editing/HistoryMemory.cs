@@ -61,7 +61,9 @@ internal sealed class RetentionGraph
         IRetained node => node.Bytes,
         string text => 24 + text.Length * 2L,
         TableCell[] cells => 24 + cells.Length * 8L,
-        TableCell cell => 96 + (cell.Paragraphs.Length + cell.MergeOriginal.Length) * 8L,
+        double[] widths => 24 + widths.Length * 8L,
+        TableRowSizing[] sizing => 24 + sizing.Length * 8L,
+        TableCell cell => 96 + (cell.Blocks.Length + cell.MergeOriginalBlocks.Length) * 8L,
         TextStyle => 128,
         ParagraphStyle => 64,
         _ => 32
@@ -76,9 +78,33 @@ internal sealed class RetentionGraph
             // Row arrays contribute allocation only. Visible cells are already
             // owned by indexed nodes; covered cells are in HiddenCellStorage.
             case TableCell cell:
-                foreach (var paragraph in cell.Paragraphs) visit(DocumentNode.HiddenParagraph(paragraph));
-                foreach (var paragraph in cell.MergeOriginal) visit(DocumentNode.HiddenParagraph(paragraph));
+                foreach (var block in cell.Blocks) visit(DocumentNode.HiddenBlock(block));
+                foreach (var block in cell.MergeOriginalBlocks) visit(DocumentNode.HiddenBlock(block));
+                if (cell.Borders is not null) visit(cell.Borders);
+                if (cell.Padding is not null) visit(cell.Padding);
                 if (cell.Background is not null) visit(cell.Background);
+                break;
+            case TableRowSizing[] sizing:
+                foreach (var row in sizing) visit(row);
+                break;
+            case ParagraphStyle paragraph:
+                if (paragraph.ListDefinition is not null) visit(paragraph.ListDefinition);
+                break;
+            case ListDefinition definition:
+                foreach (var level in definition.Levels) visit(level);
+                break;
+            case ListLevelDefinition level:
+                if (level.Text is not null) visit(level.Text);
+                visit(level.Prefix); visit(level.Suffix);
+                break;
+            case BlockBorders borders:
+                if (borders.Left is not null) visit(borders.Left);
+                if (borders.Top is not null) visit(borders.Top);
+                if (borders.Right is not null) visit(borders.Right);
+                if (borders.Bottom is not null) visit(borders.Bottom);
+                break;
+            case BorderSide side:
+                if (side.Color is not null) visit(side.Color);
                 break;
             case TextStyle style:
                 if (style.FontFamily is not null) visit(style.FontFamily);

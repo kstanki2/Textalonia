@@ -40,6 +40,7 @@ public sealed class EditorSession
     public bool CanUndo => !IsReadOnly && _undo.Count > 0;
     public bool CanRedo => !IsReadOnly && _redo.Count > 0;
     public string SelectedText => Index.ReadText(Selection.Start, Selection.Length);
+    public SelectionFormattingState FormattingState => new(Index, Selection, TypingStyle);
     public int Revision { get; private set; }
     public event EventHandler? Changed;
     internal DocumentEdit? LastEdit { get; private set; }
@@ -127,7 +128,8 @@ public sealed class EditorSession
         text = FlowDocument.NormalizeNewlines(text).Replace("\0", "");
         if (text.Length == 0 && Selection.IsEmpty) return;
         var style = Index.At(Selection.Start).Paragraph.Style;
-        var fragment = text.Split('\n').Select(s => new Paragraph(s, TypingStyle) { Style = style }).ToImmutableArray();
+        var fragment = text.Split('\n').Select((s, i) => new Paragraph(s, TypingStyle)
+        { Style = i == 0 ? style : style with { ListRestart = false, ListStart = null } }).ToImmutableArray();
         var (document, caret) = ReplaceRange(Document, Selection, fragment);
         Commit(document, new(caret, caret), coalesceTyping && Selection.IsEmpty && !text.Contains('\n'), Selection);
     }
@@ -136,7 +138,18 @@ public sealed class EditorSession
     {
         if (IsReadOnly) return;
         fragment.Validate();
-        var paragraphs = new DocumentIndex(fragment).Paragraphs.Select(p => p.Paragraph with { Id = Guid.NewGuid() }).ToImmutableArray();
+        // Pasting starts independent lists. Equal source identities stay equal inside the fragment.
+        var identities = new Dictionary<Guid, Guid>();
+        var paragraphs = new DocumentIndex(fragment).Paragraphs.Select(p =>
+        {
+            var style = p.Paragraph.Style;
+            if (style.ListId is { } source)
+            {
+                if (!identities.TryGetValue(source, out var target)) identities.Add(source, target = Guid.NewGuid());
+                style = style with { ListId = target };
+            }
+            return p.Paragraph with { Id = Guid.NewGuid(), Style = style };
+        }).ToImmutableArray();
         var (document, caret) = ReplaceRange(Document, Selection, paragraphs);
         Commit(document, new(caret, caret), editedRange: Selection);
     }
@@ -191,7 +204,7 @@ public sealed class EditorSession
         if (IsReadOnly) return;
         var paragraph = Index.At(Selection.Active).Paragraph;
         if (Selection.IsEmpty && paragraph.Length == 0 && paragraph.Style.List != ListKind.None)
-            ApplyParagraphStyle(s => s with { List = ListKind.None, ListLevel = 0 });
+            ApplyParagraphStyle(ClearList);
         else InsertText("\n");
     }
 
@@ -203,7 +216,7 @@ public sealed class EditorSession
         new FlowDocument([new Paragraph("", newStyle)]).Validate();
         if (Selection.IsEmpty)
         {
-            TypingStyle = newStyle; TrimUndo(); BreakUndoGroup(); OnChanged(); return;
+            Commit(Document, Selection, editedRange: Selection, typingStyle: newStyle); return;
         }
         var selection = Selection;
         var document = ChangeParagraphs(position =>
@@ -211,22 +224,36 @@ public sealed class EditorSession
             var p = position.Paragraph;
             var start = Math.Max(0, selection.Start - position.Start);
             var end = Math.Min(p.Length, selection.End - position.Start);
-            return end > start ? p.Format(start, end - start, change) : p;
+            return end > start ? p.Format(start, end - start, change) : p with { DefaultStyle = change(p.DefaultStyle) };
         });
-        Commit(document, selection, editedRange: selection);
-        TypingStyle = newStyle;
-        TrimUndo();
-        OnChanged();
+        Commit(document, selection, editedRange: selection, typingStyle: newStyle);
     }
 
-    public void ToggleBold() => ApplyStyle(s => s with { Bold = !TypingStyle.Bold });
-    public void ToggleItalic() => ApplyStyle(s => s with { Italic = !TypingStyle.Italic });
-    public void ToggleUnderline() => ApplyStyle(s => s with { Underline = !TypingStyle.Underline });
-    public void ToggleStrikethrough() => ApplyStyle(s => s with { Strikethrough = !TypingStyle.Strikethrough });
+    public void ToggleBold()
+    {
+        var value = FormattingState.Bold; var enabled = value.IsMixed || !value.Value;
+        ApplyStyle(s => s with { Bold = enabled, FontWeight = null });
+    }
+    public void ToggleItalic()
+    {
+        var value = FormattingState.Italic; var enabled = value.IsMixed || !value.Value;
+        ApplyStyle(s => s with { Italic = enabled });
+    }
+    public void ToggleUnderline()
+    {
+        var value = FormattingState.Underline; var enabled = value.IsMixed || !value.Value;
+        ApplyStyle(s => s with { Underline = enabled });
+    }
+    public void ToggleStrikethrough()
+    {
+        var value = FormattingState.Strikethrough; var enabled = value.IsMixed || !value.Value;
+        ApplyStyle(s => s with { Strikethrough = enabled });
+    }
     public void ClearFormatting() => ApplyStyle(_ => TextStyle.Default);
 
     public void ApplyParagraphStyle(Func<ParagraphStyle, ParagraphStyle> change)
     {
+        ArgumentNullException.ThrowIfNull(change);
         if (IsReadOnly) return;
         var document = ChangeParagraphs(p => p.Paragraph with { Style = change(p.Paragraph.Style) });
         Commit(document, Selection, editedRange: Selection);
@@ -237,22 +264,60 @@ public sealed class EditorSession
         if (level is < 0 or > 6) throw new ArgumentOutOfRangeException(nameof(level));
         if (IsReadOnly) return;
         var size = level switch { 1 => 32, 2 => 26, 3 => 22, 4 => 20, 5 => 18, _ => 16 };
-        TextStyle Change(TextStyle style) => style with { FontSize = size, Bold = level > 0 };
+        TextStyle Change(TextStyle style) => style with { FontSize = size, Bold = level > 0, FontWeight = null };
         var document = ChangeParagraphs(entry =>
         {
             var p = entry.Paragraph;
             return p.Format(0, p.Length, Change) with
             { Style = p.Style with { HeadingLevel = level, SpaceBefore = level > 0 ? 12 : 0 }, DefaultStyle = Change(p.DefaultStyle) };
         });
-        Commit(document, Selection, editedRange: Selection);
-        TypingStyle = Change(TypingStyle); TrimUndo(); OnChanged();
+        Commit(document, Selection, editedRange: Selection, typingStyle: Change(TypingStyle));
     }
 
     public void ToggleList(ListKind kind)
     {
-        var active = Index.At(Selection.Active).Paragraph.Style.List;
-        ApplyParagraphStyle(s => s with { List = active == kind ? ListKind.None : kind });
+        if (!Enum.IsDefined(kind)) throw new ArgumentOutOfRangeException(nameof(kind));
+        var active = FormattingState.List;
+        if (kind == ListKind.None || !active.IsMixed && active.Value == kind) { ApplyParagraphStyle(ClearList); return; }
+        var identity = Guid.NewGuid();
+        ApplyParagraphStyle(s => s with { List = kind, ListId = identity, ListDefinition = null, ListRestart = false, ListStart = null });
     }
+
+    /// <summary>Assigns one identity and level definition to all selected paragraphs.</summary>
+    public void SetList(ListKind kind, ListDefinition? definition = null, Guid? listId = null)
+    {
+        if (!Enum.IsDefined(kind)) throw new ArgumentOutOfRangeException(nameof(kind));
+        if (kind == ListKind.None) { ApplyParagraphStyle(ClearList); return; }
+        var identity = listId ?? Guid.NewGuid();
+        ApplyParagraphStyle(s => s with { List = kind, ListId = identity, ListDefinition = definition, ListRestart = false, ListStart = null });
+    }
+
+    /// <summary>Restarts the first selected item, leaving following items in the same list.</summary>
+    public void RestartList(int start = 1)
+    {
+        if (start is < 1 or > 1_000_000) throw new ArgumentOutOfRangeException(nameof(start));
+        var first = true;
+        ApplyParagraphStyle(s =>
+        {
+            if (s.List == ListKind.None || !first) return s;
+            first = false;
+            return s with { ListRestart = true, ListStart = start };
+        });
+    }
+
+    /// <summary>Continues the specified existing list across any intervening content.</summary>
+    public void ContinueList(Guid listId)
+    {
+        var source = Index.Enumerate(0, Index.Length).FirstOrDefault(p => p.Paragraph.Style.ListId == listId && p.Paragraph.Style.List != ListKind.None)
+            ?? throw new ArgumentException("The list identity does not exist in this document.", nameof(listId));
+        SetList(source.Paragraph.Style.List, source.Paragraph.Style.ListDefinition, listId);
+    }
+
+    public void IndentList(int levels = 1) => ApplyParagraphStyle(s => s.List == ListKind.None ? s :
+        s with { ListLevel = (int)Math.Clamp((long)s.ListLevel + levels, 0, 8), ListRestart = false, ListStart = null });
+
+    private static ParagraphStyle ClearList(ParagraphStyle style) => style with
+    { List = ListKind.None, ListLevel = 0, ListId = null, ListDefinition = null, ListRestart = false, ListStart = null };
 
     private FlowDocument ChangeParagraphs(Func<ParagraphPosition, Paragraph> change)
     {
@@ -311,35 +376,51 @@ public sealed class EditorSession
         Commit(document, Selection);
     }
 
+    /// <summary>Inserts a table after the active paragraph in its innermost block container.</summary>
     public void InsertTable(int rows = 2, int columns = 3)
     {
         if (IsReadOnly) return;
         var table = Table.Create(rows, columns);
-        var blockId = Index.At(Selection.Active).TopLevelBlockId;
-        var blockIndex = Document.Blocks.FindIndex(b => b.Id == blockId);
-        var blocks = Document.Blocks.Insert(blockIndex + 1, table);
-        if (blockIndex + 2 == blocks.Length) blocks = blocks.Add(new Paragraph());
-        var document = Document with { Blocks = blocks };
-        var caret = new DocumentIndex(document).Paragraphs.First(p => p.ContainerId == table.Rows[0][0].Id).Start;
+        var paragraphId = Index.At(Selection.Active).Paragraph.Id;
+        ImmutableArray<Block> Insert(ImmutableArray<Block> blocks)
+        {
+            var index = blocks.FindIndex(b => b.Id == paragraphId);
+            if (index >= 0)
+            {
+                var inserted = blocks.Insert(index + 1, table);
+                return index + 2 == inserted.Length ? inserted.Add(new Paragraph()) : inserted;
+            }
+            return blocks.Select(block => block switch
+            {
+                Section section => section with { Blocks = Insert(section.Blocks) },
+                Table current => current with { Rows = current.Rows.Select((row, r) => row.Select((cell, c) =>
+                    current.IsCovered(r, c) ? cell : cell with { Blocks = Insert(cell.Blocks) }).ToImmutableArray()).ToImmutableArray() },
+                _ => block
+            }).ToImmutableArray();
+        }
+        var document = Document with { Blocks = Insert(Document.Blocks) };
+        document.Validate();
+        var caret = new DocumentIndex(document).ById(((Paragraph)table.Rows[0][0].Blocks[0]).Id).Start;
         Commit(document, new(caret, caret));
     }
 
+    /// <summary>Returns the innermost containing cell, including when a section lies inside it.</summary>
     public (Table Table, int Row, int Column)? CurrentCell()
     {
-        var container = Index.At(Selection.Active).ContainerId;
-        var path = Index.Tree.Paths?.Find(container)?.Value;
+        var paragraphId = Index.At(Selection.Active).Paragraph.Id;
+        var path = Index.Tree.Paths?.Find(paragraphId)?.Value;
         if (path is null) return null;
         var node = Index.Tree.Root;
         Table? table = null;
+        (Table Table, int Row, int Column)? result = null;
         foreach (var key in path.Keys())
         {
             node = node.Children!.Find(key)!.Value;
-            if (node.Source is Table t) table = t;
+            if (node.Source is Table current) table = current;
+            else if (node.Source is TableCell && table is not null) result = (table, node.Row, node.Column);
         }
-        if (table is not null && node.Source is TableCell) return (table, node.Row, node.Column);
-        return null;
+        return result;
     }
-
     public void UpdateCurrentTable(Func<Table, int, int, Table> update)
     {
         if (CurrentCell() is not { } cell) return;
@@ -351,7 +432,13 @@ public sealed class EditorSession
         if (IsReadOnly || CurrentCell() is not { } current) return;
         ImmutableArray<Block> Remove(ImmutableArray<Block> blocks) => FlowDocument.EnsureBlocks(blocks
             .Where(b => b.Id != current.Table.Id)
-            .Select(b => b is Section s ? s with { Blocks = Remove(s.Blocks) } : b).ToImmutableArray());
+            .Select(b => b switch
+            {
+                Section s => s with { Blocks = Remove(s.Blocks) },
+                Table t => t with { Rows = t.Rows.Select((row, r) => row.Select((cell, c) =>
+                    t.IsCovered(r, c) ? cell : cell with { Blocks = Remove(cell.Blocks) }).ToImmutableArray()).ToImmutableArray() },
+                _ => b
+            }).ToImmutableArray());
         Commit(Document with { Blocks = Remove(Document.Blocks) }, Selection);
     }
 
@@ -396,7 +483,7 @@ public sealed class EditorSession
         TypingStyle = state.TypingStyle; BreakUndoGroup(); Revision++;
         LastEdit = new(Revision - 1, Revision, 0, 0, Index.Length, [], true);
     }
-    private void Commit(FlowDocument document, TextSelection selection, bool typing = false, TextSelection? editedRange = null)
+    private void Commit(FlowDocument document, TextSelection selection, bool typing = false, TextSelection? editedRange = null, TextStyle? typingStyle = null)
     {
         var oldLength = Index.Length;
         var changed = editedRange is { } range ? Index.Enumerate(range.Start, range.End).Select(p => p.Paragraph.Id).ToArray() : [];
@@ -405,8 +492,10 @@ public sealed class EditorSession
         {
             if (UndoLimit > 0) { var state = Capture(); _undo.Add(state); _retained.Add(state); }
         }
-        ClearRedo(); SetDocument(document, new(document)); TrimUndo();
+        ClearRedo(); SetDocument(document, new(document));
         Selection = new(Math.Clamp(selection.Anchor, 0, Index.Length), Math.Clamp(selection.Active, 0, Index.Length));
+        if (typingStyle is not null) TypingStyle = typingStyle;
+        TrimUndo();
         _typingGroup = typing && _undo.Count > 0; _lastTypingTick = now; Revision++;
         LastEdit = new(Revision - 1, Revision, editedRange?.Start ?? 0, editedRange?.Length ?? oldLength,
             editedRange is { } edit ? Index.Length - oldLength + edit.Length : Index.Length, changed, editedRange is null);
@@ -443,6 +532,15 @@ public sealed class EditorSession
         }
         var first = index.At(selection.Start);
         var last = index.At(selection.End);
+        // Removing complete items keeps the next surviving item's identity and restart semantics.
+        if (first.Paragraph.Id != last.Paragraph.Id && first.ContainerId == last.ContainerId &&
+            selection.Start == first.Start && selection.End == last.Start && fragment.Length == 1 && fragment[0].Length == 0)
+        {
+            var removals = index.Enumerate(first.Start, last.Start).Where(p => p.Paragraph.Id != last.Paragraph.Id)
+                .ToDictionary(p => p.Paragraph.Id, _ => ImmutableArray<Paragraph>.Empty);
+            var removed = index.Tree.Rewrite(document, removals);
+            return (removed, new DocumentIndex(removed).ById(last.Paragraph.Id).Start);
+        }
         var prefix = first.Paragraph.Slice(0, selection.Start - first.Start);
         var suffix = last.Paragraph.Slice(selection.End - last.Start, last.End - selection.End);
         var sameContainer = first.ContainerId == last.ContainerId;

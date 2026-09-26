@@ -194,9 +194,7 @@ public class DocumentSurface : Control
         foreach (var decoration in _layout.Decorations)
         {
             if (!decoration.Bounds.Intersects(viewport)) continue;
-            context.DrawRectangle(decoration.Fill, decoration.LeftBorderOnly ? null : new Pen(decoration.Border, 1), decoration.Bounds);
-            if (decoration.LeftBorderOnly && decoration.Border is not null)
-                context.FillRectangle(decoration.Border, decoration.Bounds.WithWidth(3));
+            decoration.Draw(context);
         }
         foreach (var highlight in Editor.Highlights)
             foreach (var rect in _layout.SelectionRects(highlight.Start, highlight.Length))
@@ -212,8 +210,14 @@ public class DocumentSurface : Control
             if (paragraph.Marker is not null)
             {
                 var marker = new FormattedText(paragraph.Marker, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                    new Typeface(Editor.FontFamily), paragraph.Position.Paragraph.DefaultStyle.FontSize, Editor.Foreground);
-                context.DrawText(marker, new Point(paragraph.Origin.X - marker.Width - 10, paragraph.Origin.Y));
+                    DocumentLayout.Typeface(paragraph.Position.Paragraph.DefaultStyle, Editor.FontFamily), paragraph.Position.Paragraph.DefaultStyle.FontSize, Editor.Foreground);
+                var origin = new Point(paragraph.Origin.X - marker.Width - 10, paragraph.Origin.Y);
+                if (paragraph.Clip is { } clip)
+                {
+                    using var scope = context.PushClip(clip);
+                    context.DrawText(marker, origin);
+                }
+                else context.DrawText(marker, origin);
             }
         }
         if (Editor.Session.Index.Length == 0 && _composition is null && Editor.Document.Blocks is [{ } block] && block is Paragraph)
@@ -226,7 +230,13 @@ public class DocumentSurface : Control
         // can refine prefix heights and invalidate scrolling during this pass.
         if (IsFocused && !Editor.IsReadOnly && _caretVisible && _layout.Paragraphs.Any(p =>
             DisplayCaret >= p.TextStart && (DisplayCaret < p.TextEnd || DisplayCaret == p.TextEnd && p.TextEnd == p.Position.End) && p.Bounds.Intersects(viewport)))
-            context.FillRectangle(Editor.Foreground ?? Brushes.Black, CaretRectangle);
+        {
+            var caret = CaretRectangle;
+            var visual = _layout.Paragraphs.FirstOrDefault(p => DisplayCaret >= p.TextStart &&
+                (DisplayCaret < p.TextEnd || DisplayCaret == p.TextEnd && p.TextEnd == p.Position.End));
+            if (visual?.Clip is { } clip) caret = caret.Intersect(clip);
+            if (caret.Width > 0 && caret.Height > 0) context.FillRectangle(Editor.Foreground ?? Brushes.Black, caret);
+        }
     }
 
     protected override void OnGotFocus(FocusChangedEventArgs e)

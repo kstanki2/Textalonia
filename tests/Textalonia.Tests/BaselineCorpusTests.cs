@@ -40,7 +40,9 @@ public class BaselineCorpusTests
         var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "native-v1.json");
         var json = File.ReadAllText(path).Replace("\r\n", "\n").TrimEnd();
         var loaded = DocumentFormats.Json.Parse(json);
-        Assert.Equal(json, Encode(loaded).Replace("\r\n", "\n"));
+        var migrated = Encode(loaded);
+        Assert.Contains("\"version\": 2", migrated);
+        Assert.Equal(migrated, Encode(DocumentFormats.Json.Parse(migrated)));
         Assert.Equal(Encode(BaselineDocuments.Structured()), Encode(loaded));
         var section = Assert.IsType<Section>(loaded.Blocks[1]);
         var table = Assert.IsType<Table>(section.Blocks[^1]);

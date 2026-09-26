@@ -8,7 +8,7 @@ namespace Textalonia.Baselines;
 // Shared by tests and benchmarks; inputs are independent of machine, time and culture.
 internal static class BaselineDocuments
 {
-    public static readonly string[] Names = ["mixed-scripts", "emoji", "long-paragraph", "structured"];
+    public static readonly string[] Names = ["mixed-scripts", "emoji", "long-paragraph", "structured", "document-semantics"];
     public static Guid Id(string name) => new(SHA256.HashData(Encoding.UTF8.GetBytes(name)).AsSpan(0, 16));
     private static Paragraph Paragraph(string name, string text) => new(text) { Id = Id(name) };
 
@@ -21,6 +21,7 @@ internal static class BaselineDocuments
         "emoji" => new([Paragraph("emoji", "A👩‍💻e\u0301🇯🇵👍🏽👨‍👩‍👧‍👦Z")]),
         "long-paragraph" => new([Paragraph("long", string.Concat(Enumerable.Repeat("Long paragraph café 中文 👩‍💻. ", 3000)))]),
         "structured" => Structured(),
+        "document-semantics" => DocumentSemantics(),
         _ => throw new ArgumentOutOfRangeException(nameof(name), name, "Unknown fixture.")
     };
 
@@ -61,6 +62,72 @@ internal static class BaselineDocuments
             Paragraphs = [Paragraph($"{name}-p-{r}-{c}", $"Cell {r:D3}/{c:D2} café 中文")]
         }).ToImmutableArray()).ToImmutableArray()
     };
+
+    public static FlowDocument DocumentSemantics()
+    {
+        var list = Id("semantics-list");
+        var definition = new ListDefinition
+        {
+            Levels = [
+                new() { Start = 3, Prefix = "[", Suffix = "]" },
+                new() { Start = 2, Marker = ListMarkerStyle.LowerRoman, IncludeAncestors = true, Suffix = ")" },
+                new() { Kind = ListKind.Bullet, Marker = ListMarkerStyle.Bullet, Text = "◆" }]
+        };
+        var style = new ParagraphStyle { List = ListKind.Numbered, ListId = list, ListDefinition = definition };
+        var nested = Grid(2, 2, "semantics-nested");
+        var outer = Grid(2, 2, "semantics-outer");
+        outer = outer.SetCell(0, 0, outer.Rows[0][0] with
+        {
+            Blocks = [new Section
+            {
+                Id = Id("semantics-cell-section"), Blocks = [nested],
+                PaddingEdges = new(3, 5, 7, 9),
+                Borders = new(new(2, "#445566"), new(1, "#556677"), new(3, "#667788"), new(4, "#778899"))
+            }],
+            Padding = new(8, 4, 12, 6), Borders = new(new(1, "#112233"), new(2, "#223344"), new(4, "#334455"), new(3, "#445566"))
+        });
+        outer = outer with
+        {
+            ColumnWidths = [140, 220],
+            RowSizing = [new() { Mode = TableRowHeightMode.AtLeast, Height = 60 }, new() { Mode = TableRowHeightMode.Exact, Height = 80 }]
+        };
+        outer = outer.SetCell(1, 0, outer.Rows[1][0] with
+        { Blocks = [Grid(1, 1, "semantics-covered-nested")] });
+        outer = outer.MergeCells(0, 0, 2, 1);
+        // Freeze every cloned nested block/cell ID while preserving original backups.
+        Block Freeze(Block block, string path) => block switch
+        {
+            Paragraph p => p with { Id = Id(path) },
+            Section s => s with { Id = Id(path), Blocks = s.Blocks.Select((b, i) => Freeze(b, $"{path}/{i}")).ToImmutableArray() },
+            Table t => t with
+            {
+                Id = Id(path), Rows = t.Rows.Select((row, r) => row.Select((cell, c) => cell with
+                {
+                    Id = Id($"{path}/{r}/{c}"),
+                    Blocks = cell.Blocks.Select((b, i) => Freeze(b, $"{path}/{r}/{c}/{i}")).ToImmutableArray()
+                }).ToImmutableArray()).ToImmutableArray()
+            },
+            _ => throw new InvalidOperationException()
+        };
+        outer = outer.SetCell(0, 0, outer.Rows[0][0] with
+        { Blocks = outer.Rows[0][0].Blocks.Select((b, i) => Freeze(b, $"semantics-merged/{i}")).ToImmutableArray() });
+        return new([
+            Paragraph("semantics-rich", "Weighted and spaced") with
+            {
+                Runs = [new("Weighted and spaced", new() { Bold = true, FontWeight = 600, FontStretch = 6 })], DefaultStyle = new() { Bold = true, FontWeight = 350, FontStretch = 4 },
+                Style = new() { LineHeight = 28, LetterSpacing = 1.25, Indent = 12, RightIndent = 15, FirstLineIndent = -8, SpaceBefore = 5, SpaceAfter = 13 }
+            },
+            Paragraph("semantics-first", "Start at three") with { Style = style },
+            new Section
+            {
+                Id = Id("semantics-section"),
+                Blocks = [Paragraph("semantics-intervening", "Intervening paragraph"),
+                    Paragraph("semantics-child", "Nested level") with { Style = style with { ListLevel = 1 } }, Paragraph("semantics-bullet", "Custom bullet") with { Style = style with { ListLevel = 2 } }]
+            },
+            Paragraph("semantics-continue", "Continue") with { Style = style },
+            Paragraph("semantics-restart", "Restart at seven") with { Style = style with { ListRestart = true, ListStart = 7 } },
+            outer]);
+    }
 
     public static FlowDocument Workload(string name) => name switch
     {

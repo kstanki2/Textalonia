@@ -2,6 +2,7 @@
 
 ## 0.1.0-preview.1
 
+- Added native schema v2 with explicit v1 migration; mixed-selection formatting state; identified multilevel lists with restart/continuation; richer typography and independent container borders/padding; persisted table sizing, merge-aware structural edits, and nested cell blocks. See `docs/DOCUMENT-MODEL.md` for migration and editing semantics.
 - Established the Textalonia package, namespaces, editor/viewer/toolbar controls, and `.textalonia` native file extension (with legacy `.art` support).
 - Added an Avalonia 12 control library targeting .NET 8.
 - Added immutable document/model APIs, editing sessions, formatting, history, search, and tables.

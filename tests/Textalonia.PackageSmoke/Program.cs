@@ -79,9 +79,30 @@ internal static class Program
                 window.UpdateLayout();
                 if (editor.LayoutError is not null || !editor.Text.Contains('\u202b'))
                     throw new InvalidOperationException("Packaged shaping limit did not recover without changing the document.");
+                var inner = Table.Create(1, 1);
+                inner = inner.SetCell(0, 0, inner.Rows[0][0] with
+                {
+                    Blocks = [new Paragraph("Nested content", new() { FontWeight = 600, FontStretch = 5 })
+                    { Style = new() { LetterSpacing = 1, LineHeight = 24, FirstLineIndent = 4 } }]
+                });
+                var outer = Table.Create(2, 2);
+                outer = outer.SetCell(0, 0, outer.Rows[0][0] with
+                { Blocks = [inner], Padding = new(8, 4, 8, 4), Borders = new(Left: new(2, "#335577")) });
+                outer = outer.MergeCells(0, 0, 2, 1).InsertRow(1);
+                editor.Document = new FlowDocument([outer]);
+                editor.Session.Select(0, 0);
+                var current = editor.Session.CurrentCell();
+                if (current is null || current.Value.Table.Id == outer.Id || outer.Rows[0][0].RowSpan != 3)
+                    throw new InvalidOperationException("Packaged nested/merged table semantics failed.");
+                var original = DocumentFormats.Json.Serialize(editor.Document);
+                editor.InsertText("Edited "); editor.Undo();
+                if (DocumentFormats.Json.Serialize(editor.Document) != original ||
+                    DocumentFormats.Json.Serialize(DocumentFormats.Json.Parse(original)) != original)
+                    throw new InvalidOperationException("Packaged schema v2 and nested undo round trip failed.");
+                window.UpdateLayout();
                 using var frame = window.CaptureRenderedFrame()
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
-                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, JSON, range/position APIs, document mode, history budget, shaping limits, and rendering.");
+                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, schema v2, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, and rendering.");
             }
             finally { window.Close(); }
         }, CancellationToken.None).GetAwaiter().GetResult();

@@ -97,25 +97,53 @@ public sealed record Section : Block
     public string? Background { get; init; }
     public string? BorderColor { get; init; }
     public double Padding { get; init; } = 12;
+    public EdgeInsets? PaddingEdges { get; init; }
+    public BlockBorders? Borders { get; init; }
 }
 
 public sealed record TableCell
 {
     public Guid Id { get; init; } = Guid.NewGuid();
-    private SnapshotArray<Paragraph> _paragraphs = SnapshotArray<Paragraph>.From([new Paragraph()]);
-    public ImmutableArray<Paragraph> Paragraphs { get => _paragraphs.Read(); init => _paragraphs = SnapshotArray<Paragraph>.From(value); }
+    private SnapshotArray<Block> _blocks = SnapshotArray<Block>.From([new Paragraph()]);
+    public ImmutableArray<Block> Blocks { get => _blocks.Read(); init => _blocks = SnapshotArray<Block>.From(value); }
+    /// <summary>Legacy view of immediate paragraphs. Setting it replaces the cell's blocks.</summary>
+    [JsonIgnore]
+    public ImmutableArray<Paragraph> Paragraphs
+    {
+        get => Blocks.OfType<Paragraph>().ToImmutableArray();
+        init => _blocks = SnapshotArray<Block>.From(value.IsDefault ? default : value.Cast<Block>().ToImmutableArray());
+    }
     internal TableCell WithChildren(StorageTree<OrderKey, DocumentNode>? children) => this with
-    { _paragraphs = new(() => children!.Items().Select(p => (Paragraph)p.Value.Source!).ToImmutableArray()) };
+    { _blocks = new(() => children!.Items().Select(p => (Block)p.Value.Source!).ToImmutableArray()) };
     public int ColumnSpan { get; init; } = 1;
     public int RowSpan { get; init; } = 1;
     public string? Background { get; init; }
-    /// <summary>Original paragraphs retained by MergeCells for a lossless split before editing.</summary>
-    public ImmutableArray<Paragraph> MergeOriginal { get; init; } = [];
+    public EdgeInsets? Padding { get; init; }
+    public BlockBorders? Borders { get; init; }
+    /// <summary>Original anchor blocks retained for a lossless split before editing.</summary>
+    public ImmutableArray<Block> MergeOriginalBlocks { get; init; } = [];
+    [JsonIgnore]
+    public ImmutableArray<Paragraph> MergeOriginal
+    {
+        get => MergeOriginalBlocks.OfType<Paragraph>().ToImmutableArray();
+        init => MergeOriginalBlocks = value.IsDefault ? default : value.Cast<Block>().ToImmutableArray();
+    }
+}
+
+public enum TableRowHeightMode { Auto, AtLeast, Exact }
+public sealed record TableRowSizing
+{
+    public TableRowHeightMode Mode { get; init; }
+    public double Height { get; init; }
 }
 
 public sealed record Table : Block
 {
     public ImmutableArray<ImmutableArray<TableCell>> Rows { get; init; } = [];
+    /// <summary>Positive relative column widths; an empty array gives equal columns.</summary>
+    public ImmutableArray<double> ColumnWidths { get; init; } = [];
+    /// <summary>Row height policies; an empty array gives automatic sizing.</summary>
+    public ImmutableArray<TableRowSizing> RowSizing { get; init; } = [];
     [JsonIgnore] public int ColumnCount => Rows.IsDefaultOrEmpty || Rows[0].IsDefault ? 0 : Rows[0].Length;
 
     public static Table Create(int rows, int columns)
@@ -163,7 +191,7 @@ public sealed record Table : Block
             row + rowCount > Rows.Length || column + columnCount > ColumnCount)
             throw new ArgumentOutOfRangeException(nameof(rowCount));
         if (rowCount == 1 && columnCount == 1) return this;
-        var paragraphs = ImmutableArray.CreateBuilder<Paragraph>();
+        var blocks = ImmutableArray.CreateBuilder<Block>();
         for (var r = row; r < row + rowCount; r++)
             for (var c = column; c < column + columnCount; c++)
             {
@@ -171,13 +199,13 @@ public sealed record Table : Block
                 if (IsCovered(r, c) || cell.RowSpan != 1 || cell.ColumnSpan != 1)
                     throw new InvalidOperationException("Split existing merged cells before merging this range.");
                 // Fresh IDs keep hidden source cells independent of the editable merged content.
-                paragraphs.AddRange(cell.Paragraphs.Select(p => p with { Id = Guid.NewGuid() }));
+                blocks.AddRange(cell.Blocks.Select(BlockOperations.CloneWithNewIds));
             }
         var anchor = Rows[row][column];
         return SetCell(row, column, anchor with
         {
             RowSpan = rowCount, ColumnSpan = columnCount,
-            MergeOriginal = anchor.Paragraphs, Paragraphs = paragraphs.ToImmutable()
+            MergeOriginalBlocks = anchor.Blocks, Blocks = blocks.ToImmutable()
         });
     }
 
@@ -187,20 +215,16 @@ public sealed record Table : Block
         (row, column) = OwnerOf(row, column);
         var cell = Rows[row][column];
         if (cell.RowSpan == 1 && cell.ColumnSpan == 1) return this;
-        var original = new List<Paragraph>();
+        var original = new List<Block>();
         for (var r = row; r < row + cell.RowSpan; r++)
             for (var c = column; c < column + cell.ColumnSpan; c++)
-                original.AddRange(r == row && c == column ? cell.MergeOriginal : Rows[r][c].Paragraphs);
-        var unchanged = cell.Paragraphs.Length == original.Count &&
-            cell.Paragraphs.Zip(original).All(pair =>
-                pair.First.Text == pair.Second.Text && pair.First.Style == pair.Second.Style &&
-                pair.First.DefaultStyle == pair.Second.DefaultStyle &&
-                pair.First.Runs.SequenceEqual(pair.Second.Runs));
+                original.AddRange(r == row && c == column ? cell.MergeOriginalBlocks : Rows[r][c].Blocks);
+        var unchanged = BlockOperations.ContentEquals(cell.Blocks, original);
         return SetCell(row, column, cell with
         {
             RowSpan = 1, ColumnSpan = 1,
-            Paragraphs = unchanged && !cell.MergeOriginal.IsEmpty ? cell.MergeOriginal : cell.Paragraphs,
-            MergeOriginal = []
+            Blocks = unchanged && !cell.MergeOriginalBlocks.IsEmpty ? cell.MergeOriginalBlocks : cell.Blocks,
+            MergeOriginalBlocks = []
         });
     }
 }
