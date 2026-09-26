@@ -9,6 +9,7 @@ public sealed record FlowDocument
 {
     private SnapshotArray<Block> _blocks = SnapshotArray<Block>.From([new Paragraph()]);
     public ImmutableArray<Block> Blocks { get => _blocks.Read(); init => _blocks = SnapshotArray<Block>.From(value); }
+    public ImmutableDictionary<string, DocumentResource> Resources { get; init; } = ImmutableDictionary<string, DocumentResource>.Empty;
     internal FlowDocument WithChildren(StorageTree<OrderKey, DocumentNode>? children) => this with
     { _blocks = new(() => children!.Items().Select(p => (Block)p.Value.Source!).ToImmutableArray()) };
     public FlowDocument() { }
@@ -24,6 +25,34 @@ public sealed record FlowDocument
     public static string NormalizeNewlines(string text) => text.Replace("\r\n", "\n").Replace('\r', '\n');
 
     [JsonIgnore] public string Text => new DocumentIndex(this).Text;
+    /// <summary>Visible text with inline alternative text. Its offsets are not document positions.</summary>
+    [JsonIgnore] public string PlainText { get { var index = new DocumentIndex(this); return index.ReadPlainText(0, index.Length); } }
+
+    /// <summary>Releases resources unused by visible content, covered cells, or retained merge backups.</summary>
+    public FlowDocument PruneUnusedResources()
+    {
+        if (Resources.IsEmpty) return this;
+        var used = new HashSet<string>(StringComparer.Ordinal);
+        void Visit(IEnumerable<Block> blocks)
+        {
+            foreach (var block in blocks)
+                switch (block)
+                {
+                    case Paragraph paragraph:
+                        foreach (var run in paragraph.Runs)
+                            if (run.Inline?.Payload is ImageInlinePayload image) used.Add(image.ResourceId);
+                        break;
+                    case Section section: Visit(section.Blocks); break;
+                    case Table table:
+                        foreach (var row in table.Rows)
+                            foreach (var cell in row) { Visit(cell.Blocks); Visit(cell.MergeOriginalBlocks); }
+                        break;
+                }
+        }
+        Visit(Blocks);
+        var resources = Resources.RemoveRange(Resources.Keys.Where(key => !used.Contains(key)));
+        return ReferenceEquals(resources, Resources) ? this : this with { Resources = resources };
+    }
 
     public FlowDocument RewriteParagraphs(Func<Paragraph, IEnumerable<Paragraph>> change)
     {
@@ -62,6 +91,15 @@ public sealed record FlowDocument
     /// <summary>Checks document invariants before accepting external data.</summary>
     public void Validate()
     {
+        if (Resources is null || Resources.Count > 4096) throw new FormatException("Invalid document resources.");
+        long resourceBytes = 0;
+        foreach (var resource in Resources)
+        {
+            if (!InlineDescriptor.ValidKey(resource.Key) || resource.Value is null) throw new FormatException("Invalid resource identifier.");
+            resource.Value.Validate();
+            resourceBytes += resource.Value.Data.Length;
+        }
+        if (resourceBytes > DocumentResource.MaximumDocumentEmbeddedBytes) throw new FormatException("Document embedded resources exceed the size limit.");
         var ids = new HashSet<Guid>();
         var count = 0;
         void Identify(Guid id)
@@ -109,6 +147,7 @@ public sealed record FlowDocument
                             if (run is null || run.Style is null || run.Text is null || run.Text.Contains('\n') || run.Text.Contains('\r'))
                                 throw new FormatException("Paragraph runs cannot contain hard paragraph breaks.");
                             ValidateTextStyle(run.Style);
+                            if (run.Inline is { } inline) { inline.Validate(); Identify(inline.Id); }
                         }
                         break;
                     case Section s:

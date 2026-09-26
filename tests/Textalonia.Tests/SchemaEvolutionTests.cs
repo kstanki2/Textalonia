@@ -17,14 +17,14 @@ public class SchemaEvolutionTests
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
-    [InlineData(3)]
+    [InlineData(4)]
     [InlineData(int.MaxValue)]
     public void Unsupported_versions_are_reported_before_decoding_future_members(int version)
     {
         var error = Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(
             JsonSerializer.Serialize(new { version, futureEnvelope = true, document = new { futureNode = new { arbitrary = 42 } } })));
         Assert.Contains(version.ToString(), error.Message);
-        Assert.Contains("Supported versions are 1 and 2", error.Message);
+        Assert.Contains("Supported versions are 1, 2, and 3", error.Message);
     }
 
     [Theory]
@@ -45,13 +45,13 @@ public class SchemaEvolutionTests
     }
 
     [Fact]
-    public void Version_two_rejects_parallel_legacy_cell_collections_and_unknown_members()
+    public void Current_version_rejects_parallel_legacy_cell_collections_and_unknown_members()
     {
         var document = new FlowDocument([Table.Create(1, 1)]);
         var json = Encode(document);
         Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"columnSpan\": 1", "\"columnSpan\": 1, \"paragraphs\": []")));
         Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"columnSpan\": 1", "\"columnSpan\": 1, \"mergeOriginal\": []")));
-        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 2", "\"version\": 2, \"unknown\": true")));
+        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 3", "\"version\": 3, \"unknown\": true")));
         Assert.DoesNotContain("\"paragraphs\"", json);
         Assert.DoesNotContain("\"mergeOriginal\"", json);
         Assert.Contains("\"mergeOriginalBlocks\"", json);

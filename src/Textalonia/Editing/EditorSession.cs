@@ -11,7 +11,7 @@ public sealed class EditorSession
     private sealed record State(FlowDocument Document, DocumentIndex Index, TextSelection Selection, TextStyle TypingStyle) : IRetained
     {
         public long Bytes => 80;
-        public void VisitReferences(Action<object> visit) { visit(Index.Tree); visit(TypingStyle); }
+        public void VisitReferences(Action<object> visit) { visit(Index.Tree); visit(Document.Resources); visit(TypingStyle); }
     }
     private readonly List<State> _undo = [];
     private readonly List<State> _redo = [];
@@ -39,7 +39,7 @@ public sealed class EditorSession
     }
     public bool CanUndo => !IsReadOnly && _undo.Count > 0;
     public bool CanRedo => !IsReadOnly && _redo.Count > 0;
-    public string SelectedText => Index.ReadText(Selection.Start, Selection.Length);
+    public string SelectedText => Index.ReadPlainText(Selection.Start, Selection.Length);
     public SelectionFormattingState FormattingState => new(Index, Selection, TypingStyle);
     public int Revision { get; private set; }
     public event EventHandler? Changed;
@@ -91,6 +91,7 @@ public sealed class EditorSession
     public EditorSession()
     {
         Index = new DocumentIndex(Document); _retained.Add(Index.Tree, current: true);
+        _retained.Add(Document.Resources, current: true);
         _retained.Add(TypingStyle, current: true);
     }
     public EditorSession(FlowDocument document) : this() => Load(document);
@@ -106,7 +107,7 @@ public sealed class EditorSession
         _retained.EnsureCapacity(index.ParagraphCount * 6 + index.Tree.UpdatedNodes * 2);
         Document = document; Index = index;
         Selection = default; _typingStyle = Index.At(0).Paragraph.StyleAt(0);
-        _retained.Add(Index.Tree, current: true); _retained.Add(TypingStyle, current: true);
+        _retained.Add(Index.Tree, current: true); _retained.Add(Document.Resources, current: true); _retained.Add(TypingStyle, current: true);
         BreakUndoGroup(); Revision++; LastEdit = new(Revision - 1, Revision, 0, 0, Index.Length, [], true); OnChanged();
     }
 
@@ -134,10 +135,72 @@ public sealed class EditorSession
         Commit(document, new(caret, caret), coalesceTyping && Selection.IsEmpty && !text.Contains('\n'), Selection);
     }
 
+    /// <summary>Inserts an atomic inline descriptor and optionally owns its encoded image resource.</summary>
+    public void InsertInline(InlineDescriptor descriptor, DocumentResource? resource = null)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+        if (IsReadOnly) return;
+        descriptor.Validate();
+        var source = Document;
+        if (resource is not null)
+        {
+            resource.Validate();
+            if (descriptor.Payload is not ImageInlinePayload image)
+                throw new ArgumentException("Only image descriptors reference encoded resources.", nameof(resource));
+            if (source.Resources.TryGetValue(image.ResourceId, out var existing) && existing != resource)
+                throw new ArgumentException("The resource identifier already belongs to different data.", nameof(resource));
+            source = source with { Resources = source.Resources.SetItem(image.ResourceId, resource) };
+        }
+        var paragraph = new Paragraph([new RichRun(descriptor, TypingStyle)]) { Style = Index.At(Selection.Start).Paragraph.Style };
+        var (document, caret) = ReplaceRange(source, Selection, [paragraph]);
+        document = document.PruneUnusedResources();
+        document.Validate();
+        Commit(document, new(caret, caret), editedRange: Selection);
+    }
+
+    /// <summary>Changes inline data, including dimensions, as a single undoable edit, preserving its identity.</summary>
+    public void UpdateInline(Guid id, Func<InlineDescriptor, InlineDescriptor> update)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+        if (IsReadOnly) return;
+        foreach (var entry in Index.Enumerate(0, Index.Length))
+        {
+            var offset = entry.Start;
+            for (var i = 0; i < entry.Paragraph.Runs.Length; i++)
+            {
+                var run = entry.Paragraph.Runs[i];
+                if (run.Inline is { } inline && inline.Id == id)
+                {
+                    var replacement = update(inline) ?? throw new ArgumentException("Inline updates cannot return null.", nameof(update));
+                    replacement = replacement with { Id = id };
+                    replacement.Validate();
+                    var paragraph = entry.Paragraph with { Runs = entry.Paragraph.Runs.SetItem(i, run with { Inline = replacement }) };
+                    var document = Index.Tree.Rewrite(Document, new Dictionary<Guid, ImmutableArray<Paragraph>> { [paragraph.Id] = [paragraph] });
+                    Commit(document, Selection, editedRange: new(offset, offset + 1));
+                    return;
+                }
+                offset += run.Storage.Length;
+            }
+        }
+        throw new ArgumentException("The inline descriptor does not exist in the visible document.", nameof(id));
+    }
+
     public void InsertDocument(FlowDocument fragment)
     {
         if (IsReadOnly) return;
         fragment.Validate();
+        // Imported resources keep stable keys unless they collide with different destination data.
+        var resources = Document.Resources;
+        var resourceIds = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var run in new DocumentIndex(fragment).Paragraphs.SelectMany(p => p.Paragraph.Runs))
+        {
+            if (run.Inline?.Payload is not ImageInlinePayload image || resourceIds.ContainsKey(image.ResourceId)) continue;
+            fragment.Resources.TryGetValue(image.ResourceId, out var incoming);
+            var target = image.ResourceId;
+            if (resources.TryGetValue(target, out var existing) && existing != incoming) target = "resource-" + Guid.NewGuid().ToString("N");
+            resourceIds.Add(image.ResourceId, target);
+            if (incoming is not null) resources = resources.SetItem(target, incoming);
+        }
         // Pasting starts independent lists. Equal source identities stay equal inside the fragment.
         var identities = new Dictionary<Guid, Guid>();
         var paragraphs = new DocumentIndex(fragment).Paragraphs.Select(p =>
@@ -148,9 +211,13 @@ public sealed class EditorSession
                 if (!identities.TryGetValue(source, out var target)) identities.Add(source, target = Guid.NewGuid());
                 style = style with { ListId = target };
             }
-            return p.Paragraph with { Id = Guid.NewGuid(), Style = style };
+            return p.Paragraph with { Id = Guid.NewGuid(), Style = style, Runs = p.Paragraph.Runs.Select(run => run.Inline is not { } inline ? run :
+                run with { Inline = inline with { Id = Guid.NewGuid(), Payload = inline.Payload is ImageInlinePayload image ?
+                    image with { ResourceId = resourceIds[image.ResourceId] } : inline.Payload } }).ToImmutableArray() };
         }).ToImmutableArray();
-        var (document, caret) = ReplaceRange(Document, Selection, paragraphs);
+        var (document, caret) = ReplaceRange(Document with { Resources = resources }, Selection, paragraphs);
+        document = document.PruneUnusedResources();
+        document.Validate();
         Commit(document, new(caret, caret), editedRange: Selection);
     }
 
@@ -171,7 +238,7 @@ public sealed class EditorSession
         }
         // Preserve a selected trailing paragraph separator.
         if (Selection.End > 0 && Index.CharAt(Selection.End - 1) == '\n') result.Add(new Paragraph());
-        return new FlowDocument(result);
+        return (new FlowDocument(result) { Resources = Document.Resources }).PruneUnusedResources();
     }
 
     public void DeleteBackward(bool word = false)
@@ -492,14 +559,44 @@ public sealed class EditorSession
         {
             if (UndoLimit > 0) { var state = Capture(); _undo.Add(state); _retained.Add(state); }
         }
+        // Text-only local edits cannot orphan an encoded resource. Avoid materializing the
+        // complete block tree while typing in a large document containing images elsewhere.
+        if (!document.Resources.IsEmpty && (editedRange is null ||
+            editedRange.Value is { Start: 0, Length: > 0 } full && full.End == oldLength || RangeContainsImage(editedRange.Value)))
+            document = document.PruneUnusedResources();
         ClearRedo(); SetDocument(document, new(document));
-        Selection = new(Math.Clamp(selection.Anchor, 0, Index.Length), Math.Clamp(selection.Active, 0, Index.Length));
+        if (selection.IsEmpty)
+        {
+            var desired = Math.Clamp(selection.Active, 0, Index.Length);
+            var caret = Snap(desired);
+            // Joining text across a deleted object can form a new grapheme. Keep the caret
+            // after that joined character instead of inside it or before its preceding base.
+            if (caret < desired) caret = NextCaret(caret);
+            Selection = new(caret, caret);
+        }
+        else Selection = new(Snap(selection.Anchor), Snap(selection.Active));
         if (typingStyle is not null) TypingStyle = typingStyle;
         TrimUndo();
         _typingGroup = typing && _undo.Count > 0; _lastTypingTick = now; Revision++;
         LastEdit = new(Revision - 1, Revision, editedRange?.Start ?? 0, editedRange?.Length ?? oldLength,
             editedRange is { } edit ? Index.Length - oldLength + edit.Length : Index.Length, changed, editedRange is null);
         OnChanged();
+    }
+    private bool RangeContainsImage(TextSelection range)
+    {
+        if (range.IsEmpty) return false;
+        foreach (var entry in Index.Enumerate(range.Start, range.End))
+        {
+            var offset = entry.Start;
+            foreach (var run in entry.Paragraph.Runs)
+            {
+                var end = offset + run.Storage.Length;
+                if (offset >= range.End) break;
+                if (end > range.Start && run.Inline?.Payload is ImageInlinePayload) return true;
+                offset = end;
+            }
+        }
+        return false;
     }
     private void TrimUndo()
     {
@@ -514,7 +611,9 @@ public sealed class EditorSession
     private void SetDocument(FlowDocument document, DocumentIndex index)
     {
         _retained.Add(index.Tree, current: true);
+        _retained.Add(document.Resources, current: true);
         _retained.Remove(Index.Tree, current: true);
+        _retained.Remove(Document.Resources, current: true);
         Document = document; Index = index;
     }
     private void ClearRedo()
@@ -527,7 +626,7 @@ public sealed class EditorSession
         var index = new DocumentIndex(document);
         if (selection.Start == 0 && selection.End == index.Length && !selection.IsEmpty)
         {
-            var replacement = new FlowDocument(fragment.Select(p => p with { Id = Guid.NewGuid() }));
+            var replacement = new FlowDocument(fragment.Select(p => p with { Id = Guid.NewGuid() })) { Resources = document.Resources };
             return (replacement, new DocumentIndex(replacement).Length);
         }
         var first = index.At(selection.Start);

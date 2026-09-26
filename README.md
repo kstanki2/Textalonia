@@ -221,3 +221,20 @@ The bounded suite runs on every change; `.github/workflows/baselines.yml` schedu
 longer corpus and performance captures separately. Native pending records remain visible in CI artifacts.
 
 Before public release, finalize ownership metadata, the repository URL, and a project license, and confirm availability of the Textalonia package ID on nuget.org. Dependency licenses remain their respective owners' terms. No project redistribution license has been selected here.
+
+### Extensible input and inline content
+
+Replace keyboard, pointer, caret or IME behavior independently through the editor's
+component properties. Defaults preserve standard selection, clipboard and typing;
+the demo includes an alternate keymap and caret. See [input contracts](docs/INPUT-COMPONENTS.md).
+
+Insert immutable inline image/control descriptors with `Session.InsertInline`,
+resize or update them with `Session.UpdateInline`, resolve external images through
+`InlineResourceResolver`, and register explicit control factories through
+`InlineControlFactories`. Native schema v3 preserves descriptors and encoded
+resources without creating controls during save/load. See
+[inline content and ownership](docs/INLINE-CONTENT.md).
+
+`editor.Accessibility` exposes a tested text-range contract for host bridges.
+Avalonia 12.1.3 does not expose a public native text-provider contract; full native
+screen-reader text navigation remains [explicitly blocked](docs/PHASE4-ACCESSIBILITY.md).

@@ -1,4 +1,5 @@
 using Textalonia.Model;
+using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 
 namespace Textalonia.Editing;
@@ -60,6 +61,11 @@ internal sealed class RetentionGraph
     {
         IRetained node => node.Bytes,
         string text => 24 + text.Length * 2L,
+        byte[] bytes => 24 + bytes.Length,
+        ImmutableDictionary<string, DocumentResource> resources => 56 + resources.Count * 64L,
+        ImmutableDictionary<string, string> properties => 56 + properties.Count * 64L,
+        DocumentResource => 64,
+        InlineDescriptor => 80,
         TableCell[] cells => 24 + cells.Length * 8L,
         double[] widths => 24 + widths.Length * 8L,
         TableRowSizing[] sizing => 24 + sizing.Length * 8L,
@@ -72,6 +78,26 @@ internal sealed class RetentionGraph
     {
         switch (value)
         {
+            case ImmutableDictionary<string, DocumentResource> resources:
+                foreach (var item in resources) { visit(item.Key); visit(item.Value); }
+                break;
+            case ImmutableDictionary<string, string> properties:
+                foreach (var item in properties) { visit(item.Key); visit(item.Value); }
+                break;
+            case DocumentResource resource:
+                visit(resource.MediaType);
+                if (resource.Location is not null) visit(resource.Location);
+                if (!resource.Data.IsDefaultOrEmpty) visit(ImmutableCollectionsMarshal.AsArray(resource.Data)!);
+                break;
+            case InlineDescriptor inline:
+                visit(inline.AltText); visit(inline.Payload);
+                break;
+            case ImageInlinePayload image:
+                visit(image.ResourceId);
+                break;
+            case ControlInlinePayload control:
+                visit(control.Type); visit(control.Properties);
+                break;
             case IRetained node:
                 node.VisitReferences(visit);
                 break;

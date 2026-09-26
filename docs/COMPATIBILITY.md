@@ -104,3 +104,20 @@ bind this property to their own error UI. For example:
 The bound covers shaping inputs and the documented engine memory estimate,
 not native font-library allocations, total process memory or total time spent
 finding a distant line. See [performance boundaries](ARCHITECTURE.md#performance-boundaries).
+
+## Phase 4 additive API and native schema migration
+
+Native writers now emit schema **v3** for inline descriptors and resource tables.
+The strict readers still accept v1 and v2; older preview readers reject v3. Existing
+text-only documents and default editing behavior remain supported. The public API
+baseline adds input component contracts, inline model/session/view APIs, resource
+resolver/cache/factory APIs, and a managed text-range contract.
+
+Objects occupy one U+FFFC position in `Text` and the index. Use `PlainText` or
+`ReadPlainText` for alt-text export, and never feed their offsets back into indexed
+selection APIs. `SelectedText` and plain-text clipboard data use alt text.
+Custom input components are owned by one attached surface and must release their
+subscriptions in Detach. Registered inline factories release views on recycling;
+store state in descriptors. See [inline ownership](INLINE-CONTENT.md),
+[input replacement](INPUT-COMPONENTS.md), and the
+[explicit native accessibility blocker](PHASE4-ACCESSIBILITY.md).

@@ -42,7 +42,7 @@ Open `structured.textalonia`; select the styled paragraph (bold, italic/underlin
 
 ## N07 — Screen-reader value and selection announcements
 
-Start the target screen reader, focus the editor and use its current-value/read control command. Expected value contract: announce an editable text control named Textalonia editor with visible document text; in read-only mode expose read-only state and allow reading. Type a word, reverse-select it and move the caret between paragraphs. Desired text-accessibility contract: announce changed value, selection text/direction and caret context; allow character/word/line navigation and query offscreen range bounds. Save speech viewer output/transcript with action timestamps. **Known Phase 4 gap:** the current peer implements only `IValueProvider`; it has no full text-range/selection provider. Value availability does not imply selection announcements. Track missing announcements and backend bridges against P4.6, and repeat after P6.6 integration before advertising accessibility.
+Start the target screen reader, focus the editor and use its current-value/read control command. Expected value contract: announce an editable text control named Textalonia editor with visible document text; in read-only mode expose read-only state and allow reading. Type a word, reverse-select it and move the caret between paragraphs. Desired text-accessibility contract: announce changed value, selection text/direction and caret context; allow character/word/line navigation and query offscreen range bounds. Save speech viewer output/transcript with action timestamps. **Known Phase 4 gap:** the editor has a tested managed text-range contract, but the native peer implements only `IValueProvider`; Avalonia 12.1.3 lacks the public native text-provider bridge. See [verified dependency and platform gates](PHASE4-ACCESSIBILITY.md). Value availability does not imply selection announcements. Track missing announcements and backend bridges against P4.6, and repeat after P6.6 integration before advertising accessibility.
 
 ## Evidence disposition
 
@@ -54,6 +54,6 @@ Start the target screen reader, focus the editor and use its current-value/read 
 | N04 | Grapheme model and real-control input tests | Pending / pending / pending | P6.6 |
 | N05 | Logical grapheme selection; visual bidi missing | Pending / pending / pending | P6.1 |
 | N06 | Headless in-process rich clipboard round trip | Pending / pending / pending | P5.5/P5.6 |
-| N07 | Value-only peer identified by source inspection; text ranges missing | Pending / pending / pending | P4.6 |
+| N07 | Managed text-range contract tested; native text-provider bridge missing | Pending / pending / pending | P4.6 |
 
 CI uploads the checked-in pending records along with tests and generated fixtures; it does not overwrite them with headless passes. A platform owner may append dated evidence files and update this table after an actual native run. The absence of native input tools in this session is an execution limitation, not evidence of a product failure.

@@ -73,14 +73,14 @@ public sealed class PlainTextDocumentFormat : TextDocumentFormat
     public override string Name => "Plain text";
     public override IReadOnlyList<string> Extensions => [".txt"];
     public override FlowDocument Parse(string text) => FlowDocument.FromText(text);
-    public override string Serialize(FlowDocument document) => document.Text;
+    public override string Serialize(FlowDocument document) => document.PlainText;
 }
 
 /// <summary>Versioned, lossless native storage, including hidden cells retained by table merges.</summary>
 public sealed class JsonDocumentFormat : TextDocumentFormat
 {
-    private const int CurrentVersion = 2;
-    private sealed record EnvelopeV2(int Version, FlowDocument Document);
+    private const int CurrentVersion = 3;
+    private sealed record Envelope(int Version, FlowDocument Document);
     private static readonly JsonSerializerOptions Options = new()
     {
         WriteIndented = true,
@@ -100,6 +100,21 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
         },
         Converters = { new JsonStringEnumConverter() }
     };
+    // Freeze the v2 vocabulary even as new properties are added to the current model.
+    private static readonly JsonSerializerOptions VersionTwoOptions = new(Options)
+    {
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver
+        {
+            Modifiers = { type =>
+            {
+                foreach (var property in type.Properties.Where(p =>
+                    type.Type == typeof(TableCell) && p.Name is "paragraphs" or "mergeOriginal" ||
+                    type.Type == typeof(RichRun) && p.Name == "inline" ||
+                    type.Type == typeof(FlowDocument) && p.Name == "resources").ToArray())
+                    type.Properties.Remove(property);
+            } }
+        }
+    };
     public override string Name => "Textalonia document";
     public override IReadOnlyList<string> Extensions => [".textalonia", ".json", ".art"];
     public override FlowDocument Parse(string text)
@@ -109,16 +124,18 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
         using var json = JsonDocument.Parse(text, new JsonDocumentOptions { MaxDepth = Options.MaxDepth });
         if (json.RootElement.ValueKind != JsonValueKind.Object) throw new FormatException("Missing document envelope.");
         var versions = json.RootElement.EnumerateObject().Where(p => p.NameEquals("version")).ToArray();
-        if (versions.Length == 0) throw new NotSupportedException("Document version is missing. Supported versions are 1 and 2.");
+        if (versions.Length == 0) throw new NotSupportedException("Document version is missing. Supported versions are 1, 2, and 3.");
         if (versions.Length != 1 || versions[0].Value.ValueKind != JsonValueKind.Number ||
             !versions[0].Value.TryGetInt32(out var version))
             throw new FormatException("Document version must be one integer.");
         var document = version switch
         {
             1 => NativeDocumentV1.Read(json.RootElement, Options),
-            CurrentVersion => json.RootElement.Deserialize<EnvelopeV2>(Options)?.Document
+            2 => json.RootElement.Deserialize<Envelope>(VersionTwoOptions)?.Document
                 ?? throw new FormatException("Missing document."),
-            _ => throw new NotSupportedException($"Document version {version} is not supported. Supported versions are 1 and 2.")
+            CurrentVersion => json.RootElement.Deserialize<Envelope>(Options)?.Document
+                ?? throw new FormatException("Missing document."),
+            _ => throw new NotSupportedException($"Document version {version} is not supported. Supported versions are 1, 2, and 3.")
         };
         document.Validate();
         return document;
@@ -126,6 +143,6 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
     public override string Serialize(FlowDocument document)
     {
         document.Validate();
-        return JsonSerializer.Serialize(new EnvelopeV2(CurrentVersion, document), Options);
+        return JsonSerializer.Serialize(new Envelope(CurrentVersion, document), Options);
     }
 }

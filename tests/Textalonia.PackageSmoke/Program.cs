@@ -98,11 +98,24 @@ internal static class Program
                 editor.InsertText("Edited "); editor.Undo();
                 if (DocumentFormats.Json.Serialize(editor.Document) != original ||
                     DocumentFormats.Json.Serialize(DocumentFormats.Json.Parse(original)) != original)
-                    throw new InvalidOperationException("Packaged schema v2 and nested undo round trip failed.");
+                    throw new InvalidOperationException("Packaged schema v3 and nested undo round trip failed.");
+                editor.KeyboardComponent = new Textalonia.Controls.DefaultKeyboardComponent();
+                editor.CaretComponent = new Textalonia.Controls.DefaultCaretComponent();
+                editor.Document = new FlowDocument();
+                var inline = new InlineDescriptor { AltText = "A sample image", Width = 64, Height = 32, Payload = new ImageInlinePayload("missing") };
+                editor.InsertInline(inline);
+                if (editor.Session.Index.Length != 1 || editor.Document.PlainText != "A sample image" ||
+                    editor.Accessibility.DocumentRange.GetText() != "\uFFFC")
+                    throw new InvalidOperationException("Packaged inline coordinates or accessibility contract failed.");
+                var inlineJson = DocumentFormats.Json.Serialize(editor.Document);
+                if (DocumentFormats.Json.Parse(inlineJson).PlainText != "A sample image")
+                    throw new InvalidOperationException("Packaged schema v3 inline round trip failed.");
+                editor.UpdateInline(inline.Id, value => value with { Width = 96 });
+                editor.Undo(); editor.Redo();
                 window.UpdateLayout();
                 using var frame = window.CaptureRenderedFrame()
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
-                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, schema v2, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, and rendering.");
+                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, schema v3, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, and rendering.");
             }
             finally { window.Close(); }
         }, CancellationToken.None).GetAwaiter().GetResult();

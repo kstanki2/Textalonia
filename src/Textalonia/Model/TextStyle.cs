@@ -52,18 +52,28 @@ public sealed record ParagraphStyle
 
 public sealed record RichRun
 {
+    private static readonly PieceText InlineStorage = PieceText.From("\uFFFC");
     private PieceText _storage;
-    public string Text { get => _storage.ToString(); init => _storage = PieceText.From(value); }
+    public string Text { get => Storage.ToString(); init => _storage = Inline is null ? PieceText.From(value) : InlineStorage; }
     public TextStyle Style { get; init; }
+    private InlineDescriptor? _inline;
+    public InlineDescriptor? Inline
+    {
+        get => _inline;
+        init { _inline = value; if (value is not null) _storage = InlineStorage; }
+    }
+    [System.Text.Json.Serialization.JsonIgnore] public string PlainText => Inline?.AltText ?? Text;
     [System.Text.Json.Serialization.JsonConstructor]
     public RichRun(string Text, TextStyle Style) { _storage = PieceText.From(Text); this.Style = Style; }
     public RichRun(string text) : this(text, TextStyle.Default) { }
+    public RichRun(InlineDescriptor inline, TextStyle? style = null) : this("\uFFFC", style ?? TextStyle.Default) =>
+        Inline = inline ?? throw new ArgumentNullException(nameof(inline));
     private RichRun(PieceText storage, TextStyle style) { _storage = storage; Style = style; }
-    internal PieceText Storage => _storage;
-    internal RichRun Slice(int start, int length) => new(_storage.Slice(start, length), Style);
+    internal PieceText Storage => Inline is null ? _storage : InlineStorage;
+    internal RichRun Slice(int start, int length) => Inline is not null && start == 0 && length == 1 ? this : new(Storage.Slice(start, length), Style);
     internal RichRun Append(RichRun other) => new(PieceText.Join(_storage, other._storage), Style);
     public void Deconstruct(out string Text, out TextStyle Style) { Text = this.Text; Style = this.Style; }
-    public bool Equals(RichRun? other) => other is not null && Style == other.Style &&
+    public bool Equals(RichRun? other) => other is not null && Style == other.Style && Inline == other.Inline &&
         (ReferenceEquals(_storage, other._storage) || Text == other.Text);
-    public override int GetHashCode() => HashCode.Combine(Text, Style);
+    public override int GetHashCode() => HashCode.Combine(Text, Style, Inline);
 }
