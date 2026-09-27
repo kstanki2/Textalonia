@@ -25,7 +25,8 @@ public sealed record PageLayout(int Index, Guid SectionId, int Number, string Nu
 public sealed record LineFragment
 {
     internal LineFragment() { }
-    public string StoryId => "main";
+    public string StoryId => StoryKey == Guid.Empty ? "main" : StoryKey.ToString();
+    public Guid StoryKey { get; internal init; }
     public Guid ParagraphId { get; internal init; }
     public Guid SectionId { get; internal init; }
     public int PageIndex { get; internal init; }
@@ -73,11 +74,18 @@ public sealed partial class PageLayoutSnapshot : IDisposable
     internal PageLayoutSnapshot(FlowDocument document, ImmutableArray<PageLayout> pages,
         ImmutableArray<LineFragment> fragments, ImmutableArray<BlockDecoration> decorations,
         ImmutableArray<TableCellVisual> cells, FontFamily font, IBrush foreground,
-        IReadOnlyList<DocumentFontDiagnostic> diagnostics)
+        IReadOnlyList<DocumentFontDiagnostic> diagnostics,
+        ImmutableArray<LineFragment> storyFragments = default, ImmutableArray<StoryRegion> storyRegions = default,
+        ImmutableArray<(Guid StoryId, int Page, TableCellVisual Cell)> storyCells = default,
+        ImmutableArray<string> layoutDiagnostics = default)
     {
         Document = document; _index = new(document); Pages = pages; Fragments = fragments;
         _decorations = decorations; _cells = cells; _font = font; _foreground = foreground;
-        _measurements = fragments.Select(f => f.Measurement).Distinct().ToImmutableArray();
+        StoryFragments = storyFragments.IsDefault ? [] : storyFragments;
+        StoryRegions = storyRegions.IsDefault ? [] : storyRegions;
+        _storyCells = storyCells.IsDefault ? [] : storyCells;
+        LayoutDiagnostics = layoutDiagnostics.IsDefault ? [] : layoutDiagnostics;
+        _measurements = fragments.Concat(StoryFragments).Select(f => f.Measurement).Distinct().ToImmutableArray();
         foreach (var measurement in _measurements) measurement.AddRef();
         Width = pages.Select(p => p.Bounds.Right).DefaultIfEmpty().Max();
         Height = pages.Select(p => p.Bounds.Bottom).DefaultIfEmpty().Max();
@@ -103,7 +111,7 @@ public sealed partial class PageLayoutSnapshot : IDisposable
     public void DrawContent(DrawingContext context, Rect? viewport = null)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        foreach (var fragment in Fragments)
+        foreach (var fragment in Fragments.Concat(StoryFragments))
         {
             if (viewport is { } visible && !fragment.Bounds.Intersects(visible)) continue;
             using var lease = fragment.Acquire();
@@ -112,6 +120,9 @@ public sealed partial class PageLayoutSnapshot : IDisposable
             if (fragment.LineNumber is { } number) DrawLabel(number.ToString(CultureInfo.InvariantCulture),
                 fragment.ColumnBounds.Left - fragment.LineNumberDistance, fragment.Origin.Y, 10, true);
         }
+        foreach (var region in StoryRegions)
+            if (region.SeparatorText is { Length: > 0 } separator && (viewport is not { } visible || region.Bounds.Intersects(visible)))
+                DrawLabel(separator, region.Bounds.Left, region.Bounds.Top - 18, 10);
         void DrawLabel(string text, double x, double y, double size, bool alignRight = false)
         {
             var label = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
@@ -204,7 +215,7 @@ public sealed partial class PageLayoutSnapshot : IDisposable
     internal IEnumerable<InlineVisual> InlineVisuals()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        foreach (var fragment in Fragments)
+        foreach (var fragment in Fragments.Concat(StoryFragments))
         {
             if (!fragment.Position.Paragraph.Runs.Any(r => r.Inline is not null)) continue;
             using var lease = fragment.Acquire();
@@ -214,7 +225,7 @@ public sealed partial class PageLayoutSnapshot : IDisposable
                     if (run.TextRun is InlineObjectRun inline)
                         yield return new(inline.Descriptor, fragment.SourceStart + run.TextSourceCharacterIndex,
                             new Rect(fragment.Origin.X + run.Rectangle.X, fragment.Origin.Y + line.Baseline - inline.Baseline,
-                                inline.Size.Width, inline.Size.Height), fragment.Clip);
+                                inline.Size.Width, inline.Size.Height), fragment.Clip) { StoryId = fragment.StoryKey, PageIndex = fragment.PageIndex };
         }
     }
     internal IReadOnlyList<TableCellVisual> TableCells() => _cells;

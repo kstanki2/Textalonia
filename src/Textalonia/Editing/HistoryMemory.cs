@@ -76,7 +76,12 @@ internal sealed class RetentionGraph
         DocumentSection[] sections => 24 + sections.Length * 8L,
         PageColumn[] columns => 24 + columns.Length * 8L,
         PageSettings => 144,
-        DocumentSection => 88,
+        DocumentSection => 96,
+        ImmutableDictionary<Guid, DocumentStory> stories => 56 + stories.Count * 64L,
+        ImmutableDictionary<Guid, TextSelection> selections => 56 + selections.Count * 64L,
+        DocumentStory story => 64 + story.Blocks.Length * 8L,
+        DocumentNote[] notes => 24 + notes.Length * 8L,
+        DocumentNote => 64,
         DocumentFontDefinition[] fonts => 24 + fonts.Length * 8L,
         TabStop[] tabs => 24 + tabs.Length * 8L,
         TextStyle => 320,
@@ -88,7 +93,14 @@ internal sealed class RetentionGraph
         switch (value)
         {
             case DocumentSection[] sections: foreach (var section in sections) visit(section); break;
-            case DocumentSection section: visit(section.PageSettings); break;
+            case DocumentSection section: visit(section.PageSettings); visit(section.HeaderFooter); break;
+            case ImmutableDictionary<Guid, DocumentStory> stories: foreach (var story in stories.Values) visit(story); break;
+            case DocumentStory story: foreach (var block in story.Blocks) visit(DocumentNode.HiddenBlock(block)); break;
+            case DocumentNote[] notes: foreach (var note in notes) visit(note); break;
+            case DocumentNote note: if (note.CustomMark is not null) visit(note.CustomMark); break;
+            case NoteSettings settings: visit(settings.SeparatorText); visit(settings.ContinuationSeparatorText); break;
+            case HeaderFooterSettings settings:
+                foreach (var footer in new[] { false, true }) foreach (var variant in Enum.GetValues<HeaderFooterVariant>()) visit(settings.GetReference(footer, variant)); break;
             case PageColumn[] columns: foreach (var column in columns) visit(column); break;
             case PageSettings settings:
                 visit(settings.Margins);

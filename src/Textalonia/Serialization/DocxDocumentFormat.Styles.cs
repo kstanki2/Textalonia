@@ -42,7 +42,7 @@ public sealed partial class DocxDocumentFormat
         }).ToImmutableArray();
         return document with
         {
-            Blocks = Blocks(document.Blocks), Defaults = document.Defaults with { Text = Text(document.Defaults.Text), Paragraph = Paragraph(document.Defaults.Paragraph) },
+            Blocks = Blocks(document.Blocks), Stories = document.Stories.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with { Blocks = Blocks(pair.Value.Blocks) }), Defaults = document.Defaults with { Text = Text(document.Defaults.Text), Paragraph = Paragraph(document.Defaults.Paragraph) },
             Styles = catalog with
             {
                 DefaultCharacterStyleId = Id(characters, catalog.DefaultCharacterStyleId), DefaultParagraphStyleId = Id(paragraphs, catalog.DefaultParagraphStyleId), DefaultTableStyleId = Id(tables, catalog.DefaultTableStyleId),

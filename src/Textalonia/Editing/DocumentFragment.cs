@@ -6,7 +6,7 @@ namespace Textalonia.Editing;
 /// <summary>A versioned, self-contained clipboard fragment. Partial containers retain their formatting.</summary>
 public sealed record DocumentFragment
 {
-    public const int CurrentVersion = 2;
+    public const int CurrentVersion = 3;
     public int Version { get; init; } = CurrentVersion;
     public FlowDocument Document { get; init; } = new();
     /// <summary>Whether the first paragraph edge merges when pasted inside destination text.</summary>
@@ -16,7 +16,7 @@ public sealed record DocumentFragment
 
     public void Validate()
     {
-        if (Version is not (1 or CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {Version} is not supported.");
+        if (Version is not (1 or 2 or CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {Version} is not supported.");
         if (Document is null) throw new FormatException("Missing clipboard document.");
         Document.Validate();
     }
@@ -93,7 +93,7 @@ internal static class DocumentFragments
         var first = index.At(selection.Start); var last = index.At(selection.End);
         var result = document with { Blocks = blocks.Select(BlockOperations.CloneWithNewIds).ToImmutableArray() };
         result = result with { Sections = CopySections(document, index, blocks, result.Blocks, selection.Start) };
-        result = result.PruneUnusedResources();
+        result = PruneStories(result).PruneUnusedResources();
         result.Validate();
         return new() { Document = result, StartsInsideParagraph = selection.Start > first.Start,
             EndsInsideParagraph = selection.End < last.End && selection.End > last.Start };
@@ -108,7 +108,29 @@ internal static class DocumentFragments
         var bottom = row + rowCount - 1; var right = column + columnCount - 1;
         ExpandRectangle(table, ref row, ref column, ref bottom, ref right);
         var cropped = Crop(table, row, column, bottom, right, (r, c) => table.Rows[r][c]);
-        return new() { Document = (document with { Blocks = [BlockOperations.CloneWithNewIds(cropped)], Sections = [] }).PruneUnusedResources() };
+        return new() { Document = PruneStories(document with { Blocks = [BlockOperations.CloneWithNewIds(cropped)], Sections = [] }).PruneUnusedResources() };
+    }
+
+    // Clipboard fragments carry only note bodies and header/footer stories owned by their copied content.
+    private static FlowDocument PruneStories(FlowDocument document)
+    {
+        var notes = new HashSet<Guid>();
+        void Visit(IEnumerable<Block> blocks)
+        {
+            foreach (var block in blocks) switch (block)
+            {
+                case Paragraph p: foreach (var run in p.Runs) if (run.Inline?.Payload is NoteInlinePayload reference) notes.Add(reference.NoteId); break;
+                case Section s: Visit(s.Blocks); break;
+                case Table t: foreach (var row in t.Rows) foreach (var cell in row) { Visit(cell.Blocks); Visit(cell.MergeOriginalBlocks); } break;
+            }
+        }
+        Visit(document.Blocks);
+        var retainedNotes = document.Notes.Where(note => notes.Contains(note.Id)).ToImmutableArray();
+        var stories = retainedNotes.Select(note => note.StoryId).ToHashSet();
+        foreach (var section in document.Sections) foreach (var footer in new[] { false, true })
+            foreach (var variant in Enum.GetValues<HeaderFooterVariant>())
+                if (section.HeaderFooter.GetReference(footer, variant).StoryId is { } id) stories.Add(id);
+        return document with { Stories = document.Stories.RemoveRange(document.Stories.Keys.Where(id => !stories.Contains(id))), Notes = retainedNotes };
     }
 
     private static ImmutableArray<DocumentSection> CopySections(FlowDocument document, DocumentIndex index,
@@ -125,7 +147,12 @@ internal static class DocumentFragments
             current = section;
         }
         var result = ImmutableArray.CreateBuilder<DocumentSection>();
-        result.Add(current with { Id = Guid.NewGuid(), StartParagraphId = Guid.Empty });
+        var headerFooter = current.HeaderFooter;
+        var currentIndex = document.Sections.IndexOf(current);
+        foreach (var footer in new[] { false, true }) foreach (var variant in Enum.GetValues<HeaderFooterVariant>())
+            headerFooter = headerFooter.WithReference(footer, variant, new StoryReference
+            { LinkToPrevious = false, StoryId = document.ResolveHeaderFooter(currentIndex, footer, variant)?.Id });
+        result.Add(current with { Id = Guid.NewGuid(), StartParagraphId = Guid.Empty, HeaderFooter = headerFooter });
         foreach (var section in document.Sections.Skip(1))
             if (index.ById(section.StartParagraphId).Start > offset && ids.TryGetValue(section.StartParagraphId, out var id))
                 result.Add(section with { Id = Guid.NewGuid(), StartParagraphId = id });
@@ -214,6 +241,8 @@ internal static class DocumentFragments
         var resources = destination.Resources;
         var resourceIds = new Dictionary<string, string>(StringComparer.Ordinal);
         var listIds = new Dictionary<Guid, Guid>();
+        var storyIds = fragment.Stories.Keys.ToDictionary(id => id, _ => Guid.NewGuid());
+        var noteIds = fragment.Notes.ToDictionary(note => note.Id, _ => Guid.NewGuid());
         var resolver = new DocumentStyleResolver(fragment);
         string Resource(string id)
         {
@@ -254,6 +283,7 @@ internal static class DocumentFragments
                             var target = Resource(image.ResourceId);
                             payload = image with { ResourceId = target };
                         }
+                        if (payload is NoteInlinePayload note) payload = note with { NoteId = noteIds[note.NoteId] };
                         return run with { Inline = inline with { Id = Guid.NewGuid(), Payload = payload } };
                     }).ToImmutableArray() };
                 case Section s: return s with { Id = Guid.NewGuid(), Blocks = Clone(s.Blocks) };
@@ -263,8 +293,20 @@ internal static class DocumentFragments
             }
         }
         var copied = Clone(fragment.Blocks);
-        return fragment with { Blocks = copied, Resources = resources, Fonts = fonts.ToImmutable(),
-            Sections = CopySections(fragment, new DocumentIndex(fragment), fragment.Blocks, copied, 0) };
+        var stories = fragment.Stories.Values.ToImmutableDictionary(story => storyIds[story.Id], story =>
+            story with { Id = storyIds[story.Id], Blocks = Clone(story.Blocks) });
+        var sections = CopySections(fragment, new DocumentIndex(fragment), fragment.Blocks, copied, 0).Select(section =>
+        {
+            var settings = section.HeaderFooter;
+            foreach (var footer in new[] { false, true }) foreach (var variant in Enum.GetValues<HeaderFooterVariant>())
+            {
+                var reference = settings.GetReference(footer, variant);
+                if (reference.StoryId is { } id) settings = settings.WithReference(footer, variant, reference with { StoryId = storyIds[id] });
+            }
+            return section with { HeaderFooter = settings };
+        }).ToImmutableArray();
+        return fragment with { Blocks = copied, Resources = resources, Fonts = fonts.ToImmutable(), Stories = stories,
+            Notes = fragment.Notes.Select(note => note with { Id = noteIds[note.Id], StoryId = storyIds[note.StoryId] }).ToImmutableArray(), Sections = sections };
     }
 
     internal static (FlowDocument Document, int Caret) Insert(FlowDocument destination, int offset, FlowDocument fragment, bool startsInsideParagraph, bool endsInsideParagraph)
@@ -320,7 +362,7 @@ internal static class DocumentFragments
                 _ => [block]
             }).ToImmutableArray();
         var result = destination with { Blocks = Replace(destination.Blocks), Resources = fragment.Resources,
-            Styles = fragment.Styles, Fonts = fragment.Fonts };
+            Styles = fragment.Styles, Fonts = fragment.Fonts, Stories = destination.Stories.SetItems(fragment.Stories), Notes = destination.Notes.AddRange(fragment.Notes) };
         result = MergeSections(destination, fragment, result, at.Paragraph.Id);
         result.Validate();
         return (result, new DocumentIndex(result).ById(caretParagraph).Start + caretLocal);

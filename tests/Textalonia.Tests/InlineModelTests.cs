@@ -133,7 +133,7 @@ public class InlineModelTests
         using var stream = new MemoryStream();
         await DocumentFormats.Json.SaveAsync(document, stream);
         var json = Encoding.UTF8.GetString(stream.ToArray());
-        Assert.Contains("\"version\": 6", json);
+        Assert.Contains("\"version\": 7", json);
         Assert.Contains(Convert.ToBase64String(document.Resources["image"].Data.AsSpan()), json);
         stream.Position = 0;
         var loaded = await DocumentFormats.Json.LoadAsync(stream);

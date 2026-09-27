@@ -29,12 +29,13 @@ Phase 8 adds public-api-contracts.txt for nested nullability, attributes, access
 
 ## Native schema policy
 
-The writer emits envelope `{ "version": 4, "document": ... }`, and the reader
-accepts only this current prerelease schema. It checks the version before decoding
-the document and rejects unknown members. Missing or unsupported versions throw
-`NotSupportedException` before interpreting document fields. The project has not
-been published or used; v1-v3 were unused development schemas and have no migration
-support. The marker remains 4 to identify the current format.
+The writer emits envelope `{ "version": 7, "document": ... }`, and the reader
+accepts v4-v7. Versions 4-6 load with default secondary-story settings; v4 concrete
+formatting remains explicit. Version checks precede model decoding, unknown members
+are rejected, and unsupported or missing versions throw `NotSupportedException`.
+Versions 1-3 were unused development schemas and have no migration support.
+This retained-reader policy explicitly supersedes the earlier v4-only prerelease
+policy; it is not a promise to accept arbitrary future schemas.
 See [schema tests](../tests/Textalonia.Tests/NativeSchemaTests.cs) and
 [current native semantics](INTEGRATIONS.md#current-native-schema).
 

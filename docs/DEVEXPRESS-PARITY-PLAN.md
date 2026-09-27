@@ -2,14 +2,15 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **implementation plan; DX-01 and DX-02 implementation and
+candidate. Status: **implementation plan; DX-01, DX-02 and DX-03 implementation and
 qualification status is recorded below. Other workstreams remain proposed unless explicitly noted.**
 
 The audit tables in sections 2-3 describe the baseline commit above; the DX-01
 implementation entry and [style guide](STYLES.md) supersede those baseline findings
 for delivered style/typography capabilities. The DX-02 implementation entry and
 [pagination guide](PAGINATION.md) supersede baseline findings for physical pages
-and document views.
+and document views. The DX-03 implementation entry and [story guide](STORIES.md)
+supersede baseline findings for headers, footers and notes.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -297,6 +298,25 @@ transitions, columns and numbering. Benchmark edits near the start/end of large
 documents and retained cache memory. Preserve existing Simple-view performance gates.
 
 ### DX-03 — Headers, footers, footnotes and endnotes
+
+**Implementation status (2026-09-27):** immutable secondary stories with shared
+resources/styles, active-story editing and document-wide undo, primary/first/even
+header/footer references and link/unlink cloning, toolbar commands/dialogs and
+page-region activation are implemented. Atomic notes support custom marks,
+numbering/restarts, separators, placement, owning-line reservation, long-note
+continuations and endnote flow. Repeated page context evaluates PAGE/NUMPAGES/
+SECTIONPAGES without changing stored content. Native v7, data XAML v2, clipboard
+v3 and supported DOCX/RTF mappings retain stories; other formats diagnose losses.
+See [STORIES.md](STORIES.md) for API, rendering and interchange limits.
+
+**Evidence:** `StoryModelTests`, `StoryEditorTests`, `StoryPaginationTests`,
+`StoryInterchangeTests` and `RtfStoryInterchangeTests` cover linked editing/unlink,
+backward selections, history/resource/clipboard ownership, rich secondary tables
+and images, page field contexts, continuation/numbering, zoom/IME geometry and
+codec round trips. Header overflow and oversized atomic notes are diagnosed;
+notes suspend column balancing. External Office/DevExpress comparisons, native
+platform qualification, general fields and print/PDF remain their own gates.
+DX-00's broader anchor and transaction design is not claimed complete by this slice.
 
 **Priority: core. Size: L. Dependencies: DX-00, DX-02; page fields use DX-05.**
 

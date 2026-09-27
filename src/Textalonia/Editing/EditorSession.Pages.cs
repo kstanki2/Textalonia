@@ -6,7 +6,7 @@ namespace Textalonia.Editing;
 public sealed partial class EditorSession
 {
     public PageSettings CurrentPageSettings => CurrentSection?.PageSettings ?? new();
-    public DocumentSection? CurrentSection => SectionAt(Document, Index, Selection.Active);
+    public DocumentSection? CurrentSection => SectionAt(Document, ActiveStoryId == Guid.Empty ? Index : new DocumentIndex(Document), ActiveStoryId == Guid.Empty ? Selection.Active : _storySelections.GetValueOrDefault(Guid.Empty).Active);
 
     private static DocumentSection? SectionAt(FlowDocument document, DocumentIndex index, int offset)
     {
@@ -44,7 +44,7 @@ public sealed partial class EditorSession
         if (position < 0) throw new ArgumentException("The physical section does not exist.", nameof(sectionId));
         var document = Document with { Sections = sections.SetItem(position, change(sections[position])) };
         document.Validate();
-        Commit(document, Selection);
+        Commit(document, Selection, wholeDocument: true);
     }
 
     /// <summary>Starts a physical section at the selection; a mid-paragraph boundary splits that paragraph.</summary>
@@ -83,7 +83,7 @@ public sealed partial class EditorSession
         for (var i = 0; i < Document.Sections.Length; i++) if (Document.Sections[i].Id == sectionId) position = i;
         if (position < 0) throw new ArgumentException("The physical section does not exist.", nameof(sectionId));
         if (position == 0) throw new InvalidOperationException("The initial physical section cannot be removed.");
-        Commit(Document with { Sections = Document.Sections.RemoveAt(position) }, Selection);
+        Commit(Document with { Sections = Document.Sections.RemoveAt(position) }, Selection, wholeDocument: true);
     }
 
     public void InsertPageBreak() => InsertPhysicalBreak(false);
@@ -113,6 +113,7 @@ public sealed partial class EditorSession
 
     private (FlowDocument Document, int Caret) PreparePageBoundary()
     {
+        if (ActiveStoryId != Guid.Empty) throw new InvalidOperationException("Physical breaks can only be inserted in the main story.");
         var document = Document;
         var caret = Selection.Start;
         if (!Selection.IsEmpty)

@@ -165,6 +165,12 @@ internal sealed class InlineObjectRun : DrawableTextRun
             _size = new(Math.Max(12, label.WidthIncludingTrailingWhitespace + 8), label.Height + 4);
             _baseline = label.Baseline + 2;
         }
+        else if (descriptor.Payload is NoteInlinePayload or PageFieldInlinePayload)
+        {
+            using var label = FieldLabel();
+            _size = new(descriptor.Width, Math.Max(descriptor.Height, label.Height));
+            _baseline = label.Baseline;
+        }
         else
         {
             _size = new(descriptor.Width, descriptor.Height);
@@ -182,7 +188,7 @@ internal sealed class InlineObjectRun : DrawableTextRun
     // are a single bounded chip; final merged text uses normal wrapping and soft breaks.
     private TextLayout FieldLabel() => new(
         Descriptor.AltText.Length == 0 ? "\u200B" : Descriptor.AltText.Replace('\r', ' ').Replace('\n', ' ').Replace('\u2028', ' '),
-        _properties.Typeface, _properties.FontRenderingEmSize, _properties.ForegroundBrush,
+        _properties.Typeface, _properties.FontRenderingEmSize * (Descriptor.Payload is NoteInlinePayload ? .75 : 1), _properties.ForegroundBrush,
         textDecorations: _properties.TextDecorations, maxWidth: 600, maxLines: 1,
         textTrimming: TextTrimming.CharacterEllipsis);
 
@@ -190,6 +196,10 @@ internal sealed class InlineObjectRun : DrawableTextRun
     {
         var bounds = new Rect(origin, Size);
         using var clip = context.PushClip(bounds);
+        if (Descriptor.Payload is NoteInlinePayload or PageFieldInlinePayload)
+        {
+            using var storyLabel = FieldLabel(); storyLabel.Draw(context, origin); return;
+        }
         if (Descriptor.Payload is MergeFieldInlinePayload)
         {
             using (context.PushOpacity(.12)) context.DrawRectangle(_properties.ForegroundBrush, null, bounds);
@@ -206,4 +216,9 @@ internal sealed class InlineObjectRun : DrawableTextRun
     }
 }
 
-internal sealed record InlineVisual(InlineDescriptor Descriptor, int Position, Rect Bounds, Rect? Clip);
+internal sealed record InlineVisual(InlineDescriptor Descriptor, int Position, Rect Bounds, Rect? Clip)
+{
+    public Guid StoryId { get; init; }
+    public int PageIndex { get; init; } = -1;
+    public (Guid Id, Guid StoryId, int PageIndex) Key => (Descriptor.Id, StoryId, PageIndex);
+}

@@ -2,6 +2,7 @@
 
 ## 0.1.0-preview.1
 
+- Added DX-03 secondary stories: linked first/even/primary headers and footers, rich footnotes/endnotes, story editing and shared undo, page-context fields, continuation pagination, toolbar commands and DOCX/RTF interchange. Native v7, data XAML v2 and clipboard v3 preserve stories. See `docs/STORIES.md` for scope and qualification limits.
 - Added physical page sections, page setup and numbering dialogs, explicit page/column/section breaks, exact page fragments, Simple/Draft/Print Layout views, zoom/fit and page navigation. Native schema v6 retains page metadata and reads v4/v5; unsupported external page-layout mappings report conversion losses. See `docs/PAGINATION.md` for the implemented scope and remaining native, Office and output qualification.
 
 - Added atomic named merge fields with toolbar editing, clipboard/history/native/XAML persistence, measured labels and accessibility descriptions; immutable preview, lazy per-record mail merge, culture/format/fallback policies, basic DOCX/RTF field preservation and a desktop merge workflow. See `docs/MAIL-MERGE.md` for supported field syntax and diagnosed limits.

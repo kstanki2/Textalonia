@@ -14,6 +14,7 @@ public class DefaultCompositionComponent : DocumentInputComponent, ICompositionC
     private int? _cursor;
     private FlowDocument? _baseDocument;
     private Editing.TextSelection _baseSelection;
+    private Guid _baseStoryId;
     public TextInputMethodClient? Client => _client;
     public FlowDocument? PreviewDocument { get; private set; }
     public int? CaretPosition => _preedit is null || AttachedContext is null ? null :
@@ -39,7 +40,7 @@ public class DefaultCompositionComponent : DocumentInputComponent, ICompositionC
     {
         if (AttachedContext is null) return;
         if (IsComposing && (Context.Editor.IsReadOnly || !ReferenceEquals(_baseDocument, Context.Editor.Document) ||
-            _baseSelection != Context.Session.Selection))
+            _baseSelection != Context.Session.Selection || _baseStoryId != Context.Session.ActiveStoryId))
         {
             Clear();
             _client?.Reset();
@@ -58,6 +59,7 @@ public class DefaultCompositionComponent : DocumentInputComponent, ICompositionC
         else
         {
             var preview = new Editing.EditorSession(Context.Editor.Document);
+            preview.SwitchStory(Context.Session.ActiveStoryId);
             preview.Select(Context.Session.Selection.Anchor, Context.Session.Selection.Active);
             var paragraph = Context.Session.Index.At(Context.Session.Selection.Active).Paragraph;
             var typing = new DocumentStyleResolver(Context.Session.Document).ResolveText(paragraph, Context.Session.TypingStyle);
@@ -66,6 +68,7 @@ public class DefaultCompositionComponent : DocumentInputComponent, ICompositionC
             PreviewDocument = preview.Document;
             _baseDocument = Context.Editor.Document;
             _baseSelection = Context.Session.Selection;
+            _baseStoryId = Context.Session.ActiveStoryId;
         }
         Context.Refresh(true);
     }

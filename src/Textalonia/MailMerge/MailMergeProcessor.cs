@@ -10,7 +10,7 @@ namespace Textalonia.MailMerge;
 /// Values may be strings, characters, booleans, or <see cref="IFormattable"/> instances.
 /// Null values use the field fallback or empty text. Each resolved value is limited to 16,384
 /// UTF-16 characters and cannot contain NUL; standard numeric format precision is limited to 1,024 digits.
-/// Newlines become soft line breaks. Hidden table cells and retained merge backups are included.
+/// Newlines become soft line breaks. Secondary stories, hidden table cells and retained merge backups are included.
 /// </remarks>
 public static class MailMergeProcessor
 {
@@ -43,6 +43,7 @@ public static class MailMergeProcessor
                 }
         }
         Visit(template.Blocks);
+        foreach (var story in template.Stories.OrderBy(pair => pair.Key)) Visit(story.Value.Blocks);
         return names.ToImmutable();
     }
 
@@ -187,8 +188,14 @@ public static class MailMergeProcessor
         }
 
         var blocks = RewriteBlocks(template.Blocks);
+        var stories = template.Stories;
+        foreach (var pair in template.Stories)
+        {
+            var storyBlocks = RewriteBlocks(pair.Value.Blocks);
+            if (storyBlocks != pair.Value.Blocks) stories = stories.SetItem(pair.Key, pair.Value with { Blocks = storyBlocks });
+        }
         token.ThrowIfCancellationRequested();
-        return blocks == template.Blocks ? template : template with { Blocks = blocks };
+        return blocks == template.Blocks && ReferenceEquals(stories, template.Stories) ? template : template with { Blocks = blocks, Stories = stories };
     }
 
     // A null result means retain the live field. An empty string is a resolved value.

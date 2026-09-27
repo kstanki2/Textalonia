@@ -29,6 +29,7 @@ public class TextaloniaToolbar : WrapPanel
     private NumericUpDown? _pageGap;
     private NumericUpDown? _pageNumber;
     private TextBlock? _pageStatus;
+    private TextBlock? _storyStatus;
     private bool _updating;
     private readonly List<(NumericUpDown Control, Func<SelectionFormattingState, FormattingValue<double?>> Read)> _numericFormatting = [];
     public TextaloniaEditor? Editor { get => GetValue(EditorProperty); set => SetValue(EditorProperty, value); }
@@ -59,7 +60,7 @@ public class TextaloniaToolbar : WrapPanel
     private void Build()
     {
         Children.Clear(); _toggles.Clear(); _editingControls.Clear(); _numericFormatting.Clear();
-        _mergeFieldUpdate = null; _mergeFieldId = null;
+        _mergeFieldUpdate = null; _mergeFieldId = null; _storyStatus = null;
         _viewMode = null; _zoom = null; _pagesPerRow = null; _pageGap = null; _pageNumber = null; _pageStatus = null;
         if (Editor is not { } editor) return;
         _heading = Choice(["Body", "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6"], 128, "Paragraph style");
@@ -93,6 +94,7 @@ public class TextaloniaToolbar : WrapPanel
         var viewButton = AddFlyout("View", "Document view, zoom and page navigation", ViewMenu(), editing: false);
         viewButton.Flyout!.Opened += (_, _) => Refresh();
         AddFlyout("Insert", "Insert link or table", InsertMenu());
+        AddFlyout("Stories", "Headers, footers and notes", StoriesMenu(), editing: false);
         AddMergeFieldFlyout();
         ActionButton("Clear", "Clear character formatting", () => editor.ApplyStyle(_ => TextStyle.Default));
         CommandButton("Undo", "Undo", editor.UndoCommand);
@@ -215,6 +217,46 @@ public class TextaloniaToolbar : WrapPanel
     }
     private static FormattingValue<double?> AsNullable(FormattingValue<double> value) => new(value.Value, value.IsMixed);
     private static FormattingValue<double?> AsNullable(FormattingValue<int> value) => new(value.Value, value.IsMixed);
+
+    private Control StoriesMenu()
+    {
+        var panel = new StackPanel { Width = 280, Spacing = 4 };
+        _storyStatus = new TextBlock(); AutomationProperties.SetName(_storyStatus, "Active story"); panel.Children.Add(_storyStatus);
+        panel.Children.Add(Label("Headers and footers"));
+        foreach (var variant in Enum.GetValues<HeaderFooterVariant>())
+        {
+            panel.Children.Add(MenuAction("Edit " + variant.ToString().ToLowerInvariant() + " header", () => Editor!.EditHeaderFooter(false, variant), editing: false));
+            panel.Children.Add(MenuAction("Edit " + variant.ToString().ToLowerInvariant() + " footer", () => Editor!.EditHeaderFooter(true, variant), editing: false));
+        }
+        panel.Children.Add(MenuAction("Link to previous", () => Editor!.LinkHeaderFooterToPrevious(true)));
+        panel.Children.Add(MenuAction("Unlink from previous", () => Editor!.LinkHeaderFooterToPrevious(false)));
+        AddDialog("Header and footer options…", () => Editor!.ShowHeaderFooterDialogAsync());
+        panel.Children.Add(new Separator());
+        panel.Children.Add(MenuAction("Return to document (Esc)", () => Editor!.CloseStory(), editing: false));
+        panel.Children.Add(Label("Page fields"));
+        foreach (var field in Enum.GetValues<PageFieldKind>())
+            panel.Children.Add(MenuAction("Insert " + field, () => Editor!.InsertPageField(field)));
+        panel.Children.Add(Label("Notes"));
+        var mark = new TextBox { PlaceholderText = "Custom mark (blank for numbering)" };
+        AutomationProperties.SetName(mark, "Custom note mark"); panel.Children.Add(mark);
+        panel.Children.Add(MenuAction("Insert footnote", () => Editor!.InsertFootnote(string.IsNullOrEmpty(mark.Text) ? null : mark.Text)));
+        panel.Children.Add(MenuAction("Insert endnote", () => Editor!.InsertEndnote(string.IsNullOrEmpty(mark.Text) ? null : mark.Text)));
+        panel.Children.Add(MenuAction("Delete active note", () =>
+        {
+            var note = Editor!.Document.Notes.FirstOrDefault(n => n.StoryId == Editor.ActiveStoryId);
+            if (note is not null) Editor.Session.RemoveNote(note.Id);
+        }));
+        AddDialog("Footnote options…", () => Editor!.ShowNoteSettingsDialogAsync(DocumentNoteKind.Footnote));
+        AddDialog("Endnote options…", () => Editor!.ShowNoteSettingsDialogAsync(DocumentNoteKind.Endnote));
+        return new ScrollViewer { Content = panel, MaxHeight = 520 };
+
+        void AddDialog(string label, Func<Task<bool>> show)
+        {
+            var button = MakeButton(label, label);
+            button.Click += async (_, _) => await show();
+            _editingControls.Add(button); panel.Children.Add(button);
+        }
+    }
 
     private Control InsertMenu()
     {
@@ -445,6 +487,8 @@ public class TextaloniaToolbar : WrapPanel
         _updating = true;
         try
         {
+            if (_storyStatus is not null) _storyStatus.Text = editor.Document.Stories.TryGetValue(editor.ActiveStoryId, out var activeStory)
+                ? "Editing " + activeStory.Kind.ToString().ToLowerInvariant() : "Editing document body";
             var state = editor.FormattingState;
             foreach (var (button, read) in _toggles) button.IsChecked = read(state);
             foreach (var control in _editingControls) control.IsEnabled = !editor.IsReadOnly;

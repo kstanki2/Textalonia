@@ -8,13 +8,15 @@ namespace Textalonia.Editing;
 /// <summary>UI-independent editing, selection, formatting, search, and bounded undo/redo.</summary>
 public sealed partial class EditorSession
 {
-    private sealed record State(FlowDocument Document, DocumentIndex Index, TextSelection Selection, TextStyle TypingStyle) : IRetained
+    private sealed record State(FlowDocument Document, DocumentIndex Index, TextSelection Selection, TextStyle TypingStyle, Guid StoryId, ImmutableDictionary<Guid, TextSelection> StorySelections) : IRetained
     {
-        public long Bytes => 80;
+        public long Bytes => 112;
         public void VisitReferences(Action<object> visit) { visit(Index.Tree); visit(Document.Resources); visit(Document.Styles); visit(Document.Defaults); visit(Document.Theme);
             if (!Document.Sections.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Sections)!);
             if (!Document.Fonts.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Fonts)!);
-            visit(TypingStyle); }
+            visit(Document.Stories); visit(DocumentTree.For(Document));
+            if (!Document.Notes.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Notes)!);
+            visit(Document.FootnoteSettings); visit(Document.EndnoteSettings); visit(StorySelections); visit(TypingStyle); }
     }
     private readonly List<State> _undo = [];
     private readonly List<State> _redo = [];
@@ -27,6 +29,9 @@ public sealed partial class EditorSession
     private bool _isReadOnly;
 
     public FlowDocument Document { get; private set; } = new();
+    public FlowDocument ActiveDocument { get; private set; } = new();
+    public Guid ActiveStoryId { get; private set; }
+    private ImmutableDictionary<Guid, TextSelection> _storySelections = ImmutableDictionary<Guid, TextSelection>.Empty;
     public DocumentIndex Index { get; private set; }
     public TextSelection Selection { get; private set; }
     private TextStyle _typingStyle = TextStyle.Default;
@@ -93,10 +98,10 @@ public sealed partial class EditorSession
 
     public EditorSession()
     {
-        Index = new DocumentIndex(Document); _retained.Add(Index.Tree, current: true);
+        ActiveDocument = Document; Index = new DocumentIndex(Document); _retained.Add(Index.Tree, current: true);
         _retained.Add(Document.Resources, current: true);
         RetainFormatting(Document, true);
-        _retained.Add(TypingStyle, current: true);
+        _retained.Add(_storySelections, current: true); _retained.Add(TypingStyle, current: true);
     }
     public EditorSession(FlowDocument document) : this() => Load(document);
 
@@ -109,10 +114,10 @@ public sealed partial class EditorSession
         var index = new DocumentIndex(document);
         _undo.Clear(); _redo.Clear(); _retained.Clear();
         _retained.EnsureCapacity(index.ParagraphCount * 6 + index.Tree.UpdatedNodes * 2);
-        Document = document; Index = index;
+        Document = document; ActiveDocument = document; ActiveStoryId = Guid.Empty; _storySelections = ImmutableDictionary<Guid, TextSelection>.Empty; Index = index;
         Selection = default; _typingStyle = Index.At(0).Paragraph.StyleAt(0);
         _retained.Add(Index.Tree, current: true); _retained.Add(Document.Resources, current: true);
-        RetainFormatting(Document, true); _retained.Add(TypingStyle, current: true);
+        RetainFormatting(Document, true); _retained.Add(_storySelections, current: true); _retained.Add(TypingStyle, current: true);
         BreakUndoGroup(); Revision++; LastEdit = new(Revision - 1, Revision, 0, 0, Index.Length, [], true); OnChanged();
     }
 
@@ -139,7 +144,7 @@ public sealed partial class EditorSession
             if (i > 0) style = FollowingParagraphStyle(style);
             return new Paragraph(s, TypingStyle) { Style = style };
         }).ToImmutableArray();
-        var (document, caret) = ReplaceRange(Document, Selection, fragment);
+        var (document, caret) = ReplaceRange(ActiveDocument, Selection, fragment);
         Commit(document, new(caret, caret), coalesceTyping && Selection.IsEmpty && !text.Contains('\n'), Selection);
     }
 
@@ -149,7 +154,7 @@ public sealed partial class EditorSession
         ArgumentNullException.ThrowIfNull(descriptor);
         if (IsReadOnly) return;
         descriptor.Validate();
-        var source = Document;
+        var source = ActiveDocument;
         if (resource is not null)
         {
             resource.Validate();
@@ -183,7 +188,8 @@ public sealed partial class EditorSession
                     replacement = replacement with { Id = id };
                     replacement.Validate();
                     var paragraph = entry.Paragraph with { Runs = entry.Paragraph.Runs.SetItem(i, run with { Inline = replacement }) };
-                    var document = Index.Tree.Rewrite(Document, new Dictionary<Guid, ImmutableArray<Paragraph>> { [paragraph.Id] = [paragraph] });
+                    var document = Index.Tree.Rewrite(ActiveDocument, new Dictionary<Guid, ImmutableArray<Paragraph>> { [paragraph.Id] = [paragraph] });
+                    if (replacement.Payload is NoteInlinePayload) document.Validate();
                     Commit(document, Selection, editedRange: new(offset, offset + 1));
                     return;
                 }
@@ -201,7 +207,7 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(fragment);
         if (IsReadOnly) return;
-        var (document, caret) = BuildFragmentInsertion(Document, Selection, fragment);
+        var (document, caret) = BuildFragmentInsertion(ActiveDocument, Selection, fragment);
         Commit(document, new(caret, caret), editedRange: Selection);
     }
 
@@ -233,11 +239,11 @@ public sealed partial class EditorSession
     public FlowDocument CopySelection() => CopyFragment().Document;
 
     /// <summary>Clips paragraph boundaries and retains container formatting. Partial merge backups are discarded.</summary>
-    public DocumentFragment CopyFragment() => DocumentFragments.Extract(Document, Index, Selection);
+    public DocumentFragment CopyFragment() => DocumentFragments.Extract(ActiveDocument, Index, Selection);
 
     /// <summary>Copies a rectangular cell range, expanding its edges to include every intersected merged cell.</summary>
     public DocumentFragment CopyCells(Guid tableId, int row, int column, int rowCount, int columnCount) =>
-        DocumentFragments.ExtractCells(Document, tableId, row, column, rowCount, columnCount);
+        DocumentFragments.ExtractCells(ActiveDocument, tableId, row, column, rowCount, columnCount);
     public void DeleteBackward(bool word = false)
     {
         if (IsReadOnly) return;
@@ -259,7 +265,7 @@ public sealed partial class EditorSession
     private void DeleteRange(TextSelection range)
     {
         var paragraph = Index.At(range.Start).Paragraph;
-        var (document, caret) = ReplaceRange(Document, range, [new Paragraph("", TypingStyle) { Style = paragraph.Style }]);
+        var (document, caret) = ReplaceRange(ActiveDocument, range, [new Paragraph("", TypingStyle) { Style = paragraph.Style }]);
         Commit(document, new(caret, caret), editedRange: range);
     }
 
@@ -268,7 +274,7 @@ public sealed partial class EditorSession
         if (IsReadOnly) return;
         var paragraph = Index.At(Selection.Active).Paragraph;
         if (Selection.IsEmpty && paragraph.Length == 0 &&
-            new DocumentStyleResolver(Document).ResolveParagraphStyle(paragraph.Style).List != ListKind.None)
+            new DocumentStyleResolver(ActiveDocument).ResolveParagraphStyle(paragraph.Style).List != ListKind.None)
             ApplyParagraphStyle(ClearList);
         else InsertText("\n");
     }
@@ -277,13 +283,13 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(change);
         if (IsReadOnly) return;
-        var resolver = new DocumentStyleResolver(Document);
+        var resolver = new DocumentStyleResolver(ActiveDocument);
         var activeParagraph = Index.At(Selection.Active).Paragraph;
         var newStyle = ChangeTextStyle(activeParagraph, TypingStyle, change, resolver);
-        (Document with { Blocks = [new Paragraph("", newStyle)], Sections = [] }).Validate();
+        (ActiveDocument with { Blocks = [new Paragraph("", newStyle)], Sections = [] }).Validate();
         if (Selection.IsEmpty)
         {
-            Commit(Document, Selection, editedRange: Selection, typingStyle: newStyle); return;
+            Commit(ActiveDocument, Selection, editedRange: Selection, typingStyle: newStyle); return;
         }
         var selection = Selection;
         var document = ChangeParagraphs(position =>
@@ -322,7 +328,7 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(change);
         if (IsReadOnly) return;
-        var resolver = new DocumentStyleResolver(Document);
+        var resolver = new DocumentStyleResolver(ActiveDocument);
         var document = ChangeParagraphs(p => p.Paragraph with { Style = ChangeParagraphStyle(p.Paragraph.Style, change, resolver) });
         Commit(document, Selection, editedRange: Selection);
     }
@@ -332,7 +338,7 @@ public sealed partial class EditorSession
         if (level is < 0 or > 6) throw new ArgumentOutOfRangeException(nameof(level));
         if (IsReadOnly) return;
         var size = level switch { 1 => 32, 2 => 26, 3 => 22, 4 => 20, 5 => 18, _ => 16 };
-        var resolver = new DocumentStyleResolver(Document);
+        var resolver = new DocumentStyleResolver(ActiveDocument);
         TextStyle Change(TextStyle style) => style with { FontSize = size, Bold = level > 0, FontWeight = null };
         var document = ChangeParagraphs(entry =>
         {
@@ -379,7 +385,7 @@ public sealed partial class EditorSession
     public void ContinueList(Guid listId)
     {
         if (IsReadOnly) return;
-        var resolver = new DocumentStyleResolver(Document);
+        var resolver = new DocumentStyleResolver(ActiveDocument);
         var source = Index.Enumerate(0, Index.Length).Select(p => resolver.ResolveParagraphStyle(p.Paragraph.Style))
             .FirstOrDefault(style => style.ListId == listId && style.List != ListKind.None)
             ?? throw new ArgumentException("The list identity does not exist in this document.", nameof(listId));
@@ -400,10 +406,10 @@ public sealed partial class EditorSession
             if (!Selection.IsEmpty && entry.Start >= Selection.End) break;
             var paragraph = change(entry);
             if (ReferenceEquals(paragraph, entry.Paragraph)) continue;
-            (Document with { Blocks = [paragraph], Sections = [] }).Validate();
+            (ActiveDocument with { Blocks = [paragraph], Sections = [] }).Validate();
             replacements.Add(paragraph.Id, [paragraph]);
         }
-        return Index.Tree.Rewrite(Document, replacements);
+        return Index.Tree.Rewrite(ActiveDocument, replacements);
     }
 
     public IEnumerable<TextSelection> FindAll(string query, bool matchCase = false)
@@ -428,7 +434,7 @@ public sealed partial class EditorSession
         if (IsReadOnly) return 0;
         var matches = FindAll(query, matchCase).ToArray();
         if (matches.Length == 0) return 0;
-        var document = Document;
+        var document = ActiveDocument;
         foreach (var match in matches.Reverse())
         {
             var current = new DocumentIndex(document).At(match.Start).Paragraph;
@@ -444,7 +450,7 @@ public sealed partial class EditorSession
     public void Execute(Func<FlowDocument, FlowDocument> operation)
     {
         if (IsReadOnly) return;
-        var document = operation(Document);
+        var document = operation(ActiveDocument);
         document.Validate();
         Commit(document, Selection);
     }
@@ -471,7 +477,7 @@ public sealed partial class EditorSession
                 _ => block
             }).ToImmutableArray();
         }
-        var document = Document with { Blocks = Insert(Document.Blocks) };
+        var document = ActiveDocument with { Blocks = Insert(ActiveDocument.Blocks) };
         document.Validate();
         var caret = new DocumentIndex(document).ById(((Paragraph)table.Rows[0][0].Blocks[0]).Id).Start;
         Commit(document, new(caret, caret));
@@ -512,7 +518,7 @@ public sealed partial class EditorSession
                     t.IsCovered(r, c) ? cell : cell with { Blocks = Remove(cell.Blocks) }).ToImmutableArray()).ToImmutableArray() },
                 _ => b
             }).ToImmutableArray());
-        Commit(Document with { Blocks = Remove(Document.Blocks) }, Selection);
+        Commit(ActiveDocument with { Blocks = Remove(ActiveDocument.Blocks) }, Selection);
     }
 
     public void Undo()
@@ -549,16 +555,24 @@ public sealed partial class EditorSession
 
     public void BreakUndoGroup() => _typingGroup = false;
     private int Snap(int position) => Index.Snap(position);
-    private State Capture() => new(Document, Index, Selection, TypingStyle);
+    private State Capture() => new(Document, Index, Selection, TypingStyle, ActiveStoryId, _storySelections);
     private void Restore(State state)
     {
+        ActiveStoryId = state.StoryId; SetStorySelections(state.StorySelections);
         SetDocument(state.Document, state.Index); Selection = state.Selection;
         TypingStyle = state.TypingStyle; BreakUndoGroup(); Revision++;
         LastEdit = new(Revision - 1, Revision, 0, 0, Index.Length, [], true);
     }
-    private void Commit(FlowDocument document, TextSelection selection, bool typing = false, TextSelection? editedRange = null, TextStyle? typingStyle = null)
+    private void Commit(FlowDocument document, TextSelection selection, bool typing = false, TextSelection? editedRange = null, TextStyle? typingStyle = null, bool wholeDocument = false)
     {
+        if (!wholeDocument && ActiveStoryId != Guid.Empty)
+            document = Document with { Stories = Document.Stories.SetItem(ActiveStoryId, Document.Stories[ActiveStoryId] with { Blocks = document.Blocks }),
+                Resources = Document.Resources.SetItems(document.Resources), Styles = document.Styles, Defaults = document.Defaults, Theme = document.Theme, Fonts = document.Fonts };
         document = DocumentSection.Reconcile(document);
+        var previousStories = document.Stories;
+        if (!document.Notes.IsEmpty) document = PruneDetachedNotes(document);
+        var removedNoteStories = !ReferenceEquals(previousStories, document.Stories);
+        if (!document.Stories.IsEmpty) document.Validate();
         // Typing formatting can own a named reference even when no run uses it yet.
         // Check before changing history or document roots, including application edits.
         DocumentStyleCatalog.Reference(document.Styles.Characters, (typingStyle ?? TypingStyle).StyleId);
@@ -571,10 +585,10 @@ public sealed partial class EditorSession
         }
         // Text-only local edits cannot orphan an encoded resource. Avoid materializing the
         // complete block tree while typing in a large document containing images elsewhere.
-        if (!document.Resources.IsEmpty && (editedRange is null ||
+        if (!document.Resources.IsEmpty && (removedNoteStories || editedRange is null ||
             editedRange.Value is { Start: 0, Length: > 0 } full && full.End == oldLength || RangeContainsImage(editedRange.Value)))
             document = document.PruneUnusedResources();
-        ClearRedo(); SetDocument(document, new(document));
+        ClearRedo(); SetDocument(document, new(document.GetStoryDocument(ActiveStoryId)));
         if (selection.IsEmpty)
         {
             var desired = Math.Clamp(selection.Active, 0, Index.Length);
@@ -626,12 +640,14 @@ public sealed partial class EditorSession
         _retained.Remove(Index.Tree, current: true);
         _retained.Remove(Document.Resources, current: true);
         RetainFormatting(Document, false);
-        Document = document; Index = index;
+        Document = document; ActiveDocument = document.GetStoryDocument(ActiveStoryId); Index = index;
     }
     private void RetainFormatting(FlowDocument document, bool add)
     {
         void Change(object value) { if (add) _retained.Add(value, current: true); else _retained.Remove(value, current: true); }
         Change(document.Styles); Change(document.Defaults); Change(document.Theme);
+        Change(document.Stories); Change(DocumentTree.For(document)); Change(document.FootnoteSettings); Change(document.EndnoteSettings);
+        if (!document.Notes.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Notes)!);
         if (!document.Sections.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Sections)!);
         if (!document.Fonts.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Fonts)!);
     }

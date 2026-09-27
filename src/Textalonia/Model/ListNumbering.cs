@@ -190,7 +190,7 @@ public static class ListNumbering
         for (var i = level + 1; i < values.Count; i++) values[i] = null;
         return new(definition, values.ToImmutable());
     }
-    private static string Format(int value, ListMarkerStyle marker)
+    internal static string Format(int value, ListMarkerStyle marker)
     {
         if (marker is ListMarkerStyle.LowerLetter or ListMarkerStyle.UpperLetter)
         {

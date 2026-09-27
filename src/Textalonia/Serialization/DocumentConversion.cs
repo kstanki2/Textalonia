@@ -128,12 +128,19 @@ public static class DocumentFormatExtensions
                 if (style.Frame is not null) ConversionDiagnostics.Report("conversion.paragraph-frame", "Legacy paragraph frame", "Paragraph placement is omitted; text remains in normal flow.", entry.Paragraph.Id);
             }
         }
-        if (format is not (JsonDocumentFormat or XamlDocumentFormat) && !document.Sections.IsEmpty)
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat) && !document.Sections.IsEmpty)
             ConversionDiagnostics.Report("conversion.page-sections", "Physical page sections",
                 "Page settings, section boundaries, numbering, columns and page decoration are omitted by this format.");
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat) && (!document.Stories.IsEmpty || !document.Notes.IsEmpty))
+            ConversionDiagnostics.Report("conversion.stories", "Headers, footers and note stories", "Main story retained with reference alternative text; secondary stories and note semantics omitted.");
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat))
+            foreach (var inline in new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs).Select(r => r.Inline).OfType<InlineDescriptor>().Where(i => i.Payload is PageFieldInlinePayload))
+                ConversionDiagnostics.Report("conversion.page-field", "Dynamic page field", "Cached alternative text retained.", inline.Id);
         if (format is HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or MarkdownDocumentFormat)
         {
             ReportMergeHistory(document.Blocks);
+            if (format is RtfDocumentFormat or DocxDocumentFormat)
+                foreach (var story in document.Stories.Values) { ReportMergeHistory(story.Blocks); ReportIntegrationSemantics(story.Blocks); }
             ReportUnusedResources(document, format is DocxDocumentFormat);
         }
         if (format is PlainTextDocumentFormat) ReportPlainTextLoss(document);
@@ -198,6 +205,7 @@ public static class DocumentFormatExtensions
     private static void ReportPlainTextLoss(FlowDocument document)
     {
         StyleConversion.ReportLosses(DocumentFormats.PlainText, document);
+        if (!document.Stories.IsEmpty || !document.Notes.IsEmpty) ConversionDiagnostics.Report("conversion.stories", "Headers, footers and note stories", "Secondary stories and note semantics omitted.");
         if (!document.Sections.IsEmpty) ConversionDiagnostics.Report("conversion.page-sections", "Physical page sections",
             "Physical page settings and section boundaries are omitted.");
         void Visit(IEnumerable<Block> blocks)
@@ -235,7 +243,9 @@ public static class DocumentFormatExtensions
 
     private static void ReportUnusedResources(FlowDocument document, bool includeFonts)
     {
-        var visible = new HashSet<string>(new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs)
+        var paragraphs = new DocumentIndex(document).Paragraphs.AsEnumerable();
+        foreach (var story in document.Stories.Values) paragraphs = paragraphs.Concat(new DocumentIndex(new FlowDocument(story.Blocks)).Paragraphs);
+        var visible = new HashSet<string>(paragraphs.SelectMany(p => p.Paragraph.Runs)
             .Select(r => r.Inline?.Payload).OfType<ImageInlinePayload>().Select(p => p.ResourceId), StringComparer.Ordinal);
         if (includeFonts) visible.UnionWith(document.Fonts.Select(font => font.ResourceId));
         foreach (var resource in document.Resources.Keys.Order(StringComparer.Ordinal))

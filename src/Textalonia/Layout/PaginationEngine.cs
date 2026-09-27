@@ -12,7 +12,7 @@ namespace Textalonia.Layout;
 /// Exact synchronous pagination using the same Avalonia shaping backend as Simple view. Call on the
 /// backend's UI thread. The reusable glyph cache is bounded; immutable snapshots own their checkpoints.
 /// </summary>
-public sealed class PaginationEngine : IDisposable
+public sealed partial class PaginationEngine : IDisposable
 {
     private sealed record Key(Paragraph Paragraph, double Width, int Offset, int MaxCharacters);
     private sealed record Cached(ExactParagraph Value, LinkedListNode<Key> Node);
@@ -82,7 +82,7 @@ public sealed class PaginationEngine : IDisposable
     }
     public void Dispose() { if (_disposed) return; _disposed = true; Clear(); }
 
-    private sealed class Builder(PaginationEngine engine, FlowDocument document, PaginationOptions options, IBrush border, Builder? previous)
+    private sealed partial class Builder(PaginationEngine engine, FlowDocument document, PaginationOptions options, IBrush border, Builder? previous)
     {
         private sealed class Sheet
         {
@@ -114,7 +114,7 @@ public sealed class PaginationEngine : IDisposable
             public List<TableCellVisual> Cells = [];
             public int Next;
         }
-        private readonly DocumentIndex _index = new(document);
+        private DocumentIndex _index = new(document);
         private readonly DocumentStyleResolver _resolver = new(document);
         private readonly List<Sheet> _pages = [];
         private readonly List<LineFragment> _fragments = [];
@@ -144,7 +144,7 @@ public sealed class PaginationEngine : IDisposable
             Run();
             // Binary search the final occupied page of each multicolumn section. Every trial reruns exact
             // line layout at the actual (possibly unequal) column widths; estimates never choose breaks.
-            if (!options.Draft)
+            if (!options.Draft && document.Notes.IsEmpty)
             {
                 var candidates = _pages.Select((p, i) => (p, i)).GroupBy(v => v.p.Section.Id)
                     .Select(g => g.Last()).Where(v => v.p.Columns.Length > 1 && v.p.Settings.BalanceColumns && !v.p.Blank).ToArray();
@@ -163,8 +163,9 @@ public sealed class PaginationEngine : IDisposable
                     _balanceLimits[key] = high + .01; Run();
                 }
             }
+            CompleteStories();
             var result = Finish();
-            var retained = _fragments.Select(f => f.Measurement).ToHashSet();
+            var retained = _fragments.Concat(_storyFragments).Select(f => f.Measurement).ToHashSet();
             foreach (var measurement in _held.Where(m => !retained.Contains(m)).ToArray()) { measurement.Release(); _held.Remove(measurement); }
             foreach (var key in _knownMeasurements.Where(p => !retained.Contains(p.Value)).Select(p => p.Key).ToArray()) _knownMeasurements.Remove(key);
             _prior = null; return result;
@@ -173,6 +174,7 @@ public sealed class PaginationEngine : IDisposable
         private void Run()
         {
             _pages.Clear(); _fragments.Clear(); _decorations.Clear(); _cells.Clear();
+            ResetStories();
             _checkpoints.Clear(); engine.ReusedCheckpoints = 0; engine.ReflowedBlocks = 0;
             _column = 0;
             _section = document.Sections.FirstOrDefault() ?? new DocumentSection { Id = Guid.Empty };
@@ -194,6 +196,7 @@ public sealed class PaginationEngine : IDisposable
                     _fragments.Count - fragmentStart, decorationStart, _decorations.Count - decorationStart,
                     cellStart, _cells.Count - cellStart, _pages.Skip(before.PageCount - 1).Select(Copy).ToImmutableArray());
             }
+            CompleteNotes();
             if (options.Draft) Page.Height = Math.Max(Page.Settings.EffectiveHeight, _y + Page.Settings.Margins.Bottom);
         }
 
@@ -212,7 +215,7 @@ public sealed class PaginationEngine : IDisposable
         }
         private bool TryReuse(Item item, ImmutableArray<Block> dependencies, State before)
         {
-            if (_prior is null || _prior._options != options || !Equals(_prior._border, border) ||
+            if (!document.Notes.IsEmpty || !document.Stories.IsEmpty || _prior is null || _prior._options != options || !Equals(_prior._border, border) ||
                 !_prior._source.Sections.SequenceEqual(document.Sections) || _balanceLimits.Count != 0 || _prior._balanceLimits.Count != 0 ||
                 !_prior._checkpoints.TryGetValue(item.Block.Id, out var checkpoint) || checkpoint.Item != item ||
                 !checkpoint.Dependencies.SequenceEqual(dependencies) ||
@@ -265,6 +268,7 @@ public sealed class PaginationEngine : IDisposable
             page.Columns = options.Draft ? [body.WithHeight(1e15)] : Columns(settings, body.WithHeight(limit));
             _column = 0; _y = page.Columns[0].Top;
             if (settings.LineNumbering is { Restart: LineNumberRestart.EachPage } numbering) _lineNumber = numbering.Start;
+            ContinueFootnotes();
         }
         private static Rect[] Columns(PageSettings settings, Rect body)
         {
@@ -282,6 +286,8 @@ public sealed class PaginationEngine : IDisposable
         }
         private void Transition(DocumentSection section)
         {
+            PlaceEndnotes(_section.Id, sectionEnd: true);
+            while (_pendingNotes.Count != 0) NewPage();
             var previous = _section; _section = section;
             if (section.PageSettings.LineNumbering is { Restart: LineNumberRestart.EachSection } numbering) _lineNumber = numbering.Start;
             if (options.Draft)
@@ -344,6 +350,9 @@ public sealed class PaginationEngine : IDisposable
         private void PlaceParagraph(Paragraph source, Item item, int itemIndex)
         {
             var paragraph = Grid(Resolve(source)); var style = paragraph.Style;
+            var hasNoteReferences = source.Runs.Any(r => r.Inline?.Payload is NoteInlinePayload);
+            if (!options.Draft && hasNoteReferences && style.WidowControl)
+                _layoutDiagnostics.Add($"Paragraph {source.Id} gives note ownership precedence over widow/orphan constraints.");
             if (!options.Draft)
             {
                 // Positioned paragraphs consume a logical page/column even when they do not advance flow Y.
@@ -354,6 +363,7 @@ public sealed class PaginationEngine : IDisposable
             if (style.Frame is { } frame)
             {
                 var shaped = Measure(paragraph, Math.Max(16, frame.Width - Indent(paragraph) - style.RightIndent));
+                PrepareNotes(source, 0, source.Length, Math.Max(1, frame.Y + Math.Min(frame.Height ?? shaped.Height, shaped.Height)));
                 var region = new Rect(Column.Left + frame.X, Column.Top + frame.Y, frame.Width, frame.Height ?? shaped.Height);
                 var clip = region.Intersect(Column); var frameY = region.Top;
                 foreach (var line in shaped.Lines)
@@ -401,14 +411,27 @@ public sealed class PaginationEngine : IDisposable
             while (nextLine < measurement.Lines.Length)
             {
                 var lines = measurement.Lines;
+                if (!document.Notes.IsEmpty)
+                {
+                    if (lines[nextLine].Height > Remaining + .01 && !AtTop)
+                    { ContinueInNextColumn(); continue; }
+                    var oldWidth = Width();
+                    PrepareNotes(source, lines[nextLine].Start, lines[nextLine].End, lines[nextLine].Height);
+                    if (Math.Abs(oldWidth - Width()) > .01)
+                    { measurement = Measure(paragraph, Width(), lines[nextLine].Start); nextLine = 0; lines = measurement.Lines; }
+                    var displayed = DisplayReferenceMarks(paragraph);
+                    if (displayed != paragraph)
+                    { paragraph = displayed; measurement = Measure(paragraph, Width(), measurement.Offset); lines = measurement.Lines; }
+                }
                 var fit = 0; var height = 0d;
                 while (nextLine + fit < lines.Length && height + lines[nextLine + fit].Height <= Remaining + .01)
                 { height += lines[nextLine + fit].Height; fit++; }
                 if (fit == 0 && !AtTop)
                 { ContinueInNextColumn(); continue; }
                 if (fit == 0) fit = 1; // An oversize line/object is clipped once, never retried indefinitely.
+                if (hasNoteReferences) fit = Math.Min(fit, 1);
                 var remainingLines = lines.Length - nextLine;
-                if (style.WidowControl && remainingLines > fit)
+                if (!hasNoteReferences && style.WidowControl && remainingLines > fit)
                 {
                     if (!AtTop && (fit == 1 || remainingLines <= 3 && lines.Skip(nextLine).Sum(l => l.Height) <= Column.Height))
                     { ContinueInNextColumn(); continue; }
@@ -429,7 +452,7 @@ public sealed class PaginationEngine : IDisposable
                             DocumentLayout.Brush(decoration.Background), DocumentLayout.Brush(decoration.BorderColor), true, decoration.Borders, Column)));
                     _y += line.Height; first = false;
                 }
-                if (nextLine < lines.Length)
+                if (nextLine < lines.Length && (!hasNoteReferences || lines[nextLine].Height > Remaining + .01))
                 { ContinueInNextColumn(); }
             }
             _y += after;
@@ -477,7 +500,21 @@ public sealed class PaginationEngine : IDisposable
                 while (consumed + .01 < groupHeight || group.Any(c => c.Next < c.Lines.Count))
                 {
                     if (Remaining < 1 && !options.Draft) Continue();
+                    var nextReference = document.Notes.IsEmpty ? null : group.SelectMany(c => c.Lines.Skip(c.Next))
+                        .Where(l => NotesIn(l.Position.Paragraph, l.Line.Start, l.Line.End).Any()).OrderBy(l => l.Y).FirstOrDefault();
+                    if (nextReference is not null && nextReference.Y <= consumed + .01)
+                    {
+                        var oldPage = _pages.Count;
+                        foreach (var local in group.SelectMany(c => c.Lines.Skip(c.Next)).Where(l => l.Y <= consumed + .01))
+                            PrepareNotes(local.Position.Paragraph, local.Line.Start, local.Line.End, local.Line.Height);
+                        if (oldPage != _pages.Count && Math.Abs(measuredWidth - Width()) > .01)
+                        {
+                            measuredWidth = Width(); group = MeasureTable(table, measuredWidth, progress, startRow, endRow)[0];
+                            groupHeight = group.Select(c => c.GroupHeight).DefaultIfEmpty().Max(); consumed = 0; continue;
+                        }
+                    }
                     var cut = Math.Min(groupHeight, consumed + Remaining);
+                    if (nextReference is not null && nextReference.Y > consumed + .01) cut = Math.Min(cut, nextReference.Y);
                     var oversize = false;
                     bool changed;
                     do
@@ -493,11 +530,40 @@ public sealed class PaginationEngine : IDisposable
                     } while (changed && cut > consumed + .01);
                     if (cut <= consumed + .01)
                     {
-                        if (!AtTop) { Continue(); continue; }
-                        oversize = true;
-                        // An oversize atomic line is emitted once with the page/cell clip.
-                        cut = Math.Min(groupHeight, consumed + Remaining);
-                        if (cut <= consumed + .01) cut = consumed + Math.Max(1, Math.Min(Remaining, 1));
+                        if (nextReference is not null && nextReference.Y > consumed + .01)
+                        {
+                            // A tall adjacent cell may cross the reference's line band. Reserve
+                            // the note before choosing that shared cut whenever both fit.
+                            var owningBand = group.SelectMany(c => c.Lines.Skip(c.Next))
+                                .Where(l => Math.Abs(l.Y - nextReference.Y) < .01).ToArray();
+                            var referenceHeight = nextReference.Y - consumed + owningBand.Max(l => l.Line.Height);
+                            var reservation = EstimateNoteReservation(owningBand);
+                            if (_y + referenceHeight + reservation <= Column.Bottom + .01)
+                            {
+                                foreach (var local in owningBand)
+                                    PrepareNotes(local.Position.Paragraph, local.Line.Start, local.Line.End, referenceHeight);
+                                cut = Math.Min(groupHeight, consumed + Remaining);
+                                var later = group.SelectMany(c => c.Lines.Skip(c.Next))
+                                    .Where(l => NotesIn(l.Position.Paragraph, l.Line.Start, l.Line.End).Any()).Select(l => l.Y).DefaultIfEmpty(cut).Min();
+                                cut = Math.Min(cut, later);
+                            }
+                            else
+                            {
+                                // Preserve the reference for the next slice. The atomic content
+                                // crossing this cut is consumed once with an explicit diagnostic.
+                                cut = nextReference.Y;
+                                _layoutDiagnostics.Add("An atomic table line crossing a footnote reference band is clipped to preserve note ownership.");
+                            }
+                            oversize = true;
+                        }
+                        else
+                        {
+                            if (!AtTop) { Continue(); continue; }
+                            oversize = true;
+                            // An oversize atomic line is emitted once with the page/cell clip.
+                            cut = Math.Min(groupHeight, consumed + Remaining);
+                            if (cut <= consumed + .01) cut = consumed + Math.Max(1, Math.Min(Remaining, 1));
+                        }
                     }
                     foreach (var cell in group)
                     {
@@ -635,7 +701,7 @@ public sealed class PaginationEngine : IDisposable
                     {
                         var offset = 0;
                         if (progress is not null && progress.TryGetValue(source.Id, out offset) && offset < 0) break;
-                        var paragraph = Grid(Resolve(source)); var indent = Indent(paragraph);
+                        var paragraph = DisplayParagraph(Grid(Resolve(source))); var indent = Indent(paragraph);
                         var available = Math.Max(16, width - indent - paragraph.Style.RightIndent);
                         var measurement = Measure(paragraph, available, offset);
                         if (offset == 0) y += paragraph.Style.SpaceBefore;
@@ -700,7 +766,11 @@ public sealed class PaginationEngine : IDisposable
                 _decorations.Select(d => d.Decoration with { Bounds = d.Decoration.Bounds.Translate(positions[d.Page]),
                     Clip = d.Decoration.Clip?.Translate(positions[d.Page]) }).ToImmutableArray(),
                 _cells.Select(c => c.Cell with { Bounds = c.Cell.Bounds.Translate(positions[c.Page]), Clip = c.Cell.Clip?.Translate(positions[c.Page]) }).ToImmutableArray(),
-                engine._environment!.Font, engine._environment.Foreground, engine._environment.Fonts.Diagnostics);
+                engine._environment!.Font, engine._environment.Foreground, engine._environment.Fonts.Diagnostics,
+                _storyFragments.Select(f => ShiftStoryFragment(f, positions[f.PageIndex])).ToImmutableArray(),
+                _storyRegions.Select(r => r with { Bounds = r.Bounds.Translate(positions[r.PageIndex]) }).ToImmutableArray(),
+                _storyCells.Select(c => (c.StoryId, c.Page, c.Cell with { Bounds = c.Cell.Bounds.Translate(positions[c.Page]), Clip = c.Cell.Clip?.Translate(positions[c.Page]) })).ToImmutableArray(),
+                _layoutDiagnostics.ToImmutableArray());
         }
         public void Release() { foreach (var measurement in _held) measurement.Release(); _held.Clear(); _prior = null; }
     }

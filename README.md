@@ -223,7 +223,8 @@ Highlights use snapshot offsets: update or clear them after edits. Ctrl/Cmd-clic
 
 Table text participates in normal selection, formatting, and undo. Insert/delete rows and columns through merged spans, merge/split cells, and change cell backgrounds through the toolbar or model APIs. Cell `Blocks` can contain nested tables and sections; table commands target the innermost cell. Persisted column widths, row sizing, cell padding and independent borders are available through model APIs.
 
-Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited blocks in the anchor cell and restores the other original cells. Undo always restores the exact previous state. See [document semantics](docs/DOCUMENT-MODEL.md) for structural deletion rules, current native schema, list restart/continuation, mixed-selection state and typography APIs. See [styles and themes](docs/STYLES.md)
+Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited blocks in the anchor cell and restores the other original cells. Undo always restores the exact previous state. See [document semantics](docs/DOCUMENT-MODEL.md) for structural deletion rules, current native schema, list restart/continuation, mixed-selection state and typography APIs. See [headers, footers and notes](docs/STORIES.md) for story editing, shared undo,
+page fields, continuation layout and DOCX/RTF support. See [styles and themes](docs/STYLES.md)
 for named definitions, sparse inheritance, advanced typography, embedded fonts and formatting dialogs.
 
 Cross-cell text replacement preserves table structure; selecting and replacing the entire document clears its structure. Versioned rich clipboard fragments preserve sections, nested/merged tables and inline resources. Repeated paste remaps object/list identities and colliding resource keys; partial table selections clip unselected content. See [conversion and clipboard contracts](docs/INTERCHANGE.md) for boundary and destination merging rules.
@@ -279,7 +280,7 @@ the demo includes an alternate keymap and caret. See [input contracts](docs/INPU
 Insert immutable inline image/control descriptors with `Session.InsertInline`,
 resize or update them with `Session.UpdateInline`, resolve external images through
 `InlineResourceResolver`, and register explicit control factories through
-`InlineControlFactories`. Native schema v6 preserves descriptors and encoded
+`InlineControlFactories`. Native schema v7 preserves descriptors and encoded
 resources without creating controls during save/load. See
 [inline content and ownership](docs/INLINE-CONTENT.md).
 
@@ -294,6 +295,6 @@ Use `DocumentFormats.Xaml` for Textalonia's versioned, data-only `.txaml`/`.xaml
 vocabulary and `DocumentFormats.Markdown` for the documented `.md`/`.markdown`
 dialect. `MarkdownViewer` adds asynchronous source updates and optional host-provided
 code highlighting while reusing selection, themes, links and resource services.
-No new dependencies are required. Native JSON writes schema v6 and reads v4/v5/v6;
+No new dependencies are required. Native JSON writes schema v7 and reads v4/v5/v6/v7;
 other versions are rejected. V4 formatting loads as explicit direct formatting. See [integration boundaries and examples](docs/INTEGRATIONS.md),
 [Markdown dialect](docs/MARKDOWN.md), and [XAML vocabulary](docs/XAML.md).

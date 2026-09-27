@@ -109,7 +109,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
         public List<Block> Blocks { get; } = [];
         public TableRowSizing Sizing { get; set; } = new();
     }
-    private sealed class Reader(Group root, bool byteSource = false)
+    private sealed class Reader(Group root, bool byteSource = false, bool readingStory = false)
     {
         private readonly Dictionary<int, string> _fonts = [];
         private readonly List<string?> _colors = [null];
@@ -135,6 +135,15 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
         private bool _nestedProperties;
         private bool _flattenFields;
         private long _resourceBytes;
+        private readonly string _resourcePrefix = Guid.NewGuid().ToString("N");
+        private readonly ImmutableDictionary<Guid, DocumentStory>.Builder _stories = ImmutableDictionary.CreateBuilder<Guid, DocumentStory>();
+        private readonly List<DocumentNote> _notes = [];
+        private readonly List<DocumentSection> _physicalSections = [];
+        private DocumentSection _physicalSection = new();
+        private bool _hasPhysicalSections;
+        private bool _oddEvenHeaders;
+        private NoteSettings _footnoteSettings = new();
+        private NoteSettings _endnoteSettings = new() { Placement = NotePlacement.DocumentEnd };
 
         private void Loss(string code, string feature, string fallback, int? offset = null)
         {
@@ -254,6 +263,17 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
         private void EndSection(bool force)
         {
             EndTable();
+            if (_section.Count == 0 && (force || _hasPhysicalSections && _blocks.Count == 0)) _section.Add(new Paragraph());
+            if (_hasPhysicalSections && _physicalSections.Count > 0 && _section.FirstOrDefault() is Table)
+            {
+                Loss("rtf.section-table-boundary", "Physical section beginning with a table", "Inserted an empty paragraph before the table to retain the section boundary.");
+                _section.Insert(0, new Paragraph());
+            }
+            if (_section.Count > 0 || force)
+            {
+                var first = new DocumentIndex(new FlowDocument(_section)).Paragraphs.First().Paragraph.Id;
+                _physicalSections.Add(_physicalSection with { StartParagraphId = _physicalSections.Count == 0 ? Guid.Empty : first });
+            }
             if (force || _sectionActive && _section.Count > 0) _blocks.Add(new Section { Blocks = _section.Count == 0 ? [new Paragraph()] : _section.ToImmutableArray() });
             else _blocks.AddRange(_section);
             _section.Clear(); _sectionActive = false;
@@ -272,7 +292,8 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             Walk(root, new(_defaultText, ParagraphStyle.Default), true);
             if (_row is not null) throw new FormatException("Unterminated RTF table row.");
             PendingParagraph(_lastState); EndSection(false);
-            var document = new FlowDocument(_blocks) { Resources = _resources.ToImmutable() };
+            var document = new FlowDocument(_blocks) { Resources = _resources.ToImmutable(), Stories = _stories.ToImmutable(), Notes = _notes.ToImmutableArray(),
+                Sections = _hasPhysicalSections ? _physicalSections.ToImmutableArray() : [], FootnoteSettings = _footnoteSettings, EndnoteSettings = _endnoteSettings };
             document.Validate(); return document;
         }
         private string DecodeLiterals(List<Node> nodes, ref int index, ref int fallback)
@@ -409,7 +430,21 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 }
                 if (destination == "field") { Field(group, state); return; }
                 if (destination == "pict") { Picture(group, state); return; }
-                if (destination is "stylesheet" or "object" or "header" or "headerl" or "headerr" or "headerf" or "footer" or "footerl" or "footerr" or "footerf" or "footnote" or "annotation" or "pn" || group.Nodes.FirstOrDefault() is Control { Word: "*" } && destination != "nesttableprops")
+                if (destination is "header" or "headerl" or "headerr" or "headerf" or "footer" or "footerl" or "footerr" or "footerf") { HeaderFooter(group); return; }
+                if (destination == "footnote") { Note(group, state); return; }
+                if (destination is "ftnsep" or "ftnsepc" or "aftnsep" or "aftnsepc")
+                {
+                    var settings = destination.StartsWith('a') ? _endnoteSettings : _footnoteSettings;
+                    var separator = Plain(group);
+                    if (separator.Length > 256) { Loss("rtf.note-separator", "Oversized note separator", "Retained the default separator.", group.Offset); return; }
+                    settings = destination.EndsWith('c') ? settings with { ContinuationSeparatorText = separator } : settings with { SeparatorText = separator };
+                    if (destination.StartsWith('a')) _endnoteSettings = settings; else _footnoteSettings = settings;
+                    if (group.Nodes.OfType<Group>().Any() || group.Nodes.OfType<Control>().Any(c => c.Word is "b" or "i" or "pict" or "trowd"))
+                        Loss("rtf.note-separator-formatting", "Rich note separator", "Retained the separator text without rich formatting.", group.Offset);
+                    return;
+                }
+                if (destination == "textalonianotemark") return;
+                if (destination is "stylesheet" or "object" or "annotation" or "pn" || group.Nodes.FirstOrDefault() is Control { Word: "*" } && destination != "nesttableprops")
                 { Loss("rtf.unsupported-destination", $"RTF destination {destination}", "Omitted this destination; retained surrounding body text.", group.Offset); return; }
             }
             var outerProperties = _nestedProperties;
@@ -424,13 +459,87 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 }
             _nestedProperties = outerProperties;
         }
+        private DocumentStory ReadStory(Group group, DocumentStoryKind kind)
+        {
+            if (readingStory) throw new FormatException("Nested RTF stories are unsupported.");
+            var nodes = root.Nodes.Where(n => n is Control { Word: "ansicpg" or "deff" } || n is Group { Destination: "fonttbl" or "colortbl" or "listtable" or "listoverridetable" }).ToList();
+            nodes.AddRange(group.Nodes.Where(n => n is not Control { Word: "header" or "headerl" or "headerr" or "headerf" or "footer" or "footerl" or "footerr" or "footerf" or "footnote" or "ftnalt" or "*" }));
+            var storyDocument = new Reader(new Group(nodes, group.Offset), byteSource, true).Read();
+            foreach (var resource in storyDocument.Resources)
+            {
+                _resourceBytes += resource.Value.Data.Length;
+                if (_resourceBytes > DocumentResource.MaximumDocumentEmbeddedBytes || _resources.Count >= 4096) throw new FormatException("RTF embedded resources exceed the size limit.");
+                _resources.Add(resource.Key, resource.Value);
+            }
+            var story = new DocumentStory { Kind = kind, Blocks = storyDocument.Blocks };
+            if (_stories.Count >= 10000) throw new FormatException("RTF contains too many stories.");
+            _stories.Add(story.Id, story);
+            return story;
+        }
+        private void HeaderFooter(Group group)
+        {
+            if (readingStory) { Loss("rtf.nested-story", "Nested header/footer story", "Omitted the nested destination.", group.Offset); return; }
+            var story = ReadStory(group, group.Destination!.StartsWith("header", StringComparison.Ordinal) ? DocumentStoryKind.Header : DocumentStoryKind.Footer);
+            var reference = new StoryReference { StoryId = story.Id, LinkToPrevious = false };
+            var settings = _physicalSection.HeaderFooter;
+            settings = group.Destination switch
+            {
+                "headerf" => settings with { FirstHeader = reference }, "headerl" => settings with { EvenHeader = reference },
+                "footerf" => settings with { FirstFooter = reference }, "footerl" => settings with { EvenFooter = reference },
+                "footer" or "footerr" => settings with { PrimaryFooter = reference }, _ => settings with { PrimaryHeader = reference }
+            };
+            _physicalSection = _physicalSection with { HeaderFooter = settings };
+            _hasPhysicalSections = true;
+        }
+        private void Note(Group group, State state)
+        {
+            if (readingStory) { Loss("rtf.nested-note", "Note reference in a secondary story", "Omitted the nested note destination.", group.Offset); return; }
+            var endnote = group.Nodes.OfType<Control>().Any(c => c.Word == "ftnalt");
+            var custom = group.Groups("textalonianotemark").FirstOrDefault();
+            var mark = custom is null ? null : Plain(custom);
+            var markerGroup = group.Nodes.OfType<Group>().FirstOrDefault(g => g.Destination == "super");
+            if (mark is null && markerGroup is not null && !group.Nodes.OfType<Control>().Any(c => c.Word == "chftn"))
+                mark = Plain(markerGroup);
+            if (mark is not null && (string.IsNullOrWhiteSpace(mark) || mark.Length > 32 || mark.Any(char.IsControl)))
+            { Loss("rtf.custom-note-mark", "Unsupported custom note mark", "Retained marker text and used automatic note numbering.", group.Offset); mark = null; }
+            if (mark is not null)
+            {
+                Flush();
+                if (_runs.LastOrDefault() is { Inline: null } last && last.Text.EndsWith(mark, StringComparison.Ordinal))
+                {
+                    _runs.RemoveAt(_runs.Count - 1);
+                    if (last.Text.Length > mark.Length) _runs.Add(new RichRun(last.Text[..^mark.Length], last.Style));
+                }
+                else Loss("rtf.custom-note-mark", "Detached custom note marker", "Retained surrounding body text and attached the custom mark to the note reference.", group.Offset);
+                if (markerGroup is not null && Plain(markerGroup) == mark)
+                    group = group with { Nodes = group.Nodes.Where(node => !ReferenceEquals(node, markerGroup)).ToList() };
+            }
+            var story = ReadStory(group, endnote ? DocumentStoryKind.Endnote : DocumentStoryKind.Footnote);
+            var note = new DocumentNote { StoryId = story.Id, Kind = endnote ? DocumentNoteKind.Endnote : DocumentNoteKind.Footnote, CustomMark = mark };
+            _notes.Add(note); Flush();
+            _runs.Add(new RichRun(InlineDescriptor.Note(note.Id, mark ?? "1"), state.Text));
+        }
         private State Apply(Control control, State state)
         {
             var number = control.Number ?? 0; var enabled = control.Number is null || number != 0;
             switch (control.Word)
             {
                 case "*": case "nesttableprops": case "rtf": case "ansi": case "ansicpg": case "deff": case "deflang": case "viewkind": case "viewscale": case "fet": case "formshade":
-                case "fldrslt": case "sbknone": case "intbl": case "lang": case "langfe": case "loch": case "hich": case "dbch": break;
+                case "fldrslt": case "intbl": case "lang": case "langfe": case "loch": case "hich": case "dbch": break;
+                case "chftn": break; // The adjacent footnote destination supplies the atomic body marker.
+                case "facingp": _oddEvenHeaders = enabled; _hasPhysicalSections = true; _physicalSection = _physicalSection with { HeaderFooter = _physicalSection.HeaderFooter with { DifferentOddEvenPages = enabled } }; break;
+                case "titlepg": _hasPhysicalSections = true; _physicalSection = _physicalSection with { HeaderFooter = _physicalSection.HeaderFooter with { DifferentFirstPage = enabled } }; break;
+                case "headery": _hasPhysicalSections = true; _physicalSection = _physicalSection with { HeaderFooter = _physicalSection.HeaderFooter with { HeaderDistance = Range(number / 15d, 0, 10000, "Header distance", control.Offset) } }; break;
+                case "footery": _hasPhysicalSections = true; _physicalSection = _physicalSection with { HeaderFooter = _physicalSection.HeaderFooter with { FooterDistance = Range(number / 15d, 0, 10000, "Footer distance", control.Offset) } }; break;
+                case "sbknone": _physicalSection = _physicalSection with { BreakKind = SectionBreakKind.Continuous }; break;
+                case "sbkpage": _physicalSection = _physicalSection with { BreakKind = SectionBreakKind.NextPage }; break;
+                case "sbkodd": _physicalSection = _physicalSection with { BreakKind = SectionBreakKind.OddPage }; break;
+                case "sbkeven": _physicalSection = _physicalSection with { BreakKind = SectionBreakKind.EvenPage }; break;
+                case "sbkcol": _physicalSection = _physicalSection with { BreakKind = SectionBreakKind.NextColumn }; break;
+                case "ftnstart": case "aftnstart": case "ftnrstpg": case "ftnrestart": case "ftnrstcont": case "aftnrestart": case "aftnrstcont":
+                case "ftnnar": case "ftnnalc": case "ftnnauc": case "ftnnrlc": case "ftnnruc": case "aftnnar": case "aftnnalc": case "aftnnauc": case "aftnnrlc": case "aftnnruc":
+                case "ftnbj": case "ftntj": case "aenddoc": case "aendnotes": case "enddoc": case "endnotes":
+                    NoteSetting(control); break;
                 case "trgaph": case "trleft":
                     if (number != 0) Loss("rtf.table-spacing", "RTF table offset or cell gap", "Used the model's default table spacing.", control.Offset);
                     break;
@@ -506,8 +615,11 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 case "ilvl":
                     if (number is < 0 or > 8) throw new FormatException("Invalid RTF list level.");
                     return state with { Paragraph = state.Paragraph with { ListLevel = number } };
-                case "sectd": PendingParagraph(state); if (_section.Count > 0 || _rows.Count > 0) EndSection(false); _sectionActive = true; break;
-                case "sect": PendingParagraph(state); EndSection(true); _sectionActive = true; break;
+                case "sectd": PendingParagraph(state); if (_section.Count > 0 || _rows.Count > 0) EndSection(false); _sectionActive = true;
+                    _physicalSection = new() { HeaderFooter = new() { DifferentOddEvenPages = _oddEvenHeaders } }; break;
+                case "sect": PendingParagraph(state); EndSection(true); _sectionActive = true;
+                    _physicalSection = _physicalSection with { Id = Guid.NewGuid(), HeaderFooter = new() { DifferentOddEvenPages = _oddEvenHeaders,
+                        HeaderDistance = _physicalSection.HeaderFooter.HeaderDistance, FooterDistance = _physicalSection.HeaderFooter.FooterDistance } }; break;
                 case "trowd":
                     if (_nestedProperties)
                     {
@@ -542,6 +654,26 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             }
             return state;
         }
+        private void NoteSetting(Control control)
+        {
+            var word = control.Word; var endnote = word.StartsWith('a');
+            if (word is "endnotes" or "enddoc") endnote = true;
+            var settings = endnote ? _endnoteSettings : _footnoteSettings;
+            if (word.StartsWith('a')) word = word[1..];
+            settings = word switch
+            {
+                "ftnstart" => settings with { Start = (int)Range(control.Number ?? 1, 1, 1000000, "Note starting number", control.Offset) },
+                "ftnrstpg" => settings with { Restart = NoteRestartPolicy.EachPage },
+                "ftnrestart" => settings with { Restart = NoteRestartPolicy.EachSection },
+                "ftnrstcont" => settings with { Restart = NoteRestartPolicy.Continuous },
+                "ftnnalc" => settings with { NumberFormat = PageNumberFormat.LowerLetter }, "ftnnauc" => settings with { NumberFormat = PageNumberFormat.UpperLetter },
+                "ftnnrlc" => settings with { NumberFormat = PageNumberFormat.LowerRoman }, "ftnnruc" => settings with { NumberFormat = PageNumberFormat.UpperRoman },
+                "ftnnar" => settings with { NumberFormat = PageNumberFormat.Decimal },
+                "ftntj" => settings with { Placement = NotePlacement.BelowText }, "ftnbj" => settings with { Placement = NotePlacement.PageBottom },
+                "endnotes" => settings with { Placement = NotePlacement.SectionEnd }, "enddoc" => settings with { Placement = NotePlacement.DocumentEnd }, _ => settings
+            };
+            if (endnote) _endnoteSettings = settings; else _footnoteSettings = settings;
+        }
         private void Field(Group group, State state)
         {
             static IEnumerable<Node> Descendants(Group parent)
@@ -559,6 +691,22 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             var nested = Descendants(group).OfType<Group>().Any(g => g.Destination == "field");
             var structured = results.SelectMany(Descendants).OfType<Control>().Any(c => c.Word is "par" or "pard" or "sectd" or "sect" or "cell" or "row" or "trowd" or "nestcell" or "nestrow" or "itap" or "nesttableprops" or "cellx" or "clcbpat" or "clmgf" or "clmrg" or "clvmgf" or "clvmrg" or "trrh");
             var parsed = MergeFieldInstructions.Parse(value);
+            if (!_flattenFields && !nested && !structured && results.Length <= 1 && PageFieldInstructions.TryParse(value, out var pageField))
+            {
+                Flush(); var start = _runs.Count;
+                foreach (var result in results) Walk(result, state);
+                Flush();
+                var cachedRuns = _runs.Skip(start).ToArray();
+                var cached = string.Concat(cachedRuns.Select(r => r.PlainText));
+                if (cachedRuns.Any(r => r.Inline is not null) || cached.Length > 16384)
+                { Loss("rtf.field-result", "Non-text or oversized page-field result", "Retained the result content without active field semantics.", group.Offset); return; }
+                _runs.RemoveRange(start, _runs.Count - start);
+                var style = cachedRuns.FirstOrDefault()?.Style ?? state.Text;
+                if (cachedRuns.Any(r => r.Style != style))
+                    Loss("rtf.field-result-formatting", "Multiple styles in an atomic page field", "Applied the first character style to the field display.", group.Offset);
+                _runs.Add(new RichRun(new InlineDescriptor { Payload = new PageFieldInlinePayload(pageField), AltText = results.Length == 0 ? "1" : cached }, style));
+                return;
+            }
             if (nested) Loss("rtf.nested-field", "Nested RTF fields", "Retained visible results without active field semantics.", group.Offset);
             if (results.Length > 1) Loss("rtf.field-structure", "Multiple field results", "Retained visible results without active field semantics.", group.Offset);
             if (parsed is not null && !_flattenFields && !nested && !structured && results.Length <= 1)
@@ -612,7 +760,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             if (bytes.Length == 0 || bytes.Length > DocumentResource.MaximumEmbeddedBytes) throw new FormatException("Invalid RTF image size.");
             _resourceBytes += bytes.Length;
             if (_resourceBytes > DocumentResource.MaximumDocumentEmbeddedBytes || _resources.Count >= 4096) throw new FormatException("RTF embedded resources exceed the size limit.");
-            var id = $"rtf-image-{_resources.Count + 1}";
+            var id = $"rtf-image-{_resourcePrefix}-{_resources.Count + 1}";
             _resources.Add(id, new() { Kind = DocumentResourceKind.Embedded, MediaType = mediaType, Data = bytes.ToImmutableArray() });
             var width = group.Number("picwgoal") is { } w ? w / 15d : group.Number("picw") ?? 32;
             var height = group.Number("pichgoal") is { } h ? h / 15d : group.Number("pich") ?? 32;
@@ -636,11 +784,13 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 ConversionDiagnostics.Report("rtf.section-grouping", "Root blocks following a flow section", "Grouped the following root blocks into the next RTF section.", block.Id);
                 break;
             }
-        var positions = new DocumentIndex(document).Paragraphs.ToArray();
+        var storyDocuments = document.Stories.Values.Select(story => new FlowDocument(story.Blocks)).ToArray();
+        var positions = new DocumentIndex(document).Paragraphs.Concat(storyDocuments.SelectMany(story => new DocumentIndex(story).Paragraphs)).ToArray();
+        var paragraphDocuments = storyDocuments.Prepend(document).SelectMany(owner => new DocumentIndex(owner).Paragraphs.Select(p => (p.Paragraph.Id, Owner: owner))).ToDictionary(p => p.Id, p => p.Owner);
         var paragraphs = positions.Select(p => p.Paragraph).ToArray();
         var styles = paragraphs.SelectMany(p => p.Runs.Select(r => r.Style).Append(p.DefaultStyle)).ToArray();
         var fonts = styles.Select(s => s.FontFamily ?? "Arial").Distinct().ToArray();
-        var colors = styles.SelectMany(s => new[] { s.Foreground, s.Background }).Concat(AllCells(document.Blocks).Select(c => c.Background)).Where(c => c is not null).Distinct().ToArray();
+        var colors = styles.SelectMany(s => new[] { s.Foreground, s.Background }).Concat(AllCells(document.Blocks.Concat(document.Stories.Values.SelectMany(s => s.Blocks))).Select(c => c.Background)).Where(c => c is not null).Distinct().ToArray();
         foreach (var color in colors.Where(c => c!.Length == 9 && !c.StartsWith("#FF", StringComparison.OrdinalIgnoreCase)))
             ConversionDiagnostics.Report("rtf.color-alpha", "Color transparency", "Exported the opaque RGB color.");
         int ColorIndex(string? color) => color is null ? 0 : Array.IndexOf(colors, color) + 1;
@@ -663,7 +813,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             var definition = new ListDefinition { Levels = Enumerable.Range(0, 9).Select(level => inherited.Level(level, p.Style.List)).ToImmutableArray() };
             if (!counters.TryGetValue(identity, out var values)) counters[identity] = values = new int?[9];
             for (var i = 0; i < p.Style.ListLevel; i++) values[i] ??= definition.Level(i, p.Style.List).Start;
-            values[p.Style.ListLevel] = ListNumbering.GetMarker(document, p.Id)!.Number;
+            values[p.Style.ListLevel] = ListNumbering.GetMarker(paragraphDocuments[p.Id], p.Id)!.Number;
             for (var i = p.Style.ListLevel + 1; i < values.Length; i++) values[i] = null;
             if (!activeLists.TryGetValue(identity, out var current) || p.Style.ListRestart || p.Style.ListStart is not null || !lists[current - 1].Definition.Equals(definition))
             {
@@ -682,6 +832,47 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             b.Append("\\red").Append(Convert.ToInt32(rgb[..2], 16)).Append("\\green").Append(Convert.ToInt32(rgb[2..4], 16)).Append("\\blue").Append(Convert.ToInt32(rgb[4..], 16)).Append(';');
         }
         b.Append('}'); WriteLists(b, lists);
+        var writingStory = false;
+        var exportedStories = new HashSet<Guid>();
+        var sectionStarts = document.Sections.Skip(1).ToDictionary(section => section.StartParagraphId);
+        void WriteNoteSettings(NoteSettings settings, bool endnote)
+        {
+            var prefix = endnote ? "aftn" : "ftn";
+            b.Append('\\').Append(prefix).Append("start").Append(settings.Start).Append('\\').Append(prefix)
+                .Append(settings.Restart switch { NoteRestartPolicy.EachPage => "rstpg", NoteRestartPolicy.EachSection => "restart", _ => "rstcont" })
+                .Append('\\').Append(prefix).Append(settings.NumberFormat switch { PageNumberFormat.UpperRoman => "nruc", PageNumberFormat.LowerRoman => "nrlc", PageNumberFormat.UpperLetter => "nauc", PageNumberFormat.LowerLetter => "nalc", _ => "nar" })
+                .Append(settings.Placement switch { NotePlacement.BelowText => "\\ftntj", NotePlacement.SectionEnd => "\\aendnotes", NotePlacement.DocumentEnd => "\\aenddoc", _ => "\\ftnbj" });
+            b.Append("{\\*\\").Append(prefix).Append("sep ").Append(Escape(settings.SeparatorText)).Append('}')
+                .Append("{\\*\\").Append(prefix).Append("sepc ").Append(Escape(settings.ContinuationSeparatorText)).Append('}');
+        }
+        WriteNoteSettings(document.FootnoteSettings, false);
+        WriteNoteSettings(document.EndnoteSettings, true);
+        if (document.Sections.Any(section => section.HeaderFooter.DifferentOddEvenPages)) b.Append("\\facingp ");
+        void WriteStory(DocumentStory story)
+        {
+            exportedStories.Add(story.Id);
+            var previous = writingStory; writingStory = true;
+            try { WriteBlocks(story.Blocks); }
+            finally { writingStory = previous; }
+        }
+        void WritePhysicalSection(DocumentSection section)
+        {
+            var settings = section.HeaderFooter;
+            Precision(section.Id, settings.HeaderDistance, settings.FooterDistance);
+            b.Append("\\sectd").Append(section.BreakKind switch { SectionBreakKind.Continuous => "\\sbknone", SectionBreakKind.OddPage => "\\sbkodd", SectionBreakKind.EvenPage => "\\sbkeven", SectionBreakKind.NextColumn => "\\sbkcol", _ => "\\sbkpage" })
+                .Append("\\headery").Append(Twips(settings.HeaderDistance)).Append("\\footery").Append(Twips(settings.FooterDistance)).Append(settings.DifferentFirstPage ? "\\titlepg" : "\\titlepg0").Append(' ');
+            if (!settings.DifferentOddEvenPages && document.Sections.Any(s => s.HeaderFooter.DifferentOddEvenPages))
+                ConversionDiagnostics.Report("rtf.section-odd-even", "Section-specific odd/even header option", "RTF uses a document-wide odd/even header option.", section.Id);
+            if (section.PageSettings != new PageSettings() || section.PageNumberStart is not null || section.PageNumberFormat != PageNumberFormat.Decimal)
+                ConversionDiagnostics.Report("rtf.physical-page-settings", "Physical page metrics and page numbering", "Retained section boundaries and header/footer settings using default page metrics and numbering.", section.Id);
+            foreach (var item in new[] { ("header", settings.PrimaryHeader), ("headerf", settings.FirstHeader), ("headerl", settings.EvenHeader), ("footer", settings.PrimaryFooter), ("footerf", settings.FirstFooter), ("footerl", settings.EvenFooter) })
+            {
+                if (item.Item2.LinkToPrevious) continue;
+                b.Append("{\\").Append(item.Item1).Append(' ');
+                if (item.Item2.StoryId is { } id) WriteStory(document.Stories[id]);
+                b.Append('}');
+            }
+        }
         void CharacterStyle(TextStyle s, Guid id)
         {
             if (s.FontFamily is { } family && (family.Contains(';') || family.Trim() != family))
@@ -695,6 +886,8 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
         }
         void WriteParagraph(Paragraph p, bool inTable)
         {
+            if (!writingStory && !inTable && sectionStarts.TryGetValue(p.Id, out var physicalSection))
+            { b.Append("\\sect\n"); WritePhysicalSection(physicalSection); }
             Precision(p.Id, p.Style.Indent, p.Style.RightIndent, p.Style.FirstLineIndent, p.Style.SpaceBefore, p.Style.SpaceAfter, p.Style.LetterSpacing, p.Style.LineHeight ?? 0);
             b.Append("\\pard").Append(inTable ? "\\intbl" : "").Append(p.Style.Alignment switch { ParagraphAlignment.Center => "\\qc", ParagraphAlignment.Right => "\\qr", ParagraphAlignment.Justify => "\\qj", _ => "\\ql" });
             b.Append(p.Style.RightToLeft ? "\\rtlpar" : "\\ltrpar").Append("\\li").Append(Twips(p.Style.Indent)).Append("\\ri").Append(Twips(p.Style.RightIndent)).Append("\\fi").Append(Twips(p.Style.FirstLineIndent))
@@ -705,6 +898,29 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             b.Append(' '); CharacterStyle(p.DefaultStyle, p.Id);
             foreach (var run in p.Runs)
             {
+                if (run.Inline is { Payload: NoteInlinePayload notePayload } noteInline)
+                {
+                    var note = document.Notes.Single(n => n.Id == notePayload.NoteId);
+                    if (writingStory)
+                    {
+                        ConversionDiagnostics.Report("rtf.nested-note", "Note reference in a secondary story", "Retained the reference display without its note story.", noteInline.Id);
+                        b.Append(Escape(note.CustomMark ?? noteInline.AltText)); continue;
+                    }
+                    b.Append('{'); CharacterStyle(run.Style, noteInline.Id);
+                    if (note.CustomMark is null) b.Append("\\chftn ");
+                    else b.Append("{\\super ").Append(Escape(note.CustomMark)).Append('}');
+                    b.Append("{\\footnote").Append(note.Kind == DocumentNoteKind.Endnote ? "\\ftnalt " : " ");
+                    if (note.CustomMark is { } custom)
+                        b.Append("{\\*\\textalonianotemark ").Append(Escape(custom)).Append("}{\\super ").Append(Escape(custom)).Append('}');
+                    else b.Append("\\chftn ");
+                    WriteStory(document.Stories[note.StoryId]); b.Append("}}");
+                    continue;
+                }
+                if (run.Inline is { Payload: PageFieldInlinePayload pageField } pageInline)
+                {
+                    b.Append("{\\field{\\*\\fldinst ").Append(pageField.Field.ToString().ToUpperInvariant()).Append("}{\\fldrslt {");
+                    CharacterStyle(run.Style, pageInline.Id); b.Append(Escape(pageInline.AltText)).Append("}}}"); continue;
+                }
                 if (run.Inline is { Payload: MergeFieldInlinePayload field } fieldInline)
                 {
                     MergeFieldInstructions.ReportExportOptions("rtf", fieldInline, field);
@@ -742,6 +958,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                         if (section.Background is not null || section.BorderColor is not null || section.Borders is not null || section.PaddingEdges is not null || section.Padding != 12)
                             ConversionDiagnostics.Report("rtf.section-decoration", "Section background, borders or padding", "Retained section content without its decoration.", section.Id);
                         if (inTable || inSection) { ConversionDiagnostics.Report("rtf.nested-section", "Nested flow section", "Exported the section's blocks in its parent container.", section.Id); WriteBlocks(section.Blocks, inTable, inSection); }
+                        else if (!document.Sections.IsEmpty || writingStory) WriteBlocks(section.Blocks, false, true);
                         else { b.Append("\\sectd\\sbknone "); WriteBlocks(section.Blocks, false, true); b.Append("\\sect\n"); }
                         break;
                     case Table table when inTable:
@@ -772,7 +989,11 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                         break;
                 }
         }
-        WriteBlocks(document.Blocks); return b.Append('}').ToString();
+        if (!document.Sections.IsEmpty) WritePhysicalSection(document.Sections[0]);
+        WriteBlocks(document.Blocks);
+        foreach (var story in document.Stories.Values.Where(story => !exportedStories.Contains(story.Id)))
+            ConversionDiagnostics.Report("rtf.unreferenced-story", "Unreferenced secondary story", "RTF retains stories attached to exported sections and note markers; omitted this unattached story.", story.Id);
+        return b.Append('}').ToString();
     }
     private static void WriteLists(StringBuilder b, List<ExportList> lists)
     {

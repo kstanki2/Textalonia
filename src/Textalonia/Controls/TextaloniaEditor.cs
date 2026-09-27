@@ -146,7 +146,7 @@ public partial class TextaloniaEditor : TemplatedControl
         }
         else if (change.Property == TextProperty)
         {
-            if ((string?)change.NewValue != Session.Index.Text) Session.Load(FlowDocument.FromText((string?)change.NewValue ?? ""));
+            if ((string?)change.NewValue != Session.Document.Text) Session.Load(FlowDocument.FromText((string?)change.NewValue ?? ""));
         }
         else if (change.Property == IsReadOnlyProperty) Session.IsReadOnly = IsReadOnly;
         else if (change.Property == SynchronizeTextProperty && SynchronizeText) OnSessionChanged(this, EventArgs.Empty);
@@ -159,21 +159,23 @@ public partial class TextaloniaEditor : TemplatedControl
 
     private void OnSessionChanged(object? sender, EventArgs e)
     {
+        var storyChanged = ObserveActiveStory();
         var documentChanged = !ReferenceEquals(GetValue(DocumentProperty), Session.Document);
-        var selectionChanged = SelectionStart != Session.Selection.Anchor || SelectionEnd != Session.Selection.Active;
+        if (documentChanged) _surface?.ClearStoryProjections();
+        var selectionChanged = storyChanged || SelectionStart != Session.Selection.Anchor || SelectionEnd != Session.Selection.Active;
         _synchronizing = true;
         try
         {
             SetCurrentValue(DocumentProperty, Session.Document);
             if (SynchronizeText && (_textRevision != Session.Revision || sender == this))
-            { SetCurrentValue(TextProperty, Session.Index.Text); _textRevision = Session.Revision; }
+            { SetCurrentValue(TextProperty, Session.ActiveStoryId == Guid.Empty ? Session.Index.Text : Session.Document.Text); _textRevision = Session.Revision; }
             SetCurrentValue(SelectionStartProperty, Session.Selection.Anchor);
             SetCurrentValue(SelectionEndProperty, Session.Selection.Active);
             SetCurrentValue(IsReadOnlyProperty, Session.IsReadOnly);
         }
         finally { _synchronizing = false; }
         foreach (var command in _commands) command.RaiseCanExecuteChanged();
-        _surface?.Refresh(!_preservingView && (selectionChanged || documentChanged && Session.LastEdit is { Reset: false }), invalidateLayout: documentChanged);
+        _surface?.Refresh(!_preservingView && (selectionChanged || documentChanged && Session.LastEdit is { Reset: false }), invalidateLayout: documentChanged || storyChanged);
         if (documentChanged) DocumentChanged?.Invoke(this, EventArgs.Empty);
         if (selectionChanged) SelectionChanged?.Invoke(this, EventArgs.Empty);
     }

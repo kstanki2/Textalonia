@@ -15,6 +15,7 @@ public sealed record DocumentSection
     /// <summary>Null continues numbering from the preceding section.</summary>
     public int? PageNumberStart { get; init; }
     public PageNumberFormat PageNumberFormat { get; init; }
+    public HeaderFooterSettings HeaderFooter { get; init; } = new();
 
     internal static void Validate(FlowDocument document, HashSet<Guid> ids)
     {
@@ -29,9 +30,10 @@ public sealed record DocumentSection
             var section = document.Sections[i];
             if (section is null || section.Id == Guid.Empty || !ids.Add(section.Id) ||
                 !Enum.IsDefined(section.BreakKind) || !Enum.IsDefined(section.PageNumberFormat) ||
-                section.PageNumberStart is < 1 || section.PageSettings is null)
+                section.PageNumberStart is < 1 || section.PageSettings is null || section.HeaderFooter is null)
                 throw new FormatException("Invalid physical section.");
             section.PageSettings.Validate();
+            section.HeaderFooter.Validate(document);
             int start;
             if (i == 0)
             {

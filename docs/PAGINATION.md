@@ -1,8 +1,8 @@
 # Pagination, page setup and document views
 
 DX-02 adds physical page sections, exact main-body pagination and editor page
-views. Simple remains the default. This is the page-layout foundation for later
-headers, notes, fields and printing; it does not supply those later workstreams.
+views. Simple remains the default. DX-03 builds on this with [headers, footers, notes and page fields](STORIES.md).
+Printing and general fields remain separate workstreams.
 
 ## Authoring in the editor
 
@@ -72,8 +72,7 @@ section, whose settings survive. The initial section cannot be removed.
 Section page numbering can continue or restart independently of physical page
 indexes. Odd/even transitions insert blank physical sheets as needed. A continuous
 transition can stay on the same sheet when its effective paper dimensions agree;
-a paper-size change starts a new page. Page-number fields and secondary document
-stories are deferred to their owning workstreams.
+a paper-size change starts a new page. DX-03 adds page-number fields and secondary document stories; see [STORIES.md](STORIES.md).
 
 ## Exact geometry and views
 
@@ -149,19 +148,18 @@ existing performance gates remain independent.
 
 ## Persistence and external formats
 
-Native JSON writes schema v6 and reads v4/v5/v6. Earlier documents receive the
+Native JSON writes schema v7 and reads v4/v5/v6/v7. Earlier documents receive the
 implicit default physical section. Data XAML retains physical sections and the new
-paragraph metadata; clipboard v2 retains native model data and remaps identities.
+paragraph metadata; clipboard v3 retains native model data and remaps identities.
 Whole-document replacement adopts the source's initial section; partial paste keeps
 the destination's initial settings and imports copied interior boundaries. Rectangular
 cell copy carries no physical sections. Use native JSON or data XAML for lossless
 page metadata storage.
 
-External formats do not yet promise physical page-layout fidelity. Unsupported
-section/page/frame mappings produce conversion diagnostics; strict conversion
-rejects the loss before writing output. Existing supported paragraph-rule mappings
-remain available. See [conversion contracts](INTERCHANGE.md), rather than assuming
-that an editable native page is already round-trippable through Word/HTML/RTF.
+DX-03 maps supported DOCX physical sections alongside header/footer and note
+ownership. Unsupported section properties still produce explicit diagnostics.
+RTF/HTML retain their documented subsets and diagnosed losses. See
+[conversion contracts](INTERCHANGE.md) and [story format boundaries](STORIES.md).
 
 ## Evidence and remaining qualification
 

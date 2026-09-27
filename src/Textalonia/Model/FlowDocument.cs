@@ -16,6 +16,29 @@ public sealed record FlowDocument
     public DocumentTheme Theme { get; init; } = new();
     /// <summary>Ordered physical section settings. Empty uses one default page section.</summary>
     public ImmutableArray<DocumentSection> Sections { get; init; } = [];
+    public ImmutableDictionary<Guid, DocumentStory> Stories { get; init; } = ImmutableDictionary<Guid, DocumentStory>.Empty;
+    public ImmutableArray<DocumentNote> Notes { get; init; } = [];
+    public NoteSettings FootnoteSettings { get; init; } = new();
+    public NoteSettings EndnoteSettings { get; init; } = new() { Placement = NotePlacement.DocumentEnd };
+
+    /// <summary>Returns the main story for Guid.Empty, or a standalone view of a secondary story.</summary>
+    public FlowDocument GetStoryDocument(Guid storyId) => storyId == Guid.Empty ? this :
+        Stories.TryGetValue(storyId, out var story) ? this with
+        { Blocks = story.Blocks, Sections = [], Stories = ImmutableDictionary<Guid, DocumentStory>.Empty, Notes = [] } :
+        throw new ArgumentException("The document story does not exist.", nameof(storyId));
+
+    public DocumentIndex GetStoryIndex(Guid storyId) => new(GetStoryDocument(storyId));
+
+    public DocumentStory? ResolveHeaderFooter(int sectionIndex, bool footer, HeaderFooterVariant variant)
+    {
+        if (sectionIndex < 0 || sectionIndex >= Sections.Length) throw new ArgumentOutOfRangeException(nameof(sectionIndex));
+        for (var i = sectionIndex; i >= 0; i--)
+        {
+            var reference = Sections[i].HeaderFooter.GetReference(footer, variant);
+            if (!reference.LinkToPrevious) return reference.StoryId is { } id ? Stories.GetValueOrDefault(id) : null;
+        }
+        return null;
+    }
     internal FlowDocument WithChildren(StorageTree<OrderKey, DocumentNode>? children) => this with
     { _blocks = new(() => children!.Items().Select(p => (Block)p.Value.Source!).ToImmutableArray()) };
     public FlowDocument() { }
@@ -56,6 +79,7 @@ public sealed record FlowDocument
                 }
         }
         Visit(Blocks);
+        foreach (var story in Stories.Values) Visit(story.Blocks);
         foreach (var font in Fonts) used.Add(font.ResourceId);
         var resources = Resources.RemoveRange(Resources.Keys.Where(key => !used.Contains(key)));
         return ReferenceEquals(resources, Resources) ? this : this with { Resources = resources };
@@ -111,6 +135,10 @@ public sealed record FlowDocument
         DocumentFontValidation.Validate(this);
         var resolver = new DocumentStyleResolver(this);
         var ids = new HashSet<Guid>();
+        var noteReferences = new HashSet<Guid>();
+        var secondary = false;
+        var hidden = false;
+        var visibleNoteReferences = new HashSet<Guid>();
         var count = 0;
         void Identify(Guid id)
         {
@@ -165,7 +193,16 @@ public sealed record FlowDocument
                                 throw new FormatException("Paragraph runs cannot contain hard paragraph breaks.");
                             ValidateTextStyle(run.Style);
                             DocumentStyleValidation.Text(resolver.ResolveText(p, run.Style), this);
-                            if (run.Inline is { } inline) { inline.Validate(); Identify(inline.Id); }
+                            if (run.Inline is { } inline)
+                            {
+                                inline.Validate(); Identify(inline.Id);
+                                if (inline.Payload is NoteInlinePayload note)
+                                {
+                                    if (secondary) throw new FormatException("Notes can only be referenced from the main story.");
+                                    if (!hidden && !visibleNoteReferences.Add(note.NoteId)) throw new FormatException("A note can have only one visible reference.");
+                                    noteReferences.Add(note.NoteId);
+                                }
+                            }
                         }
                         break;
                     case Section s:
@@ -207,12 +244,14 @@ public sealed record FlowDocument
                                     // overlap live content, but their own structure must be unique.
                                     var liveIds = ids;
                                     ids = [];
+                                    var wasHidden = hidden; hidden = true;
                                     Visit(cell.MergeOriginalBlocks, depth + 1);
-                                    ids = liveIds;
+                                    hidden = wasHidden; ids = liveIds;
                                 }
                                 if (cell.RowSpan < 1 || cell.ColumnSpan < 1 || cell.RowSpan > t.Rows.Length - r || cell.ColumnSpan > t.ColumnCount - c)
                                     throw new FormatException("Invalid cell span.");
-                                Visit(cell.Blocks, depth + 1);
+                                var previousHidden = hidden; hidden |= t.IsCovered(r, c);
+                                Visit(cell.Blocks, depth + 1); hidden = previousHidden;
                                 if (occupied[r, c])
                                 {
                                     if (cell.RowSpan != 1 || cell.ColumnSpan != 1) throw new FormatException("Overlapping merged cells.");
@@ -231,6 +270,26 @@ public sealed record FlowDocument
             }
         }
         Visit(Blocks, 0);
+        if (Stories is null || Stories.Count > 10000 || Notes.IsDefault || Notes.Length > 10000 || FootnoteSettings is null || EndnoteSettings is null)
+            throw new FormatException("Invalid secondary stories.");
+        FootnoteSettings.Validate(DocumentNoteKind.Footnote); EndnoteSettings.Validate(DocumentNoteKind.Endnote);
+        secondary = true;
+        foreach (var pair in Stories)
+        {
+            if (pair.Value is null || pair.Key != pair.Value.Id || !Enum.IsDefined(pair.Value.Kind)) throw new FormatException("Invalid story identity or kind.");
+            Identify(pair.Key); Visit(pair.Value.Blocks, 0);
+        }
+        var noteIds = new HashSet<Guid>();
+        var noteStories = new HashSet<Guid>();
+        foreach (var note in Notes)
+        {
+            if (note is null || !Enum.IsDefined(note.Kind) || !noteIds.Add(note.Id) || !noteStories.Add(note.StoryId) ||
+                !Stories.TryGetValue(note.StoryId, out var story) || story.Kind != (note.Kind == DocumentNoteKind.Footnote ? DocumentStoryKind.Footnote : DocumentStoryKind.Endnote) ||
+                note.CustomMark is { } mark && (string.IsNullOrWhiteSpace(mark) || mark.Length > 32 || mark.Any(char.IsControl)))
+                throw new FormatException("Invalid note or note story reference.");
+            Identify(note.Id);
+        }
+        if (noteReferences.Any(id => !noteIds.Contains(id))) throw new FormatException("A note reference is detached from its note.");
         DocumentSection.Validate(this, ids);
     }
 

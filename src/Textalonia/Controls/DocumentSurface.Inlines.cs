@@ -26,7 +26,7 @@ public partial class DocumentSurface
         public bool LogicalAttachmentAttempted { get; set; }
         public bool VisualAttachmentAttempted { get; set; }
     }
-    private readonly Dictionary<Guid, InlineChild> _inlineChildren = [];
+    private readonly Dictionary<(Guid Id, Guid StoryId, int PageIndex), InlineChild> _inlineChildren = [];
     private readonly List<InlineVisual> _inlineVisuals = [];
     private InlineImageCache? _inlineImages;
     internal InlineImageCache? InlineImageCache => _inlineImages;
@@ -127,7 +127,7 @@ public partial class DocumentSurface
         var viewport = _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, 0, Math.Max(1, Bounds.Width), 500);
         _inlineVisuals.AddRange(GeometryInlineVisuals().Where(v => v.Bounds.Intersects(viewport) &&
             (v.Clip is null || v.Clip.Value.Intersects(v.Bounds))));
-        var visibleControls = _inlineVisuals.Where(v => v.Descriptor.Payload is ControlInlinePayload).Select(v => v.Descriptor.Id).ToHashSet();
+        var visibleControls = _inlineVisuals.Where(v => v.Descriptor.Payload is ControlInlinePayload).Select(v => v.Key).ToHashSet();
         foreach (var pair in _inlineChildren.ToArray())
             if (!visibleControls.Contains(pair.Key)) { _inlineChildren.Remove(pair.Key); ReleaseInlineChild(pair.Value); }
         var resources = _inlineVisuals.Select(v => v.Descriptor.Payload).OfType<ImageInlinePayload>().Select(p => p.ResourceId).ToHashSet(StringComparer.Ordinal);
@@ -143,9 +143,9 @@ public partial class DocumentSurface
             else if (descriptor.Payload is ControlInlinePayload control)
             {
                 var factory = _inlineFactories?.TryGet(control.Type, out var found) == true ? found : null;
-                _inlineChildren.TryGetValue(descriptor.Id, out var child);
+                _inlineChildren.TryGetValue(visual.Key, out var child);
                 if (child is not null && !ReferenceEquals(factory, child.Factory))
-                { _inlineChildren.Remove(descriptor.Id); ReleaseInlineChild(child); child = null; }
+                { _inlineChildren.Remove(visual.Key); ReleaseInlineChild(child); child = null; }
                 if (factory is null) continue;
                 try
                 {
@@ -157,7 +157,7 @@ public partial class DocumentSurface
                             throw new InvalidOperationException("An inline factory must return a control without a parent.");
                         child.LogicalAttachmentAttempted = true; LogicalChildren.Add(view);
                         child.VisualAttachmentAttempted = true; VisualChildren.Add(view);
-                        _inlineChildren.Add(descriptor.Id, child);
+                        _inlineChildren.Add(visual.Key, child);
                     }
                     else if (child.Descriptor != descriptor)
                     {
@@ -170,7 +170,7 @@ public partial class DocumentSurface
                 }
                 catch (Exception exception)
                 {
-                    _inlineChildren.Remove(descriptor.Id);
+                    _inlineChildren.Remove(visual.Key);
                     if (child is not null) ReleaseInlineChild(child);
                     Editor.ReportError(exception);
                 }
@@ -188,7 +188,7 @@ public partial class DocumentSurface
     private void ArrangeInlineViews()
     {
         foreach (var visual in _inlineVisuals)
-            if (_inlineChildren.TryGetValue(visual.Descriptor.Id, out var child))
+            if (_inlineChildren.TryGetValue(visual.Key, out var child))
             {
                 try
                 {
@@ -225,12 +225,17 @@ public partial class DocumentSurface
                 }
                 catch (Exception exception)
                 {
-                    _inlineChildren.Remove(visual.Descriptor.Id);
+                    _inlineChildren.Remove(visual.Key);
                     ReleaseInlineChild(child);
                     Editor?.ReportError(exception);
                 }
             }
     }
+
+    internal bool IsInlineSelected(InlineVisual visual) => Editor is not null && !HasComposition &&
+        visual.StoryId == (_pagedLayout is null ? Guid.Empty : GeometryStoryId) &&
+        (_pagedLayout is null || GeometryStoryPage < 0 || visual.PageIndex == GeometryStoryPage) &&
+        Editor.Session.Selection.Start <= visual.Position && Editor.Session.Selection.End > visual.Position;
 
     private void DrawInlineImages(DrawingContext context, Rect viewport)
     {
@@ -247,7 +252,7 @@ public partial class DocumentSurface
                     context.DrawImage(bitmap, new Rect(bitmap.Size), visual.Bounds);
                 }
             }
-            var selected = !HasComposition && Editor.Session.Selection.Start <= visual.Position && Editor.Session.Selection.End > visual.Position;
+            var selected = IsInlineSelected(visual);
             if (selected)
             {
                 using var selectionClip = context.PushClip(visual.Clip ?? viewport);

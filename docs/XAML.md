@@ -1,11 +1,11 @@
 # Textalonia XAML data vocabulary
 
-`DocumentFormats.Xaml` reads and writes **Textalonia XAML data version 1**. The namespace is `urn:textalonia:document:1`; the root is `Document` with `Version="1"`. `.txaml` is the recommended extension; `.xaml` also selects this codec through `DocumentFormats.ForPath`. Native JSON and its `.textalonia`, `.json`, and `.art` extensions remain supported independently.
+`DocumentFormats.Xaml` writes **Textalonia XAML data version 2** and reads versions 1/2. The namespace is `urn:textalonia:document:1`; the root is `Document` with `Version="2"`. `.txaml` is the recommended extension; `.xaml` also selects this codec through `DocumentFormats.ForPath`. Native JSON and its `.textalonia`, `.json`, and `.art` extensions remain supported independently.
 
 This is an XML data format, implemented using the .NET XML reader and explicit model constructors in the main Textalonia package. It adds no dependency. It does not implement Avalonia XAML, WPF FlowDocument XAML, or another editor's vocabulary; those documents require an explicit converter and fixtures.
 
 ```xml
-<Document xmlns="urn:textalonia:document:1" Version="1">
+<Document xmlns="urn:textalonia:document:1" Version="2">
   <Resources>
     <Resource Key="logo" Kind="Host" MediaType="image/png" Location="app:logo" />
   </Resources>
@@ -45,7 +45,7 @@ Names are case-sensitive and all elements use the namespace above. Attributes ar
 
 | Element | Attributes | Children |
 | --- | --- | --- |
-| `Document` | `Version` (required, `1`) | `Resources`, `Blocks` |
+| `Document` | `Version` (required, `1` or `2`) | `Resources`, `Blocks`, optional typed data described below |
 | `Resources` | | zero or more `Resource` |
 | `Resource` | `Key` (required), `Kind`, `MediaType`, `Location` | optional `Data` containing base64 bytes |
 | `Blocks`, `MergeOriginalBlocks` | | ordered `Paragraph`, `Section`, `Table` |
@@ -96,7 +96,7 @@ missing display text defaults to the field label. See [mail merge](MAIL-MERGE.md
 ## Styles and themes
 
 DX-01 adds optional `Styles`, `Defaults`, `Theme` and `Fonts` document elements.
-These contain bounded typed JSON using the same allowlisted records as native v6.
+These contain bounded typed JSON using the same allowlisted records as native v7.
 Extended character/paragraph formatting uses a single `Data` child instead of legacy
 attributes; combining both forms is rejected. Tables accept `StyleId` and a
 `StyleOverrides` data element. Legacy XAML version 1 files remain readable. See
@@ -104,5 +104,10 @@ attributes; combining both forms is rejected. Tables accept `StyleId` and a
 
 DX-02 adds the optional `Sections` element containing the native physical-section
 records. Paragraph data preserves explicit page/column breaks and legacy frame
-placement. The XAML envelope remains version 1; older files default to one implicit
-page section. Strict readers reject unsupported members instead of flattening them.
+placement. Older files default to one implicit page section. Strict readers reject unsupported members instead of flattening them.
+
+DX-03 writes envelope version 2 and adds bounded typed `Stories`, `Notes`,
+`FootnoteSettings` and `EndnoteSettings` data elements. Section data includes
+header/footer references, flags and offsets. Inline `Note` and `PageField` elements
+retain atomic references and page-field kinds; native JSON inside story data uses
+the same allowlisted payloads. See [story contracts](STORIES.md).

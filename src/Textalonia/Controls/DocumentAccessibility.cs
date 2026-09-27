@@ -270,7 +270,7 @@ public sealed class DocumentTextProvider
             {
                 if (run.Inline is { } inline && offset < range.End && offset + 1 > range.Start)
                     result.Add(new(offset, 1, inline.Payload switch
-                        { ImageInlinePayload => "image", MergeFieldInlinePayload => "merge-field", _ => "control" },
+                        { ImageInlinePayload => "image", MergeFieldInlinePayload => "merge-field", NoteInlinePayload => "note-reference", PageFieldInlinePayload => "page-field", _ => "control" },
                         inline.Payload is MergeFieldInlinePayload field ? $"Merge field {field.Name}: {inline.AltText}" :
                             string.IsNullOrWhiteSpace(inline.AltText) ? "Embedded object" : inline.AltText));
                 offset += run.Storage.Length;

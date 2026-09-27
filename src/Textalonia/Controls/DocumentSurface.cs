@@ -141,6 +141,9 @@ public partial class DocumentSurface : Control
         if (Editor is null) return;
         width = double.IsFinite(width) && width > 48 ? width : 800;
         var document = _composition.PreviewDocument ?? Editor.TablePreviewDocument ?? Editor.PresentationDocument;
+        if (Editor.ViewMode != DocumentViewMode.PrintLayout && Editor.ActiveStoryId != Guid.Empty)
+            document = ReferenceEquals(document, Editor.Document) ? Editor.Session.ActiveDocument : ProjectStory(document, Editor.ActiveStoryId);
+        if (Editor.ViewMode == DocumentViewMode.Simple) document = DisplayNoteMarks(document);
         if (!_dirty && ReferenceEquals(_layoutDocument, document) && Math.Abs(_layoutWidth - width) < .1) return;
         _layoutDocument = document; _layoutWidth = width; _dirty = false;
         try
@@ -158,6 +161,16 @@ public partial class DocumentSurface : Control
             {
                 _layout.Clear();
                 BuildPagedLayout(document);
+                // A first/even variant can exist before a corresponding physical sheet exists.
+                // Keep it editable on a continuous story surface until it has a page instance.
+                if (Editor.ActiveStoryId != Guid.Empty && Editor.ViewMode == DocumentViewMode.PrintLayout &&
+                    !_pagedLayout!.StoryFragments.Any(fragment => fragment.StoryKey == Editor.ActiveStoryId && fragment.Bounds.Intersect(fragment.Clip).Height > 0))
+                {
+                    ClearPagedLayout();
+                    _layout.Build(ProjectStory(document, Editor.ActiveStoryId), width / ViewZoom, Editor.FontFamily,
+                        Editor.Foreground ?? Brushes.Black, Editor.BorderBrush ?? Brushes.Gray, Editor.DocumentPadding,
+                        ToDocument(_viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, 0, width, 500)), Editor.MaxShapingCharacters);
+                }
             }
         }
         catch (ShapingLimitExceededException error) { RejectLayout(error); return; }
@@ -245,7 +258,8 @@ public partial class DocumentSurface : Control
             }
             else foreach (var decoration in _layout.Decorations)
                 if (decoration.Bounds.Intersects(documentViewport)) decoration.Draw(context);
-            foreach (var highlight in Editor.Highlights)
+            DrawStoryOverlay(context);
+            foreach (var highlight in Editor.Highlights.Where(h => h.Start >= 0 && h.Length >= 0 && h.Start <= Editor.Session.Index.Length - h.Length))
                 foreach (var rect in GeometrySelectionRects(highlight.Start, highlight.Length))
                     if (rect.Intersects(viewport)) context.FillRectangle(highlight.Brush, ToDocument(rect));
             var selection = Editor.Session.Selection;
@@ -270,9 +284,9 @@ public partial class DocumentSurface : Control
                     else context.DrawText(marker, origin);
                 }
             }
-            if (Editor.Session.Index.Length == 0 && !HasComposition && Editor.Document.Blocks is [Paragraph])
+            if (Editor.Session.Index.Length == 0 && !HasComposition && Editor.Session.ActiveDocument.Blocks is [Paragraph])
             {
-                var origin = _pagedLayout is { } emptyPages ? emptyPages.Caret(0).Position : new Point(Editor.DocumentPadding.Left, Editor.DocumentPadding.Top);
+                var origin = _pagedLayout is { } emptyPages ? emptyPages.Caret(GeometryStoryId, 0, GeometryStoryPage).Position : new Point(Editor.DocumentPadding.Left, Editor.DocumentPadding.Top);
                 using var placeholder = new TextLayout(Editor.PlaceholderText, new Typeface(Editor.FontFamily), 16,
                     new SolidColorBrush(Color.FromArgb(135, 128, 128, 128)), maxWidth: Math.Max(20, documentViewport.Width - origin.X));
                 placeholder.Draw(context, origin);
@@ -396,7 +410,7 @@ public partial class DocumentSurface : Control
         _pendingAnchorAdjustment = 0;
         ClearDropPreview();
         DetachInputComponents(); ResetInlineViews();
-        _layout.Clear(); ClearPagedLayout(); _dirty = true;
+        _layout.Clear(); ClearPagedLayout(); ClearStoryProjections(); _layoutDocument = null; _dirty = true;
         base.OnDetachedFromVisualTree(e);
     }
     protected override void OnTextInput(TextInputEventArgs e)
@@ -413,7 +427,11 @@ public partial class DocumentSurface : Control
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        if (!e.Handled && ReferenceEquals(e.Source, this) && _inputContext is not null) _pointer.PointerPressed(e);
+        if (!e.Handled && ReferenceEquals(e.Source, this) && _inputContext is not null)
+        {
+            if (HandleStoryPointerPress(e)) return;
+            _pointer.PointerPressed(e);
+        }
     }
     protected override void OnPointerMoved(PointerEventArgs e)
     {

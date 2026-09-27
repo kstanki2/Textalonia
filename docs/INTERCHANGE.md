@@ -62,7 +62,7 @@ and clipboard operations. The demo shows conversion reports after file operation
 All external formats omit hidden physical cells and merge restoration backups with
 `conversion.merge-history`. Resources without supported references produce
 `conversion.unused-resource` (DOCX also recognizes embedded-font references). Native
-JSON v6 preserves the full model and reads v4/v5/v6; earlier versions remain rejected.
+JSON v7 preserves the full model and reads v4/v5/v6/v7; earlier versions remain rejected.
 Plain text retains visible text/paragraph separators and inline alternative text;
 its `text.*` diagnostics describe discarded formatting, containers and resources.
 
@@ -72,13 +72,14 @@ its `text.*` diagnostics describe discarded formatting, containers and resources
 | Custom markers | Model metadata retained; browser presentation approximations report `html.list-marker` | Supported literal prefixes/suffixes and ancestor slots; unsupported patterns/number formats reported | Supported prefixes/suffixes/ancestor slots; unusual patterns, restart rules, marker fonts/indentation reported |
 | Typography | Numeric weights/stretch, font family, baseline, colors, paragraph tracking/line height/indents; inline CSS subset | Common font/color/emphasis/baseline/stretch and paragraph metrics; numeric weights, color alpha and precision have diagnostics | Named/default/character styles, theme references, run tracking/scale/baseline, underline/strike/caps/language, tabs/leaders, outline and paragraph rules; unsupported variants and precision have diagnostics |
 | Named styles/themes/fonts | Effective supported appearance; lost identity, overrides, themes and embedded fonts diagnosed | Effective supported appearance; lost identity, overrides, themes and embedded fonts diagnosed | Preserves named style definitions/inheritance/links/next, Office theme slots and permitted embedded TTF/OTF fonts; see [style limits](STYLES.md) |
-| Sections | Styled nested sections with edges/padding | Flow section groups; nested sections and arbitrary mixed section/root grouping have diagnosed normalization; decoration omitted with report | Section content groups encoded as block content controls; page sections/layout/header/footer and decoration reported |
-| Physical page sections | Native page settings and physical sections have diagnosed losses | Native page settings and physical sections have diagnosed losses | Page-section mappings remain diagnosed losses; native JSON/XAML preserve the editable page model. See [pagination](PAGINATION.md) |
+| Sections | Styled nested sections with edges/padding | Flow section groups; nested sections and arbitrary mixed section/root grouping have diagnosed normalization; decoration omitted with report | Decorative section groups encoded as block content controls; physical sections and header/footer relationships are mapped; unsupported decoration is reported |
+| Physical page sections | Native page settings and physical sections have diagnosed losses | Native page settings and physical sections have diagnosed losses | Paper, orientation, margins/gutter, columns, breaks and page numbering; unsupported section properties are diagnosed. See [stories](STORIES.md) |
 | Tables | Nested cell blocks, spans, relative columns, rows, cell edges/padding/background | Rectangular grids, horizontal/vertical merges, relative widths, row policies/background; nested table and cell decoration losses reported | Nested tables, grid/vMerge geometry, relative columns, row policies, cell edges/padding/background; named table shading/padding/borders; conditional styles/layout/position and unsupported cell properties reported |
 | Images | Bounded data-URI PNG/JPEG/GIF/BMP/WebP raster data; dimensions/alt text and deduplication | Embedded PNG/JPEG; alternative text is not retained by standard picture data and is reported | Supported embedded PNG/JPEG/GIF/BMP/TIFF relationships; dimensions/alt text and deduplication; cropping/rotation/floating placement reported |
+| Headers, footers and notes | Story omission diagnosed | Primary/first/even header/footer destinations, footnotes/endnotes, custom marks/settings and page fields; rich-content and section limitations diagnosed | Rich relationship-scoped stories, linked variants, note markers/settings, separators and page fields; unsupported variants diagnosed. See [STORIES.md](STORIES.md) |
 | Merge fields | Display text with loss diagnostic | Basic MERGEFIELD name/cached result; unsupported switches and native formatting/fallback options diagnosed | Simple/complex MERGEFIELD import and simple-field export; unsupported switches, nested fields and linked recipient metadata diagnosed |
 | Links | Safe absolute http/https/mailto | Safe HYPERLINK field results | Safe external hyperlink relationships |
-| Unsafe/unavailable content | Scripts, unknown elements/CSS, relative or unsafe links, remote/unsupported images produce notices; no fetch | Unknown controls/destinations, unsafe fields, unavailable/unsupported images produce notices; no fetch | Revision history, dynamic fields outside the merge-field subset, drawings outside subset, unsupported XML properties, unsafe/external images produce notices; no fetch |
+| Unsafe/unavailable content | Scripts, unknown elements/CSS, relative or unsafe links, remote/unsupported images produce notices; no fetch | Unknown controls/destinations, unsafe fields, unavailable/unsupported images produce notices; no fetch | Revision history, dynamic fields outside the merge/page-field subset, drawings outside subset, unsupported XML properties, unsafe/external images produce notices; no fetch |
 
 HTML metadata preserves model semantics that CSS cannot exactly render, notably
 custom markers and exact row-height policy. These are still reported as browser
@@ -120,7 +121,7 @@ or desktop interoperability evidence.
 
 ## Fragment transfer
 
-`DocumentFragment` version 1 contains a native document and paragraph boundary
+`DocumentFragment` version 3 (readers also accept v1/v2) contains a native document and paragraph boundary
 flags. `EditorSession.CopyFragment`, `CopyCells`, and `InsertFragment` work without
 a control, and can also be used by a future drag/drop adapter. `CopySelection` and
 `InsertDocument` remain available as document-based compatibility APIs.

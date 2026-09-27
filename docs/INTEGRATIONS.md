@@ -60,7 +60,7 @@ and is not a complete C# parser.
 
 ## Current native schema
 
-Native JSON writes **version 6** and reads **versions 4, 5 and 6**. Version 4 concrete
+Native JSON writes **version 7** and reads **versions 4, 5, 6 and 7**. Version 4 concrete
 formatting loads as explicit overrides. Missing or other versions are
 rejected before document decoding, and unknown members are rejected. The current
 schema includes `Section.Semantic` (`None`, `Quote`, `CodeBlock`), nullable

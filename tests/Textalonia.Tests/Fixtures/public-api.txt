@@ -401,6 +401,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   interface System.ComponentModel.INotifyPropertyChanged
   interface System.ComponentModel.ISupportInitialize
   ctor public ()
+  event System.EventHandler ActiveStoryChanged
   event System.EventHandler DocumentChanged
   event System.EventHandler FindRequested
   event System.EventHandler SelectionChanged
@@ -446,6 +447,8 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Threading.Tasks.Task PasteAsync()
   method public System.Threading.Tasks.Task SaveAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task<System.Boolean> ShowFontDialogAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowHeaderFooterDialogAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowNoteSettingsDialogAsync(Textalonia.Model.DocumentNoteKind kind)
   method public System.Threading.Tasks.Task<System.Boolean> ShowPageNumberingDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowPageSetupDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowParagraphDialogAsync()
@@ -461,21 +464,30 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Void CancelTableResize()
   method public System.Void ClearSelectedTableCellContents()
   method public System.Void ClearTableCellSelection()
+  method public System.Void CloseStory()
   method public System.Void ContinuePreviousList()
   method public System.Void DeleteSelectedTable()
   method public System.Void DeleteTableColumns()
   method public System.Void DeleteTableRows()
+  method public System.Void EditFooter()
+  method public System.Void EditHeader()
+  method public System.Void EditHeaderFooter(System.Boolean footer, Textalonia.Model.HeaderFooterVariant variant = Primary, System.Nullable<System.Guid> sectionId = )
+  method public System.Void EditNote(System.Guid noteId)
   method public System.Void ExtendTableCellSelection(System.Int32 rows, System.Int32 columns)
   method public System.Void FitPage()
   method public System.Void FitWidth()
   method public System.Void FocusDocument()
   method public System.Void GoToPage(System.Int32 pageIndex)
+  method public System.Void InsertEndnote(System.String customMark = )
+  method public System.Void InsertFootnote(System.String customMark = )
   method public System.Void InsertInline(Textalonia.Model.InlineDescriptor descriptor, Textalonia.Model.DocumentResource resource = )
   method public System.Void InsertMergeField(System.String name, System.String format = , System.String fallbackText = )
+  method public System.Void InsertPageField(Textalonia.Model.PageFieldKind field)
   method public System.Void InsertTable(System.Int32 rows = 2, System.Int32 columns = 3)
   method public System.Void InsertTableColumn(System.Boolean after = True)
   method public System.Void InsertTableRow(System.Boolean after = True)
   method public System.Void InsertText(System.String text)
+  method public System.Void LinkHeaderFooterToPrevious(System.Boolean linked)
   method public System.Void MergeSelectedTableCells()
   method public System.Void PreviewTableResize(System.Double size)
   method public System.Void Redo()
@@ -503,6 +515,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property System.Double PageGap { public get; public set; }
   property System.Double Zoom { public get; public set; }
   property System.Exception LastError { public get; }
+  property System.Guid ActiveStoryId { public get; }
   property System.Int32 CurrentPageNumber { public get; }
   property System.Int32 MaxShapingCharacters { public get; public set; }
   property System.Int32 PageCount { public get; }
@@ -589,7 +602,7 @@ type Textalonia.Controls.TextaloniaViewer : Textalonia.Controls.TextaloniaEditor
 type Textalonia.Editing.DocumentFragment : System.Object sealed
   interface System.IEquatable<Textalonia.Editing.DocumentFragment>
   ctor public ()
-  field System.Int32 CurrentVersion static = 2
+  field System.Int32 CurrentVersion static = 3
   method public System.Boolean Equals(System.Object obj) virtual
   method public System.Boolean Equals(Textalonia.Editing.DocumentFragment other) virtual
   method public System.Int32 GetHashCode() virtual
@@ -624,6 +637,8 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Int32 PreviousWord(System.Int32 position)
   method public System.Int32 ReplaceAll(System.String query, System.String replacement, System.Boolean matchCase = False)
   method public System.Nullable<System.ValueTuple<Textalonia.Model.Table,System.Int32,System.Int32>> CurrentCell()
+  method public System.Void ActivateHeaderFooter(System.Guid sectionId, System.Boolean footer, Textalonia.Model.HeaderFooterVariant variant = Primary)
+  method public System.Void ActivateNote(System.Guid noteId)
   method public System.Void ApplyNamedCharacterStyle(System.String id, System.Boolean clearDirectFormatting = True)
   method public System.Void ApplyNamedParagraphStyle(System.String id, System.Boolean clearDirectFormatting = True)
   method public System.Void ApplyParagraphStyle(System.Func<Textalonia.Model.ParagraphStyle,Textalonia.Model.ParagraphStyle> change)
@@ -650,17 +665,23 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Void InsertText(System.String text, System.Boolean coalesceTyping = False)
   method public System.Void Load(Textalonia.Model.FlowDocument document)
   method public System.Void Redo()
+  method public System.Void RemoveNote(System.Guid noteId)
   method public System.Void RemoveSection(System.Guid sectionId)
   method public System.Void RestartList(System.Int32 start = 1)
+  method public System.Void ReturnToBody()
   method public System.Void Select(System.Int32 anchor, System.Int32 active)
   method public System.Void SelectAll()
   method public System.Void SetDefaults(Textalonia.Model.DocumentDefaults defaults)
+  method public System.Void SetHeaderFooterLink(System.Guid sectionId, System.Boolean footer, Textalonia.Model.HeaderFooterVariant variant, System.Boolean linked)
+  method public System.Void SetHeaderFooterSettings(System.Guid sectionId, Textalonia.Model.HeaderFooterSettings settings)
   method public System.Void SetHeading(System.Int32 level)
   method public System.Void SetList(Textalonia.Model.ListKind kind, Textalonia.Model.ListDefinition definition = , System.Nullable<System.Guid> listId = )
+  method public System.Void SetNoteSettings(Textalonia.Model.DocumentNoteKind kind, Textalonia.Model.NoteSettings settings)
   method public System.Void SetPageSettings(Textalonia.Model.PageSettings settings, System.Nullable<System.Guid> sectionId = )
   method public System.Void SetSectionNumbering(System.Nullable<System.Int32> start, Textalonia.Model.PageNumberFormat format = Decimal, System.Nullable<System.Guid> sectionId = )
   method public System.Void SetStyles(Textalonia.Model.DocumentStyleCatalog styles)
   method public System.Void SetTheme(Textalonia.Model.DocumentTheme theme)
+  method public System.Void SwitchStory(System.Guid storyId)
   method public System.Void ToggleBold()
   method public System.Void ToggleItalic()
   method public System.Void ToggleList(Textalonia.Model.ListKind kind)
@@ -673,10 +694,12 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public Textalonia.Editing.DocumentFragment CopyCells(System.Guid tableId, System.Int32 row, System.Int32 column, System.Int32 rowCount, System.Int32 columnCount)
   method public Textalonia.Editing.DocumentFragment CopyFragment()
   method public Textalonia.Editing.DocumentPosition CreatePosition(System.Int32 offset)
+  method public Textalonia.Model.DocumentNote InsertNote(Textalonia.Model.DocumentNoteKind kind, System.String customMark = )
   method public Textalonia.Model.FlowDocument CopySelection()
   property System.Boolean CanRedo { public get; }
   property System.Boolean CanUndo { public get; }
   property System.Boolean IsReadOnly { public get; public set; }
+  property System.Guid ActiveStoryId { public get; }
   property System.Int32 Revision { public get; }
   property System.Int32 UndoLimit { public get; public set; }
   property System.Int64 HistoryByteLimit { public get; public set; }
@@ -686,6 +709,7 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   property Textalonia.Editing.TextSelection Selection { public get; }
   property Textalonia.Model.DocumentIndex Index { public get; }
   property Textalonia.Model.DocumentSection CurrentSection { public get; }
+  property Textalonia.Model.FlowDocument ActiveDocument { public get; }
   property Textalonia.Model.FlowDocument Document { public get; }
   property Textalonia.Model.InlineDescriptor CurrentMergeField { public get; }
   property Textalonia.Model.PageSettings CurrentPageSettings { public get; }
@@ -743,6 +767,7 @@ type Textalonia.Layout.LineFragment : System.Object sealed
   property System.Double Baseline { public get; }
   property System.Guid ParagraphId { public get; }
   property System.Guid SectionId { public get; }
+  property System.Guid StoryKey { public get; }
   property System.Int32 ColumnIndex { public get; }
   property System.Int32 Length { public get; }
   property System.Int32 PageIndex { public get; }
@@ -751,6 +776,20 @@ type Textalonia.Layout.LineFragment : System.Object sealed
   property System.Int32 TextStart { public get; }
   property System.Nullable<System.Int32> LineNumber { public get; }
   property System.String StoryId { public get; }
+type Textalonia.Layout.PageContext : System.Object sealed
+  interface System.IEquatable<Textalonia.Layout.PageContext>
+  ctor public (System.Int32 PageIndex, System.Int32 PageNumber, System.Int32 PageCount, System.Guid SectionId, System.Int32 SectionPageCount)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Layout.PageContext other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Int32& PageIndex, System.Int32& PageNumber, System.Int32& PageCount, System.Guid& SectionId, System.Int32& SectionPageCount)
+  method public Textalonia.Layout.PageContext <Clone>$()
+  property System.Guid SectionId { public get; public set; }
+  property System.Int32 PageCount { public get; public set; }
+  property System.Int32 PageIndex { public get; public set; }
+  property System.Int32 PageNumber { public get; public set; }
+  property System.Int32 SectionPageCount { public get; public set; }
 type Textalonia.Layout.PageLayout : System.Object sealed
   interface System.IEquatable<Textalonia.Layout.PageLayout>
   ctor public (System.Int32 Index, System.Guid SectionId, System.Int32 Number, System.String NumberText, Avalonia.Rect Bounds, Avalonia.Rect ContentBounds, System.Collections.Immutable.ImmutableArray<Avalonia.Rect> Columns, Textalonia.Model.PageSettings Settings, System.Boolean IsBlank = False)
@@ -771,18 +810,25 @@ type Textalonia.Layout.PageLayout : System.Object sealed
   property Textalonia.Model.PageSettings Settings { public get; public set; }
 type Textalonia.Layout.PageLayoutSnapshot : System.Object sealed
   interface System.IDisposable
+  method public Avalonia.Rect Caret(System.Guid storyId, System.Int32 position, System.Int32 pageIndex = -1)
   method public Avalonia.Rect Caret(System.Int32 position)
+  method public System.Collections.Generic.IEnumerable<Avalonia.Rect> SelectionRects(System.Guid storyId, System.Int32 start, System.Int32 length, System.Int32 pageIndex = -1)
   method public System.Collections.Generic.IEnumerable<Avalonia.Rect> SelectionRects(System.Int32 start, System.Int32 length)
+  method public System.Int32 GetPageIndex(System.Guid storyId, System.Int32 position)
   method public System.Int32 GetPageIndex(System.Int32 position)
   method public System.Int32 HitTest(Avalonia.Point point)
   method public System.Void Dispose() virtual
   method public System.Void Draw(Avalonia.Media.DrawingContext context, System.Nullable<Avalonia.Rect> viewport = )
   method public System.Void DrawBackgrounds(Avalonia.Media.DrawingContext context, System.Nullable<Avalonia.Rect> viewport = )
   method public System.Void DrawContent(Avalonia.Media.DrawingContext context, System.Nullable<Avalonia.Rect> viewport = )
+  method public Textalonia.Layout.StoryHit HitTestStory(Avalonia.Point point)
   property System.Boolean IsComplete { public get; }
   property System.Collections.Generic.IReadOnlyList<Textalonia.Controls.DocumentFontDiagnostic> FontDiagnostics { public get; }
+  property System.Collections.Immutable.ImmutableArray<System.String> LayoutDiagnostics { public get; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Layout.LineFragment> Fragments { public get; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Layout.LineFragment> StoryFragments { public get; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Layout.PageLayout> Pages { public get; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Layout.StoryRegion> StoryRegions { public get; }
   property System.Double Height { public get; }
   property System.Double Width { public get; }
   property Textalonia.Model.FlowDocument Document { public get; }
@@ -810,6 +856,37 @@ type Textalonia.Layout.PaginationOptions : System.Object sealed
   property System.Double PageGap { public get; public set; }
   property System.Int32 MaxShapingCharacters { public get; public set; }
   property System.Int32 PagesPerRow { public get; public set; }
+type Textalonia.Layout.StoryHit : System.Object sealed
+  interface System.IEquatable<Textalonia.Layout.StoryHit>
+  ctor public (System.Guid StoryId, System.Int32 Position, System.Int32 PageIndex)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Layout.StoryHit other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Guid& StoryId, System.Int32& Position, System.Int32& PageIndex)
+  method public Textalonia.Layout.StoryHit <Clone>$()
+  property System.Guid StoryId { public get; public set; }
+  property System.Int32 PageIndex { public get; public set; }
+  property System.Int32 Position { public get; public set; }
+type Textalonia.Layout.StoryRegion : System.Object sealed
+  interface System.IEquatable<Textalonia.Layout.StoryRegion>
+  ctor public (System.Guid StoryId, Textalonia.Model.DocumentStoryKind Kind, System.Int32 PageIndex, Avalonia.Rect Bounds, System.Int32 Start, System.Int32 End, System.Boolean IsContinuation, System.String Marker, Textalonia.Layout.PageContext Context)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Layout.StoryRegion other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Guid& StoryId, Textalonia.Model.DocumentStoryKind& Kind, System.Int32& PageIndex, Avalonia.Rect& Bounds, System.Int32& Start, System.Int32& End, System.Boolean& IsContinuation, System.String& Marker, Textalonia.Layout.PageContext& Context)
+  method public Textalonia.Layout.StoryRegion <Clone>$()
+  property Avalonia.Rect Bounds { public get; public set; }
+  property System.Boolean IsContinuation { public get; public set; }
+  property System.Guid StoryId { public get; public set; }
+  property System.Int32 End { public get; public set; }
+  property System.Int32 PageIndex { public get; public set; }
+  property System.Int32 Start { public get; public set; }
+  property System.String Marker { public get; public set; }
+  property System.String SeparatorText { public get; public set; }
+  property Textalonia.Layout.PageContext Context { public get; public set; }
+  property Textalonia.Model.DocumentStoryKind Kind { public get; public set; }
 type Textalonia.MailMerge.MailMergeOptions : System.Object sealed
   interface System.IEquatable<Textalonia.MailMerge.MailMergeOptions>
   ctor public ()
@@ -944,6 +1021,29 @@ type Textalonia.Model.DocumentIndex : System.Object sealed
   property System.Int32 Length { public get; }
   property System.Int32 ParagraphCount { public get; }
   property System.String Text { public get; }
+type Textalonia.Model.DocumentNote : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentNote>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentNote other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentNote <Clone>$()
+  property System.Guid Id { public get; public set; }
+  property System.Guid StoryId { public get; public set; }
+  property System.String CustomMark { public get; public set; }
+  property Textalonia.Model.DocumentNoteKind Kind { public get; public set; }
+type Textalonia.Model.DocumentNoteKind : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.DocumentNoteKind Endnote static = 1
+  field Textalonia.Model.DocumentNoteKind Footnote static = 0
+type Textalonia.Model.DocumentNoteNumbering : System.Object sealed abstract
+  method public static System.String Format(System.Int32 number, Textalonia.Model.PageNumberFormat format)
+  method public static System.String GetMark(Textalonia.Model.FlowDocument document, System.Guid noteId, System.Collections.Generic.IReadOnlyDictionary<System.Guid,System.Int32> notePages = )
 type Textalonia.Model.DocumentResource : System.Object sealed
   interface System.IEquatable<Textalonia.Model.DocumentResource>
   ctor public ()
@@ -978,9 +1078,31 @@ type Textalonia.Model.DocumentSection : System.Object sealed
   property System.Guid Id { public get; public set; }
   property System.Guid StartParagraphId { public get; public set; }
   property System.Nullable<System.Int32> PageNumberStart { public get; public set; }
+  property Textalonia.Model.HeaderFooterSettings HeaderFooter { public get; public set; }
   property Textalonia.Model.PageNumberFormat PageNumberFormat { public get; public set; }
   property Textalonia.Model.PageSettings PageSettings { public get; public set; }
   property Textalonia.Model.SectionBreakKind BreakKind { public get; public set; }
+type Textalonia.Model.DocumentStory : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentStory>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentStory other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentStory <Clone>$()
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Model.Block> Blocks { public get; public set; }
+  property System.Guid Id { public get; public set; }
+  property Textalonia.Model.DocumentStoryKind Kind { public get; public set; }
+type Textalonia.Model.DocumentStoryKind : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.DocumentStoryKind Endnote static = 3
+  field Textalonia.Model.DocumentStoryKind Footer static = 1
+  field Textalonia.Model.DocumentStoryKind Footnote static = 2
+  field Textalonia.Model.DocumentStoryKind Header static = 0
 type Textalonia.Model.DocumentStyleCatalog : System.Object sealed
   interface System.IEquatable<Textalonia.Model.DocumentStyleCatalog>
   ctor public ()
@@ -1056,7 +1178,10 @@ type Textalonia.Model.FlowDocument : System.Object sealed
   method public System.Int32 GetHashCode() virtual
   method public System.String ToString() virtual
   method public System.Void Validate()
+  method public Textalonia.Model.DocumentIndex GetStoryIndex(System.Guid storyId)
+  method public Textalonia.Model.DocumentStory ResolveHeaderFooter(System.Int32 sectionIndex, System.Boolean footer, Textalonia.Model.HeaderFooterVariant variant)
   method public Textalonia.Model.FlowDocument <Clone>$()
+  method public Textalonia.Model.FlowDocument GetStoryDocument(System.Guid storyId)
   method public Textalonia.Model.FlowDocument PruneUnusedResources()
   method public Textalonia.Model.FlowDocument ReplaceBlock(System.Guid id, Textalonia.Model.Block replacement)
   method public Textalonia.Model.FlowDocument RewriteParagraphs(System.Func<Textalonia.Model.Paragraph,System.Collections.Generic.IEnumerable<Textalonia.Model.Paragraph>> change)
@@ -1066,13 +1191,17 @@ type Textalonia.Model.FlowDocument : System.Object sealed
   method public static Textalonia.Model.FlowDocument FromText(System.String text, Textalonia.Model.TextStyle style = )
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.Block> Blocks { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentFontDefinition> Fonts { public get; public set; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentNote> Notes { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentSection> Sections { public get; public set; }
+  property System.Collections.Immutable.ImmutableDictionary<System.Guid,Textalonia.Model.DocumentStory> Stories { public get; public set; }
   property System.Collections.Immutable.ImmutableDictionary<System.String,Textalonia.Model.DocumentResource> Resources { public get; public set; }
   property System.String PlainText { public get; }
   property System.String Text { public get; }
   property Textalonia.Model.DocumentDefaults Defaults { public get; public set; }
   property Textalonia.Model.DocumentStyleCatalog Styles { public get; public set; }
   property Textalonia.Model.DocumentTheme Theme { public get; public set; }
+  property Textalonia.Model.NoteSettings EndnoteSettings { public get; public set; }
+  property Textalonia.Model.NoteSettings FootnoteSettings { public get; public set; }
 type Textalonia.Model.FontEmbeddingPolicy : System.Object sealed abstract
   method public static System.Boolean CanEmbed(System.Nullable<Textalonia.Model.FontEmbeddingRights> rights, System.Boolean forEditing = True)
   method public static System.Nullable<Textalonia.Model.FontEmbeddingRights> ReadRights(System.ReadOnlySpan<System.Byte> data)
@@ -1088,6 +1217,35 @@ type Textalonia.Model.FontEmbeddingRights : System.Enum sealed
   field Textalonia.Model.FontEmbeddingRights NoSubsetting static = 256
   field Textalonia.Model.FontEmbeddingRights PreviewAndPrint static = 4
   field Textalonia.Model.FontEmbeddingRights Restricted static = 2
+type Textalonia.Model.HeaderFooterSettings : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.HeaderFooterSettings>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.HeaderFooterSettings other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.HeaderFooterSettings <Clone>$()
+  method public Textalonia.Model.HeaderFooterSettings WithReference(System.Boolean footer, Textalonia.Model.HeaderFooterVariant variant, Textalonia.Model.StoryReference reference)
+  method public Textalonia.Model.StoryReference GetReference(System.Boolean footer, Textalonia.Model.HeaderFooterVariant variant)
+  property System.Boolean DifferentFirstPage { public get; public set; }
+  property System.Boolean DifferentOddEvenPages { public get; public set; }
+  property System.Double FooterDistance { public get; public set; }
+  property System.Double HeaderDistance { public get; public set; }
+  property Textalonia.Model.StoryReference EvenFooter { public get; public set; }
+  property Textalonia.Model.StoryReference EvenHeader { public get; public set; }
+  property Textalonia.Model.StoryReference FirstFooter { public get; public set; }
+  property Textalonia.Model.StoryReference FirstHeader { public get; public set; }
+  property Textalonia.Model.StoryReference PrimaryFooter { public get; public set; }
+  property Textalonia.Model.StoryReference PrimaryHeader { public get; public set; }
+type Textalonia.Model.HeaderFooterVariant : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.HeaderFooterVariant Even static = 2
+  field Textalonia.Model.HeaderFooterVariant First static = 1
+  field Textalonia.Model.HeaderFooterVariant Primary static = 0
 type Textalonia.Model.ImageInlinePayload : Textalonia.Model.InlinePayload sealed
   interface System.IEquatable<Textalonia.Model.ImageInlinePayload>
   interface System.IEquatable<Textalonia.Model.InlinePayload>
@@ -1115,6 +1273,8 @@ type Textalonia.Model.InlineDescriptor : System.Object sealed
   method public System.Int32 GetHashCode() virtual
   method public System.String ToString() virtual
   method public Textalonia.Model.InlineDescriptor <Clone>$()
+  method public static Textalonia.Model.InlineDescriptor Note(System.Guid noteId, System.String mark = 1)
+  method public static Textalonia.Model.InlineDescriptor PageField(Textalonia.Model.PageFieldKind field)
   property System.Double Height { public get; public set; }
   property System.Double Width { public get; public set; }
   property System.Guid Id { public get; public set; }
@@ -1242,6 +1402,53 @@ type Textalonia.Model.MergeFieldInlinePayload : Textalonia.Model.InlinePayload s
   property System.Type EqualityContract { protected get; }
 type Textalonia.Model.MergeFields : System.Object sealed abstract
   method public static Textalonia.Model.InlineDescriptor Create(System.String name, System.String format = , System.String fallbackText = )
+type Textalonia.Model.NoteInlinePayload : Textalonia.Model.InlinePayload sealed
+  interface System.IEquatable<Textalonia.Model.InlinePayload>
+  interface System.IEquatable<Textalonia.Model.NoteInlinePayload>
+  ctor public (System.Guid NoteId)
+  method protected System.Boolean PrintMembers(System.Text.StringBuilder builder) virtual
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.InlinePayload other) virtual
+  method public System.Boolean Equals(Textalonia.Model.NoteInlinePayload other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Guid& NoteId)
+  method public Textalonia.Model.NoteInlinePayload <Clone>$() virtual
+  property System.Guid NoteId { public get; public set; }
+  property System.Type EqualityContract { protected get; }
+type Textalonia.Model.NotePlacement : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.NotePlacement BelowText static = 1
+  field Textalonia.Model.NotePlacement DocumentEnd static = 2
+  field Textalonia.Model.NotePlacement PageBottom static = 0
+  field Textalonia.Model.NotePlacement SectionEnd static = 3
+type Textalonia.Model.NoteRestartPolicy : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.NoteRestartPolicy Continuous static = 0
+  field Textalonia.Model.NoteRestartPolicy EachPage static = 2
+  field Textalonia.Model.NoteRestartPolicy EachSection static = 1
+type Textalonia.Model.NoteSettings : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.NoteSettings>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.NoteSettings other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.NoteSettings <Clone>$()
+  property System.Int32 Start { public get; public set; }
+  property System.String ContinuationSeparatorText { public get; public set; }
+  property System.String SeparatorText { public get; public set; }
+  property Textalonia.Model.NotePlacement Placement { public get; public set; }
+  property Textalonia.Model.NoteRestartPolicy Restart { public get; public set; }
+  property Textalonia.Model.PageNumberFormat NumberFormat { public get; public set; }
 type Textalonia.Model.PageColumn : System.Object sealed
   interface System.IEquatable<Textalonia.Model.PageColumn>
   ctor public (System.Double Width = 1)
@@ -1252,6 +1459,29 @@ type Textalonia.Model.PageColumn : System.Object sealed
   method public System.Void Deconstruct(System.Double& Width)
   method public Textalonia.Model.PageColumn <Clone>$()
   property System.Double Width { public get; public set; }
+type Textalonia.Model.PageFieldInlinePayload : Textalonia.Model.InlinePayload sealed
+  interface System.IEquatable<Textalonia.Model.InlinePayload>
+  interface System.IEquatable<Textalonia.Model.PageFieldInlinePayload>
+  ctor public (Textalonia.Model.PageFieldKind Field)
+  method protected System.Boolean PrintMembers(System.Text.StringBuilder builder) virtual
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.InlinePayload other) virtual
+  method public System.Boolean Equals(Textalonia.Model.PageFieldInlinePayload other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(Textalonia.Model.PageFieldKind& Field)
+  method public Textalonia.Model.PageFieldInlinePayload <Clone>$() virtual
+  property System.Type EqualityContract { protected get; }
+  property Textalonia.Model.PageFieldKind Field { public get; public set; }
+type Textalonia.Model.PageFieldKind : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.PageFieldKind NumPages static = 1
+  field Textalonia.Model.PageFieldKind Page static = 0
+  field Textalonia.Model.PageFieldKind SectionPages static = 2
 type Textalonia.Model.PageNumberFormat : System.Enum sealed
   interface System.IComparable
   interface System.IConvertible
@@ -1514,6 +1744,16 @@ type Textalonia.Model.SectionSemantic : System.Enum sealed
   field Textalonia.Model.SectionSemantic CodeBlock static = 2
   field Textalonia.Model.SectionSemantic None static = 0
   field Textalonia.Model.SectionSemantic Quote static = 1
+type Textalonia.Model.StoryReference : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.StoryReference>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.StoryReference other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.StoryReference <Clone>$()
+  property System.Boolean LinkToPrevious { public get; public set; }
+  property System.Nullable<System.Guid> StoryId { public get; public set; }
 type Textalonia.Model.StrikeKind : System.Enum sealed
   interface System.IComparable
   interface System.IConvertible

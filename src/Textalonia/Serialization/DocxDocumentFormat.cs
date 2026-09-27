@@ -106,7 +106,16 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         }
         var relationships = Xml("word/_rels/document.xml.rels")?.Root?.Elements(Rel + "Relationship")
             .Where(e => e.Attribute("Id") is not null).ToDictionary(e => (string)e.Attribute("Id")!, e => e) ?? [];
+        var mainRelationships = relationships;
+        var currentPart = "word/document.xml";
         var settings = Xml("word/settings.xml");
+        var stories = ImmutableDictionary.CreateBuilder<Guid, DocumentStory>();
+        var notes = new Dictionary<(bool Endnote, string Id), DocumentNote>();
+        var referencedNotes = new HashSet<Guid>();
+        var notePrefixText = new Dictionary<Guid, string>();
+        var paragraphSources = new Dictionary<XElement, Guid>();
+        var footnoteSettings = ReadNoteSettings(settings?.Root?.Element(W + "footnotePr"), false);
+        var endnoteSettings = ReadNoteSettings(settings?.Root?.Element(W + "endnotePr"), true);
         foreach (var mailMerge in settings?.Descendants(W + "mailMerge") ?? [])
             Loss("mail-merge-source", "Linked mail-merge recipient source and settings",
                 "Retained document merge fields without the recipient connection or merge configuration; no source was accessed.", mailMerge);
@@ -168,7 +177,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             if (relationshipId is null || !relationships.TryGetValue(relationshipId, out var relationship) ||
                 ((string?)relationship.Attribute("Type"))?.EndsWith("/image", StringComparison.Ordinal) != true || (string?)relationship.Attribute("TargetMode") == "External")
             { Loss("image-unavailable", "External or unsupported image relationship", "Alternative text retained; no resource fetched.", drawing); return new RichRun(alt, style); }
-            var part = ResolvePart((string?)relationship.Attribute("Target") ?? "");
+            var part = ResolvePart((string?)relationship.Attribute("Target") ?? "", currentPart);
             if (part is null || archive.GetEntry(part) is not { } entry)
             { Loss("image-unavailable", "Missing or unsafe image package part", "Alternative text retained.", drawing); return new RichRun(alt, style); }
             var mediaType = (string?)contentTypes?.Elements(Ct + "Override").FirstOrDefault(e => (string?)e.Attribute("PartName") == "/" + part)?.Attribute("ContentType") ??
@@ -251,6 +260,21 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                     field.Invalid = true;
                     Loss("field-structure", "Unclosed or cross-paragraph field", "Retained cached display text without active field semantics.", field.Source);
                 }
+                if (PageFieldInstructions.TryParse(field.Instruction.ToString(), out var pageField) && !field.Invalid)
+                {
+                    var display = string.Concat(field.Results.Select(r => r.PlainText));
+                    if (field.Results.Any(r => r.Inline is not null) || display.Length > 16384)
+                    {
+                        Loss("field-result", "Non-text or oversized page-field result", "Retained result content without active field semantics.", field.Source);
+                        foreach (var result in field.Results) AddRun(result);
+                        return;
+                    }
+                    var style = field.Results.FirstOrDefault()?.Style ?? field.Style;
+                    if (field.Results.Any(r => r.Style != style))
+                        Loss("field-result-formatting", "Multiple styles in an atomic page field", "Applied the first character style to the field display.", field.Source);
+                    AddRun(new RichRun(InlineDescriptor.PageField(pageField) with { AltText = display.Length == 0 ? "1" : display }, style));
+                    return;
+                }
                 var parsed = MergeFieldInstructions.Parse(field.Instruction.ToString());
                 if (parsed is null)
                     Loss("field", "Unsupported or malformed Word field instruction", "Cached display text retained without active field semantics.", field.Source);
@@ -303,9 +327,30 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                     else Loss("hyperlink", "Unsafe or internal hyperlink", "Link text retained without navigation.", hyperlink);
                 }
                 if (fields.Count > 0 && fields.Peek().Separated) fields.Peek().ResultStyle ??= style;
+                var consumedCustomMarks = new HashSet<XElement>();
                 foreach (var content in run.Elements().Where(e => e.Name != W + "rPr"))
                 {
-                    if (content.Name == W + "drawing") AddRun(ReadDrawing(content, style));
+                    if (consumedCustomMarks.Contains(content)) continue;
+                    if (content.Name == W + "footnoteReference" || content.Name == W + "endnoteReference")
+                    {
+                        var key = (content.Name == W + "endnoteReference", (string?)content.Attribute(W + "id") ?? "");
+                        if (!notes.TryGetValue(key, out var note))
+                        { Loss("note-missing", "Missing footnote or endnote story", "Reference omitted.", content); continue; }
+                        if (currentPart != "word/document.xml")
+                        { Loss("nested-note", "Note reference outside the main story", "Reference omitted; surrounding story content retained.", content); continue; }
+                        if (!referencedNotes.Add(note.Id))
+                        { Loss("note-reference-duplicate", "Multiple references to one note", "Subsequent reference retained as text.", content); AddRun(new RichRun(note.CustomMark ?? "*", style)); continue; }
+                        if (OnAttribute(content, "customMarkFollows"))
+                        {
+                            var mark = content.ElementsAfterSelf().FirstOrDefault();
+                            if (mark?.Name == W + "t" && mark.Value.Length is > 0 and <= 32 && !string.IsNullOrWhiteSpace(mark.Value) && !mark.Value.Any(char.IsControl))
+                            { note = note with { CustomMark = mark.Value }; notes[key] = note; consumedCustomMarks.Add(mark); }
+                            else Loss("note-custom-mark", "Custom note mark outside the reference run", "Automatic reference numbering applied.", content);
+                        }
+                        AddRun(new RichRun(InlineDescriptor.Note(note.Id, note.CustomMark ?? "1"), style));
+                    }
+                    else if (content.Name == W + "footnoteRef" || content.Name == W + "endnoteRef") { }
+                    else if (content.Name == W + "drawing") AddRun(ReadDrawing(content, style));
                     else if (content.Name == W + "t") AddRun(new RichRun(content.Value.Replace('\n', '\u2028').Replace("\r", ""), style));
                     else if (content.Name == W + "tab") AddRun(new RichRun("\t", style));
                     else if (content.Name == W + "br" || content.Name == W + "cr")
@@ -350,7 +395,9 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             if (pp?.Element(W + "outlineLvl") is null && !HasOutline(styleId) && paragraphStyle.HeadingLevel > 0)
                 paragraphOverrides = paragraphOverrides with { HeadingLevel = paragraphStyle.HeadingLevel };
             paragraphStyle = paragraphStyle with { StyleId = styleId is not null && catalog.Paragraphs.ContainsKey(styleId) ? styleId : null, Overrides = paragraphOverrides };
-            return new Paragraph(runs) { Style = paragraphStyle, DefaultStyle = paragraphText };
+            var result = new Paragraph(runs) { Style = paragraphStyle, DefaultStyle = paragraphText };
+            paragraphSources[element] = result.Id;
+            return result;
         }
         Table ReadTable(XElement element, int depth)
         {
@@ -476,11 +523,121 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         var body = Xml("word/document.xml", true)?.Root?.Element(W + "body") ?? throw new FormatException("Missing DOCX document body.");
         foreach (var revision in body.Descendants().Where(e => e.Name == W + "ins" || e.Name == W + "del" || e.Name == W + "moveFrom" || e.Name == W + "moveTo" || e.Name.LocalName.EndsWith("PrChange", StringComparison.Ordinal)))
             Loss("revision", "Tracked revision history", "Current accepted content retained; deleted content and history omitted.", revision);
-        foreach (var section in body.Descendants(W + "sectPr"))
-            if (section.Elements().Any() || section.Parent?.Name == W + "pPr") Loss("page-layout", "Page layout, headers, footers, or section pagination", "Flow content retained without page layout.", section);
+        ImmutableArray<Block> ReadStoryBlocks(string part, XElement root)
+        {
+            var previousRelationships = relationships; var previousPart = currentPart;
+            currentPart = part;
+            var slash = part.LastIndexOf('/');
+            var relationPart = part[..(slash + 1)] + "_rels/" + part[(slash + 1)..] + ".rels";
+            relationships = Xml(relationPart)?.Root?.Elements(Rel + "Relationship").Where(e => e.Attribute("Id") is not null)
+                .ToDictionary(e => (string)e.Attribute("Id")!, e => e) ?? [];
+            try { return FlowDocument.EnsureBlocks(ReadBlocks(root.Elements(), 0).ToImmutableArray()); }
+            finally { relationships = previousRelationships; currentPart = previousPart; }
+        }
+        foreach (var endnote in new[] { false, true })
+        {
+            var kind = endnote ? "endnotes" : "footnotes";
+            var relation = mainRelationships.Values.FirstOrDefault(e => ((string?)e.Attribute("Type"))?.EndsWith("/" + kind, StringComparison.Ordinal) == true);
+            if (relation is null) continue;
+            if ((string?)relation.Attribute("TargetMode") == "External")
+            { Loss("note-external", "External note relationship", "Notes omitted; no resource fetched.", relation); continue; }
+            var part = ResolvePart((string?)relation.Attribute("Target") ?? "");
+            if (part is null || Xml(part)?.Root is not { } root)
+            { Loss("note-missing", "Missing or unsafe note part", "Notes omitted.", relation); continue; }
+            foreach (var element in root.Elements(W + (endnote ? "endnote" : "footnote")))
+            {
+                var type = (string?)element.Attribute(W + "type");
+                if (type is "separator" or "continuationSeparator")
+                {
+                    var text = string.Concat(element.Descendants(W + "t").Select(e => e.Value));
+                    var noteSettings = endnote ? endnoteSettings : footnoteSettings;
+                    if (text.Length > 256) { Loss("note-separator", "Oversized separator text", "Default separator retained.", element); continue; }
+                    if (element.Descendants(W + "tbl").Any() || element.Descendants(W + "drawing").Any() || element.Descendants(W + "rPr").Any())
+                        Loss("note-separator-formatting", "Rich note separator", "Separator text retained without rich formatting.", element);
+                    if (text.Length > 0 || !element.Descendants().Any(e => e.Name == W + "separator" || e.Name == W + "continuationSeparator"))
+                        noteSettings = type == "separator" ? noteSettings with { SeparatorText = text } : noteSettings with { ContinuationSeparatorText = text };
+                    if (endnote) endnoteSettings = noteSettings; else footnoteSettings = noteSettings;
+                    continue;
+                }
+                if (type is not (null or "normal"))
+                { Loss("note-type", "Unsupported note type", "Unsupported note omitted.", element); continue; }
+                var identity = (string?)element.Attribute(W + "id") ?? throw new FormatException("Missing DOCX note ID.");
+                var story = new DocumentStory { Kind = endnote ? DocumentStoryKind.Endnote : DocumentStoryKind.Footnote, Blocks = ReadStoryBlocks(part, element) };
+                var note = new DocumentNote { StoryId = story.Id, Kind = endnote ? DocumentNoteKind.Endnote : DocumentNoteKind.Footnote };
+                if (!notes.TryAdd((endnote, identity), note)) throw new FormatException("Duplicate DOCX note ID.");
+                stories.Add(story.Id, story);
+                var prefix = element.Descendants(W + "r").FirstOrDefault();
+                if (prefix is not null && !prefix.Elements(W + (endnote ? "endnoteRef" : "footnoteRef")).Any())
+                    notePrefixText[note.Id] = string.Concat(prefix.Elements(W + "t").Select(t => t.Value));
+            }
+        }
         // Enumerate before freezing resources, which are populated while reading inline drawings.
         var blocks = ReadBlocks(body.Elements(), 0).ToArray();
+        var importedStoryParts = new Dictionary<(string, bool), Guid>();
+        StoryReference ReadHeaderFooter(XElement reference, bool footer)
+        {
+            var relationshipId = (string?)reference.Attribute(R + "id") ?? "";
+            if (!mainRelationships.TryGetValue(relationshipId, out var relation) || (string?)relation.Attribute("TargetMode") == "External" ||
+                !((string?)relation.Attribute("Type") ?? "").EndsWith(footer ? "/footer" : "/header", StringComparison.Ordinal))
+            { Loss("header-footer-reference", "Missing or external header/footer relationship", "Unlinked empty story applied; no resource fetched.", reference); return new() { LinkToPrevious = false }; }
+            var part = ResolvePart((string?)relation.Attribute("Target") ?? "");
+            if (part is null) { Loss("header-footer-reference", "Unsafe header/footer part", "Unlinked empty story applied.", reference); return new() { LinkToPrevious = false }; }
+            if (!importedStoryParts.TryGetValue((part, footer), out var identity))
+            {
+                var root = Xml(part)?.Root;
+                if (root is null) { Loss("header-footer-reference", "Missing header/footer part", "Unlinked empty story applied.", reference); return new() { LinkToPrevious = false }; }
+                var story = new DocumentStory { Kind = footer ? DocumentStoryKind.Footer : DocumentStoryKind.Header, Blocks = ReadStoryBlocks(part, root) };
+                stories.Add(story.Id, story); identity = story.Id; importedStoryParts.Add((part, footer), identity);
+            }
+            return new() { StoryId = identity, LinkToPrevious = false };
+        }
+        var sections = ImmutableArray.CreateBuilder<DocumentSection>();
+        var visibleParagraphs = new DocumentIndex(new FlowDocument(blocks)).Paragraphs.Select(p => p.Paragraph.Id).ToArray();
+        var sectionStart = Guid.Empty;
+        foreach (var properties in body.Descendants(W + "sectPr").Where(p => !p.Ancestors(W + "tbl").Any()))
+        {
+            if (!properties.HasElements && properties.Parent == body && sections.Count == 0) continue;
+            var section = ReadPhysicalSection(properties, sectionStart, On(settings?.Root?.Element(W + "evenAndOddHeaders")), ReadHeaderFooter);
+            section = section with { PageSettings = section.PageSettings with { MirrorMargins = On(settings?.Root?.Element(W + "mirrorMargins")) } };
+            sections.Add(section);
+            if (properties.Parent?.Parent is { } p && p.Name == W + "p")
+            {
+                if (!paragraphSources.TryGetValue(p, out var paragraphId))
+                {
+                    var nextSource = p.ElementsAfterSelf().SelectMany(e => e.DescendantsAndSelf(W + "p")).FirstOrDefault(e => paragraphSources.ContainsKey(e) && !e.Ancestors(W + "tbl").Any());
+                    sectionStart = nextSource is null ? Guid.Empty : paragraphSources[nextSource];
+                    if (sectionStart == Guid.Empty) break;
+                    continue;
+                }
+                var position = Array.IndexOf(visibleParagraphs, paragraphId);
+                if (position >= 0 && position + 1 < visibleParagraphs.Length)
+                {
+                    sectionStart = visibleParagraphs[position + 1];
+                    if (!DocumentSection.IsOutsideTable(blocks, sectionStart))
+                    {
+                        var boundary = new Paragraph() { Style = new() { SpaceAfter = 0 } };
+                        blocks = InsertTableSectionBoundary(blocks.ToImmutableArray(), sectionStart, boundary).ToArray();
+                        visibleParagraphs = new DocumentIndex(new FlowDocument(blocks)).Paragraphs.Select(p => p.Paragraph.Id).ToArray();
+                        sectionStart = boundary.Id;
+                        Loss("section-table-boundary", "Section beginning directly with a table", "Inserted an empty boundary paragraph before the table to retain section ownership.", properties);
+                    }
+                }
+                else { sectionStart = Guid.Empty; break; }
+            }
+        }
+        if (sections.Count > 0 && sectionStart != Guid.Empty && body.Element(W + "sectPr") is null)
+            sections.Add(new DocumentSection { StartParagraphId = sectionStart });
+        foreach (var note in notes.Values.Where(n => n.CustomMark is not null && referencedNotes.Contains(n.Id)))
+        {
+            var story = stories[note.StoryId];
+            if (notePrefixText.GetValueOrDefault(note.Id) == note.CustomMark)
+                stories[story.Id] = story with { Blocks = RemoveNotePrefix(story.Blocks, note.CustomMark!) };
+        }
+        foreach (var note in notes.Values.Where(n => !referencedNotes.Contains(n.Id)))
+        { Loss("note-unreferenced", "Note without a main-story reference", "Unused note story omitted."); stories.Remove(note.StoryId); }
         var document = new FlowDocument(blocks) { Resources = resources.ToImmutable(), Styles = catalog, Theme = theme, Fonts = fonts,
+            Stories = stories.ToImmutable(), Notes = notes.Values.Where(n => referencedNotes.Contains(n.Id)).ToImmutableArray(), Sections = sections.ToImmutable(),
+            FootnoteSettings = footnoteSettings, EndnoteSettings = endnoteSettings,
             Defaults = new DocumentDefaults { Text = defaultText, Paragraph = defaultParagraph } };
         foreach (var property in body.Descendants().Concat(styleRoot?.Descendants() ?? []))
         {
@@ -563,11 +720,11 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
     private static bool On(XElement? element) => element is not null && Value(element) is not ("false" or "0" or "off" or "none");
     private static bool OnAttribute(XElement element, string name) => (string?)element.Attribute(W + name) is "true" or "1" or "on";
     private static string? ReadColor(string? value) => value is not null && Regex.IsMatch(value, "^[0-9a-fA-F]{6}$") ? "#" + value : null;
-    private static string? ResolvePart(string target)
+    private static string? ResolvePart(string target, string sourcePart = "word/document.xml")
     {
         if (target.Contains('\\') || target.Contains(':') || target.Contains('?') || target.Contains('#')) return null;
         var parts = new List<string>();
-        foreach (var segment in (target.StartsWith('/') ? target[1..] : "word/" + target).Split('/'))
+        foreach (var segment in (target.StartsWith('/') ? target[1..] : sourcePart[..(sourcePart.LastIndexOf('/') + 1)] + target).Split('/'))
         {
             if (segment is "" or ".") continue;
             if (segment == "..") { if (parts.Count == 0) return null; parts.RemoveAt(parts.Count - 1); } else parts.Add(segment);
@@ -796,6 +953,9 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 new(Rel + "Relationship", new XAttribute("Id", "styles"), new XAttribute("Type", R.NamespaceName + "/styles"), new XAttribute("Target", "styles.xml")),
                 new(Rel + "Relationship", new XAttribute("Id", "numbering"), new XAttribute("Type", R.NamespaceName + "/numbering"), new XAttribute("Target", "numbering.xml"))
             };
+            var noteNumbers = document.Notes.Select((note, index) => (note.Id, Number: index + 1)).ToDictionary(n => n.Id, n => n.Number);
+            var writtenParagraphs = new Dictionary<Guid, XElement>();
+            var storyContentTypes = new List<XElement>();
             var resolver = new DocumentStyleResolver(document);
             var numbering = new XElement(W + "numbering"); var numbers = new List<XElement>();
             var identities = new Dictionary<Guid, (int Abstract, int Number, ListDefinition Definition, ListKind Kind)>();
@@ -876,17 +1036,27 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 if (ps.List == ListKind.None && paragraph.Style.Overrides?.List.IsSet == true) pp.Add(new XElement(W + "numPr", Val("numId", 0)));
                 pp.Add(WriteTextStyle(paragraph.DefaultStyle, paragraph.Id, ps.LetterSpacing));
                 var p = new XElement(W + "p", pp);
+                writtenParagraphs[paragraph.Id] = p;
                 foreach (var run in paragraph.Runs)
                 {
                     var r = new XElement(W + "r", WriteTextStyle(run.Style, paragraph.Id, ps.LetterSpacing));
                     var mergeField = run.Inline?.Payload as MergeFieldInlinePayload;
                     if (mergeField is not null) MergeFieldInstructions.ReportExportOptions("docx", run.Inline!, mergeField);
-                    if (mergeField is null && run.Inline is { } inline && WriteImage(inline) is { } drawing) r.Add(drawing);
+                    var pageField = run.Inline?.Payload as PageFieldInlinePayload;
+                    if (run.Inline?.Payload is NoteInlinePayload noteReference)
+                    {
+                        var note = document.Notes.First(n => n.Id == noteReference.NoteId);
+                        r.Add(new XElement(W + (note.Kind == DocumentNoteKind.Footnote ? "footnoteReference" : "endnoteReference"),
+                            new XAttribute(W + "id", noteNumbers[note.Id]), note.CustomMark is not null ? new XAttribute(W + "customMarkFollows", 1) : null));
+                        if (note.CustomMark is not null) r.Add(new XElement(W + "t", note.CustomMark));
+                    }
+                    else if (mergeField is null && pageField is null && run.Inline is { } inline && WriteImage(inline) is { } drawing) r.Add(drawing);
                     else foreach (var segment in Regex.Split(run.PlainText, "([\t\u2028])"))
                         if (segment == "\t") r.Add(new XElement(W + "tab"));
                         else if (segment == "\u2028") r.Add(new XElement(W + "br"));
                         else if (segment.Length > 0) r.Add(new XElement(W + "t", new XAttribute(XNamespace.Xml + "space", "preserve"), segment));
-                    var content = mergeField is null ? r : new XElement(W + "fldSimple", new XAttribute(W + "instr", MergeFieldInstructions.Write(mergeField.Name)), r);
+                    var content = pageField is not null ? new XElement(W + "fldSimple", new XAttribute(W + "instr", pageField.Field switch { PageFieldKind.NumPages => "NUMPAGES", PageFieldKind.SectionPages => "SECTIONPAGES", _ => "PAGE" }), r) :
+                        mergeField is null ? r : new XElement(W + "fldSimple", new XAttribute(W + "instr", MergeFieldInstructions.Write(mergeField.Name)), r);
                     if (resolver.ResolveText(paragraph, run.Style).Hyperlink is { } link)
                     {
                         var id = $"link{relationships.Count}";
@@ -953,11 +1123,83 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                     }
                 }
             }
+            void StoryPart(string name, XElement root, string contentType)
+            {
+                Part("word/" + name + ".xml", root);
+                var used = root.DescendantsAndSelf().Attributes().Where(a => a.Name == R + "id" || a.Name == R + "embed").Select(a => a.Value).ToHashSet();
+                var storyRelationships = relationships.Where(r => used.Contains((string)r.Attribute("Id")!)).Select(r => new XElement(r)).ToArray();
+                if (storyRelationships.Length > 0) Part("word/_rels/" + name + ".xml.rels", new XElement(Rel + "Relationships", storyRelationships));
+                storyContentTypes.Add(new XElement(Ct + "Override", new XAttribute("PartName", "/word/" + name + ".xml"),
+                    new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.wordprocessingml." + contentType + "+xml")));
+            }
+            var usedStories = document.Notes.Select(n => n.StoryId).ToHashSet();
+            foreach (var section in document.Sections) foreach (var footer in new[] { false, true }) foreach (var variant in Enum.GetValues<HeaderFooterVariant>())
+                if (section.HeaderFooter.GetReference(footer, variant).StoryId is { } storyId) usedStories.Add(storyId);
+            foreach (var story in document.Stories.Values.Where(s => !usedStories.Contains(s.Id)))
+                Loss("unreferenced-story", "Secondary story without an owning reference", "Unreferenced story omitted.", id: story.Id);
+            var headerRelationships = new Dictionary<(Guid?, bool), string>();
+            string HeaderRelationship(StoryReference reference, bool footer)
+            {
+                var key = (reference.StoryId, footer);
+                if (headerRelationships.TryGetValue(key, out var existing)) return existing;
+                var name = (footer ? "footer" : "header") + (headerRelationships.Count + 1);
+                var blocks = reference.StoryId is { } id ? document.Stories[id].Blocks : [new Paragraph()];
+                var root = new XElement(W + (footer ? "ftr" : "hdr"), new XAttribute(XNamespace.Xmlns + "w", W), new XAttribute(XNamespace.Xmlns + "r", R), WriteBlocks(blocks));
+                StoryPart(name, root, footer ? "footer" : "header");
+                relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", name), new XAttribute("Type", R.NamespaceName + (footer ? "/footer" : "/header")), new XAttribute("Target", name + ".xml")));
+                headerRelationships.Add(key, name); return name;
+            }
+            var body = new XElement(W + "body", WriteBlocks(document.Blocks));
+            if (document.Sections.IsEmpty) body.Add(new XElement(W + "sectPr"));
+            else
+            {
+                for (var index = 0; index < document.Sections.Length; index++)
+                {
+                    var properties = WritePhysicalSection(document.Sections[index], HeaderRelationship);
+                    if (index == document.Sections.Length - 1) body.Add(properties);
+                    else
+                    {
+                        var next = writtenParagraphs[document.Sections[index + 1].StartParagraphId];
+                        var previous = next.ElementsBeforeSelf().LastOrDefault();
+                        if (previous?.Name == W + "p") previous.Element(W + "pPr")!.Add(properties);
+                        else next.AddBeforeSelf(new XElement(W + "p", new XElement(W + "pPr", Val("pStyle", CellEndStyle), properties)));
+                    }
+                }
+                if (document.Sections.Select(s => s.HeaderFooter.DifferentOddEvenPages).Distinct().Count() > 1)
+                    Loss("odd-even-scope", "Section-specific odd/even option", "DOCX applies the odd/even option document-wide; story references retained.");
+                if (document.Sections.Select(s => s.PageSettings.MirrorMargins).Distinct().Count() > 1)
+                    Loss("mirror-margin-scope", "Section-specific mirrored margins", "DOCX applies mirrored margins document-wide.");
+            }
+            foreach (var endnote in new[] { false, true })
+            {
+                var name = endnote ? "endnotes" : "footnotes";
+                var selected = document.Notes.Where(n => n.Kind == (endnote ? DocumentNoteKind.Endnote : DocumentNoteKind.Footnote)).ToArray();
+                if (selected.Length == 0) continue;
+                var noteSettings = endnote ? document.EndnoteSettings : document.FootnoteSettings;
+                XElement Separator(int id, string type, string text) => new(W + (endnote ? "endnote" : "footnote"), new XAttribute(W + "id", id), new XAttribute(W + "type", type),
+                    new XElement(W + "p", new XElement(W + "r", new XElement(W + "t", new XAttribute(XNamespace.Xml + "space", "preserve"), text))));
+                var root = new XElement(W + name, new XAttribute(XNamespace.Xmlns + "w", W), new XAttribute(XNamespace.Xmlns + "r", R),
+                    Separator(-1, "separator", noteSettings.SeparatorText), Separator(0, "continuationSeparator", noteSettings.ContinuationSeparatorText));
+                foreach (var note in selected)
+                {
+                    var content = new XElement(W + (endnote ? "endnote" : "footnote"), new XAttribute(W + "id", noteNumbers[note.Id]), WriteBlocks(document.Stories[note.StoryId].Blocks));
+                    var first = content.Descendants(W + "p").FirstOrDefault();
+                    if (first is null) { first = new XElement(W + "p"); content.AddFirst(first); }
+                    var marker = new XElement(W + "r", new XElement(W + "rPr", Val("vertAlign", "superscript")),
+                        note.CustomMark is null ? new XElement(W + (endnote ? "endnoteRef" : "footnoteRef")) : new XElement(W + "t", note.CustomMark));
+                    if (first.Element(W + "pPr") is { } pp) pp.AddAfterSelf(marker); else first.AddFirst(marker);
+                    root.Add(content);
+                }
+                StoryPart(name, root, name);
+                relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", name), new XAttribute("Type", R.NamespaceName + "/" + name), new XAttribute("Target", name + ".xml")));
+            }
             var stylesXml = WriteStyles(document, style => NumberFor(new Paragraph() { Style = style }, style.ListId ?? Guid.NewGuid()));
-            var body = new XElement(W + "body", WriteBlocks(document.Blocks)); body.Add(new XElement(W + "sectPr"));
             Part("word/document.xml", new XElement(W + "document", new XAttribute(XNamespace.Xmlns + "w", W), new XAttribute(XNamespace.Xmlns + "r", R), body));
             Part("_rels/.rels", new XElement(Rel + "Relationships", new XElement(Rel + "Relationship", new XAttribute("Id", "document"), new XAttribute("Type", R.NamespaceName + "/officeDocument"), new XAttribute("Target", "word/document.xml"))));
-            Part("word/settings.xml", new XElement(W + "settings", document.Defaults.Paragraph.DefaultTabWidth > 0 ? Val("defaultTabStop", Twips(document.Defaults.Paragraph.DefaultTabWidth)) : null));
+            Part("word/settings.xml", new XElement(W + "settings", document.Defaults.Paragraph.DefaultTabWidth > 0 ? Val("defaultTabStop", Twips(document.Defaults.Paragraph.DefaultTabWidth)) : null,
+                document.Sections.Any(s => s.HeaderFooter.DifferentOddEvenPages) ? new XElement(W + "evenAndOddHeaders") : null,
+                document.Sections.Any(s => s.PageSettings.MirrorMargins) ? new XElement(W + "mirrorMargins") : null,
+                WriteNoteSettings(document.FootnoteSettings, false, document.Notes.Any(n => n.Kind == DocumentNoteKind.Footnote)), WriteNoteSettings(document.EndnoteSettings, true, document.Notes.Any(n => n.Kind == DocumentNoteKind.Endnote))));
             relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", "settings"), new XAttribute("Type", R.NamespaceName + "/settings"), new XAttribute("Target", "settings.xml")));
             var hasFonts = WriteEmbeddedFonts(document, archive, Part);
             if (hasFonts) relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", "fontTable"), new XAttribute("Type", R.NamespaceName + "/fontTable"), new XAttribute("Target", "fontTable.xml")));
@@ -976,6 +1218,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 hasFonts ? new XElement(Ct + "Default", new XAttribute("Extension", "odttf"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.obfuscatedFont")) : null,
                 hasFonts ? new XElement(Ct + "Override", new XAttribute("PartName", "/word/fontTable.xml"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml")) : null,
                 hasTheme ? new XElement(Ct + "Override", new XAttribute("PartName", "/word/theme/theme1.xml"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.theme+xml")) : null,
+                storyContentTypes,
                 mediaTypes.Select(m => new XElement(Ct + "Default", new XAttribute("Extension", m.Key), new XAttribute("ContentType", m.Value))),
                 new[] { ("document", "document.main"), ("styles", "styles"), ("numbering", "numbering"), ("settings", "settings") }.Select(p => new XElement(Ct + "Override", new XAttribute("PartName", $"/word/{p.Item1}.xml"), new XAttribute("ContentType", $"application/vnd.openxmlformats-officedocument.wordprocessingml.{p.Item2}+xml")))));
         }

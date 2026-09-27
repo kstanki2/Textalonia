@@ -16,6 +16,13 @@ public partial class DocumentSurface
     internal bool HasPagedLayout => _pagedLayout is not null;
     internal PageLayoutSnapshot? PagedLayout => _pagedLayout;
     internal double ViewZoom => Editor?.Zoom ?? 1;
+    private Guid GeometryStoryId => Editor?.ViewMode == DocumentViewMode.PrintLayout ? Editor.ActiveStoryId : Guid.Empty;
+    private int GeometryStoryPage => Editor is { ActiveStoryId: var id } && id != Guid.Empty &&
+        Editor.Document.Stories.TryGetValue(id, out var story) && story.Kind is DocumentStoryKind.Header or DocumentStoryKind.Footer
+        ? Editor.ActiveStoryPageIndex : -1;
+    private IEnumerable<LineFragment> ActivePageFragments => _pagedLayout is null ? [] : GeometryStoryId == Guid.Empty
+        ? _pagedLayout.Fragments : _pagedLayout.StoryFragments.Where(f => f.StoryKey == GeometryStoryId &&
+            (GeometryStoryPage < 0 || f.PageIndex == GeometryStoryPage));
     private double GeometryHeight => (_pagedLayout?.Height ?? _layout.Height) * ViewZoom;
     private double GeometryWidth => (_pagedLayout?.Width ?? _layout.Width) * ViewZoom;
     internal Rect ToSurface(Rect rect) => new(rect.X * ViewZoom, rect.Y * ViewZoom, rect.Width * ViewZoom, rect.Height * ViewZoom);
@@ -38,6 +45,9 @@ public partial class DocumentSurface
             _pagedDocument = document; _paginationOptions = options;
             _pageFont = editor.FontFamily; _pageForeground = foreground; _pageBorder = border;
         }
+        if (editor.ActiveStoryId != Guid.Empty && _pagedLayout.StoryRegions.FirstOrDefault(r => r.StoryId == editor.ActiveStoryId) is { } first &&
+            !_pagedLayout.StoryRegions.Any(r => r.StoryId == editor.ActiveStoryId && r.PageIndex == editor.ActiveStoryPageIndex))
+            editor.ActiveStoryPageIndex = first.PageIndex;
         var top = (editor.Scroller?.Offset.Y ?? 0) / ViewZoom;
         var left = (editor.Scroller?.Offset.X ?? 0) / ViewZoom;
         var current = _pagedLayout.Pages.Select((page, index) => (page, index)).MinBy(item =>
@@ -55,28 +65,28 @@ public partial class DocumentSurface
     internal Rect GeometryCaret(int position) => GeometryCaret(VisualCaret.Logical(position));
     private Rect GeometryCaret(VisualCaret caret)
     {
-        if (_pagedLayout is { } pages) return ToSurface(pages.ClipCaret(pages.Caret(caret), caret));
+        if (_pagedLayout is { } pages) return ToSurface(pages.ClipCaret(pages.Caret(GeometryStoryId, caret, GeometryStoryPage), GeometryStoryId, caret, GeometryStoryPage));
         var bounds = _layout.Caret(caret);
         if (_layout.At(caret.Position)?.Clip is { } clip) bounds = bounds.Intersect(clip);
         return ToSurface(bounds);
     }
     private VisualCaret GeometryHitTestCaret(Point point) => _pagedLayout is { } pages
-        ? pages.HitTestCaret(ToDocument(point)) : _layout.HitTestCaret(ToDocument(point));
+        ? pages.HitTestStoryCaret(GeometryStoryId, ToDocument(point), GeometryStoryPage) : _layout.HitTestCaret(ToDocument(point));
     internal int GeometryHitTest(Point point) => GeometryHitTestCaret(point).Position;
     internal IEnumerable<Rect> GeometrySelectionRects(int start, int length) =>
-        (_pagedLayout is { } pages ? pages.SelectionRects(start, length) : _layout.SelectionRects(start, length)).Select(ToSurface);
+        (_pagedLayout is { } pages ? pages.SelectionRects(GeometryStoryId, start, length, GeometryStoryPage) : _layout.SelectionRects(start, length)).Select(ToSurface);
     internal IEnumerable<(int Start, int End, Rect Bounds)> GeometryRanges() => _pagedLayout is { } pages
-        ? pages.Fragments.Select(fragment => (fragment.Start, fragment.Start + fragment.Length, ToSurface(fragment.Bounds)))
+        ? ActivePageFragments.Select(fragment => (fragment.Start, fragment.Start + fragment.Length, ToSurface(fragment.Bounds)))
         : _layout.Paragraphs.Select(visual => (visual.TextStart, visual.TextEnd, ToSurface(visual.Bounds)));
     internal (int Start, int End) GeometryLineRange(int position)
     {
         int start, end, paragraphEnd;
         if (_pagedLayout is { } pages)
         {
-            var fragment = pages.Fragments.LastOrDefault(fragment => fragment.Start <= position && fragment.Start + fragment.Length >= position)
-                ?? pages.Fragments[0];
+            var fragment = ActivePageFragments.LastOrDefault(fragment => fragment.Start <= position && fragment.Start + fragment.Length >= position)
+                ?? ActivePageFragments.First();
             start = fragment.Start; end = start + fragment.Length;
-            paragraphEnd = new DocumentIndex(_layoutDocument!).ById(fragment.ParagraphId).End;
+            paragraphEnd = Editor!.Session.Index.ById(fragment.ParagraphId).End;
         }
         else
         {
@@ -91,33 +101,46 @@ public partial class DocumentSurface
         if (end == paragraphEnd && end < documentLength) end++;
         return (start, Math.Min(documentLength, end));
     }
-    internal double PagedCaretColumnX => (_pagedLayout?.CaretColumnX(CurrentVisualCaret) ?? 0) * ViewZoom;
+    internal double PagedCaretColumnX => (_pagedLayout?.CaretColumnX(GeometryStoryId, CurrentVisualCaret, GeometryStoryPage) ?? 0) * ViewZoom;
     internal void MovePagedCaret(bool down, bool page, double preferredX, bool extend)
     {
         if (_pagedLayout is not { } snapshot) return;
+        if (page && GeometryStoryId != Guid.Empty && GeometryStoryPage >= 0)
+        {
+            var instances = snapshot.StoryRegions.Where(r => r.StoryId == GeometryStoryId && r.Bounds.Height > 0).OrderBy(r => r.PageIndex);
+            var target = down ? instances.FirstOrDefault(r => r.PageIndex > GeometryStoryPage) : instances.LastOrDefault(r => r.PageIndex < GeometryStoryPage);
+            if (target is not null)
+            {
+                SetStoryInstanceContext(target);
+                Editor!.ActivateStoryInstance(target.StoryId, target.PageIndex);
+                SelectVisualCaret(CurrentVisualCaret, extend);
+                Editor.GoToPage(target.PageIndex);
+            }
+            return;
+        }
         if (page && Editor?.ViewMode == DocumentViewMode.Draft)
         {
-            var caret = snapshot.Caret(CurrentVisualCaret);
-            var x = caret.X - snapshot.CaretColumnX(CurrentVisualCaret) + preferredX / ViewZoom;
+            var caret = snapshot.Caret(GeometryStoryId, CurrentVisualCaret, GeometryStoryPage);
+            var x = caret.X - snapshot.CaretColumnX(GeometryStoryId, CurrentVisualCaret, GeometryStoryPage) + preferredX / ViewZoom;
             var distance = Math.Max(40, Editor.Scroller?.Viewport.Height ?? 300) / ViewZoom;
             SelectVisualCaret(snapshot.HitTestCaret(new Point(x, caret.Center.Y + (down ? distance : -distance))), extend);
         }
-        else SelectVisualCaret(page ? snapshot.MovePageCaret(CurrentVisualCaret, down, preferredX / ViewZoom)
-            : snapshot.MoveVerticalCaret(CurrentVisualCaret, down, preferredX / ViewZoom), extend);
+        else SelectVisualCaret(page ? snapshot.MovePageCaret(GeometryStoryId, CurrentVisualCaret, down, preferredX / ViewZoom, GeometryStoryPage)
+            : snapshot.MoveVerticalCaret(GeometryStoryId, CurrentVisualCaret, down, preferredX / ViewZoom, GeometryStoryPage), extend);
     }
     internal void ResetVerticalNavigation()
     {
         if (_inputContext is not null) _inputContext.PreferredCaretX = null;
     }
     private VisualCaret GeometryMoveCaret(VisualCaret caret, bool right, bool word) => _pagedLayout is { } pages
-        ? word ? pages.MoveWordCaret(caret, right) : pages.MoveCaret(caret, right)
+        ? word ? pages.MoveWordCaret(GeometryStoryId, caret, right, GeometryStoryPage) : pages.MoveCaret(GeometryStoryId, caret, right, GeometryStoryPage)
         : word ? _layout.MoveWordCaret(caret, right) : _layout.MoveCaret(caret, right);
     private VisualCaret GeometryLineBoundary(VisualCaret caret, bool end) => _pagedLayout is { } pages
-        ? pages.LineBoundary(caret, end) : _layout.LineBoundary(caret, end);
+        ? pages.LineBoundary(GeometryStoryId, caret, end, GeometryStoryPage) : _layout.LineBoundary(caret, end);
     private VisualCaret GeometryCollapseSelection(VisualCaret anchor, VisualCaret active, bool right) => _pagedLayout is { } pages
-        ? pages.CollapseSelection(anchor, active, right) : _layout.CollapseSelection(anchor, active, right);
+        ? pages.CollapseSelection(GeometryStoryId, anchor, active, right, GeometryStoryPage) : _layout.CollapseSelection(anchor, active, right);
     internal IReadOnlyList<TableCellVisual> GeometryTableCells() =>
-        (_pagedLayout is { } pages ? pages.TableCells() : _layout.TableCells()).Select(cell => cell with
+        (_pagedLayout is { } pages ? pages.TableCells(GeometryStoryId, GeometryStoryPage) : _layout.TableCells()).Select(cell => cell with
         { Bounds = ToSurface(cell.Bounds), Clip = cell.Clip is { } clip ? ToSurface(clip) : null }).ToArray();
     internal TableCellVisual? GeometryHitTestTableCell(Point point, Guid? tableId = null) => GeometryTableCells()
         .LastOrDefault(cell => (tableId is null || cell.Table.Id == tableId) && cell.VisibleBounds.Contains(point));

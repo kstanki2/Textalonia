@@ -89,7 +89,7 @@ internal static class DocumentStyleImport
             },
             _ => block
         }).ToImmutableArray();
-        return source with { Blocks = Visit(source.Blocks), Styles = catalog, Defaults = destination.Defaults, Theme = destination.Theme };
+        return source with { Blocks = Visit(source.Blocks), Stories = source.Stories.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with { Blocks = Visit(pair.Value.Blocks) }), Styles = catalog, Defaults = destination.Defaults, Theme = destination.Theme };
     }
 
     private static bool SameTheme(DocumentTheme a, DocumentTheme b) =>

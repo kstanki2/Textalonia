@@ -278,7 +278,7 @@ public sealed class DocumentStyleResolver
                 }).ToImmutableArray()).ToImmutableArray()
             };
         }
-        return _document with { Blocks = Visit(_document.Blocks), Styles = new(), Defaults = new(), Theme = new() };
+        return _document with { Blocks = Visit(_document.Blocks), Stories = _document.Stories.ToImmutableDictionary(pair => pair.Key, pair => pair.Value with { Blocks = Visit(pair.Value.Blocks) }), Styles = new(), Defaults = new(), Theme = new() };
     }
 
     private TextStyle ResolveTheme(TextStyle style) => style.ThemeFont is null && style.EastAsianThemeFont is null &&

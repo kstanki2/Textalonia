@@ -64,7 +64,7 @@ public class PageModelTests
         }
         var payload = ClipboardInterchange.Serialize(new() { Document = document });
         Assert.Equal(DocumentFormats.Json.Serialize(document), DocumentFormats.Json.Serialize(ClipboardInterchange.Parse(payload).Document));
-        Assert.Contains("\"version\": 6", DocumentFormats.Json.Serialize(document));
+        Assert.Contains("\"version\": 7", DocumentFormats.Json.Serialize(document));
     }
 
     [Theory]
@@ -161,7 +161,7 @@ public class PageModelTests
             using var output = new MemoryStream();
             var error = await Assert.ThrowsAsync<DocumentConversionException>(() => format.SaveWithReportAsync(TwoSections(), output,
                 new() { Mode = ConversionMode.Strict }));
-            Assert.Contains(error.Report.Diagnostics, item => item.Code == "conversion.page-sections"); Assert.Equal(0, output.Length);
+            Assert.Contains(error.Report.Diagnostics, item => item.Code == (format is DocxDocumentFormat ? "docx.page-decoration" : format is RtfDocumentFormat ? "rtf.physical-page-settings" : "conversion.page-sections")); Assert.Equal(0, output.Length);
         }
     }
 }

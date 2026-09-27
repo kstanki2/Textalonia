@@ -1,7 +1,7 @@
-# Document semantics and schema v6
+# Document semantics and schema v7
 
 The document model is independent of Avalonia controls. Native JSON reads and
-writes schema version 6. Versions 4 and 5 remain readable; version 4 migrates concrete styles as
+writes schema version 7. Versions 4, 5 and 6 remain readable; version 4 migrates concrete styles as
 explicit direct formatting. Versions 1-3 were unused development formats and have no migration support. See [integration semantics](INTEGRATIONS.md)
 for quote/code metadata and [inline content](INLINE-CONTENT.md) for descriptors,
 resources and the coordinate/export contract. The version is checked before
@@ -42,7 +42,7 @@ partition; they cannot silently detach boundaries. Clipboard extraction and past
 remap paragraph/section identities. Whole-document paste adopts source page settings;
 partial paste keeps the destination initial settings and source interior boundaries.
 
-Native v6 and data XAML retain all page metadata; old native documents default to
+Native v7 and data XAML retain all page metadata; old native documents default to
 an implicit page section. Other formats currently report `conversion.page-sections`,
 `conversion.column-break` and `conversion.paragraph-frame` losses when applicable.
 Strict conversion rejects these losses before writing the destination stream.
@@ -146,3 +146,11 @@ See the [current interchange support matrix](INTERCHANGE.md#supported-subset-and
 literal missing/null fallback. It shares inline coordinates, clipboard identity remapping,
 formatting and history. The pure mail-merge transforms include retained table cells and
 merge backups. See [mail merge](MAIL-MERGE.md) for the complete contract.
+
+## Secondary stories
+
+DX-03 adds document-owned header/footer/footnote/endnote stories, atomic note
+references, section header/footer linkage and note settings. Main-body accessors
+remain unchanged; session editing addresses `ActiveStoryId`/`ActiveDocument` with
+one full-document undo stack. See [STORIES.md](STORIES.md) for selection, identity,
+clipboard, resource ownership, layout and serialization contracts.

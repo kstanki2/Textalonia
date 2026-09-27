@@ -141,7 +141,7 @@ public class DocxInterchangeTests
     }
 
     [Fact]
-    public async Task External_images_revisions_and_page_layout_are_reported_without_fetching()
+    public async Task External_images_and_missing_headers_are_reported_while_page_layout_is_retained()
     {
         using var stream = Package($"""
             <w:p><w:r><w:t>kept</w:t></w:r><w:del><w:r><w:delText>removed</w:delText></w:r></w:del><w:r><w:drawing>
@@ -151,7 +151,7 @@ public class DocxInterchangeTests
             """, relationships: $"<Relationship Id='image' Type='{R}/image' Target='https://never-fetch.invalid/image.png' TargetMode='External'/>");
         var result = await DocumentFormats.Docx.LoadWithReportAsync(stream);
         Assert.Equal("keptalt", result.Document.Text); Assert.Empty(result.Document.Resources);
-        Assert.Equal(new[] { "docx.revision", "docx.page-layout", "docx.image-unavailable" }, result.Report.Diagnostics.Select(d => d.Code));
+        Assert.Equal(new[] { "docx.revision", "docx.image-unavailable", "docx.header-footer-reference" }, result.Report.Diagnostics.Select(d => d.Code));
         Assert.All(result.Report.Diagnostics, d => Assert.NotNull(d.SourceLocation));
     }
 
@@ -290,13 +290,14 @@ public class DocxInterchangeTests
     }
 
     [Fact]
-    public async Task Direct_non_heading_outline_overrides_heading_style_name_and_empty_section_break_is_reported()
+    public async Task Direct_non_heading_outline_overrides_heading_style_name_and_section_settings_are_retained()
     {
         using var input = Package("<w:p><w:pPr><w:pStyle w:val='Heading1'/><w:outlineLvl w:val='9'/><w:sectPr/></w:pPr><w:r><w:rPr><w:color w:themeColor='accent1'/></w:rPr><w:t>ordinary</w:t></w:r></w:p>",
             styles: "<w:style w:styleId='Heading1'><w:pPr><w:outlineLvl w:val='0'/></w:pPr></w:style>");
         var loaded = await DocumentFormats.Docx.LoadWithReportAsync(input);
         Assert.Equal(0, Assert.IsType<Paragraph>(loaded.Document.Blocks[0]).Style.HeadingLevel);
         Assert.Contains(loaded.Report.Diagnostics, d => d.Code == "docx.theme-color");
-        Assert.Contains(loaded.Report.Diagnostics, d => d.Code == "docx.page-layout");
+        Assert.Single(loaded.Document.Sections);
+        Assert.DoesNotContain(loaded.Report.Diagnostics, d => d.Code == "docx.page-layout");
     }
 }

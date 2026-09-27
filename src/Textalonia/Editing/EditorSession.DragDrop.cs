@@ -38,13 +38,13 @@ public sealed partial class EditorSession
         offset = Snap(offset);
         if (!CanDropContent(source, offset, targetRevision)) return ContentDropResult.None;
         move &= source is not null && !source.Source.IsReadOnly;
-        var destination = Document;
+        var destination = ActiveDocument;
         FlowDocument? removed = null;
         if (move)
         {
             // Build and validate both sides without changing either session. Failed insertion
             // therefore cannot delete source content or add a source history entry.
-            removed = RemoveDraggedSelection(source!.Source.Document, source.Selection);
+            removed = RemoveDraggedSelection(source!.Source.ActiveDocument, source.Selection);
             if (ReferenceEquals(source.Source, this))
             {
                 destination = removed;

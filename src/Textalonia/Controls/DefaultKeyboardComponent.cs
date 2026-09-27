@@ -11,6 +11,8 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
     {
         if (e.Handled || Context.Editor is null) return;
         var session = Context.Editor.Session;
+        if (e.Key == Key.Escape && session.ActiveStoryId != Guid.Empty && !Context.IsComposing)
+        { Context.Editor.CloseStory(); e.Handled = true; return; }
         var primary = OperatingSystem.IsMacOS() ? KeyModifiers.Meta : KeyModifiers.Control;
         var command = e.KeyModifiers.HasFlag(primary) && !e.KeyModifiers.HasFlag(KeyModifiers.Alt);
         var word = OperatingSystem.IsMacOS() ? e.KeyModifiers.HasFlag(KeyModifiers.Alt) : command;

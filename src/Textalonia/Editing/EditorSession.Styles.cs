@@ -10,7 +10,7 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(styles);
         if (IsReadOnly) return;
-        var document = Document with { Styles = styles };
+        var document = ActiveDocument with { Styles = styles };
         document.Validate();
         Commit(document, Selection);
     }
@@ -19,7 +19,7 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(defaults);
         if (IsReadOnly) return;
-        var document = Document with { Defaults = defaults };
+        var document = ActiveDocument with { Defaults = defaults };
         document.Validate();
         Commit(document, Selection);
     }
@@ -28,7 +28,7 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(theme);
         if (IsReadOnly) return;
-        var document = Document with { Theme = theme };
+        var document = ActiveDocument with { Theme = theme };
         document.Validate();
         Commit(document, Selection);
     }
@@ -38,7 +38,7 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(id);
         if (IsReadOnly) return;
-        if (!Document.Styles.Paragraphs.ContainsKey(id)) throw new ArgumentException("Unknown paragraph style.", nameof(id));
+        if (!ActiveDocument.Styles.Paragraphs.ContainsKey(id)) throw new ArgumentException("Unknown paragraph style.", nameof(id));
         TextStyle ClearText(TextStyle value) => clearDirectFormatting ? value with { Overrides = new() } : value;
         var document = ChangeParagraphs(entry =>
         {
@@ -60,7 +60,7 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(id);
         if (IsReadOnly) return;
-        if (!Document.Styles.Characters.ContainsKey(id)) throw new ArgumentException("Unknown character style.", nameof(id));
+        if (!ActiveDocument.Styles.Characters.ContainsKey(id)) throw new ArgumentException("Unknown character style.", nameof(id));
         ChangeStoredTextStyle(value => value with { StyleId = id, Overrides = clearDirectFormatting ? new() :
             value.Overrides ?? TextStyleOverrides.FromStyle(value) });
     }
@@ -91,7 +91,7 @@ public sealed partial class EditorSession
     {
         var typing = change(TypingStyle);
         var selection = Selection;
-        var document = selection.IsEmpty ? Document : ChangeParagraphs(entry =>
+        var document = selection.IsEmpty ? ActiveDocument : ChangeParagraphs(entry =>
         {
             var paragraph = entry.Paragraph;
             var from = Math.Max(0, selection.Start - entry.Start);
@@ -106,9 +106,9 @@ public sealed partial class EditorSession
 
     private ParagraphStyle FollowingParagraphStyle(ParagraphStyle style)
     {
-        if (style.StyleId is { } id && Document.Styles.Paragraphs.TryGetValue(id, out var definition) && definition.NextStyle is { } next)
+        if (style.StyleId is { } id && ActiveDocument.Styles.Paragraphs.TryGetValue(id, out var definition) && definition.NextStyle is { } next)
             return ParagraphStyle.ForStyle(next);
-        return ChangeParagraphStyle(style, value => value with { ListRestart = false, ListStart = null, PageBreakBefore = false, ColumnBreakBefore = false }, new(Document));
+        return ChangeParagraphStyle(style, value => value with { ListRestart = false, ListStart = null, PageBreakBefore = false, ColumnBreakBefore = false }, new(ActiveDocument));
     }
 
     private static TextStyle ChangeTextStyle(Paragraph paragraph, TextStyle stored,

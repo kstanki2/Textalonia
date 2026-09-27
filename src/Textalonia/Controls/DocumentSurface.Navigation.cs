@@ -9,6 +9,13 @@ public partial class DocumentSurface
     private VisualCaret? _visualAnchor;
     private FlowDocument? _visualCaretDocument;
 
+    internal void ResetStoryNavigation()
+    {
+        _visualCaret = null; _visualAnchor = null; _visualCaretDocument = null;
+        ClearStoryProjections();
+        ResetVerticalNavigation();
+    }
+
     private VisualCaret CurrentVisualCaret
     {
         get

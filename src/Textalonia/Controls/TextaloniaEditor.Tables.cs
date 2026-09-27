@@ -138,7 +138,9 @@ public partial class TextaloniaEditor
 
     public TableCellSelection? CellSelection => _cellSelection;
     public bool IsResizingTable => _tableResize is not null;
-    internal FlowDocument? TablePreviewDocument => _tablePreviewDocument;
+    internal FlowDocument? TablePreviewDocument => _tablePreviewDocument is not { } preview ? null :
+        ActiveStoryId == Guid.Empty ? preview : Session.Document with
+        { Stories = Session.Document.Stories.SetItem(ActiveStoryId, Session.Document.Stories[ActiveStoryId] with { Blocks = preview.Blocks }) };
 
     private void AttachTableEvents()
     {
@@ -328,7 +330,7 @@ public partial class TextaloniaEditor
         if (index < 0 || index >= (axis == TableResizeAxis.Column ? table.ColumnCount : table.Rows.Length)) throw new ArgumentOutOfRangeException(nameof(index));
         if (axis == TableResizeAxis.Column && table.ColumnCount == 1) return false;
         AttachTableEvents(); CancelTableResize();
-        _tableResize = new(Session.Document, Session.Revision, table, axis, index, initialSize);
+        _tableResize = new(Session.ActiveDocument, Session.Revision, table, axis, index, initialSize);
         return true;
     }
     public void PreviewTableResize(double size)

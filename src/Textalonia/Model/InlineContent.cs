@@ -14,6 +14,11 @@ public sealed record InlineDescriptor
     public double Height { get; init; } = 32;
     public required InlinePayload Payload { get; init; }
 
+    public static InlineDescriptor Note(Guid noteId, string mark = "1") => new()
+    { Payload = new NoteInlinePayload(noteId), AltText = mark, Width = 12, Height = 16 };
+    public static InlineDescriptor PageField(PageFieldKind field) => new()
+    { Payload = new PageFieldInlinePayload(field), AltText = "1", Width = 24, Height = 16 };
+
     internal void Validate()
     {
         if (Id == Guid.Empty || AltText is null || AltText.Length > 16_384 ||
@@ -21,6 +26,8 @@ public sealed record InlineDescriptor
             throw new FormatException("Invalid inline identity, alternative text, or dimensions.");
         switch (Payload)
         {
+            case NoteInlinePayload note when note.NoteId != Guid.Empty: break;
+            case PageFieldInlinePayload field when Enum.IsDefined(field.Field): break;
             case ImageInlinePayload image when ValidKey(image.ResourceId): break;
             case MergeFieldInlinePayload field:
                 field.Validate();
@@ -38,6 +45,8 @@ public sealed record InlineDescriptor
 [JsonDerivedType(typeof(ImageInlinePayload), "image")]
 [JsonDerivedType(typeof(ControlInlinePayload), "control")]
 [JsonDerivedType(typeof(MergeFieldInlinePayload), "mergeField")]
+[JsonDerivedType(typeof(NoteInlinePayload), "note")]
+[JsonDerivedType(typeof(PageFieldInlinePayload), "pageField")]
 public abstract record InlinePayload;
 
 public sealed record ImageInlinePayload(string ResourceId) : InlinePayload;

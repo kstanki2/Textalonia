@@ -238,11 +238,11 @@ public partial class TextaloniaEditor
     private async Task<bool> ShowFormattingDialog(FormattingDialog dialog, Action apply)
     {
         if (Session.IsReadOnly || TopLevel.GetTopLevel(this) is not Window owner) return false;
-        var revision = Session.Revision; var selection = Session.Selection; var cells = CellSelection;
+        var revision = Session.Revision; var selection = Session.Selection; var cells = CellSelection; var story = ActiveStoryId;
         dialog.ValidateCommit = () =>
         {
             if (Session.IsReadOnly) throw new InvalidOperationException("The document is read-only.");
-            if (Session.Revision != revision || Session.Selection != selection || CellSelection != cells)
+            if (Session.Revision != revision || Session.Selection != selection || CellSelection != cells || ActiveStoryId != story)
                 throw new InvalidOperationException("The document or selection changed. Close and reopen this dialog.");
         };
         dialog.Apply = apply;
