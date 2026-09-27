@@ -15,3 +15,14 @@
 - Bounded retained glyph layouts even for dense visible content, added lazy height metadata and offscreen-query scroll anchoring, and reduced history/load bookkeeping. Added opt-in strict shaping limits with recoverable rendering errors, reduced temporary allocations, and added paired Windows qualification evidence; longer-run latency misses remain documented.
 - Added native JSON and text/HTML/RTF/DOCX interchange codecs with documented limits.
 - Added a desktop sample, regression/headless tests, NuGet packaging, CI, and package-consumer verification.
+
+
+### Phase 7 integrations
+
+- Added the versioned Textalonia data XAML codec and bounded Markdown dialect with
+  strict/tolerant diagnostics, safe resource mapping, and extension selection.
+- Added `MarkdownViewer` with asynchronous revision-checked updates and optional
+  presentation-only token highlighting; no new package dependency.
+- Native schema v4 preserves quote/code semantics and code language while keeping
+  strict v1-v3 readers. See `docs/INTEGRATIONS.md` for migration and dialect limits.
+- Added integration demo, independent package-consumer coverage, and update probe.

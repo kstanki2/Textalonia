@@ -1,7 +1,8 @@
-# Document semantics and schema v3
+# Document semantics and schema v4
 
 The document model is independent of Avalonia controls. Native JSON writes schema
-version 3 and reads versions 1, 2 and 3. See [inline content](INLINE-CONTENT.md)
+version 4 and reads versions 1, 2, 3 and 4. See [integration semantics](INTEGRATIONS.md)
+for quote/code metadata and migration. See [inline content](INLINE-CONTENT.md)
 for descriptors, resources and the v3 coordinate/export contract. The version is checked before interpreting
 the document; unsupported versions fail with `NotSupportedException`. All readers
 reject unknown members. The v1 reader uses frozen DTOs and explicitly migrates

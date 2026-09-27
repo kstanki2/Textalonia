@@ -118,12 +118,38 @@ public static class DocumentFormatExtensions
 
     internal static void ReportExportLosses(IDocumentFormat format, FlowDocument document)
     {
-        if (format is HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat)
+        if (format is HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or MarkdownDocumentFormat)
         {
             ReportMergeHistory(document.Blocks);
             ReportUnusedResources(document);
         }
         if (format is PlainTextDocumentFormat) ReportPlainTextLoss(document);
+        if (format is HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat)
+            ReportIntegrationSemantics(document.Blocks);
+    }
+
+    private static void ReportIntegrationSemantics(IEnumerable<Block> blocks)
+    {
+        foreach (var block in blocks)
+            switch (block)
+            {
+                case Paragraph paragraph:
+                    if (paragraph.DefaultStyle.IsCode || paragraph.Runs.Any(run => run.Style.IsCode))
+                        ConversionDiagnostics.Report("conversion.inline-code", "Inline code semantics",
+                            "Supported visual formatting is retained, but the code annotation is omitted.", paragraph.Id);
+                    break;
+                case Section section:
+                    if (section.Semantic != SectionSemantic.None)
+                        ConversionDiagnostics.Report("conversion.section-semantic", "Quote or fenced code semantics and language",
+                            "Supported section appearance and text are retained; semantic annotations are omitted.", section.Id);
+                    ReportIntegrationSemantics(section.Blocks);
+                    break;
+                case Table table:
+                    for (var row = 0; row < table.Rows.Length; row++)
+                        for (var column = 0; column < table.ColumnCount; column++)
+                            if (!table.IsCovered(row, column)) ReportIntegrationSemantics(table.Rows[row][column].Blocks);
+                    break;
+            }
     }
     private static ConversionOptions ValidateOptions(ConversionOptions? options)
     {
@@ -139,7 +165,7 @@ public static class DocumentFormatExtensions
 
     private static void ReportLegacyFormat(IDocumentFormat format)
     {
-        if (format is not (JsonDocumentFormat or PlainTextDocumentFormat or HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat))
+        if (format is not (JsonDocumentFormat or PlainTextDocumentFormat or HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or XamlDocumentFormat or MarkdownDocumentFormat))
             ConversionDiagnostics.Report("conversion.diagnostics-unavailable", "Custom codec fidelity is unknown",
                 "The legacy codec was used; implement IReportingDocumentFormat to provide loss diagnostics.");
     }

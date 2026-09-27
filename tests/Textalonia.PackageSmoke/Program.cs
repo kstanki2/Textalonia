@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Textalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Themes.Fluent;
 using Textalonia.Model;
@@ -58,17 +59,59 @@ internal static class Program
         if (!losses.Report.Diagnostics.Any(d => d.Code == "text.section"))
             throw new InvalidOperationException("Packaged conversion reports failed.");
     }
+    private static void VerifyIntegrationCodecs()
+    {
+        const string markdown = "# Integration\n\n**Bold** and `code`.\n\n> Quote\n\n```csharp\npublic class Example {}\n```\n";
+        var document = DocumentFormats.Markdown.Parse(markdown);
+        if (DocumentFormats.ForPath("sample.MD") != DocumentFormats.Markdown ||
+            DocumentFormats.ForPath("sample.txaml") != DocumentFormats.Xaml)
+            throw new InvalidOperationException("Packaged format selection failed.");
+        var xaml = DocumentFormats.Xaml.Serialize(document);
+        if (DocumentFormats.Json.Serialize(document) != DocumentFormats.Json.Serialize(DocumentFormats.Xaml.Parse(xaml)))
+            throw new InvalidOperationException("Packaged XAML round trip failed.");
+        if (DocumentFormats.Markdown.Parse(DocumentFormats.Markdown.Serialize(document)).PlainText != document.PlainText)
+            throw new InvalidOperationException("Packaged Markdown round trip failed.");
+        using var source = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("<b>literal HTML</b>"));
+        var result = DocumentFormats.Markdown.LoadWithReportAsync(source).GetAwaiter().GetResult();
+        if (!result.Report.HasLoss) throw new InvalidOperationException("Packaged Markdown diagnostics failed.");
+    }
+
+    private sealed class SmokeHighlighter : ICodeHighlighter
+    {
+        public ValueTask<IReadOnlyList<CodeHighlightToken>> TokenizeAsync(string? language, string code, CancellationToken cancellationToken) =>
+            ValueTask.FromResult<IReadOnlyList<CodeHighlightToken>>([new(0, Math.Min(6, code.Length), "keyword")]);
+        public CodeHighlightStyle? GetStyle(string? language, string tokenKind) => new(Foreground: "#2255BB", Bold: true);
+    }
+
     public static void Main()
     {
         VerifyInterchange();
+        VerifyIntegrationCodecs();
         using var session = HeadlessUnitTestSession.StartNew(typeof(Bootstrap));
         // Keep disposal on the entry thread, outside the headless dispatcher.
-        session.Dispatch(() =>
+        session.Dispatch<bool>(async () =>
         {
             var window = new SmokeWindow();
             try
             {
                 window.Show(); window.UpdateLayout();
+                var markdown = window.FindControl<MarkdownViewer>("Markdown")
+                    ?? throw new InvalidOperationException("Markdown viewer was not instantiated from consumer XAML.");
+                await markdown.WaitForParsingAsync();
+                await markdown.UpdateMarkdownAsync("# Package Markdown\n\n```cs\npublic class Package {}\n```\n");
+                var canonical = DocumentFormats.Json.Serialize(markdown.Document);
+                markdown.CodeHighlighter = new SmokeHighlighter();
+                await markdown.WaitForHighlightingAsync();
+                markdown.Session.SelectAll();
+                if (markdown.ParseError is not null || markdown.SelectedText != markdown.Document.PlainText ||
+                    DocumentFormats.Json.Serialize(markdown.Document) != canonical || !markdown.IsReadOnly ||
+                    markdown.Accessibility.DocumentRange.GetText() != markdown.Document.Text)
+                    throw new InvalidOperationException("Packaged Markdown selection, accessibility or highlighting failed.");
+                markdown.AppendMarkdown("\nAppended.");
+                await markdown.WaitForParsingAsync();
+                if (!markdown.Document.PlainText.EndsWith("Appended.", StringComparison.Ordinal))
+                    throw new InvalidOperationException("Packaged Markdown append failed.");
+                window.UpdateLayout();
                 var editor = window.FindControl<Textalonia.Controls.TextaloniaEditor>("Editor")
                     ?? throw new InvalidOperationException("Control was not instantiated from consumer XAML.");
                 editor.FocusDocument();
@@ -123,7 +166,7 @@ internal static class Program
                 editor.InsertText("Edited "); editor.Undo();
                 if (DocumentFormats.Json.Serialize(editor.Document) != original ||
                     DocumentFormats.Json.Serialize(DocumentFormats.Json.Parse(original)) != original)
-                    throw new InvalidOperationException("Packaged schema v3 and nested undo round trip failed.");
+                    throw new InvalidOperationException("Packaged schema v4 and nested undo round trip failed.");
                 var resizeOriginal = editor.Document;
                 if (!editor.BeginTableResize(outer.Id, Textalonia.Controls.TableResizeAxis.Column, 0, 200))
                     throw new InvalidOperationException("Packaged table resize did not start.");
@@ -152,15 +195,16 @@ internal static class Program
                     throw new InvalidOperationException("Packaged inline coordinates or accessibility contract failed.");
                 var inlineJson = DocumentFormats.Json.Serialize(editor.Document);
                 if (DocumentFormats.Json.Parse(inlineJson).PlainText != "A sample image")
-                    throw new InvalidOperationException("Packaged schema v3 inline round trip failed.");
+                    throw new InvalidOperationException("Packaged schema v4 inline round trip failed.");
                 editor.UpdateInline(inline.Id, value => value with { Width = 96 });
                 editor.Undo(); editor.Redo();
                 window.UpdateLayout();
                 using var frame = window.CaptureRenderedFrame()
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
-                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, schema v3, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, and rendering.");
+                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, schema v4, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, and rendering.");
             }
             finally { window.Close(); }
+            return true;
         }, CancellationToken.None).GetAwaiter().GetResult();
     }
 }

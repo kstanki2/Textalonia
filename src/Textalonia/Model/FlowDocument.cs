@@ -151,6 +151,10 @@ public sealed record FlowDocument
                         }
                         break;
                     case Section s:
+                        if (!Enum.IsDefined(s.Semantic) || s.CodeLanguage is not null &&
+                            (s.Semantic != SectionSemantic.CodeBlock || s.CodeLanguage.Length > 128 ||
+                            s.CodeLanguage.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not ('_' or '-' or '+' or '.' or '#'))))
+                            throw new FormatException("Invalid section semantics or code language.");
                         ValidateColor(s.Background); ValidateColor(s.BorderColor);
                         ValidateEdges(s.PaddingEdges); ValidateBorders(s.Borders);
                         if (!double.IsFinite(s.Padding) || s.Padding is < 0 or > 1000) throw new FormatException("Invalid section padding.");

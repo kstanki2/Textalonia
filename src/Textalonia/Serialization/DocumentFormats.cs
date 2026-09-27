@@ -22,7 +22,9 @@ public static class DocumentFormats
     public static HtmlDocumentFormat Html { get; } = new();
     public static RtfDocumentFormat Rtf { get; } = new();
     public static DocxDocumentFormat Docx { get; } = new();
-    public static IReadOnlyList<IDocumentFormat> BuiltIn { get; } = [Json, PlainText, Html, Rtf, Docx];
+    public static XamlDocumentFormat Xaml { get; } = new();
+    public static MarkdownDocumentFormat Markdown { get; } = new();
+    public static IReadOnlyList<IDocumentFormat> BuiltIn { get; } = [Json, PlainText, Html, Rtf, Docx, Xaml, Markdown];
 
     public static IDocumentFormat ForPath(string path) =>
         BuiltIn.FirstOrDefault(f => f.Extensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase))
@@ -79,7 +81,7 @@ public sealed class PlainTextDocumentFormat : TextDocumentFormat
 /// <summary>Versioned, lossless native storage, including hidden cells retained by table merges.</summary>
 public sealed class JsonDocumentFormat : TextDocumentFormat
 {
-    private const int CurrentVersion = 3;
+    private const int CurrentVersion = 4;
     private sealed record Envelope(int Version, FlowDocument Document);
     private static readonly JsonSerializerOptions Options = new()
     {
@@ -110,7 +112,23 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
                 foreach (var property in type.Properties.Where(p =>
                     type.Type == typeof(TableCell) && p.Name is "paragraphs" or "mergeOriginal" ||
                     type.Type == typeof(RichRun) && p.Name == "inline" ||
-                    type.Type == typeof(FlowDocument) && p.Name == "resources").ToArray())
+                    type.Type == typeof(FlowDocument) && p.Name == "resources" ||
+                    type.Type == typeof(Section) && p.Name is "semantic" or "codeLanguage" ||
+                    type.Type == typeof(TextStyle) && p.Name == "isCode").ToArray())
+                    type.Properties.Remove(property);
+            } }
+        }
+    };
+    private static readonly JsonSerializerOptions VersionThreeOptions = new(Options)
+    {
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver
+        {
+            Modifiers = { type =>
+            {
+                foreach (var property in type.Properties.Where(p =>
+                    type.Type == typeof(TableCell) && p.Name is "paragraphs" or "mergeOriginal" ||
+                    type.Type == typeof(Section) && p.Name is "semantic" or "codeLanguage" ||
+                    type.Type == typeof(TextStyle) && p.Name == "isCode").ToArray())
                     type.Properties.Remove(property);
             } }
         }
@@ -124,7 +142,7 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
         using var json = JsonDocument.Parse(text, new JsonDocumentOptions { MaxDepth = Options.MaxDepth });
         if (json.RootElement.ValueKind != JsonValueKind.Object) throw new FormatException("Missing document envelope.");
         var versions = json.RootElement.EnumerateObject().Where(p => p.NameEquals("version")).ToArray();
-        if (versions.Length == 0) throw new NotSupportedException("Document version is missing. Supported versions are 1, 2, and 3.");
+        if (versions.Length == 0) throw new NotSupportedException("Document version is missing. Supported versions are 1, 2, 3, and 4.");
         if (versions.Length != 1 || versions[0].Value.ValueKind != JsonValueKind.Number ||
             !versions[0].Value.TryGetInt32(out var version))
             throw new FormatException("Document version must be one integer.");
@@ -133,9 +151,11 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
             1 => NativeDocumentV1.Read(json.RootElement, Options),
             2 => json.RootElement.Deserialize<Envelope>(VersionTwoOptions)?.Document
                 ?? throw new FormatException("Missing document."),
+            3 => json.RootElement.Deserialize<Envelope>(VersionThreeOptions)?.Document
+                ?? throw new FormatException("Missing document."),
             CurrentVersion => json.RootElement.Deserialize<Envelope>(Options)?.Document
                 ?? throw new FormatException("Missing document."),
-            _ => throw new NotSupportedException($"Document version {version} is not supported. Supported versions are 1, 2, and 3.")
+            _ => throw new NotSupportedException($"Document version {version} is not supported. Supported versions are 1, 2, 3, and 4.")
         };
         document.Validate();
         return document;

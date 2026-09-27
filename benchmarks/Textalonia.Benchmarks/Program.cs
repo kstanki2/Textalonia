@@ -59,6 +59,7 @@ internal static class Program
         CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
         try
         {
+            if (args is ["--markdown-probe", var markdownDestination]) { MarkdownProbe.Run(markdownDestination); return 0; }
             if (args is ["--interaction-probe", var interactionDestination]) { InteractionProbe.Run(interactionDestination); return 0; }
             if (args is ["--core-probe", var probeDestination]) { CoreProbe.Run(probeDestination); return 0; }
             if (args is ["--capture-contracts", var destination])

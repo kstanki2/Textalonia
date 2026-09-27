@@ -89,8 +89,14 @@ public sealed record Paragraph : Block
     }
 }
 
+public enum SectionSemantic { None, Quote, CodeBlock }
+
 public sealed record Section : Block
 {
+    /// <summary>Optional document meaning, independent of section decoration.</summary>
+    public SectionSemantic Semantic { get; init; }
+    /// <summary>Fenced-code language label; only valid on code sections.</summary>
+    public string? CodeLanguage { get; init; }
     private SnapshotArray<Block> _blocks = SnapshotArray<Block>.From([new Paragraph()]);
     public ImmutableArray<Block> Blocks { get => _blocks.Read(); init => _blocks = SnapshotArray<Block>.From(value); }
     internal Section WithChildren(StorageTree<OrderKey, DocumentNode>? children) => this with

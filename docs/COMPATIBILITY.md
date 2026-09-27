@@ -29,7 +29,13 @@ This reflection snapshot is an early change detector. It does not encode nullabl
 
 ## Native schema policy
 
-The writer emits envelope `{ "version": 2, "document": ... }`. The reader dispatches on the version before decoding the document: frozen strict v1 DTOs explicitly migrate old documents, while v2 reads the current model. Both reject unknown members. Missing or unsupported versions throw `NotSupportedException`, including newer envelopes with unknown document members. See [schema tests](../tests/Textalonia.Tests/SchemaEvolutionTests.cs), the unchanged v1 fixture and the new v2 fixture.
+The writer emits envelope `{ "version": 4, "document": ... }`. The reader dispatches
+on the version before decoding the document: frozen strict v1 DTOs migrate old
+documents, version-specific v2/v3 metadata excludes later additions, and v4 reads
+the current model. All versions reject unknown members. Missing or unsupported
+versions throw `NotSupportedException` before interpreting document fields.
+See [schema tests](../tests/Textalonia.Tests/SchemaEvolutionTests.cs) and
+[Phase 7 migration](INTEGRATIONS.md#native-schema-migration).
 
 Before extending the schema:
 

@@ -140,7 +140,7 @@ public partial class DocumentSurface : Control
     {
         if (Editor is null) return;
         width = double.IsFinite(width) && width > 48 ? width : 800;
-        var document = _composition.PreviewDocument ?? Editor.TablePreviewDocument ?? Editor.Document;
+        var document = _composition.PreviewDocument ?? Editor.TablePreviewDocument ?? Editor.PresentationDocument;
         if (!_dirty && ReferenceEquals(_layoutDocument, document) && Math.Abs(_layoutWidth - width) < .1) return;
         _layoutDocument = document; _layoutWidth = width; _dirty = false;
         try

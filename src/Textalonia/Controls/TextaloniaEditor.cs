@@ -53,6 +53,7 @@ public partial class TextaloniaEditor : TemplatedControl
     private static readonly DataFormat<string> HtmlClipboardFormat = DataFormat.CreateStringPlatformFormat(OperatingSystem.IsMacOS() ? "public.html" : "text/html");
 
     private bool _synchronizing;
+    private bool _preservingView;
     private int _textRevision = -1;
     private ShapingLimitExceededException? _layoutError;
     private readonly List<EditorCommand> _commands = [];
@@ -168,12 +169,20 @@ public partial class TextaloniaEditor : TemplatedControl
         }
         finally { _synchronizing = false; }
         foreach (var command in _commands) command.RaiseCanExecuteChanged();
-        _surface?.Refresh(selectionChanged || documentChanged && Session.LastEdit is { Reset: false }, invalidateLayout: documentChanged);
+        _surface?.Refresh(!_preservingView && (selectionChanged || documentChanged && Session.LastEdit is { Reset: false }), invalidateLayout: documentChanged);
         if (documentChanged) DocumentChanged?.Invoke(this, EventArgs.Empty);
         if (selectionChanged) SelectionChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void FocusDocument() => _surface?.Focus();
+    internal virtual FlowDocument PresentationDocument => Document;
+    internal void RefreshPresentation() => _surface?.Refresh();
+    internal void ReplaceDocumentPreservingView(FlowDocument document, int anchor, int active)
+    {
+        _preservingView = true;
+        try { Document = document; Session.Select(anchor, active); }
+        finally { _preservingView = false; }
+    }
     public void SelectAll() => Session.SelectAll();
     public void Undo() => Session.Undo();
     public void Redo() => Session.Redo();

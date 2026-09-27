@@ -14,6 +14,8 @@ public sealed record TextStyle
     [System.Text.Json.Serialization.JsonIgnore] public int EffectiveFontWeight => FontWeight ?? (Bold ? 700 : 400);
     [System.Text.Json.Serialization.JsonIgnore] public bool EffectiveBold => EffectiveFontWeight >= 600;
     public bool Italic { get; init; }
+    /// <summary>Inline code meaning, independent of the selected typeface.</summary>
+    public bool IsCode { get; init; }
     public bool Underline { get; init; }
     public bool Strikethrough { get; init; }
     public string? Foreground { get; init; }
