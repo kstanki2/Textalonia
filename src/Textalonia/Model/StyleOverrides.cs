@@ -219,10 +219,12 @@ public sealed record ParagraphStyleOverrides
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<string?> Shading { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<int> OutlineLevel { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<bool> PageBreakBefore { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<bool> ColumnBreakBefore { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<bool> KeepWithNext { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<bool> KeepTogether { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<bool> WidowControl { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<EastAsianGrid?> EastAsianGrid { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<ParagraphFrame?> Frame { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<bool> SnapToGrid { get; init; }
 
     public ParagraphStyle Apply(ParagraphStyle value) => value with
@@ -252,10 +254,12 @@ public sealed record ParagraphStyleOverrides
         Shading = Shading.IsSet ? Shading.Value : value.Shading,
         OutlineLevel = OutlineLevel.IsSet ? OutlineLevel.Value : value.OutlineLevel,
         PageBreakBefore = PageBreakBefore.IsSet ? PageBreakBefore.Value : value.PageBreakBefore,
+        ColumnBreakBefore = ColumnBreakBefore.IsSet ? ColumnBreakBefore.Value : value.ColumnBreakBefore,
         KeepWithNext = KeepWithNext.IsSet ? KeepWithNext.Value : value.KeepWithNext,
         KeepTogether = KeepTogether.IsSet ? KeepTogether.Value : value.KeepTogether,
         WidowControl = WidowControl.IsSet ? WidowControl.Value : value.WidowControl,
         EastAsianGrid = EastAsianGrid.IsSet ? EastAsianGrid.Value : value.EastAsianGrid,
+        Frame = Frame.IsSet ? Frame.Value : value.Frame,
         SnapToGrid = SnapToGrid.IsSet ? SnapToGrid.Value : value.SnapToGrid
     };
 
@@ -286,10 +290,12 @@ public sealed record ParagraphStyleOverrides
         Shading = new(style.Shading),
         OutlineLevel = new(style.OutlineLevel),
         PageBreakBefore = new(style.PageBreakBefore),
+        ColumnBreakBefore = new(style.ColumnBreakBefore),
         KeepWithNext = new(style.KeepWithNext),
         KeepTogether = new(style.KeepTogether),
         WidowControl = new(style.WidowControl),
         EastAsianGrid = new(style.EastAsianGrid),
+        Frame = new(style.Frame),
         SnapToGrid = new(style.SnapToGrid)
     };
 
@@ -324,10 +330,12 @@ public sealed record ParagraphStyleOverrides
             Shading = EqualityComparer<string?>.Default.Equals(before.Shading, after.Shading) ? basis.Shading : new(after.Shading),
             OutlineLevel = EqualityComparer<int>.Default.Equals(before.OutlineLevel, after.OutlineLevel) ? basis.OutlineLevel : new(after.OutlineLevel),
             PageBreakBefore = EqualityComparer<bool>.Default.Equals(before.PageBreakBefore, after.PageBreakBefore) ? basis.PageBreakBefore : new(after.PageBreakBefore),
+            ColumnBreakBefore = EqualityComparer<bool>.Default.Equals(before.ColumnBreakBefore, after.ColumnBreakBefore) ? basis.ColumnBreakBefore : new(after.ColumnBreakBefore),
             KeepWithNext = EqualityComparer<bool>.Default.Equals(before.KeepWithNext, after.KeepWithNext) ? basis.KeepWithNext : new(after.KeepWithNext),
             KeepTogether = EqualityComparer<bool>.Default.Equals(before.KeepTogether, after.KeepTogether) ? basis.KeepTogether : new(after.KeepTogether),
             WidowControl = EqualityComparer<bool>.Default.Equals(before.WidowControl, after.WidowControl) ? basis.WidowControl : new(after.WidowControl),
             EastAsianGrid = EqualityComparer<EastAsianGrid?>.Default.Equals(before.EastAsianGrid, after.EastAsianGrid) ? basis.EastAsianGrid : new(after.EastAsianGrid),
+            Frame = EqualityComparer<ParagraphFrame?>.Default.Equals(before.Frame, after.Frame) ? basis.Frame : new(after.Frame),
             SnapToGrid = EqualityComparer<bool>.Default.Equals(before.SnapToGrid, after.SnapToGrid) ? basis.SnapToGrid : new(after.SnapToGrid)
         };
     }
@@ -360,10 +368,12 @@ public sealed record ParagraphStyleOverrides
         nameof(Shading) => this with { Shading = default },
         nameof(OutlineLevel) => this with { OutlineLevel = default },
         nameof(PageBreakBefore) => this with { PageBreakBefore = default },
+        nameof(ColumnBreakBefore) => this with { ColumnBreakBefore = default },
         nameof(KeepWithNext) => this with { KeepWithNext = default },
         nameof(KeepTogether) => this with { KeepTogether = default },
         nameof(WidowControl) => this with { WidowControl = default },
         nameof(EastAsianGrid) => this with { EastAsianGrid = default },
+        nameof(Frame) => this with { Frame = default },
         nameof(SnapToGrid) => this with { SnapToGrid = default },
         _ => throw new ArgumentException("Unknown formatting property.", nameof(propertyName))
     };

@@ -22,6 +22,8 @@ internal sealed class ShapingTextLayout : IDisposable
     // Conservative retained-buffer estimate: original shape, adjusted shape, and
     // optional drawing copy. This is cache accounting, not a process-memory guarantee.
     internal int CacheByteMultiplier => _shaped is null ? 1 : 3;
+    internal int ContextCharacters { get; }
+
     public double LetterSpacing { get; }
     public double LineHeight { get; }
 
@@ -29,37 +31,42 @@ internal sealed class ShapingTextLayout : IDisposable
     { _native = native; LetterSpacing = letterSpacing; LineHeight = lineHeight; }
 
     private ShapingTextLayout(Paragraph paragraph, double width, FontFamily font, IBrush foreground,
-        int start, string text, DocumentFontService? fonts)
+        int start, string text, DocumentFontService? fonts, bool paragraphContext = false)
     {
         LetterSpacing = paragraph.Style.LetterSpacing;
         LineHeight = EffectiveLineHeight(paragraph.Style);
         var defaults = InlineTextSource.Properties(fonts is null ? paragraph.DefaultStyle : paragraph.DefaultStyle with { FontFamily = null }, fonts?.Resolve(paragraph.DefaultStyle) ?? font, foreground);
         var natural = new ParagraphProperties(paragraph.Style, defaults, TextWrapping.NoWrap, double.NaN);
-        _shaped = new TextLayout(new InlineTextSource(paragraph, start, text, font, foreground, fonts, true), natural);
+        ContextCharacters = paragraphContext ? Math.Max(0, paragraph.Length - text.Length) : 0;
+        _shaped = new TextLayout(new InlineTextSource(paragraph, paragraphContext ? 0 : start,
+            paragraphContext ? ParagraphText.For(paragraph).Read(0, paragraph.Length) : text,
+            font, foreground, fonts, true), natural);
         var tabWidth = paragraph.Style.DefaultTabWidth;
         if (tabWidth == 0)
         {
             using var automaticTab = new TextLayout("\t", defaults.Typeface, defaults.FontRenderingEmSize, defaults.ForegroundBrush);
             tabWidth = Math.Max(1, automaticTab.WidthIncludingTrailingWhitespace);
         }
-        var source = new PreparedSource(_shaped, paragraph, start, tabWidth);
+        var source = new PreparedSource(_shaped, paragraph, paragraphContext ? 0 : start, tabWidth);
+        var sourceOffset = paragraphContext ? start : 0;
+        ITextSource formattedSource = sourceOffset == 0 ? source : new ShiftedSource(source, sourceOffset);
         var properties = new ParagraphProperties(paragraph.Style, defaults, TextWrapping.Wrap, LineHeight);
         var position = 0;
         var maxLines = start == 0 && paragraph.Style.FirstLineIndent != 0 ? 2 : int.MaxValue;
         if (!text.Contains('\t'))
         {
-            source.BeginLine(0);
-            _formatted = new TextLayout(source, properties, maxWidth: width, maxLines: maxLines == int.MaxValue ? 0 : maxLines);
+            source.BeginLine(sourceOffset);
+            _formatted = new TextLayout(formattedSource, properties, maxWidth: width, maxLines: maxLines == int.MaxValue ? 0 : maxLines);
             foreach (var line in _formatted.TextLines) _lines.Add(new TypographyLine(line, paragraph.Style, false));
             return;
         }
         do
         {
-            source.BeginLine(position);
+            source.BeginLine(position + sourceOffset);
             // Native wrapping supplies justification and a lookahead line. Tab advances
             // are recalculated from the next physical line's origin on the next pass.
             // Retain only a copied first line, not each probe's entire shaped remainder.
-            using var probe = new TextLayout(new ShiftedSource(source, position), properties, maxWidth: width, maxLines: 2);
+            using var probe = new TextLayout(new ShiftedSource(source, position + sourceOffset), properties, maxWidth: width, maxLines: 2);
             if (probe.TextLines.Count == 0 || probe.TextLines[0].Length == 0) break;
             var lineSource = new LineSource(probe.TextLines[0], position);
             var line = TextFormatter.Current.FormatLine(lineSource, position, width,
@@ -88,12 +95,13 @@ internal sealed class ShapingTextLayout : IDisposable
     {
         text ??= ParagraphText.For(paragraph).ToString();
         var style = paragraph.Style;
+        var characterGrid = style.SnapToGrid && style.EastAsianGrid is { CharacterSpacing: > 0 };
         if ((!text.Contains('\t') || style.TabStops.IsEmpty && style.DefaultTabWidth == 0) && style.LineSpacingMode == LineSpacingMode.Natural &&
-            fonts?.HasEmbeddedFonts != true && !Extended(paragraph.DefaultStyle) && !paragraph.Runs.Any(r => Extended(r.Style)))
+            !characterGrid && fonts?.HasEmbeddedFonts != true && !Extended(paragraph.DefaultStyle) && !paragraph.Runs.Any(r => Extended(r.Style)))
             return new(DocumentLayout.CreateNativeTextLayout(paragraph, width, font, foreground, start, text),
                 style.LetterSpacing, style.LineHeight ?? double.NaN);
         width = Math.Max(16, width - (start == 0 ? paragraph.Style.FirstLineIndent : 0));
-        var advanced = text.Contains('\t') && (!style.TabStops.IsEmpty || style.DefaultTabWidth > 0) || style.LineSpacingMode is LineSpacingMode.Multiple or LineSpacingMode.AtLeast ||
+        var advanced = characterGrid || text.Contains('\t') && (!style.TabStops.IsEmpty || style.DefaultTabWidth > 0) || style.LineSpacingMode is LineSpacingMode.Multiple or LineSpacingMode.AtLeast ||
             paragraph.Runs.Any(r => r.Style.Tracking != 0 || r.Style.HorizontalScale != 1 || r.Style.BaselineOffset != 0 || r.Style.UnderlineKind == UnderlineKind.Wave);
         if (advanced) return new(paragraph, width, font, foreground, start, text, fonts);
         var defaults = InlineTextSource.Properties(fonts is null ? paragraph.DefaultStyle : paragraph.DefaultStyle with { FontFamily = null }, fonts?.Resolve(paragraph.DefaultStyle) ?? font, foreground);
@@ -103,6 +111,12 @@ internal sealed class ShapingTextLayout : IDisposable
             maxLines: start == 0 && style.FirstLineIndent != 0 ? 2 : 0);
         return new(native, style.LetterSpacing, lineHeight);
     }
+
+    // Rewrap the prepared runs of the whole paragraph so a width change retains
+    // the direction and contextual shaping of text preceding this continuation.
+    internal static ShapingTextLayout CreateContinuation(Paragraph paragraph, double width, FontFamily font,
+        IBrush foreground, int start, string text, DocumentFontService? fonts) =>
+        new(paragraph, Math.Max(16, width), font, foreground, start, text, fonts, paragraphContext: true);
 
     private static bool Extended(TextStyle style) => style.EastAsianFontFamily is not null || style.ComplexScriptFontFamily is not null ||
         style.UnderlineKind != UnderlineKind.None || style.StrikeKind != StrikeKind.None ||
@@ -260,7 +274,7 @@ internal sealed class ShapingTextLayout : IDisposable
                     run = new TabTextRun(tab.Properties, Math.Max(0, position - advance - adjustment), stop?.Leader ?? TabLeader.None);
                 }
                 else if (entry.Run is ShapedTextRun shaped)
-                    run = new ShapedTextRun(Clone(shaped.ShapedBuffer, offset, style), new TypographyProperties(shaped.Properties, style));
+                    run = new ShapedTextRun(Clone(shaped.ShapedBuffer, offset, style, gridPitch: GridPitch), new TypographyProperties(shaped.Properties, style));
                 else run = entry.Run;
                 if (run is DrawableTextRun drawable) _advances[index + run.Length] = advance + drawable.Size.Width;
                 return run;
@@ -277,7 +291,7 @@ internal sealed class ShapingTextLayout : IDisposable
                 if (entry.Run is ShapedTextRun shaped)
                 {
                     var style = _paragraph.StyleAt(_start + entry.Start);
-                    using var adjusted = new ShapedTextRun(Clone(shaped.ShapedBuffer, 0, style), shaped.Properties);
+                    using var adjusted = new ShapedTextRun(Clone(shaped.ShapedBuffer, 0, style, gridPitch: GridPitch), shaped.Properties);
                     var decimalIndex = shaped.Text.Span.IndexOf(decimalCharacter);
                     if (decimalWidth is null && decimalIndex >= 0)
                         decimalWidth = width + adjusted.GlyphRun.GetDistanceFromCharacterHit(new(decimalIndex, 0));
@@ -287,9 +301,10 @@ internal sealed class ShapingTextLayout : IDisposable
             }
             return (width, decimalWidth ?? width);
         }
+        private double GridPitch => _paragraph.Style.SnapToGrid ? _paragraph.Style.EastAsianGrid?.CharacterSpacing ?? 0 : 0;
     }
 
-    internal static ShapedBuffer Clone(ShapedBuffer source, int offset, TextStyle style, bool forDrawing = false)
+    internal static ShapedBuffer Clone(ShapedBuffer source, int offset, TextStyle style, bool forDrawing = false, double gridPitch = 0)
     {
         var copy = new ShapedBuffer(source.Text, source.Length, source.GlyphTypeface, source.FontRenderingEmSize, source.BidiLevel);
         for (var i = 0; i < source.Length; i++)
@@ -300,6 +315,20 @@ internal sealed class ShapingTextLayout : IDisposable
             copy[i] = new(glyph.GlyphIndex, glyph.GlyphCluster, advance,
                 forDrawing ? new(glyph.GlyphOffset.X / style.HorizontalScale, glyph.GlyphOffset.Y + style.BaselineOffset) :
                 new(glyph.GlyphOffset.X * style.HorizontalScale, glyph.GlyphOffset.Y - style.BaselineOffset));
+        }
+        if (!forDrawing && gridPitch > 0)
+        {
+            // Snap whole shaped clusters, preserving ligatures, combining marks and bidi caret edges.
+            // The last glyph carries the added advance; drawing and wrapping use this same buffer.
+            var advance = 0d;
+            for (var i = 0; i < copy.Length; i++)
+            {
+                var glyph = copy[i]; advance += glyph.GlyphAdvance;
+                if (i + 1 < copy.Length && copy[i + 1].GlyphCluster == glyph.GlyphCluster) continue;
+                var extra = Math.Ceiling(advance / gridPitch) * gridPitch - advance;
+                copy[i] = new(glyph.GlyphIndex, glyph.GlyphCluster, glyph.GlyphAdvance + extra, glyph.GlyphOffset);
+                advance = 0;
+            }
         }
         if (offset == 0) return copy;
         var split = copy.Split(offset);

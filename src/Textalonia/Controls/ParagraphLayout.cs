@@ -21,7 +21,7 @@ internal sealed class ParagraphLayout : IDisposable
         public long LastUse;
         public int Users;
         public LinkedListNode<Page>? CacheNode;
-        public long Bytes => Layout is null ? 0 : 256L + (InputEnd - Start) * 32L * Layout.CacheByteMultiplier;
+        public long Bytes => Layout is null ? 0 : 256L + (InputEnd - Start) * 32L * Layout.CacheByteMultiplier + Layout.ContextCharacters * 32L;
     }
 
     internal const int WindowLength = 2048;
@@ -29,6 +29,8 @@ internal sealed class ParagraphLayout : IDisposable
     private readonly Action _disposed;
     private readonly ShapedLayoutCache _cache;
     private readonly int _maxShapingCharacters;
+    private readonly bool _requiresBidiContext;
+
     private readonly List<Page> _pages = [];
     private readonly HashSet<Page> _resident = [];
     private List<Page> _tail = [];
@@ -51,10 +53,12 @@ internal sealed class ParagraphLayout : IDisposable
         MeasuredHeight + (Complete ? 0 : Estimate(Paragraph.Length - End)));
 
     public ParagraphLayout(Paragraph paragraph, double width, Func<Paragraph, int, string, ShapingTextLayout> shape, Action disposed,
-        ShapedLayoutCache cache, int maxShapingCharacters = 0)
+        ShapedLayoutCache cache, int maxShapingCharacters = 0, bool requiresBidiContext = false)
     {
         Paragraph = paragraph; _width = width; _shape = shape; _disposed = disposed; _cache = cache;
         _maxShapingCharacters = maxShapingCharacters;
+        _requiresBidiContext = requiresBidiContext;
+
     }
 
     private double Estimate(int length) => Math.Ceiling(length * Math.Max(1, Paragraph.DefaultStyle.FontSize * .52 + Paragraph.Style.LetterSpacing) / _width) * MinimumHeight;
@@ -130,7 +134,7 @@ internal sealed class ParagraphLayout : IDisposable
         // Unicode bidi resolution is paragraph scoped. Keep the exact Avalonia
         // path for RTL/embedding controls instead of treating a window as a new
         // bidi paragraph. The rope carries this conservative summary per subtree.
-        if (Paragraph.Style.RightToLeft || ParagraphText.For(Paragraph).RequiresBidiContext)
+        if (_requiresBidiContext || Paragraph.Style.RightToLeft || ParagraphText.For(Paragraph).RequiresBidiContext)
             length = Paragraph.Length - start;
         ShapingTextLayout layout;
         string text;

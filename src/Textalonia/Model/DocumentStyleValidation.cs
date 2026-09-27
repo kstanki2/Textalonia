@@ -92,6 +92,11 @@ internal static class DocumentStyleValidation
                 throw new FormatException("Tab stops must be valid, unique and sorted by position.");
             position = tab.Position;
         }
+        if (style.Frame is { } frame && (!double.IsFinite(frame.X) || !double.IsFinite(frame.Y) ||
+            frame.X < 0 || frame.Y < 0 || frame.X > 100000 || frame.Y > 100000 ||
+            !double.IsFinite(frame.Width) || frame.Width <= 0 || frame.Width > 100000 ||
+            frame.Height is { } height && (!double.IsFinite(height) || height <= 0 || height > 100000)))
+            throw new FormatException("Invalid paragraph frame.");
         if (style.EastAsianGrid is { } grid &&
             (!double.IsFinite(grid.CharacterSpacing) || grid.CharacterSpacing is < 0 or > 1000 ||
              !double.IsFinite(grid.LineSpacing) || grid.LineSpacing is < 0 or > 1000))

@@ -96,8 +96,13 @@ missing display text defaults to the field label. See [mail merge](MAIL-MERGE.md
 ## Styles and themes
 
 DX-01 adds optional `Styles`, `Defaults`, `Theme` and `Fonts` document elements.
-These contain bounded typed JSON using the same allowlisted records as native v5.
+These contain bounded typed JSON using the same allowlisted records as native v6.
 Extended character/paragraph formatting uses a single `Data` child instead of legacy
 attributes; combining both forms is rejected. Tables accept `StyleId` and a
 `StyleOverrides` data element. Legacy XAML version 1 files remain readable. See
 [style contracts](STYLES.md).
+
+DX-02 adds the optional `Sections` element containing the native physical-section
+records. Paragraph data preserves explicit page/column breaks and legacy frame
+placement. The XAML envelope remains version 1; older files default to one implicit
+page section. Strict readers reject unsupported members instead of flattening them.

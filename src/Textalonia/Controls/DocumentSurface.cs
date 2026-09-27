@@ -49,7 +49,7 @@ public partial class DocumentSurface : Control
         Cursor = new Cursor(StandardCursorType.Ibeam);
         ClipToBounds = true;
         _keyboard = _defaultKeyboard; _pointer = _defaultPointer; _caret = _defaultCaret; _composition = _defaultComposition;
-        _layout.AnchorShifted += ApplyAnchorAdjustment;
+        _layout.AnchorShifted += adjustment => ApplyAnchorAdjustment(adjustment * ViewZoom);
         AddHandler(TextInputMethodClientRequestedEvent, (_, e) =>
         {
             if (!e.Handled && ReferenceEquals(e.Source, this) && _inputContext is not null && Editor is { IsReadOnly: false })
@@ -109,7 +109,7 @@ public partial class DocumentSurface : Control
                     // Publish that measurement before the scroll viewer clamps
                     // the request against its previous, estimated extent.
                     for (var pass = 0; pass < 4 && Editor.LayoutError is null &&
-                        Math.Abs(_measuredLayoutHeight - _layout.Height) > .1; pass++)
+                        Math.Abs(_measuredLayoutHeight - GeometryHeight) > .1; pass++)
                     {
                         InvalidateMeasure(); this.UpdateLayout();
                         caret = CaretRectangle;
@@ -125,11 +125,11 @@ public partial class DocumentSurface : Control
         {
             EnsureLayout(Bounds.Width);
             if (Editor?.LayoutError is not null) return default;
-            var height = _layout.Height;
+            var height = GeometryHeight;
             Rect caret;
-            try { caret = _layout.Caret(CurrentVisualCaret); }
+            try { caret = GeometryCaret(CurrentVisualCaret); }
             catch (ShapingLimitExceededException error) { RejectLayout(error); return default; }
-            if (Math.Abs(height - _layout.Height) > .1)
+            if (Math.Abs(height - GeometryHeight) > .1)
                 Dispatcher.UIThread.Post(InvalidateMeasure, DispatcherPriority.Loaded);
             return caret;
         }
@@ -145,21 +145,31 @@ public partial class DocumentSurface : Control
         _layoutDocument = document; _layoutWidth = width; _dirty = false;
         try
         {
-            _layout.Build(document, width, Editor.FontFamily, Editor.Foreground ?? Brushes.Black,
-                Editor.BorderBrush ?? Brushes.Gray, Editor.DocumentPadding,
-                _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, Editor.Scroller?.Offset.Y ?? 0, width, 500),
-                Editor.MaxShapingCharacters);
+            if (Editor.ViewMode == DocumentViewMode.Simple)
+            {
+                if (_pagedLayout is not null) ClearPagedLayout();
+                _layout.Build(document, width / ViewZoom, Editor.FontFamily, Editor.Foreground ?? Brushes.Black,
+                    Editor.BorderBrush ?? Brushes.Gray, Editor.DocumentPadding,
+                    ToDocument(_viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, Editor.Scroller?.Offset.Y ?? 0, width, 500)),
+                    Editor.MaxShapingCharacters);
+                Editor.UpdatePageStatus(1, 1);
+            }
+            else
+            {
+                _layout.Clear();
+                BuildPagedLayout(document);
+            }
         }
         catch (ShapingLimitExceededException error) { RejectLayout(error); return; }
         Editor.SetLayoutError(null);
-        ApplyAnchorAdjustment(_layout.AnchorAdjustment);
+        if (_pagedLayout is null) ApplyAnchorAdjustment(_layout.AnchorAdjustment * ViewZoom);
         UpdateInlineViews();
     }
     internal void RejectLayout(ShapingLimitExceededException error)
     {
         // No partial or approximate text geometry is exposed after rejection.
         // Retain the extent so an offscreen target cannot jump the scroll view.
-        _layout.Clear(); ResetInlineViews();
+        _layout.Clear(); ClearPagedLayout(); ResetInlineViews();
         Editor?.SetLayoutError(error);
         InvalidateVisual();
     }
@@ -167,7 +177,7 @@ public partial class DocumentSurface : Control
     {
         position = 0;
         if (Editor?.LayoutError is not null) return false;
-        try { var caret = _layout.HitTestCaret(point); RememberPointerCaret(caret); position = caret.Position; return true; }
+        try { var caret = GeometryHitTestCaret(point); RememberPointerCaret(caret); position = caret.Position; return true; }
         catch (ShapingLimitExceededException error) { RejectLayout(error); return false; }
     }
     private void ApplyAnchorAdjustment(double adjustment)
@@ -198,8 +208,8 @@ public partial class DocumentSurface : Control
     protected override Size MeasureOverride(Size availableSize)
     {
         EnsureLayout(availableSize.Width);
-        _measuredLayoutHeight = _layout.Height;
-        return new(double.IsFinite(availableSize.Width) ? availableSize.Width : _layout.Width, Math.Max(90, _measuredLayoutHeight));
+        _measuredLayoutHeight = GeometryHeight;
+        return new(Math.Max(double.IsFinite(availableSize.Width) ? availableSize.Width : 0, GeometryWidth), Math.Max(90, _measuredLayoutHeight));
     }
 
     public override void Render(DrawingContext context)
@@ -224,53 +234,58 @@ public partial class DocumentSurface : Control
             message.Draw(context, new Point(Editor.DocumentPadding.Left, viewport.Top + Editor.DocumentPadding.Top));
             return;
         }
-        foreach (var decoration in _layout.Decorations)
+        var documentViewport = ToDocument(viewport);
+        using (context.PushTransform(Matrix.CreateScale(ViewZoom, ViewZoom)))
         {
-            if (!decoration.Bounds.Intersects(viewport)) continue;
-            decoration.Draw(context);
-        }
-        foreach (var highlight in Editor.Highlights)
-            foreach (var rect in _layout.SelectionRects(highlight.Start, highlight.Length))
-                if (rect.Intersects(viewport)) context.FillRectangle(highlight.Brush, rect);
-        var selection = Editor.Session.Selection;
-        if (!HasComposition)
-            foreach (var rect in _layout.SelectionRects(selection.Start, selection.Length))
-                if (rect.Intersects(viewport)) context.FillRectangle(Editor.SelectionBrush, rect);
-        foreach (var paragraph in _layout.Paragraphs)
-        {
-            if (!paragraph.Bounds.Intersects(viewport)) continue;
-            paragraph.Draw(context, viewport);
-            if (paragraph.Marker is not null)
+            if (_pagedLayout is { } pages)
             {
-                var marker = new FormattedText(paragraph.Marker, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                    DocumentLayout.Typeface(paragraph.Position.Paragraph.DefaultStyle, Editor.FontFamily), paragraph.Position.Paragraph.DefaultStyle.FontSize, Editor.Foreground);
-                var origin = new Point(paragraph.Origin.X - marker.Width - 10, paragraph.Origin.Y);
-                if (paragraph.Clip is { } clip)
+                pages.DrawBackgrounds(context, documentViewport);
+                foreach (var page in pages.Pages)
+                    if (page.Bounds.Intersects(documentViewport)) context.DrawRectangle(null, new Pen(Brushes.Gray, 1), page.Bounds);
+            }
+            else foreach (var decoration in _layout.Decorations)
+                if (decoration.Bounds.Intersects(documentViewport)) decoration.Draw(context);
+            foreach (var highlight in Editor.Highlights)
+                foreach (var rect in GeometrySelectionRects(highlight.Start, highlight.Length))
+                    if (rect.Intersects(viewport)) context.FillRectangle(highlight.Brush, ToDocument(rect));
+            var selection = Editor.Session.Selection;
+            if (!HasComposition)
+                foreach (var rect in GeometrySelectionRects(selection.Start, selection.Length))
+                    if (rect.Intersects(viewport)) context.FillRectangle(Editor.SelectionBrush, ToDocument(rect));
+            if (_pagedLayout is { } content) content.DrawContent(context, documentViewport);
+            else foreach (var paragraph in _layout.Paragraphs)
+            {
+                if (!paragraph.Bounds.Intersects(documentViewport)) continue;
+                paragraph.Draw(context, documentViewport);
+                if (paragraph.Marker is not null)
                 {
-                    using var scope = context.PushClip(clip);
-                    context.DrawText(marker, origin);
+                    var marker = new FormattedText(paragraph.Marker, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+                        DocumentLayout.Typeface(paragraph.Position.Paragraph.DefaultStyle, Editor.FontFamily), paragraph.Position.Paragraph.DefaultStyle.FontSize, Editor.Foreground);
+                    var origin = new Point(paragraph.Origin.X - marker.Width - 10, paragraph.Origin.Y);
+                    if (paragraph.Clip is { } clip)
+                    {
+                        using var scope = context.PushClip(clip);
+                        context.DrawText(marker, origin);
+                    }
+                    else context.DrawText(marker, origin);
                 }
-                else context.DrawText(marker, origin);
+            }
+            if (Editor.Session.Index.Length == 0 && !HasComposition && Editor.Document.Blocks is [Paragraph])
+            {
+                var origin = _pagedLayout is { } emptyPages ? emptyPages.Caret(0).Position : new Point(Editor.DocumentPadding.Left, Editor.DocumentPadding.Top);
+                using var placeholder = new TextLayout(Editor.PlaceholderText, new Typeface(Editor.FontFamily), 16,
+                    new SolidColorBrush(Color.FromArgb(135, 128, 128, 128)), maxWidth: Math.Max(20, documentViewport.Width - origin.X));
+                placeholder.Draw(context, origin);
             }
         }
         DrawInlineImages(context, viewport);
         RenderDropPreview(context);
         if (_pointer is DefaultPointerComponent standardPointer) standardPointer.RenderInteractionAdorners(context);
-        if (Editor.Session.Index.Length == 0 && !HasComposition && Editor.Document.Blocks is [{ } block] && block is Paragraph)
-        {
-            using var placeholder = new TextLayout(Editor.PlaceholderText, new Typeface(Editor.FontFamily), 16,
-                new SolidColorBrush(Color.FromArgb(135, 128, 128, 128)), maxWidth: Math.Max(20, Bounds.Width - Editor.DocumentPadding.Left - Editor.DocumentPadding.Right));
-            placeholder.Draw(context, new Point(Editor.DocumentPadding.Left, Editor.DocumentPadding.Top));
-        }
-        // Rendering must not discover an offscreen caret's geometry: doing so
-        // can refine prefix heights and invalidate scrolling during this pass.
-        if (IsFocused && !Editor.IsReadOnly && _layout.Paragraphs.Any(p =>
-            DisplayCaret >= p.TextStart && (DisplayCaret < p.TextEnd || DisplayCaret == p.TextEnd && p.TextEnd == p.Position.End) && p.Bounds.Intersects(viewport)))
+        // Simple view resolves only the already visible shaping windows during painting.
+        if (IsFocused && !Editor.IsReadOnly && GeometryRanges().Any(range =>
+            DisplayCaret >= range.Start && DisplayCaret <= range.End && range.Bounds.Intersects(viewport)))
         {
             var caret = CaretRectangle;
-            var visual = _layout.Paragraphs.FirstOrDefault(p => DisplayCaret >= p.TextStart &&
-                (DisplayCaret < p.TextEnd || DisplayCaret == p.TextEnd && p.TextEnd == p.Position.End));
-            if (visual?.Clip is { } clip) caret = caret.Intersect(clip);
             if (caret.Width > 0 && caret.Height > 0) _caret.Render(context, caret, Editor.Foreground ?? Brushes.Black);
         }
     }
@@ -351,7 +366,7 @@ public partial class DocumentSurface : Control
         try
         {
             var caret = position == DisplayCaret ? CurrentVisualCaret : VisualCaret.Logical(position);
-            return _layout.LineBoundary(caret, end).Position;
+            return GeometryLineBoundary(caret, end).Position;
         }
         catch (ShapingLimitExceededException error) { RejectLayout(error); return null; }
     }
@@ -381,7 +396,7 @@ public partial class DocumentSurface : Control
         _pendingAnchorAdjustment = 0;
         ClearDropPreview();
         DetachInputComponents(); ResetInlineViews();
-        _layout.Clear(); _dirty = true;
+        _layout.Clear(); ClearPagedLayout(); _dirty = true;
         base.OnDetachedFromVisualTree(e);
     }
     protected override void OnTextInput(TextInputEventArgs e)

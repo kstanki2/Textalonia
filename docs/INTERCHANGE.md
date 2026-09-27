@@ -62,7 +62,7 @@ and clipboard operations. The demo shows conversion reports after file operation
 All external formats omit hidden physical cells and merge restoration backups with
 `conversion.merge-history`. Resources without supported references produce
 `conversion.unused-resource` (DOCX also recognizes embedded-font references). Native
-JSON v5 preserves the full model and reads v4/v5; earlier versions remain rejected.
+JSON v6 preserves the full model and reads v4/v5/v6; earlier versions remain rejected.
 Plain text retains visible text/paragraph separators and inline alternative text;
 its `text.*` diagnostics describe discarded formatting, containers and resources.
 
@@ -73,6 +73,7 @@ its `text.*` diagnostics describe discarded formatting, containers and resources
 | Typography | Numeric weights/stretch, font family, baseline, colors, paragraph tracking/line height/indents; inline CSS subset | Common font/color/emphasis/baseline/stretch and paragraph metrics; numeric weights, color alpha and precision have diagnostics | Named/default/character styles, theme references, run tracking/scale/baseline, underline/strike/caps/language, tabs/leaders, outline and paragraph rules; unsupported variants and precision have diagnostics |
 | Named styles/themes/fonts | Effective supported appearance; lost identity, overrides, themes and embedded fonts diagnosed | Effective supported appearance; lost identity, overrides, themes and embedded fonts diagnosed | Preserves named style definitions/inheritance/links/next, Office theme slots and permitted embedded TTF/OTF fonts; see [style limits](STYLES.md) |
 | Sections | Styled nested sections with edges/padding | Flow section groups; nested sections and arbitrary mixed section/root grouping have diagnosed normalization; decoration omitted with report | Section content groups encoded as block content controls; page sections/layout/header/footer and decoration reported |
+| Physical page sections | Native page settings and physical sections have diagnosed losses | Native page settings and physical sections have diagnosed losses | Page-section mappings remain diagnosed losses; native JSON/XAML preserve the editable page model. See [pagination](PAGINATION.md) |
 | Tables | Nested cell blocks, spans, relative columns, rows, cell edges/padding/background | Rectangular grids, horizontal/vertical merges, relative widths, row policies/background; nested table and cell decoration losses reported | Nested tables, grid/vMerge geometry, relative columns, row policies, cell edges/padding/background; named table shading/padding/borders; conditional styles/layout/position and unsupported cell properties reported |
 | Images | Bounded data-URI PNG/JPEG/GIF/BMP/WebP raster data; dimensions/alt text and deduplication | Embedded PNG/JPEG; alternative text is not retained by standard picture data and is reported | Supported embedded PNG/JPEG/GIF/BMP/TIFF relationships; dimensions/alt text and deduplication; cropping/rotation/floating placement reported |
 | Merge fields | Display text with loss diagnostic | Basic MERGEFIELD name/cached result; unsupported switches and native formatting/fallback options diagnosed | Simple/complex MERGEFIELD import and simple-field export; unsupported switches, nested fields and linked recipient metadata diagnosed |

@@ -32,8 +32,7 @@ public partial class DocumentSurface
                 ? stored : VisualCaret.Logical(selection.Anchor);
         try
         {
-            var bounds = _layout.Caret(caret);
-            if (_layout.At(caret.Position)?.Clip is { } clip) bounds = bounds.Intersect(clip);
+            var bounds = GeometryCaret(caret);
             return bounds.Width > 0 && bounds.Height > 0 ? bounds : null;
         }
         catch (ShapingLimitExceededException error) { RejectLayout(error); return null; }
@@ -64,18 +63,18 @@ public partial class DocumentSurface
         var caret = CurrentVisualCaret;
         var anchor = ReferenceEquals(_visualCaretDocument, Editor.Document) && _visualAnchor is { } stored && stored.Position == selection.Anchor
             ? stored : VisualCaret.Logical(selection.Anchor);
-        SelectVisualCaret(!extend && !selection.IsEmpty ? _layout.CollapseSelection(anchor, caret, right) : word ? _layout.MoveWordCaret(caret, right) : _layout.MoveCaret(caret, right), extend);
+        SelectVisualCaret(!extend && !selection.IsEmpty ? GeometryCollapseSelection(anchor, caret, right) : GeometryMoveCaret(caret, right, word), extend);
     }
 
     internal void MoveVisualLineBoundary(bool end, bool extend)
     {
-        if (Editor?.LayoutError is null) SelectVisualCaret(_layout.LineBoundary(CurrentVisualCaret, end), extend);
+        if (Editor?.LayoutError is null) SelectVisualCaret(GeometryLineBoundary(CurrentVisualCaret, end), extend);
     }
 
     internal bool MoveVisualCaretToPoint(Point point, bool extend)
     {
         if (Editor?.LayoutError is not null) return false;
-        var caret = _layout.HitTestCaret(point);
+        var caret = GeometryHitTestCaret(point);
         SelectVisualCaret(caret, extend);
         return true;
     }

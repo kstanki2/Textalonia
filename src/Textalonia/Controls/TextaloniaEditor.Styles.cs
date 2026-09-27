@@ -10,7 +10,7 @@ namespace Textalonia.Controls;
 public partial class TextaloniaEditor
 {
     /// <summary>Embedded-font and substitution diagnostics observed during layout. Documents without embedded fonts retain Avalonia native fallback.</summary>
-    public IReadOnlyList<DocumentFontDiagnostic> FontDiagnostics => _surface?.Layout.FontDiagnostics ?? [];
+    public IReadOnlyList<DocumentFontDiagnostic> FontDiagnostics => _surface?.PagedLayout?.FontDiagnostics ?? _surface?.Layout.FontDiagnostics ?? [];
 
     /// <summary>Applies a paragraph style to selected paragraphs or selected table cells.</summary>
     public void ApplyNamedParagraphStyle(string id, bool clearDirectFormatting = true)
@@ -101,13 +101,25 @@ public partial class TextaloniaEditor
         Flag("Right to left", s => s.RightToLeft, (s, v) => s with { RightToLeft = v });
         Flag("Contextual spacing", s => s.ContextualSpacing, (s, v) => s with { ContextualSpacing = v });
         Flag("Page break before", s => s.PageBreakBefore, (s, v) => s with { PageBreakBefore = v });
+        Flag("Column break before", s => s.ColumnBreakBefore, (s, v) => s with { ColumnBreakBefore = v });
         Flag("Keep with next", s => s.KeepWithNext, (s, v) => s with { KeepWithNext = v });
         Flag("Keep lines together", s => s.KeepTogether, (s, v) => s with { KeepTogether = v });
         Flag("Widow / orphan control", s => s.WidowControl, (s, v) => s with { WidowControl = v });
         Number("Grid character spacing (DIP)", s => s.EastAsianGrid?.CharacterSpacing ?? 0, 0, 1000, (s, v) => s with { EastAsianGrid = (s.EastAsianGrid ?? new()) with { CharacterSpacing = v } });
         Number("Grid line spacing (DIP)", s => s.EastAsianGrid?.LineSpacing ?? 0, 0, 1000, (s, v) => s with { EastAsianGrid = (s.EastAsianGrid ?? new()) with { LineSpacing = v } });
         Flag("Snap to document grid", s => s.SnapToGrid, (s, v) => s with { SnapToGrid = v });
-        return ShowFormattingDialog(dialog, () => ApplyParagraphStyle(style => edits.Values.Aggregate(style, (value, edit) => edit(value))));
+        bool? enableFrame = null;
+        dialog.Flag("Position paragraph in a frame", state.Paragraph(s => s.Frame is not null), value => enableFrame = value);
+        Number("Frame left (DIP)", s => s.Frame?.X ?? 0, 0, 100000, (s, v) => s with { Frame = (s.Frame ?? new()) with { X = v } });
+        Number("Frame top (DIP)", s => s.Frame?.Y ?? 0, 0, 100000, (s, v) => s with { Frame = (s.Frame ?? new()) with { Y = v } });
+        Number("Frame width (DIP)", s => s.Frame?.Width ?? 240, 1, 100000, (s, v) => s with { Frame = (s.Frame ?? new()) with { Width = v } });
+        Number("Frame height (DIP; 0 grows)", s => s.Frame?.Height ?? 0, 0, 100000, (s, v) => s with { Frame = (s.Frame ?? new()) with { Height = v == 0 ? null : v } });
+        dialog.Body.Children.Add(new TextBlock { Text = "Frame coordinates are relative to the current column content origin. Frames position paragraphs; surrounding text does not wrap around them.", TextWrapping = Avalonia.Media.TextWrapping.Wrap });
+        return ShowFormattingDialog(dialog, () => ApplyParagraphStyle(style =>
+        {
+            var updated = edits.Values.Aggregate(style, (value, edit) => edit(value));
+            return enableFrame is { } enabled ? updated with { Frame = enabled ? updated.Frame ?? new() : null } : updated;
+        }));
     }
 
     /// <summary>Opens a keyboard-accessible tab-stop editor.</summary>

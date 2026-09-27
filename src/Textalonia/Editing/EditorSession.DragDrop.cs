@@ -103,7 +103,7 @@ public sealed partial class EditorSession
                 _ => block
             }).ToImmutableArray());
         if (completeContainers.Count > 0) removed = removed with { Blocks = Prune(removed.Blocks) };
-        removed = removed.PruneUnusedResources();
+        removed = DocumentSection.Reconcile(removed).PruneUnusedResources();
         removed.Validate();
         return removed;
     }

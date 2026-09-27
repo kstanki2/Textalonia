@@ -2,6 +2,8 @@
 
 ## 0.1.0-preview.1
 
+- Added physical page sections, page setup and numbering dialogs, explicit page/column/section breaks, exact page fragments, Simple/Draft/Print Layout views, zoom/fit and page navigation. Native schema v6 retains page metadata and reads v4/v5; unsupported external page-layout mappings report conversion losses. See `docs/PAGINATION.md` for the implemented scope and remaining native, Office and output qualification.
+
 - Added atomic named merge fields with toolbar editing, clipboard/history/native/XAML persistence, measured labels and accessibility descriptions; immutable preview, lazy per-record mail merge, culture/format/fallback policies, basic DOCX/RTF field preservation and a desktop merge workflow. See `docs/MAIL-MERGE.md` for supported field syntax and diagnosed limits.
 
 - Added additive tolerant/strict conversion reports; expanded HTML/RTF/DOCX list, typography, table and embedded-image mappings; versioned structural clipboard fragments with identity/resource remapping and stale cut/paste protection; a locally authored interchange corpus and explicit application qualification gaps. See `docs/INTERCHANGE.md#supported-subset-and-diagnosed-losses`.

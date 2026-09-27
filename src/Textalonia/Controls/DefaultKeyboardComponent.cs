@@ -61,6 +61,14 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
                 case Key.PageDown:
                     var caret = Context.CaretRectangle;
                     if (Context.Editor.LayoutError is not null) return;
+                    if (Context.Surface.HasPagedLayout)
+                    {
+                        Context.PreferredCaretX ??= Context.Surface.PagedCaretColumnX;
+                        Context.CancelComposition();
+                        Context.Surface.MovePagedCaret(e.Key is Key.Down or Key.PageDown, e.Key is Key.PageUp or Key.PageDown,
+                            Context.PreferredCaretX.Value, shift);
+                        break;
+                    }
                     Context.PreferredCaretX ??= caret.X;
                     var direction = e.Key is Key.Up or Key.PageUp ? -1 : 1;
                     var distance = e.Key is Key.PageUp or Key.PageDown ? Math.Max(40, Context.ViewportHeight) : caret.Height;

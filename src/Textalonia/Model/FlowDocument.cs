@@ -14,6 +14,8 @@ public sealed record FlowDocument
     public DocumentStyleCatalog Styles { get; init; } = new();
     public DocumentDefaults Defaults { get; init; } = new();
     public DocumentTheme Theme { get; init; } = new();
+    /// <summary>Ordered physical section settings. Empty uses one default page section.</summary>
+    public ImmutableArray<DocumentSection> Sections { get; init; } = [];
     internal FlowDocument WithChildren(StorageTree<OrderKey, DocumentNode>? children) => this with
     { _blocks = new(() => children!.Items().Select(p => (Block)p.Value.Source!).ToImmutableArray()) };
     public FlowDocument() { }
@@ -229,6 +231,7 @@ public sealed record FlowDocument
             }
         }
         Visit(Blocks, 0);
+        DocumentSection.Validate(this, ids);
     }
 
     private static void ValidateEdges(EdgeInsets? edges)

@@ -24,7 +24,7 @@ internal static class StyleConversion
             var p = resolver.ResolveParagraph(original);
             if (p.Style.DefaultTabWidth != ParagraphStyle.Default.DefaultTabWidth || !p.Style.TabStops.IsEmpty || p.Style.OutlineLevel != 0 || p.Style.ContextualSpacing ||
                 p.Style.LineSpacingMode != LineSpacingMode.Natural || p.Style.Borders is not null || p.Style.Shading is not null ||
-                p.Style.PageBreakBefore || p.Style.KeepTogether || p.Style.KeepWithNext || !p.Style.WidowControl ||
+                p.Style.PageBreakBefore || p.Style.ColumnBreakBefore || p.Style.KeepTogether || p.Style.KeepWithNext || !p.Style.WidowControl ||
                 p.Style.EastAsianGrid is not null || p.Style.SnapToGrid)
                 ConversionDiagnostics.Report("conversion.paragraph-typography", "Extended paragraph formatting",
                     "The format retains only its documented paragraph subset.", p.Id);

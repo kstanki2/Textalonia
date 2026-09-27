@@ -2,12 +2,14 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **implementation plan; DX-01 implementation and qualification
-status is recorded below. Other workstreams remain proposed unless explicitly noted.**
+candidate. Status: **implementation plan; DX-01 and DX-02 implementation and
+qualification status is recorded below. Other workstreams remain proposed unless explicitly noted.**
 
 The audit tables in sections 2-3 describe the baseline commit above; the DX-01
 implementation entry and [style guide](STYLES.md) supersede those baseline findings
-for delivered style/typography capabilities.
+for delivered style/typography capabilities. The DX-02 implementation entry and
+[pagination guide](PAGINATION.md) supersede baseline findings for physical pages
+and document views.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -241,6 +243,23 @@ identity. Glyph, tab, line-wrap, bidi and PDF geometry agree for new typography.
 ### DX-02 — Pagination, page setup and document views
 
 **Priority: core. Size: XL. Dependencies: DX-00, DX-01.**
+
+**Implementation status (2026-09-27):** the physical-section/page-settings model,
+exact main-story page fragments and editor page views are implemented. The compact
+toolbar now exposes page setup/numbering, page/column/section breaks, view selection,
+zoom/fit, multiple-page arrangement and page navigation. Native v6 (with v4/v5
+readers), data XAML and clipboard persistence carry the new model; unsupported
+external page-layout mappings retain strict/tolerant loss diagnostics. See
+[the pagination guide](PAGINATION.md) for the concrete APIs and supported behavior.
+
+Headless model/layout/interaction/dialog tests and the reproducible pagination
+probe provide local evidence. Explicit Unicode bidi controls have a confirmed
+Avalonia 12.1.3 repeated-shaping defect, with retained regression reproducers and
+qualification details in the pagination guide. Native IME, multiple monitor DPI, Office-rendered
+comparisons and a licensed DevExpress reference comparison remain qualification
+work; printing/PDF and secondary stories remain DX-03/04. This status does not close
+those dependent workstreams or claim full DevExpress parity. The original scope
+and exit criteria below remain the acceptance reference.
 
 Extract reusable shaping/line measurement from `Controls/DocumentLayout*.cs` and
 `ParagraphLayout.cs` into a proposed `Layout/` layer. Add `PageSettings`,

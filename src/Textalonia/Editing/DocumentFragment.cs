@@ -92,6 +92,7 @@ internal static class DocumentFragments
             !new FlowDocument(blocks).Text.EndsWith('\n')) blocks = blocks.Add(new Paragraph());
         var first = index.At(selection.Start); var last = index.At(selection.End);
         var result = document with { Blocks = blocks.Select(BlockOperations.CloneWithNewIds).ToImmutableArray() };
+        result = result with { Sections = CopySections(document, index, blocks, result.Blocks, selection.Start) };
         result = result.PruneUnusedResources();
         result.Validate();
         return new() { Document = result, StartsInsideParagraph = selection.Start > first.Start,
@@ -107,9 +108,49 @@ internal static class DocumentFragments
         var bottom = row + rowCount - 1; var right = column + columnCount - 1;
         ExpandRectangle(table, ref row, ref column, ref bottom, ref right);
         var cropped = Crop(table, row, column, bottom, right, (r, c) => table.Rows[r][c]);
-        return new() { Document = (document with { Blocks = [BlockOperations.CloneWithNewIds(cropped)] }).PruneUnusedResources() };
+        return new() { Document = (document with { Blocks = [BlockOperations.CloneWithNewIds(cropped)], Sections = [] }).PruneUnusedResources() };
     }
 
+    private static ImmutableArray<DocumentSection> CopySections(FlowDocument document, DocumentIndex index,
+        ImmutableArray<Block> original, ImmutableArray<Block> cloned, int offset)
+    {
+        if (document.Sections.IsEmpty) return [];
+        var before = VisibleParagraphs(original).ToArray();
+        var after = VisibleParagraphs(cloned).ToArray();
+        var ids = before.Zip(after).ToDictionary(pair => pair.First.Id, pair => pair.Second.Id);
+        var current = document.Sections[0];
+        foreach (var section in document.Sections.Skip(1))
+        {
+            if (index.ById(section.StartParagraphId).Start > offset) break;
+            current = section;
+        }
+        var result = ImmutableArray.CreateBuilder<DocumentSection>();
+        result.Add(current with { Id = Guid.NewGuid(), StartParagraphId = Guid.Empty });
+        foreach (var section in document.Sections.Skip(1))
+            if (index.ById(section.StartParagraphId).Start > offset && ids.TryGetValue(section.StartParagraphId, out var id))
+                result.Add(section with { Id = Guid.NewGuid(), StartParagraphId = id });
+        return result.ToImmutable();
+    }
+
+    private static FlowDocument MergeSections(FlowDocument destination, FlowDocument fragment, FlowDocument result, Guid replacedId)
+    {
+        result = DocumentSection.Reconcile(result);
+        // Initial source page settings are adopted on whole-document replacement by the caller.
+        // Partial paste retains destination settings and carries copied interior boundaries.
+        if (fragment.Sections.Length <= 1) return result;
+        var sections = result.Sections.IsEmpty ? ImmutableArray.Create(new DocumentSection()) : result.Sections;
+        var index = new DocumentIndex(result);
+        var positions = index.Paragraphs.ToDictionary(entry => entry.Paragraph.Id, entry => entry.Start);
+        var first = VisibleParagraphs(fragment.Blocks).First().Id;
+        foreach (var section in fragment.Sections.Skip(1))
+        {
+            var id = section.StartParagraphId == first ? replacedId : section.StartParagraphId;
+            if (!positions.ContainsKey(id) || !DocumentSection.IsOutsideTable(result.Blocks, id)) continue;
+            sections = sections.Add(section with { StartParagraphId = id });
+        }
+        return DocumentSection.Reconcile(result with { Sections = sections.OrderBy(section =>
+            section.StartParagraphId == Guid.Empty ? 0 : positions[section.StartParagraphId]).ToImmutableArray() });
+    }
     private static void ExpandRectangle(Table table, ref int top, ref int left, ref int bottom, ref int right)
     {
         bool changed;
@@ -222,7 +263,8 @@ internal static class DocumentFragments
             }
         }
         var copied = Clone(fragment.Blocks);
-        return fragment with { Blocks = copied, Resources = resources, Fonts = fonts.ToImmutable() };
+        return fragment with { Blocks = copied, Resources = resources, Fonts = fonts.ToImmutable(),
+            Sections = CopySections(fragment, new DocumentIndex(fragment), fragment.Blocks, copied, 0) };
     }
 
     internal static (FlowDocument Document, int Caret) Insert(FlowDocument destination, int offset, FlowDocument fragment, bool startsInsideParagraph, bool endsInsideParagraph)
@@ -279,6 +321,7 @@ internal static class DocumentFragments
             }).ToImmutableArray();
         var result = destination with { Blocks = Replace(destination.Blocks), Resources = fragment.Resources,
             Styles = fragment.Styles, Fonts = fragment.Fonts };
+        result = MergeSections(destination, fragment, result, at.Paragraph.Id);
         result.Validate();
         return (result, new DocumentIndex(result).ById(caretParagraph).Start + caretLocal);
     }

@@ -13,7 +13,7 @@ dotnet restore Textalonia.sln --configfile NuGet.Config
 dotnet run --project samples/Textalonia.Demo
 ```
 
-The demo includes editable sample content, light/dark themes, read-only mode, search, tables, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
+The demo includes editable sample content, light/dark themes, read-only mode, search, tables, page setup and numbering dialogs, document views, zoom, page navigation, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
 
 ## Build, test, and pack
 
@@ -76,6 +76,13 @@ Drop the editor into a window:
 ```
 
 The package contains no desktop platform dependency or application entry point. The host application chooses its Avalonia backend and theme.
+
+For physical pages, set `ViewMode="PrintLayout"`. The toolbar's **Page setup** dialog
+edits paper size, orientation, margins, columns and page decoration; **Insert** adds
+page, column and section breaks. **View** switches between Simple, Draft and Print
+Layout and provides zoom, fit and page navigation. These view changes leave document
+content and undo history unchanged. See [pagination and page setup](docs/PAGINATION.md)
+for APIs, persistence, table behavior and qualification limits.
 
 ## Structured documents and MVVM
 
@@ -272,7 +279,7 @@ the demo includes an alternate keymap and caret. See [input contracts](docs/INPU
 Insert immutable inline image/control descriptors with `Session.InsertInline`,
 resize or update them with `Session.UpdateInline`, resolve external images through
 `InlineResourceResolver`, and register explicit control factories through
-`InlineControlFactories`. Native schema v5 preserves descriptors and encoded
+`InlineControlFactories`. Native schema v6 preserves descriptors and encoded
 resources without creating controls during save/load. See
 [inline content and ownership](docs/INLINE-CONTENT.md).
 
@@ -287,6 +294,6 @@ Use `DocumentFormats.Xaml` for Textalonia's versioned, data-only `.txaml`/`.xaml
 vocabulary and `DocumentFormats.Markdown` for the documented `.md`/`.markdown`
 dialect. `MarkdownViewer` adds asynchronous source updates and optional host-provided
 code highlighting while reusing selection, themes, links and resource services.
-No new dependencies are required. Native JSON writes schema v5 and reads v4/v5;
+No new dependencies are required. Native JSON writes schema v6 and reads v4/v5/v6;
 other versions are rejected. V4 formatting loads as explicit direct formatting. See [integration boundaries and examples](docs/INTEGRATIONS.md),
 [Markdown dialect](docs/MARKDOWN.md), and [XAML vocabulary](docs/XAML.md).

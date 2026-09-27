@@ -19,6 +19,9 @@ public partial class DocumentSurface
         public InlineDescriptor Descriptor { get; set; } = descriptor;
         public Geometry? HostClip { get; set; } = control.Clip;
         public Geometry? AppliedClip { get; set; }
+        public ITransform? HostTransform { get; set; } = control.RenderTransform;
+        public RelativePoint HostTransformOrigin { get; set; } = control.RenderTransformOrigin;
+        public ITransform? AppliedTransform { get; set; }
         public bool Released { get; set; }
         public bool LogicalAttachmentAttempted { get; set; }
         public bool VisualAttachmentAttempted { get; set; }
@@ -74,6 +77,11 @@ public partial class DocumentSurface
         {
             if (child.AppliedClip is not null && ReferenceEquals(child.Control.Clip, child.AppliedClip))
                 child.Control.SetCurrentValue(ClipProperty, child.HostClip);
+            if (child.AppliedTransform is not null && ReferenceEquals(child.Control.RenderTransform, child.AppliedTransform))
+            {
+                child.Control.SetCurrentValue(RenderTransformProperty, child.HostTransform);
+                child.Control.SetCurrentValue(RenderTransformOriginProperty, child.HostTransformOrigin);
+            }
         });
         Cleanup(() => child.Factory.Release(child.Control));
     }
@@ -117,7 +125,7 @@ public partial class DocumentSurface
         }
         _inlineVisuals.Clear();
         var viewport = _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, 0, Math.Max(1, Bounds.Width), 500);
-        _inlineVisuals.AddRange(_layout.InlineVisuals().Where(v => v.Bounds.Intersects(viewport) &&
+        _inlineVisuals.AddRange(GeometryInlineVisuals().Where(v => v.Bounds.Intersects(viewport) &&
             (v.Clip is null || v.Clip.Value.Intersects(v.Bounds))));
         var visibleControls = _inlineVisuals.Where(v => v.Descriptor.Payload is ControlInlinePayload).Select(v => v.Descriptor.Id).ToHashSet();
         foreach (var pair in _inlineChildren.ToArray())
@@ -158,7 +166,7 @@ public partial class DocumentSurface
                     }
                     AutomationProperties.SetName(child.Control, descriptor.AltText);
                     KeyboardNavigation.SetTabIndex(child.Control, visual.Position);
-                    child.Control.Measure(visual.Bounds.Size);
+                    child.Control.Measure(new Size(visual.Bounds.Width / ViewZoom, visual.Bounds.Height / ViewZoom));
                 }
                 catch (Exception exception)
                 {
@@ -184,10 +192,32 @@ public partial class DocumentSurface
             {
                 try
                 {
-                    child.Control.Arrange(visual.Bounds);
+                    var size = new Size(visual.Bounds.Width / ViewZoom, visual.Bounds.Height / ViewZoom);
+                    if (child.AppliedTransform is null || !ReferenceEquals(child.Control.RenderTransform, child.AppliedTransform))
+                    {
+                        child.HostTransform = child.Control.RenderTransform;
+                        child.HostTransformOrigin = child.Control.RenderTransformOrigin;
+                    }
+                    if (ViewZoom == 1)
+                    {
+                        child.Control.SetCurrentValue(RenderTransformProperty, child.HostTransform);
+                        child.Control.SetCurrentValue(RenderTransformOriginProperty, child.HostTransformOrigin);
+                        child.AppliedTransform = null;
+                    }
+                    else
+                    {
+                        var origin = child.HostTransformOrigin.ToPixels(size);
+                        var matrix = Matrix.CreateTranslation(-origin.X, -origin.Y) * (child.HostTransform?.Value ?? Matrix.Identity) *
+                            Matrix.CreateTranslation(origin.X, origin.Y) * Matrix.CreateScale(ViewZoom, ViewZoom);
+                        child.AppliedTransform = new MatrixTransform(matrix);
+                        child.Control.SetCurrentValue(RenderTransformOriginProperty, new RelativePoint(0, 0, RelativeUnit.Absolute));
+                        child.Control.SetCurrentValue(RenderTransformProperty, child.AppliedTransform);
+                    }
+                    child.Control.Arrange(new Rect(visual.Bounds.Position, size));
                     if (!ReferenceEquals(child.Control.Clip, child.AppliedClip)) child.HostClip = child.Control.Clip;
-                    var surfaceClip = visual.Clip is { } clip
-                        ? new RectangleGeometry(clip.Intersect(visual.Bounds).Translate(new Vector(-visual.Bounds.X, -visual.Bounds.Y))) : null;
+                    var localClip = visual.Clip is { } clip
+                        ? ToDocument(clip.Intersect(visual.Bounds).Translate(new Vector(-visual.Bounds.X, -visual.Bounds.Y))) : (Rect?)null;
+                    var surfaceClip = localClip is { } bounds ? new RectangleGeometry(bounds) : null;
                     child.AppliedClip = surfaceClip is null ? child.HostClip : child.HostClip is null ? surfaceClip :
                         new CombinedGeometry(GeometryCombineMode.Intersect, child.HostClip, surfaceClip);
                     if (!ReferenceEquals(child.Control.Clip, child.AppliedClip))

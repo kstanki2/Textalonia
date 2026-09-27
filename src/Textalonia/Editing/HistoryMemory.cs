@@ -73,6 +73,10 @@ internal sealed class RetentionGraph
         DocumentStyleCatalog catalog => 96 + (catalog.Characters.Count + catalog.Paragraphs.Count + catalog.Tables.Count) * 64L,
         TextStyleOverrides => 1024,
         ParagraphStyleOverrides => 1024,
+        DocumentSection[] sections => 24 + sections.Length * 8L,
+        PageColumn[] columns => 24 + columns.Length * 8L,
+        PageSettings => 144,
+        DocumentSection => 88,
         DocumentFontDefinition[] fonts => 24 + fonts.Length * 8L,
         TabStop[] tabs => 24 + tabs.Length * 8L,
         TextStyle => 320,
@@ -83,6 +87,17 @@ internal sealed class RetentionGraph
     {
         switch (value)
         {
+            case DocumentSection[] sections: foreach (var section in sections) visit(section); break;
+            case DocumentSection section: visit(section.PageSettings); break;
+            case PageColumn[] columns: foreach (var column in columns) visit(column); break;
+            case PageSettings settings:
+                visit(settings.Margins);
+                if (!settings.Columns.IsDefaultOrEmpty) visit(ImmutableCollectionsMarshal.AsArray(settings.Columns)!);
+                if (settings.Background is not null) visit(settings.Background);
+                if (settings.Borders is not null) visit(settings.Borders);
+                if (settings.Grid is not null) visit(settings.Grid);
+                if (settings.LineNumbering is not null) visit(settings.LineNumbering);
+                break;
             case DocumentStyleCatalog catalog:
                 foreach (var pair in catalog.Characters) { visit(pair.Key); visit(pair.Value); }
                 foreach (var pair in catalog.Paragraphs) { visit(pair.Key); visit(pair.Value); }
@@ -160,6 +175,7 @@ internal sealed class RetentionGraph
                 if (paragraph.Borders is not null) visit(paragraph.Borders);
                 if (paragraph.Shading is not null) visit(paragraph.Shading);
                 if (paragraph.EastAsianGrid is not null) visit(paragraph.EastAsianGrid);
+                if (paragraph.Frame is not null) visit(paragraph.Frame);
                 if (!paragraph.TabStops.IsDefaultOrEmpty) visit(ImmutableCollectionsMarshal.AsArray(paragraph.TabStops)!);
                 if (paragraph.ListDefinition is not null) visit(paragraph.ListDefinition);
                 break;

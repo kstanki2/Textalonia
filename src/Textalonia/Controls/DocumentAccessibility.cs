@@ -78,19 +78,19 @@ public sealed class DocumentTextProvider
     public DocumentTextRange RangeFromPoint(Point point)
     {
         var surface = GeometrySurface();
-        try { var position = surface.Layout.HitTest(point); return Range(position, position); }
+        try { var position = surface.GeometryHitTest(point); return Range(position, position); }
         catch (ShapingLimitExceededException error) { surface.RejectLayout(error); throw; }
     }
 
-    /// <summary>Returns shaped page portions intersecting the current viewport without visiting the whole document.</summary>
+    /// <summary>Returns shaped fragments intersecting the current viewport. Simple view queries its bounded layout window.</summary>
     public IReadOnlyList<DocumentTextRange> GetVisibleRanges()
     {
         var surface = GeometrySurface();
         var view = _editor.Scroller is { } scroller
             ? new Rect(scroller.Offset.X, scroller.Offset.Y, scroller.Viewport.Width, scroller.Viewport.Height)
             : new Rect(surface.Bounds.Size);
-        return surface.Layout.Paragraphs.Where(p => p.Bounds.Intersects(view))
-            .OrderBy(p => p.TextStart).Select(p => Range(p.TextStart, p.TextEnd)).ToArray();
+        return surface.GeometryRanges().Where(p => p.Bounds.Intersects(view))
+            .OrderBy(p => p.Start).Select(p => Range(p.Start, p.End)).ToArray();
     }
 
     internal void Validate(DocumentTextRange range)
@@ -129,14 +129,7 @@ public sealed class DocumentTextProvider
                 var surface = GeometrySurface();
                 try
                 {
-                    var visual = surface.Layout.At(position)!;
-                    using var lease = visual.Acquire();
-                    var lineIndex = lease.Layout.GetLineIndexFromCharacterIndex(position - visual.TextStart, false);
-                    var line = lease.Layout.TextLines[Math.Clamp(lineIndex, 0, visual.Page.LineCount - 1)];
-                    var lineStart = visual.TextStart + line.FirstTextSourceIndex;
-                    var lineEnd = Math.Min(index.Length, lineStart + line.Length);
-                    if (lineEnd == visual.Position.End && lineEnd < index.Length) lineEnd++;
-                    return (lineStart, lineEnd);
+                    return surface.GeometryLineRange(position);
                 }
                 catch (ShapingLimitExceededException error) { surface.RejectLayout(error); throw; }
             default: throw new ArgumentOutOfRangeException(nameof(unit));
@@ -179,10 +172,13 @@ public sealed class DocumentTextProvider
                 }
                 else
                 {
-                    var caret = surface.Layout.Caret(range.Start);
-                    var clip = surface.Layout.At(range.Start)?.Clip;
-                    Add(clip?.Intersect(caret) ?? caret);
+                    Add(surface.GeometryCaret(range.Start));
                 }
+                return result;
+            }
+            if (surface.HasPagedLayout)
+            {
+                foreach (var rect in surface.GeometrySelectionRects(range.Start, range.End - range.Start)) Add(rect);
                 return result;
             }
             var position = range.Start;
@@ -196,12 +192,12 @@ public sealed class DocumentTextProvider
                     foreach (var rect in lease.Layout.HitTestTextRange(position - visual.TextStart, end - position))
                     {
                         var translated = rect.Translate(new Vector(visual.Origin.X, visual.Origin.Y));
-                        Add(visual.Clip?.Intersect(translated) ?? translated);
+                        Add(surface.ToSurface(visual.Clip?.Intersect(translated) ?? translated));
                     }
                 if (end == visual.Position.End && end < range.End)
                 {
                     var caret = surface.Layout.Caret(end).WithWidth(5);
-                    Add(visual.Clip?.Intersect(caret) ?? caret);
+                    Add(surface.ToSurface(visual.Clip?.Intersect(caret) ?? caret));
                     end++;
                 }
                 if (end <= position) break;
@@ -234,9 +230,9 @@ public sealed class DocumentTextProvider
         try
         {
             var target = alignToTop ? range.Start : range.End;
-            var rect = surface.Layout.Caret(target);
+            var rect = surface.GeometryCaret(target);
             surface.InvalidateMeasure(); surface.UpdateLayout();
-            rect = surface.Layout.Caret(target);
+            rect = surface.GeometryCaret(target);
             if (_editor.Scroller is { } scroller)
                 scroller.Offset = new Vector(scroller.Offset.X,
                     Math.Max(0, alignToTop ? rect.Top : rect.Bottom - scroller.Viewport.Height));

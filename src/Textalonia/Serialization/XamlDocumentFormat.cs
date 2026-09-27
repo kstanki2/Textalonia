@@ -38,14 +38,15 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         if (Required(root, "Version") != "1") throw new NotSupportedException("Only Textalonia XAML data version 1 is supported.");
         foreach (var instruction in xml.DescendantNodes().OfType<XProcessingInstruction>())
             Report("xaml.processing-instruction", instruction.Target, "Processing instruction was ignored.", instruction);
-        Check(root, "Version", "Resources Blocks Styles Defaults Theme Fonts");
+        Check(root, "Version", "Resources Blocks Styles Defaults Theme Fonts Sections");
         var document = new FlowDocument(ReadBlocks(Child(root, "Blocks")))
         {
             Resources = ReadResources(Child(root, "Resources")),
             Styles = ReadData<DocumentStyleCatalog>(Child(root, "Styles")) ?? new(),
             Defaults = ReadData<DocumentDefaults>(Child(root, "Defaults")) ?? new(),
             Theme = ReadData<DocumentTheme>(Child(root, "Theme")) ?? new(),
-            Fonts = (ReadData<DocumentFontDefinition[]>(Child(root, "Fonts")) ?? []).ToImmutableArray()
+            Fonts = (ReadData<DocumentFontDefinition[]>(Child(root, "Fonts")) ?? []).ToImmutableArray(),
+            Sections = (ReadData<DocumentSection[]>(Child(root, "Sections")) ?? []).ToImmutableArray()
         };
         document.Validate();
         return document;
@@ -56,7 +57,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
         var root = Element("Document", Attr("Version", 1),
-            WriteData("Styles", document.Styles), WriteData("Defaults", document.Defaults), WriteData("Theme", document.Theme), WriteData("Fonts", document.Fonts),
+            WriteData("Styles", document.Styles), WriteData("Defaults", document.Defaults), WriteData("Theme", document.Theme), WriteData("Fonts", document.Fonts), WriteData("Sections", document.Sections),
             Element("Resources", document.Resources.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p =>
                 Element("Resource", Attr("Key", p.Key), Attr("Kind", p.Value.Kind), Attr("MediaType", p.Value.MediaType),
                     Attr("Location", p.Value.Location), Element("Data", Convert.ToBase64String(p.Value.Data.AsSpan()))))),

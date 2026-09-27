@@ -12,6 +12,7 @@ public sealed partial class EditorSession
     {
         public long Bytes => 80;
         public void VisitReferences(Action<object> visit) { visit(Index.Tree); visit(Document.Resources); visit(Document.Styles); visit(Document.Defaults); visit(Document.Theme);
+            if (!Document.Sections.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Sections)!);
             if (!Document.Fonts.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Fonts)!);
             visit(TypingStyle); }
     }
@@ -279,7 +280,7 @@ public sealed partial class EditorSession
         var resolver = new DocumentStyleResolver(Document);
         var activeParagraph = Index.At(Selection.Active).Paragraph;
         var newStyle = ChangeTextStyle(activeParagraph, TypingStyle, change, resolver);
-        (Document with { Blocks = [new Paragraph("", newStyle)] }).Validate();
+        (Document with { Blocks = [new Paragraph("", newStyle)], Sections = [] }).Validate();
         if (Selection.IsEmpty)
         {
             Commit(Document, Selection, editedRange: Selection, typingStyle: newStyle); return;
@@ -399,7 +400,7 @@ public sealed partial class EditorSession
             if (!Selection.IsEmpty && entry.Start >= Selection.End) break;
             var paragraph = change(entry);
             if (ReferenceEquals(paragraph, entry.Paragraph)) continue;
-            (Document with { Blocks = [paragraph] }).Validate();
+            (Document with { Blocks = [paragraph], Sections = [] }).Validate();
             replacements.Add(paragraph.Id, [paragraph]);
         }
         return Index.Tree.Rewrite(Document, replacements);
@@ -557,6 +558,7 @@ public sealed partial class EditorSession
     }
     private void Commit(FlowDocument document, TextSelection selection, bool typing = false, TextSelection? editedRange = null, TextStyle? typingStyle = null)
     {
+        document = DocumentSection.Reconcile(document);
         // Typing formatting can own a named reference even when no run uses it yet.
         // Check before changing history or document roots, including application edits.
         DocumentStyleCatalog.Reference(document.Styles.Characters, (typingStyle ?? TypingStyle).StyleId);
@@ -630,6 +632,7 @@ public sealed partial class EditorSession
     {
         void Change(object value) { if (add) _retained.Add(value, current: true); else _retained.Remove(value, current: true); }
         Change(document.Styles); Change(document.Defaults); Change(document.Theme);
+        if (!document.Sections.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Sections)!);
         if (!document.Fonts.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Fonts)!);
     }
     private void ClearRedo()
@@ -643,7 +646,7 @@ public sealed partial class EditorSession
         if (selection.Start == 0 && selection.End == index.Length && !selection.IsEmpty)
         {
             var replacement = document with { Blocks = fragment.Select(p => (Block)(p with { Id = Guid.NewGuid() })).ToImmutableArray() };
-            return (replacement, new DocumentIndex(replacement).Length);
+            return (DocumentSection.Reconcile(replacement), new DocumentIndex(replacement).Length);
         }
         var first = index.At(selection.Start);
         var last = index.At(selection.End);
@@ -654,7 +657,7 @@ public sealed partial class EditorSession
             var removals = index.Enumerate(first.Start, last.Start).Where(p => p.Paragraph.Id != last.Paragraph.Id)
                 .ToDictionary(p => p.Paragraph.Id, _ => ImmutableArray<Paragraph>.Empty);
             var removed = index.Tree.Rewrite(document, removals);
-            return (removed, new DocumentIndex(removed).ById(last.Paragraph.Id).Start);
+            return (DocumentSection.Reconcile(removed), new DocumentIndex(removed).ById(last.Paragraph.Id).Start);
         }
         var prefix = first.Paragraph.Slice(0, selection.Start - first.Start);
         var suffix = last.Paragraph.Slice(selection.End - last.Start, last.End - selection.End);
@@ -678,7 +681,7 @@ public sealed partial class EditorSession
         }
         var changed = index.Tree.Rewrite(document, changes);
         var newEntry = new DocumentIndex(changed).ById(replacements[^1].Id);
-        return (changed, newEntry.Start + caretLocal);
+        return (DocumentSection.Reconcile(changed), newEntry.Start + caretLocal);
     }
 }
 

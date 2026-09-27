@@ -100,7 +100,7 @@ public sealed partial class EditorSession
                 paragraph with { DefaultStyle = change(paragraph.DefaultStyle) };
         });
         document.Validate();
-        (document with { Blocks = [new Paragraph("", typing)] }).Validate();
+        (document with { Blocks = [new Paragraph("", typing)], Sections = [] }).Validate();
         Commit(document, selection, editedRange: selection, typingStyle: typing);
     }
 
@@ -108,7 +108,7 @@ public sealed partial class EditorSession
     {
         if (style.StyleId is { } id && Document.Styles.Paragraphs.TryGetValue(id, out var definition) && definition.NextStyle is { } next)
             return ParagraphStyle.ForStyle(next);
-        return ChangeParagraphStyle(style, value => value with { ListRestart = false, ListStart = null }, new(Document));
+        return ChangeParagraphStyle(style, value => value with { ListRestart = false, ListStart = null, PageBreakBefore = false, ColumnBreakBefore = false }, new(Document));
     }
 
     private static TextStyle ChangeTextStyle(Paragraph paragraph, TextStyle stored,

@@ -15,6 +15,9 @@ public sealed record TabStop(double Position, TabAlignment Alignment = TabAlignm
 /// <summary>Document grid pitches in device-independent pixels. Zero leaves that dimension unconstrained.</summary>
 public sealed record EastAsianGrid(double CharacterSpacing = 0, double LineSpacing = 0);
 
+/// <summary>Legacy paragraph placement relative to the current column content origin, in DIP. A null height grows with content.</summary>
+public sealed record ParagraphFrame(double X = 0, double Y = 0, double Width = 240, double? Height = null);
+
 public sealed partial record TextStyle
 {
     public UnderlineKind UnderlineKind { get; init; }
@@ -51,6 +54,8 @@ public sealed partial record ParagraphStyle
     public int OutlineLevel { get; init; }
     /// <summary>Page-layout metadata, honored by a paginated layout provider.</summary>
     public bool PageBreakBefore { get; init; }
+    public bool ColumnBreakBefore { get; init; }
+    public ParagraphFrame? Frame { get; init; }
     public bool KeepWithNext { get; init; }
     public bool KeepTogether { get; init; }
     public bool WidowControl { get; init; } = true;

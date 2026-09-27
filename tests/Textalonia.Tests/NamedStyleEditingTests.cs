@@ -103,11 +103,11 @@ public class NamedStyleEditingTests
     }
 
     [Fact]
-    public void Legacy_v4_loads_as_explicit_formatting_and_saves_v5()
+    public void Legacy_v4_loads_as_explicit_formatting_and_saves_current_schema()
     {
         var loaded = DocumentFormats.Json.Parse("{\"version\":4,\"document\":{\"blocks\":[{\"kind\":\"paragraph\",\"id\":\"00000000-0000-4000-8000-000000000001\",\"runs\":[{\"text\":\"legacy\",\"style\":{\"fontSize\":20,\"bold\":false}}]}]}}");
         Assert.Null(((Paragraph)loaded.Blocks[0]).Runs[0].Style.Overrides);
-        Assert.Contains("\"version\": 5", DocumentFormats.Json.Serialize(loaded));
+        Assert.Contains("\"version\": 6", DocumentFormats.Json.Serialize(loaded));
     }
 
     [Fact]

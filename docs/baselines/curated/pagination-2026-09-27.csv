@@ -1,0 +1,7 @@
+paragraphs,operation,median_ms,p95_ms,pages,retained_glyph_cache_bytes,new_measurements,reused_checkpoints,reflowed_blocks
+100,edit-end,1.82,2.26,6,605984,1,98,2
+100,edit-start,2.13,2.57,6,599488,1,0,100
+100,full,84.52,93.06,6,591680,100,0,100
+1000,edit-end,13.97,16.43,81,1526144,1,998,2
+1000,edit-start,10.93,23.09,81,1525568,1,0,1000
+1000,full,163.31,176.94,81,1523712,1000,0,1000

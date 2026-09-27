@@ -126,12 +126,16 @@ public partial class TextaloniaEditor : TemplatedControl
         Scroller = e.NameScope.Get<ScrollViewer>("PART_ScrollViewer");
         _toolbar = e.NameScope.Find<TextaloniaToolbar>("PART_Toolbar");
         _surface.Editor = this;
+        UpdatePageView();
         if (_toolbar is not null) _toolbar.Editor = this;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == ViewModeProperty || change.Property == ZoomProperty ||
+            change.Property == PageGapProperty || change.Property == PagesPerRowProperty)
+        { UpdatePageView(change); return; }
         if (change.Property == InlineResourceResolverProperty || change.Property == InlineImageOptionsProperty || change.Property == InlineControlFactoriesProperty)
         { _surface?.ResetInlineViews(); _surface?.Refresh(); return; }
         if (change.Property == MaxShapingCharactersProperty) { _surface?.Refresh(); return; }

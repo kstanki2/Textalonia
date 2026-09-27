@@ -118,6 +118,19 @@ public static class DocumentFormatExtensions
 
     internal static void ReportExportLosses(IDocumentFormat format, FlowDocument document)
     {
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat))
+        {
+            var resolver = new DocumentStyleResolver(document);
+            foreach (var entry in new DocumentIndex(document).Paragraphs)
+            {
+                var style = resolver.ResolveParagraphStyle(entry.Paragraph.Style);
+                if (style.ColumnBreakBefore) ConversionDiagnostics.Report("conversion.column-break", "Column break", "Column break is omitted.", entry.Paragraph.Id);
+                if (style.Frame is not null) ConversionDiagnostics.Report("conversion.paragraph-frame", "Legacy paragraph frame", "Paragraph placement is omitted; text remains in normal flow.", entry.Paragraph.Id);
+            }
+        }
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat) && !document.Sections.IsEmpty)
+            ConversionDiagnostics.Report("conversion.page-sections", "Physical page sections",
+                "Page settings, section boundaries, numbering, columns and page decoration are omitted by this format.");
         if (format is HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or MarkdownDocumentFormat)
         {
             ReportMergeHistory(document.Blocks);
@@ -185,6 +198,8 @@ public static class DocumentFormatExtensions
     private static void ReportPlainTextLoss(FlowDocument document)
     {
         StyleConversion.ReportLosses(DocumentFormats.PlainText, document);
+        if (!document.Sections.IsEmpty) ConversionDiagnostics.Report("conversion.page-sections", "Physical page sections",
+            "Physical page settings and section boundaries are omitted.");
         void Visit(IEnumerable<Block> blocks)
         {
             foreach (var block in blocks)

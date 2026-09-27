@@ -69,7 +69,8 @@ shortcuts 1-6.
 Small caps use a deterministic synthetic display: lowercase letters are uppercased
 at 80 percent of the run size. Text storage and UTF-16 positions remain unchanged.
 Per-script font choices are resolved before shaping; language/kerning settings are
-passed to Avalonia. Page/grid options are preserved as metadata for DX-02.
+passed to Avalonia. Print Layout consumes paragraph page/keep/widow rules and
+document grid settings; see [pagination](PAGINATION.md) for their layout contract.
 
 The toolbar exposes Font, Paragraph, Tabs and Styles dialogs. Public
 `ShowFontDialogAsync`, `ShowParagraphDialogAsync`, `ShowTabsDialogAsync` and
@@ -77,8 +78,9 @@ The toolbar exposes Font, Paragraph, Tabs and Styles dialogs. Public
 Apply, preserve untouched mixed fields, reject stale selections, and restore editor
 focus. Native keyboard/screen-reader qualification remains part of DX-13/14.
 
-Page breaks, keep chains and widow/orphan pagination require DX-02. This flow editor
-does not claim printed/PDF geometry qualification before DX-04 exists.
+Simple view remains continuous. Print Layout applies page breaks, keep chains and
+widow/orphan rules to physical page fragments. Printed/PDF geometry qualification
+remains part of DX-04.
 
 ## Embedded fonts
 
@@ -94,7 +96,7 @@ fallback depends on the platform and installed fonts. `FontEmbeddingPolicy` is a
 
 ## Persistence and clipboard
 
-Native JSON writes schema v5 and reads v4/v5. V4 formatting remains explicit;
+Native JSON writes schema v6 and reads v4/v5/v6. V4 formatting remains explicit;
 loading does not rewrite the source. XAML data preserves the same style metadata
 through allowlisted typed JSON data elements, retaining its legacy formatting
 attributes for ordinary styles. These elements never instantiate arbitrary types

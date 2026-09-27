@@ -311,7 +311,7 @@ public partial class TextaloniaEditor
         if (Session.IsReadOnly || _surface is null || TableTarget() is not { } target) return false;
         if (!double.IsFinite(delta)) throw new ArgumentOutOfRangeException(nameof(delta));
         _surface.EnsureLayout(_surface.Bounds.Width);
-        var cell = _surface.Layout.TableCells().FirstOrDefault(cell => cell.Table.Id == target.Table.Id && cell.Row == target.Row && cell.Column == target.Column);
+        var cell = _surface.GeometryTableCells().FirstOrDefault(cell => cell.Table.Id == target.Table.Id && cell.Row == target.Row && cell.Column == target.Column);
         if (cell is null) return false;
         var size = axis == TableResizeAxis.Column ? cell.ColumnWidth : cell.RowHeight;
         var index = axis == TableResizeAxis.Column ? cell.Column + cell.Cell.ColumnSpan - 1 : cell.Row + cell.Cell.RowSpan - 1;
