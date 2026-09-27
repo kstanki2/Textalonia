@@ -6,7 +6,7 @@ namespace Textalonia.Editing;
 /// <summary>A versioned, self-contained clipboard fragment. Partial containers retain their formatting.</summary>
 public sealed record DocumentFragment
 {
-    public const int CurrentVersion = 1;
+    public const int CurrentVersion = 2;
     public int Version { get; init; } = CurrentVersion;
     public FlowDocument Document { get; init; } = new();
     /// <summary>Whether the first paragraph edge merges when pasted inside destination text.</summary>
@@ -16,7 +16,7 @@ public sealed record DocumentFragment
 
     public void Validate()
     {
-        if (Version != CurrentVersion) throw new NotSupportedException($"Clipboard fragment version {Version} is not supported.");
+        if (Version is not (1 or CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {Version} is not supported.");
         if (Document is null) throw new FormatException("Missing clipboard document.");
         Document.Validate();
     }
@@ -91,7 +91,7 @@ internal static class DocumentFragments
         if (selection.End > 0 && index.CharAt(selection.End - 1) == '\n' &&
             !new FlowDocument(blocks).Text.EndsWith('\n')) blocks = blocks.Add(new Paragraph());
         var first = index.At(selection.Start); var last = index.At(selection.End);
-        var result = new FlowDocument(blocks.Select(BlockOperations.CloneWithNewIds)) { Resources = document.Resources };
+        var result = document with { Blocks = blocks.Select(BlockOperations.CloneWithNewIds).ToImmutableArray() };
         result = result.PruneUnusedResources();
         result.Validate();
         return new() { Document = result, StartsInsideParagraph = selection.Start > first.Start,
@@ -107,8 +107,7 @@ internal static class DocumentFragments
         var bottom = row + rowCount - 1; var right = column + columnCount - 1;
         ExpandRectangle(table, ref row, ref column, ref bottom, ref right);
         var cropped = Crop(table, row, column, bottom, right, (r, c) => table.Rows[r][c]);
-        return new() { Document = (new FlowDocument([BlockOperations.CloneWithNewIds(cropped)])
-            { Resources = document.Resources }).PruneUnusedResources() };
+        return new() { Document = (document with { Blocks = [BlockOperations.CloneWithNewIds(cropped)] }).PruneUnusedResources() };
     }
 
     private static void ExpandRectangle(Table table, ref int top, ref int left, ref int bottom, ref int right)
@@ -170,9 +169,28 @@ internal static class DocumentFragments
 
     internal static FlowDocument Prepare(FlowDocument fragment, FlowDocument destination)
     {
+        fragment = DocumentStyleImport.Prepare(fragment, destination);
         var resources = destination.Resources;
         var resourceIds = new Dictionary<string, string>(StringComparer.Ordinal);
         var listIds = new Dictionary<Guid, Guid>();
+        var resolver = new DocumentStyleResolver(fragment);
+        string Resource(string id)
+        {
+            if (resourceIds.TryGetValue(id, out var mapped)) return mapped;
+            fragment.Resources.TryGetValue(id, out var incoming);
+            mapped = id;
+            if (resources.TryGetValue(mapped, out var existing) && existing != incoming)
+                mapped = "resource-" + Guid.NewGuid().ToString("N");
+            resourceIds.Add(id, mapped);
+            if (incoming is not null) resources = resources.SetItem(mapped, incoming);
+            return mapped;
+        }
+        var fonts = destination.Fonts.ToBuilder();
+        foreach (var font in fragment.Fonts)
+        {
+            var copy = font with { ResourceId = Resource(font.ResourceId) };
+            if (!fonts.Contains(copy)) fonts.Add(copy);
+        }
         ImmutableArray<Block> Clone(IEnumerable<Block> blocks) => blocks.Select(CloneBlock).ToImmutableArray();
         Block CloneBlock(Block block)
         {
@@ -180,10 +198,11 @@ internal static class DocumentFragments
             {
                 case Paragraph p:
                     var style = p.Style;
-                    if (style.ListId is { } id)
+                    if (resolver.ResolveParagraphStyle(style).ListId is { } id)
                     {
                         if (!listIds.TryGetValue(id, out var replacement)) listIds.Add(id, replacement = Guid.NewGuid());
-                        style = style with { ListId = replacement };
+                        style = style with { ListId = replacement,
+                            Overrides = style.Overrides is { } overrides ? overrides with { ListId = replacement } : null };
                     }
                     return p with { Id = Guid.NewGuid(), Style = style, Runs = p.Runs.Select(run =>
                     {
@@ -191,15 +210,7 @@ internal static class DocumentFragments
                         var payload = inline.Payload;
                         if (payload is ImageInlinePayload image)
                         {
-                            if (!resourceIds.TryGetValue(image.ResourceId, out var target))
-                            {
-                                fragment.Resources.TryGetValue(image.ResourceId, out var incoming);
-                                target = image.ResourceId;
-                                if (resources.TryGetValue(target, out var existing) && existing != incoming)
-                                    target = "resource-" + Guid.NewGuid().ToString("N");
-                                resourceIds.Add(image.ResourceId, target);
-                                if (incoming is not null) resources = resources.SetItem(target, incoming);
-                            }
+                            var target = Resource(image.ResourceId);
                             payload = image with { ResourceId = target };
                         }
                         return run with { Inline = inline with { Id = Guid.NewGuid(), Payload = payload } };
@@ -211,12 +222,20 @@ internal static class DocumentFragments
             }
         }
         var copied = Clone(fragment.Blocks);
-        return new FlowDocument(copied) { Resources = resources };
+        return fragment with { Blocks = copied, Resources = resources, Fonts = fonts.ToImmutable() };
     }
 
     internal static (FlowDocument Document, int Caret) Insert(FlowDocument destination, int offset, FlowDocument fragment, bool startsInsideParagraph, bool endsInsideParagraph)
     {
         var at = new DocumentIndex(destination).At(offset);
+        var resolver = new DocumentStyleResolver(fragment);
+        TextStyle Rebase(TextStyle style, Paragraph before, Paragraph after)
+        {
+            if (style.Overrides is null || before.Style == after.Style) return style;
+            var original = resolver.ResolveText(before, style);
+            var moved = resolver.ResolveText(after, style);
+            return style with { Overrides = TextStyleOverrides.Difference(moved, original, style.Overrides) };
+        }
         var prefix = at.Paragraph.Slice(0, offset - at.Start);
         var suffix = at.Paragraph.Slice(offset - at.Start, at.End - offset);
         var blocks = fragment.Blocks;
@@ -226,15 +245,23 @@ internal static class DocumentFragments
         var mergeStart = !interior || startsInsideParagraph;
         var mergeEnd = !interior || endsInsideParagraph;
         if (mergeStart && blocks[0] is Paragraph first)
-            blocks = blocks.SetItem(0, first with { Id = at.Paragraph.Id,
-                Style = prefix.IsEmpty && at.Paragraph.Length == 0 ? first.Style : at.Paragraph.Style,
-                Runs = Paragraph.Normalize(prefix.Concat(first.Runs)) });
+        {
+            var merged = first with { Id = at.Paragraph.Id,
+                Style = prefix.IsEmpty && at.Paragraph.Length == 0 ? first.Style : at.Paragraph.Style };
+            blocks = blocks.SetItem(0, merged with
+            {
+                DefaultStyle = Rebase(first.DefaultStyle, first, merged),
+                Runs = Paragraph.Normalize(prefix.Concat(first.Runs.Select(run =>
+                    run with { Style = Rebase(run.Style, first, merged) })))
+            });
+        }
         else if (!prefix.IsEmpty) blocks = blocks.Insert(0, at.Paragraph with { Runs = prefix });
         Guid caretParagraph; int caretLocal;
         if (mergeEnd && blocks[^1] is Paragraph last)
         {
             caretParagraph = last.Id; caretLocal = last.Length;
-            blocks = blocks.SetItem(blocks.Length - 1, last with { Runs = Paragraph.Normalize(last.Runs.Concat(suffix)) });
+            blocks = blocks.SetItem(blocks.Length - 1, last with { Runs = Paragraph.Normalize(last.Runs.Concat(
+                suffix.Select(run => run with { Style = Rebase(run.Style, at.Paragraph, last) }))) });
         }
         else
         {
@@ -250,7 +277,8 @@ internal static class DocumentFragments
                     cell with { Blocks = Replace(cell.Blocks) }).ToImmutableArray()).ToImmutableArray() }],
                 _ => [block]
             }).ToImmutableArray();
-        var result = destination with { Blocks = Replace(destination.Blocks), Resources = fragment.Resources };
+        var result = destination with { Blocks = Replace(destination.Blocks), Resources = fragment.Resources,
+            Styles = fragment.Styles, Fonts = fragment.Fonts };
         result.Validate();
         return (result, new DocumentIndex(result).ById(caretParagraph).Start + caretLocal);
     }

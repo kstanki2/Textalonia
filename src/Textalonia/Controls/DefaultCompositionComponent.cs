@@ -59,7 +59,9 @@ public class DefaultCompositionComponent : DocumentInputComponent, ICompositionC
         {
             var preview = new Editing.EditorSession(Context.Editor.Document);
             preview.Select(Context.Session.Selection.Anchor, Context.Session.Selection.Active);
-            preview.ApplyStyle(_ => Context.Session.TypingStyle with { Underline = true });
+            var paragraph = Context.Session.Index.At(Context.Session.Selection.Active).Paragraph;
+            var typing = new DocumentStyleResolver(Context.Session.Document).ResolveText(paragraph, Context.Session.TypingStyle);
+            preview.ApplyStyle(_ => typing with { Underline = true, UnderlineKind = UnderlineKind.None });
             preview.InsertText(_preedit);
             PreviewDocument = preview.Document;
             _baseDocument = Context.Editor.Document;

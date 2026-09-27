@@ -2,8 +2,12 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **proposed implementation plan; features below are not implemented
-by this document**.
+candidate. Status: **implementation plan; DX-01 implementation and qualification
+status is recorded below. Other workstreams remain proposed unless explicitly noted.**
+
+The audit tables in sections 2-3 describe the baseline commit above; the DX-01
+implementation entry and [style guide](STYLES.md) supersede those baseline findings
+for delivered style/typography capabilities.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -190,6 +194,14 @@ retention and schema round trips. Fuzz sequences must detect detached anchors an
 duplicate IDs, including IDs in covered cells and restoration backups.
 
 ### DX-01 — Styles, typography, tabs and document themes
+
+**Implementation status (2026-09-27):** named style catalog/resolution, sparse
+overrides, theme references, document fonts, editing commands/dialogs, flow typography
+and tab shaping, native v5/v4 reading, XAML/clipboard and DOCX mappings are implemented.
+See [STYLES.md](STYLES.md) for the public contract and format boundaries. Page/keep/
+widow and grid metadata are stored for DX-02. PDF geometry qualification depends on
+DX-04; native UI and external Word/DevExpress comparisons remain DX-14 evidence gates.
+The model and flow implementation do not close those separate milestones.
 
 **Priority: foundation/core. Size: L. Dependencies: DX-00 contracts.**
 

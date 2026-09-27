@@ -10,6 +10,10 @@ public sealed record FlowDocument
     private SnapshotArray<Block> _blocks = SnapshotArray<Block>.From([new Paragraph()]);
     public ImmutableArray<Block> Blocks { get => _blocks.Read(); init => _blocks = SnapshotArray<Block>.From(value); }
     public ImmutableDictionary<string, DocumentResource> Resources { get; init; } = ImmutableDictionary<string, DocumentResource>.Empty;
+    public ImmutableArray<DocumentFontDefinition> Fonts { get; init; } = [];
+    public DocumentStyleCatalog Styles { get; init; } = new();
+    public DocumentDefaults Defaults { get; init; } = new();
+    public DocumentTheme Theme { get; init; } = new();
     internal FlowDocument WithChildren(StorageTree<OrderKey, DocumentNode>? children) => this with
     { _blocks = new(() => children!.Items().Select(p => (Block)p.Value.Source!).ToImmutableArray()) };
     public FlowDocument() { }
@@ -50,6 +54,7 @@ public sealed record FlowDocument
                 }
         }
         Visit(Blocks);
+        foreach (var font in Fonts) used.Add(font.ResourceId);
         var resources = Resources.RemoveRange(Resources.Keys.Where(key => !used.Contains(key)));
         return ReferenceEquals(resources, Resources) ? this : this with { Resources = resources };
     }
@@ -100,6 +105,9 @@ public sealed record FlowDocument
             resourceBytes += resource.Value.Data.Length;
         }
         if (resourceBytes > DocumentResource.MaximumDocumentEmbeddedBytes) throw new FormatException("Document embedded resources exceed the size limit.");
+        DocumentStyleValidation.Validate(this);
+        DocumentFontValidation.Validate(this);
+        var resolver = new DocumentStyleResolver(this);
         var ids = new HashSet<Guid>();
         var count = 0;
         void Identify(Guid id)
@@ -109,6 +117,8 @@ public sealed record FlowDocument
         }
         void ValidateTextStyle(TextStyle style)
         {
+            DocumentStyleValidation.Text(style, this);
+            if (style.Overrides is { } overrides) DocumentStyleValidation.Text(overrides.Apply(TextStyle.Default), this);
             if (!double.IsFinite(style.FontSize) || style.FontSize is < 1 or > 512)
                 throw new FormatException("Font size must be between 1 and 512.");
             if (style.FontWeight is < 1 or > 1000 || style.FontStretch is < 1 or > 9)
@@ -131,6 +141,11 @@ public sealed record FlowDocument
                         if (p.Runs.IsDefault || p.Style is null || p.DefaultStyle is null)
                             throw new FormatException("Invalid paragraph.");
                         ValidateTextStyle(p.DefaultStyle);
+                        DocumentStyleValidation.Text(resolver.ResolveText(p, p.DefaultStyle), this);
+                        DocumentStyleValidation.Paragraph(p.Style, this);
+                        if (p.Style.Overrides is { } paragraphOverrides)
+                            DocumentStyleValidation.Paragraph(paragraphOverrides.Apply(ParagraphStyle.Default), this);
+                        DocumentStyleValidation.Paragraph(resolver.ResolveParagraphStyle(p.Style), this);
                         ListNumbering.ValidateStyle(p.Style);
                         if (!Enum.IsDefined(p.Style.Alignment) || !Enum.IsDefined(p.Style.List) ||
                             p.Style.HeadingLevel is < 0 or > 6 || p.Style.ListLevel is < 0 or > 8 ||
@@ -147,6 +162,7 @@ public sealed record FlowDocument
                             if (run is null || run.Style is null || run.Text is null || run.Text.Contains('\n') || run.Text.Contains('\r'))
                                 throw new FormatException("Paragraph runs cannot contain hard paragraph breaks.");
                             ValidateTextStyle(run.Style);
+                            DocumentStyleValidation.Text(resolver.ResolveText(p, run.Style), this);
                             if (run.Inline is { } inline) { inline.Validate(); Identify(inline.Id); }
                         }
                         break;
@@ -161,6 +177,8 @@ public sealed record FlowDocument
                         Visit(s.Blocks, depth + 1);
                         break;
                     case Table t:
+                        DocumentStyleCatalog.Reference(Styles.Tables, t.StyleId);
+                        DocumentStyleValidation.Table(resolver.ResolveTableStyle(t));
                         if (t.Rows.IsDefaultOrEmpty || t.Rows.Length > 1000 || t.ColumnCount is < 1 or > 100 ||
                             t.Rows.Any(row => row.IsDefault || row.Length != t.ColumnCount))
                             throw new FormatException("Tables must have a rectangular cell grid.");

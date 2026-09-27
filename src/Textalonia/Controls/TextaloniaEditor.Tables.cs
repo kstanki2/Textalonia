@@ -32,6 +32,7 @@ public partial class TextaloniaEditor
             if (_cellSelection is not { } selected || FindTable(selected.TableId) is not { } table ||
                 selected.Row + selected.RowCount > table.Rows.Length || selected.Column + selected.ColumnCount > table.ColumnCount) return Session.FormattingState;
             var text = new List<TextStyle>(); var paragraphs = new List<ParagraphStyle>();
+            var resolver = new DocumentStyleResolver(Session.Document);
             for (var row = selected.Row; row < selected.Row + selected.RowCount; row++)
                 for (var column = selected.Column; column < selected.Column + selected.ColumnCount; column++)
                 {
@@ -41,9 +42,9 @@ public partial class TextaloniaEditor
                     foreach (var entry in Session.Index.Enumerate(location.Start, Math.Min(end, Session.Index.Length)))
                     {
                         if (entry.Start >= end) break;
-                        paragraphs.Add(entry.Paragraph.Style);
-                        if (entry.Paragraph.Runs.IsEmpty) text.Add(entry.Paragraph.DefaultStyle);
-                        else text.AddRange(entry.Paragraph.Runs.Select(run => run.Style));
+                        paragraphs.Add(resolver.ResolveParagraphStyle(entry.Paragraph.Style));
+                        if (entry.Paragraph.Runs.IsEmpty) text.Add(resolver.ResolveText(entry.Paragraph, entry.Paragraph.DefaultStyle));
+                        else text.AddRange(entry.Paragraph.Runs.Select(run => resolver.ResolveText(entry.Paragraph, run.Style)));
                     }
                 }
             return new(text, paragraphs);
@@ -57,12 +58,26 @@ public partial class TextaloniaEditor
         return table.SetCell(row, column, cell with { Blocks = blocks });
     });
     private void ApplySelectedTextStyle(Func<TextStyle, TextStyle> change) => FormatSelectedCellParagraphs(paragraph =>
-        paragraph.Format(0, paragraph.Length, change) with { DefaultStyle = change(paragraph.DefaultStyle) });
+        paragraph.Format(0, paragraph.Length, value => ChangeCellTextStyle(paragraph, value, change)) with
+        { DefaultStyle = ChangeCellTextStyle(paragraph, paragraph.DefaultStyle, change) });
     public void ApplyParagraphStyle(Func<ParagraphStyle, ParagraphStyle> change)
     {
         ArgumentNullException.ThrowIfNull(change);
         if (_cellSelection is null) Session.ApplyParagraphStyle(change);
-        else FormatSelectedCellParagraphs(paragraph => paragraph with { Style = change(paragraph.Style) });
+        else FormatSelectedCellParagraphs(paragraph =>
+        {
+            var effective = new DocumentStyleResolver(Session.Document).ResolveParagraphStyle(paragraph.Style);
+            var changed = change(effective);
+            return paragraph with { Style = paragraph.Style.Overrides is null ? changed : paragraph.Style with
+            { Overrides = ParagraphStyleOverrides.Difference(effective, changed, paragraph.Style.Overrides) } };
+        });
+    }
+    private TextStyle ChangeCellTextStyle(Paragraph paragraph, TextStyle stored, Func<TextStyle, TextStyle> change)
+    {
+        var effective = new DocumentStyleResolver(Session.Document).ResolveText(paragraph, stored);
+        var changed = change(effective);
+        return stored.Overrides is null ? changed : stored with
+        { Overrides = TextStyleOverrides.Difference(effective, changed, stored.Overrides) };
     }
     private void ToggleSelectedBold()
     {
@@ -77,12 +92,12 @@ public partial class TextaloniaEditor
     private void ToggleSelectedUnderline()
     {
         var state = FormattingState.Underline; var enabled = state.IsMixed || !state.Value;
-        ApplyStyle(style => style with { Underline = enabled });
+        ApplyStyle(style => style with { Underline = enabled, UnderlineKind = UnderlineKind.None });
     }
     private void ToggleSelectedStrikethrough()
     {
         var state = FormattingState.Strikethrough; var enabled = state.IsMixed || !state.Value;
-        ApplyStyle(style => style with { Strikethrough = enabled });
+        ApplyStyle(style => style with { Strikethrough = enabled, StrikeKind = StrikeKind.None });
     }
     internal void SetSelectedHeading(int level)
     {
@@ -90,8 +105,17 @@ public partial class TextaloniaEditor
         if (level is < 0 or > 6) throw new ArgumentOutOfRangeException(nameof(level));
         var size = level switch { 1 => 32, 2 => 26, 3 => 22, 4 => 20, 5 => 18, _ => 16 };
         TextStyle Change(TextStyle style) => style with { FontSize = size, Bold = level > 0, FontWeight = null };
-        FormatSelectedCellParagraphs(paragraph => paragraph.Format(0, paragraph.Length, Change) with
-        { DefaultStyle = Change(paragraph.DefaultStyle), Style = paragraph.Style with { HeadingLevel = level, SpaceBefore = level > 0 ? 12 : 0 } });
+        FormatSelectedCellParagraphs(paragraph =>
+        {
+            var effective = new DocumentStyleResolver(Session.Document).ResolveParagraphStyle(paragraph.Style);
+            var changed = effective with { HeadingLevel = level, SpaceBefore = level > 0 ? 12 : 0 };
+            return paragraph.Format(0, paragraph.Length, value => ChangeCellTextStyle(paragraph, value, Change)) with
+            {
+                DefaultStyle = ChangeCellTextStyle(paragraph, paragraph.DefaultStyle, Change),
+                Style = paragraph.Style.Overrides is null ? changed : paragraph.Style with
+                { Overrides = ParagraphStyleOverrides.Difference(effective, changed, paragraph.Style.Overrides) }
+            };
+        });
     }
     internal void ToggleSelectedList(ListKind kind)
     {
@@ -356,10 +380,12 @@ public partial class TextaloniaEditor
     public void ContinuePreviousList()
     {
         var selected = Session.Index.At(Session.Selection.Start);
-        var previous = Session.Index.Enumerate(0, selected.Start).LastOrDefault(p => p.Start < selected.Start && p.Paragraph.Style.List != ListKind.None && p.Paragraph.Style.ListId is not null);
-        if (previous?.Paragraph.Style.ListId is not { } identity) return;
+        var resolver = new DocumentStyleResolver(Session.Document);
+        var previous = Session.Index.Enumerate(0, selected.Start).Where(p => p.Start < selected.Start)
+            .Select(p => resolver.ResolveParagraphStyle(p.Paragraph.Style)).LastOrDefault(s => s.List != ListKind.None && s.ListId is not null);
+        if (previous?.ListId is not { } identity) return;
         if (_cellSelection is null) Session.ContinueList(identity);
         else ApplyParagraphStyle(style => style with
-        { List = previous.Paragraph.Style.List, ListDefinition = previous.Paragraph.Style.ListDefinition, ListId = identity, ListRestart = false, ListStart = null });
+        { List = previous.List, ListDefinition = previous.ListDefinition, ListId = identity, ListRestart = false, ListStart = null });
     }
 }

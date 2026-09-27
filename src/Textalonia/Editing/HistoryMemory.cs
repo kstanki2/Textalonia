@@ -70,14 +70,50 @@ internal sealed class RetentionGraph
         double[] widths => 24 + widths.Length * 8L,
         TableRowSizing[] sizing => 24 + sizing.Length * 8L,
         TableCell cell => 96 + (cell.Blocks.Length + cell.MergeOriginalBlocks.Length) * 8L,
-        TextStyle => 128,
-        ParagraphStyle => 64,
+        DocumentStyleCatalog catalog => 96 + (catalog.Characters.Count + catalog.Paragraphs.Count + catalog.Tables.Count) * 64L,
+        TextStyleOverrides => 1024,
+        ParagraphStyleOverrides => 1024,
+        DocumentFontDefinition[] fonts => 24 + fonts.Length * 8L,
+        TabStop[] tabs => 24 + tabs.Length * 8L,
+        TextStyle => 320,
+        ParagraphStyle => 256,
         _ => 32
     };
     private static void VisitChildren(object value, Action<object> visit)
     {
         switch (value)
         {
+            case DocumentStyleCatalog catalog:
+                foreach (var pair in catalog.Characters) { visit(pair.Key); visit(pair.Value); }
+                foreach (var pair in catalog.Paragraphs) { visit(pair.Key); visit(pair.Value); }
+                foreach (var pair in catalog.Tables) { visit(pair.Key); visit(pair.Value); }
+                if (catalog.DefaultCharacterStyleId is { } c) visit(c);
+                if (catalog.DefaultParagraphStyleId is { } p) visit(p);
+                if (catalog.DefaultTableStyleId is { } t) visit(t);
+                break;
+            case DocumentDefaults defaults: visit(defaults.Text); visit(defaults.Paragraph); break;
+            case DocumentTheme theme:
+                if (theme.Name is not null) visit(theme.Name);
+                visit(theme.Colors); visit(theme.Fonts); break;
+            case DocumentFontDefinition[] fonts:
+                foreach (var font in fonts) visit(font);
+                break;
+            case DocumentFontDefinition font: visit(font.FamilyName); visit(font.ResourceId); break;
+            case CharacterStyleDefinition or ParagraphStyleDefinition or TableStyleDefinition or TextStyleOverrides or ParagraphStyleOverrides or TableStyleOverrides:
+                // These infrequent immutable records have only model properties. Unwrap
+                // presence values so strings/arrays retained solely by history are counted.
+                foreach (var property in value.GetType().GetProperties())
+                {
+                    var child = property.GetValue(value);
+                    if (child is null) continue;
+                    if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(StyleValue<>))
+                        child = property.PropertyType.GetProperty("Value")!.GetValue(child);
+                    if (child is ImmutableArray<TabStop> tabs && !tabs.IsDefaultOrEmpty)
+                        visit(ImmutableCollectionsMarshal.AsArray(tabs)!);
+                    else if (child is not null && !child.GetType().IsValueType) visit(child);
+                }
+                break;
+            case TabStop[] stops: foreach (var stop in stops) visit(stop); break;
             case ImmutableDictionary<string, DocumentResource> resources:
                 foreach (var item in resources) { visit(item.Key); visit(item.Value); }
                 break;
@@ -119,6 +155,12 @@ internal sealed class RetentionGraph
                 foreach (var row in sizing) visit(row);
                 break;
             case ParagraphStyle paragraph:
+                if (paragraph.StyleId is not null) visit(paragraph.StyleId);
+                if (paragraph.Overrides is not null) visit(paragraph.Overrides);
+                if (paragraph.Borders is not null) visit(paragraph.Borders);
+                if (paragraph.Shading is not null) visit(paragraph.Shading);
+                if (paragraph.EastAsianGrid is not null) visit(paragraph.EastAsianGrid);
+                if (!paragraph.TabStops.IsDefaultOrEmpty) visit(ImmutableCollectionsMarshal.AsArray(paragraph.TabStops)!);
                 if (paragraph.ListDefinition is not null) visit(paragraph.ListDefinition);
                 break;
             case ListDefinition definition:
@@ -137,7 +179,20 @@ internal sealed class RetentionGraph
             case BorderSide side:
                 if (side.Color is not null) visit(side.Color);
                 break;
+            case ThemeFontReference reference: visit(reference.Name); break;
+            case ThemeColorReference reference: visit(reference.Name); break;
             case TextStyle style:
+                if (style.StyleId is not null) visit(style.StyleId);
+                if (style.Overrides is not null) visit(style.Overrides);
+                if (style.Language is not null) visit(style.Language);
+                if (style.UnderlineColor is not null) visit(style.UnderlineColor);
+                if (style.ThemeFont is not null) visit(style.ThemeFont);
+                if (style.EastAsianThemeFont is not null) visit(style.EastAsianThemeFont);
+                if (style.ComplexScriptThemeFont is not null) visit(style.ComplexScriptThemeFont);
+                if (style.EastAsianFontFamily is not null) visit(style.EastAsianFontFamily);
+                if (style.ComplexScriptFontFamily is not null) visit(style.ComplexScriptFontFamily);
+                if (style.ThemeForeground is not null) visit(style.ThemeForeground);
+                if (style.ThemeBackground is not null) visit(style.ThemeBackground);
                 if (style.FontFamily is not null) visit(style.FontFamily);
                 if (style.Foreground is not null) visit(style.Foreground);
                 if (style.Background is not null) visit(style.Background);

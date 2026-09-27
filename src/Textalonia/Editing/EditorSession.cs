@@ -11,7 +11,9 @@ public sealed partial class EditorSession
     private sealed record State(FlowDocument Document, DocumentIndex Index, TextSelection Selection, TextStyle TypingStyle) : IRetained
     {
         public long Bytes => 80;
-        public void VisitReferences(Action<object> visit) { visit(Index.Tree); visit(Document.Resources); visit(TypingStyle); }
+        public void VisitReferences(Action<object> visit) { visit(Index.Tree); visit(Document.Resources); visit(Document.Styles); visit(Document.Defaults); visit(Document.Theme);
+            if (!Document.Fonts.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Fonts)!);
+            visit(TypingStyle); }
     }
     private readonly List<State> _undo = [];
     private readonly List<State> _redo = [];
@@ -40,7 +42,7 @@ public sealed partial class EditorSession
     public bool CanUndo => !IsReadOnly && _undo.Count > 0;
     public bool CanRedo => !IsReadOnly && _redo.Count > 0;
     public string SelectedText => Index.ReadPlainText(Selection.Start, Selection.Length);
-    public SelectionFormattingState FormattingState => new(Index, Selection, TypingStyle);
+    public SelectionFormattingState FormattingState => new(Index, Selection, TypingStyle, new(Document));
     public int Revision { get; private set; }
     public event EventHandler? Changed;
     internal DocumentEdit? LastEdit { get; private set; }
@@ -92,6 +94,7 @@ public sealed partial class EditorSession
     {
         Index = new DocumentIndex(Document); _retained.Add(Index.Tree, current: true);
         _retained.Add(Document.Resources, current: true);
+        RetainFormatting(Document, true);
         _retained.Add(TypingStyle, current: true);
     }
     public EditorSession(FlowDocument document) : this() => Load(document);
@@ -107,7 +110,8 @@ public sealed partial class EditorSession
         _retained.EnsureCapacity(index.ParagraphCount * 6 + index.Tree.UpdatedNodes * 2);
         Document = document; Index = index;
         Selection = default; _typingStyle = Index.At(0).Paragraph.StyleAt(0);
-        _retained.Add(Index.Tree, current: true); _retained.Add(Document.Resources, current: true); _retained.Add(TypingStyle, current: true);
+        _retained.Add(Index.Tree, current: true); _retained.Add(Document.Resources, current: true);
+        RetainFormatting(Document, true); _retained.Add(TypingStyle, current: true);
         BreakUndoGroup(); Revision++; LastEdit = new(Revision - 1, Revision, 0, 0, Index.Length, [], true); OnChanged();
     }
 
@@ -129,8 +133,11 @@ public sealed partial class EditorSession
         text = FlowDocument.NormalizeNewlines(text).Replace("\0", "");
         if (text.Length == 0 && Selection.IsEmpty) return;
         var style = Index.At(Selection.Start).Paragraph.Style;
-        var fragment = text.Split('\n').Select((s, i) => new Paragraph(s, TypingStyle)
-        { Style = i == 0 ? style : style with { ListRestart = false, ListStart = null } }).ToImmutableArray();
+        var fragment = text.Split('\n').Select((s, i) =>
+        {
+            if (i > 0) style = FollowingParagraphStyle(style);
+            return new Paragraph(s, TypingStyle) { Style = style };
+        }).ToImmutableArray();
         var (document, caret) = ReplaceRange(Document, Selection, fragment);
         Commit(document, new(caret, caret), coalesceTyping && Selection.IsEmpty && !text.Contains('\n'), Selection);
     }
@@ -259,7 +266,8 @@ public sealed partial class EditorSession
     {
         if (IsReadOnly) return;
         var paragraph = Index.At(Selection.Active).Paragraph;
-        if (Selection.IsEmpty && paragraph.Length == 0 && paragraph.Style.List != ListKind.None)
+        if (Selection.IsEmpty && paragraph.Length == 0 &&
+            new DocumentStyleResolver(Document).ResolveParagraphStyle(paragraph.Style).List != ListKind.None)
             ApplyParagraphStyle(ClearList);
         else InsertText("\n");
     }
@@ -268,8 +276,10 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(change);
         if (IsReadOnly) return;
-        var newStyle = change(TypingStyle);
-        new FlowDocument([new Paragraph("", newStyle)]).Validate();
+        var resolver = new DocumentStyleResolver(Document);
+        var activeParagraph = Index.At(Selection.Active).Paragraph;
+        var newStyle = ChangeTextStyle(activeParagraph, TypingStyle, change, resolver);
+        (Document with { Blocks = [new Paragraph("", newStyle)] }).Validate();
         if (Selection.IsEmpty)
         {
             Commit(Document, Selection, editedRange: Selection, typingStyle: newStyle); return;
@@ -280,7 +290,7 @@ public sealed partial class EditorSession
             var p = position.Paragraph;
             var start = Math.Max(0, selection.Start - position.Start);
             var end = Math.Min(p.Length, selection.End - position.Start);
-            return end > start ? p.Format(start, end - start, change) : p with { DefaultStyle = change(p.DefaultStyle) };
+            return end > start ? p.Format(start, end - start, s => ChangeTextStyle(p, s, change, resolver)) : p with { DefaultStyle = ChangeTextStyle(p, p.DefaultStyle, change, resolver) };
         });
         Commit(document, selection, editedRange: selection, typingStyle: newStyle);
     }
@@ -298,12 +308,12 @@ public sealed partial class EditorSession
     public void ToggleUnderline()
     {
         var value = FormattingState.Underline; var enabled = value.IsMixed || !value.Value;
-        ApplyStyle(s => s with { Underline = enabled });
+        ApplyStyle(s => s with { Underline = enabled, UnderlineKind = UnderlineKind.None });
     }
     public void ToggleStrikethrough()
     {
         var value = FormattingState.Strikethrough; var enabled = value.IsMixed || !value.Value;
-        ApplyStyle(s => s with { Strikethrough = enabled });
+        ApplyStyle(s => s with { Strikethrough = enabled, StrikeKind = StrikeKind.None });
     }
     public void ClearFormatting() => ApplyStyle(_ => TextStyle.Default);
 
@@ -311,7 +321,8 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(change);
         if (IsReadOnly) return;
-        var document = ChangeParagraphs(p => p.Paragraph with { Style = change(p.Paragraph.Style) });
+        var resolver = new DocumentStyleResolver(Document);
+        var document = ChangeParagraphs(p => p.Paragraph with { Style = ChangeParagraphStyle(p.Paragraph.Style, change, resolver) });
         Commit(document, Selection, editedRange: Selection);
     }
 
@@ -320,14 +331,16 @@ public sealed partial class EditorSession
         if (level is < 0 or > 6) throw new ArgumentOutOfRangeException(nameof(level));
         if (IsReadOnly) return;
         var size = level switch { 1 => 32, 2 => 26, 3 => 22, 4 => 20, 5 => 18, _ => 16 };
+        var resolver = new DocumentStyleResolver(Document);
         TextStyle Change(TextStyle style) => style with { FontSize = size, Bold = level > 0, FontWeight = null };
         var document = ChangeParagraphs(entry =>
         {
             var p = entry.Paragraph;
-            return p.Format(0, p.Length, Change) with
-            { Style = p.Style with { HeadingLevel = level, SpaceBefore = level > 0 ? 12 : 0 }, DefaultStyle = Change(p.DefaultStyle) };
+            return p.Format(0, p.Length, s => ChangeTextStyle(p, s, Change, resolver)) with
+            { Style = ChangeParagraphStyle(p.Style, s => s with { HeadingLevel = level, SpaceBefore = level > 0 ? 12 : 0 }, resolver),
+                DefaultStyle = ChangeTextStyle(p, p.DefaultStyle, Change, resolver) };
         });
-        Commit(document, Selection, editedRange: Selection, typingStyle: Change(TypingStyle));
+        Commit(document, Selection, editedRange: Selection, typingStyle: ChangeTextStyle(Index.At(Selection.Active).Paragraph, TypingStyle, Change, resolver));
     }
 
     public void ToggleList(ListKind kind)
@@ -364,9 +377,12 @@ public sealed partial class EditorSession
     /// <summary>Continues the specified existing list across any intervening content.</summary>
     public void ContinueList(Guid listId)
     {
-        var source = Index.Enumerate(0, Index.Length).FirstOrDefault(p => p.Paragraph.Style.ListId == listId && p.Paragraph.Style.List != ListKind.None)
+        if (IsReadOnly) return;
+        var resolver = new DocumentStyleResolver(Document);
+        var source = Index.Enumerate(0, Index.Length).Select(p => resolver.ResolveParagraphStyle(p.Paragraph.Style))
+            .FirstOrDefault(style => style.ListId == listId && style.List != ListKind.None)
             ?? throw new ArgumentException("The list identity does not exist in this document.", nameof(listId));
-        SetList(source.Paragraph.Style.List, source.Paragraph.Style.ListDefinition, listId);
+        SetList(source.List, source.ListDefinition, listId);
     }
 
     public void IndentList(int levels = 1) => ApplyParagraphStyle(s => s.List == ListKind.None ? s :
@@ -383,7 +399,7 @@ public sealed partial class EditorSession
             if (!Selection.IsEmpty && entry.Start >= Selection.End) break;
             var paragraph = change(entry);
             if (ReferenceEquals(paragraph, entry.Paragraph)) continue;
-            new FlowDocument([paragraph]).Validate();
+            (Document with { Blocks = [paragraph] }).Validate();
             replacements.Add(paragraph.Id, [paragraph]);
         }
         return Index.Tree.Rewrite(Document, replacements);
@@ -541,6 +557,9 @@ public sealed partial class EditorSession
     }
     private void Commit(FlowDocument document, TextSelection selection, bool typing = false, TextSelection? editedRange = null, TextStyle? typingStyle = null)
     {
+        // Typing formatting can own a named reference even when no run uses it yet.
+        // Check before changing history or document roots, including application edits.
+        DocumentStyleCatalog.Reference(document.Styles.Characters, (typingStyle ?? TypingStyle).StyleId);
         var oldLength = Index.Length;
         var changed = editedRange is { } range ? Index.Enumerate(range.Start, range.End).Select(p => p.Paragraph.Id).ToArray() : [];
         var now = Timestamp();
@@ -601,9 +620,17 @@ public sealed partial class EditorSession
     {
         _retained.Add(index.Tree, current: true);
         _retained.Add(document.Resources, current: true);
+        RetainFormatting(document, true);
         _retained.Remove(Index.Tree, current: true);
         _retained.Remove(Document.Resources, current: true);
+        RetainFormatting(Document, false);
         Document = document; Index = index;
+    }
+    private void RetainFormatting(FlowDocument document, bool add)
+    {
+        void Change(object value) { if (add) _retained.Add(value, current: true); else _retained.Remove(value, current: true); }
+        Change(document.Styles); Change(document.Defaults); Change(document.Theme);
+        if (!document.Fonts.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Fonts)!);
     }
     private void ClearRedo()
     { foreach (var state in _redo) _retained.Remove(state); _redo.Clear(); }
@@ -615,7 +642,7 @@ public sealed partial class EditorSession
         var index = new DocumentIndex(document);
         if (selection.Start == 0 && selection.End == index.Length && !selection.IsEmpty)
         {
-            var replacement = new FlowDocument(fragment.Select(p => p with { Id = Guid.NewGuid() })) { Resources = document.Resources };
+            var replacement = document with { Blocks = fragment.Select(p => (Block)(p with { Id = Guid.NewGuid() })).ToImmutableArray() };
             return (replacement, new DocumentIndex(replacement).Length);
         }
         var first = index.At(selection.Start);

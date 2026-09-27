@@ -70,6 +70,10 @@ public class TextaloniaToolbar : WrapPanel
         AddFlyout("Highlight", "Text highlight", Palette(true));
         AddFlyout("Typography", "Typography and spacing", TypographyMenu());
         AddFlyout("Paragraph", "Paragraph formatting", ParagraphMenu());
+        DialogButton("Styles", "Create, edit or apply named styles", editor.ShowStylesDialogAsync);
+        DialogButton("Font…", "Font dialog", editor.ShowFontDialogAsync);
+        DialogButton("Paragraph…", "Paragraph dialog", editor.ShowParagraphDialogAsync);
+        DialogButton("Tabs…", "Tabs dialog", editor.ShowTabsDialogAsync);
         AddFlyout("Insert", "Insert link or table", InsertMenu());
         AddMergeFieldFlyout();
         ActionButton("Clear", "Clear character formatting", () => editor.ApplyStyle(_ => TextStyle.Default));
@@ -99,6 +103,12 @@ public class TextaloniaToolbar : WrapPanel
         var button = MakeButton(text, name);
         button.Click += (_, _) => Editor?.Run(action);
         Children.Add(button); _editingControls.Add(button); return button;
+    }
+    private void DialogButton(string text, string name, Func<Task<bool>> show)
+    {
+        var button = MakeButton(text, name);
+        button.Click += async (_, _) => await show();
+        Children.Add(button); _editingControls.Add(button);
     }
     private static Button MakeButton(string text, string name)
     {

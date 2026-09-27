@@ -81,6 +81,8 @@ internal sealed class DocumentNode(object? source, StorageTree<OrderKey, Documen
     }
     internal static void VisitTableSizing(Table table, Action<object> visit)
     {
+        if (table.StyleId is not null) visit(table.StyleId);
+        if (table.StyleOverrides is not null) visit(table.StyleOverrides);
         if (!table.ColumnWidths.IsDefaultOrEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(table.ColumnWidths)!);
         if (!table.RowSizing.IsDefaultOrEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(table.RowSizing)!);
     }

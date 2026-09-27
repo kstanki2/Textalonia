@@ -72,6 +72,27 @@ type Textalonia.Controls.DefaultPointerComponent : Textalonia.Controls.DocumentI
   method public System.Void PointerMoved(Avalonia.Input.PointerEventArgs e) virtual
   method public System.Void PointerPressed(Avalonia.Input.PointerPressedEventArgs e) virtual
   method public System.Void PointerReleased(Avalonia.Input.PointerReleasedEventArgs e) virtual
+type Textalonia.Controls.DocumentFontDiagnostic : System.Object sealed
+  interface System.IEquatable<Textalonia.Controls.DocumentFontDiagnostic>
+  ctor public (System.String Code, System.String FamilyName, System.String SubstituteFamily, System.String Message)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Controls.DocumentFontDiagnostic other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Code, System.String& FamilyName, System.String& SubstituteFamily, System.String& Message)
+  method public Textalonia.Controls.DocumentFontDiagnostic <Clone>$()
+  property System.String Code { public get; public set; }
+  property System.String FamilyName { public get; public set; }
+  property System.String Message { public get; public set; }
+  property System.String SubstituteFamily { public get; public set; }
+type Textalonia.Controls.DocumentFontService : System.Object sealed
+  interface System.IDisposable
+  ctor public (Textalonia.Model.FlowDocument document, Avalonia.Media.FontFamily fallback, System.Boolean forEditing = True)
+  method public Avalonia.Media.FontFamily Resolve(System.String familyName)
+  method public Avalonia.Media.FontFamily Resolve(Textalonia.Model.TextStyle style)
+  method public System.Void Dispose() virtual
+  property System.Boolean HasEmbeddedFonts { public get; }
+  property System.Collections.Generic.IReadOnlyList<Textalonia.Controls.DocumentFontDiagnostic> Diagnostics { public get; }
 type Textalonia.Controls.DocumentInputComponent : System.Object abstract
   interface Textalonia.Controls.IDocumentInputComponent
   ctor protected ()
@@ -409,8 +430,14 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Threading.Tasks.Task LoadAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task PasteAsync()
   method public System.Threading.Tasks.Task SaveAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, System.Threading.CancellationToken cancellationToken = )
+  method public System.Threading.Tasks.Task<System.Boolean> ShowFontDialogAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowParagraphDialogAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowStylesDialogAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowTabsDialogAsync()
   method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult> LoadWithReportAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentSaveResult> SaveWithReportAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = )
+  method public System.Void ApplyNamedCharacterStyle(System.String id, System.Boolean clearDirectFormatting = True)
+  method public System.Void ApplyNamedParagraphStyle(System.String id, System.Boolean clearDirectFormatting = True)
   method public System.Void ApplyParagraphStyle(System.Func<Textalonia.Model.ParagraphStyle,Textalonia.Model.ParagraphStyle> change)
   method public System.Void ApplyStyle(System.Func<Textalonia.Model.TextStyle,Textalonia.Model.TextStyle> change)
   method public System.Void CancelTableResize()
@@ -450,6 +477,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property System.Boolean IsResizingTable { public get; }
   property System.Boolean ShowToolbar { public get; public set; }
   property System.Boolean SynchronizeText { public get; public set; }
+  property System.Collections.Generic.IReadOnlyList<Textalonia.Controls.DocumentFontDiagnostic> FontDiagnostics { public get; }
   property System.Collections.ObjectModel.ObservableCollection<Textalonia.Controls.TextHighlight> Highlights { public get; }
   property System.Exception LastError { public get; }
   property System.Int32 MaxShapingCharacters { public get; public set; }
@@ -533,7 +561,7 @@ type Textalonia.Controls.TextaloniaViewer : Textalonia.Controls.TextaloniaEditor
 type Textalonia.Editing.DocumentFragment : System.Object sealed
   interface System.IEquatable<Textalonia.Editing.DocumentFragment>
   ctor public ()
-  field System.Int32 CurrentVersion static = 1
+  field System.Int32 CurrentVersion static = 2
   method public System.Boolean Equals(System.Object obj) virtual
   method public System.Boolean Equals(Textalonia.Editing.DocumentFragment other) virtual
   method public System.Int32 GetHashCode() virtual
@@ -568,9 +596,13 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Int32 PreviousWord(System.Int32 position)
   method public System.Int32 ReplaceAll(System.String query, System.String replacement, System.Boolean matchCase = False)
   method public System.Nullable<System.ValueTuple<Textalonia.Model.Table,System.Int32,System.Int32>> CurrentCell()
+  method public System.Void ApplyNamedCharacterStyle(System.String id, System.Boolean clearDirectFormatting = True)
+  method public System.Void ApplyNamedParagraphStyle(System.String id, System.Boolean clearDirectFormatting = True)
   method public System.Void ApplyParagraphStyle(System.Func<Textalonia.Model.ParagraphStyle,Textalonia.Model.ParagraphStyle> change)
   method public System.Void ApplyStyle(System.Func<Textalonia.Model.TextStyle,Textalonia.Model.TextStyle> change)
   method public System.Void BreakUndoGroup()
+  method public System.Void ChangeParagraphOverrides(System.Func<Textalonia.Model.ParagraphStyleOverrides,Textalonia.Model.ParagraphStyleOverrides> change)
+  method public System.Void ChangeTextOverrides(System.Func<Textalonia.Model.TextStyleOverrides,Textalonia.Model.TextStyleOverrides> change)
   method public System.Void ClearFormatting()
   method public System.Void ContinueList(System.Guid listId)
   method public System.Void DeleteBackward(System.Boolean word = False)
@@ -590,8 +622,11 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Void RestartList(System.Int32 start = 1)
   method public System.Void Select(System.Int32 anchor, System.Int32 active)
   method public System.Void SelectAll()
+  method public System.Void SetDefaults(Textalonia.Model.DocumentDefaults defaults)
   method public System.Void SetHeading(System.Int32 level)
   method public System.Void SetList(Textalonia.Model.ListKind kind, Textalonia.Model.ListDefinition definition = , System.Nullable<System.Guid> listId = )
+  method public System.Void SetStyles(Textalonia.Model.DocumentStyleCatalog styles)
+  method public System.Void SetTheme(Textalonia.Model.DocumentTheme theme)
   method public System.Void ToggleBold()
   method public System.Void ToggleItalic()
   method public System.Void ToggleList(Textalonia.Model.ListKind kind)
@@ -731,6 +766,19 @@ type Textalonia.Model.BorderSide : System.Object sealed
   method public Textalonia.Model.BorderSide <Clone>$()
   property System.Double Width { public get; public set; }
   property System.String Color { public get; public set; }
+type Textalonia.Model.CharacterStyleDefinition : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.CharacterStyleDefinition>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.CharacterStyleDefinition other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.CharacterStyleDefinition <Clone>$()
+  property System.String BasedOn { public get; public set; }
+  property System.String Id { public get; public set; }
+  property System.String LinkedStyle { public get; public set; }
+  property System.String Name { public get; public set; }
+  property Textalonia.Model.TextStyleOverrides Formatting { public get; public set; }
 type Textalonia.Model.ControlInlinePayload : Textalonia.Model.InlinePayload sealed
   interface System.IEquatable<Textalonia.Model.ControlInlinePayload>
   interface System.IEquatable<Textalonia.Model.InlinePayload>
@@ -746,6 +794,31 @@ type Textalonia.Model.ControlInlinePayload : Textalonia.Model.InlinePayload seal
   property System.Collections.Immutable.ImmutableDictionary<System.String,System.String> Properties { public get; public set; }
   property System.String Type { public get; public set; }
   property System.Type EqualityContract { protected get; }
+type Textalonia.Model.DocumentDefaults : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentDefaults>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentDefaults other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentDefaults <Clone>$()
+  property Textalonia.Model.ParagraphStyle Paragraph { public get; public set; }
+  property Textalonia.Model.TextStyle Text { public get; public set; }
+type Textalonia.Model.DocumentFontDefinition : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentFontDefinition>
+  ctor public (System.String FamilyName, System.String ResourceId)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentFontDefinition other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& FamilyName, System.String& ResourceId)
+  method public Textalonia.Model.DocumentFontDefinition <Clone>$()
+  property System.Boolean IsSubset { public get; public set; }
+  property System.Boolean Italic { public get; public set; }
+  property System.Int32 Weight { public get; public set; }
+  property System.Nullable<Textalonia.Model.FontEmbeddingRights> EmbeddingRights { public get; public set; }
+  property System.String FamilyName { public get; public set; }
+  property System.String ResourceId { public get; public set; }
 type Textalonia.Model.DocumentIndex : System.Object sealed
   ctor public (Textalonia.Model.FlowDocument document)
   method public System.Char CharAt(System.Int32 offset)
@@ -779,6 +852,50 @@ type Textalonia.Model.DocumentResourceKind : System.Enum sealed
   field Textalonia.Model.DocumentResourceKind Embedded static = 0
   field Textalonia.Model.DocumentResourceKind Host static = 2
   field Textalonia.Model.DocumentResourceKind Local static = 1
+type Textalonia.Model.DocumentStyleCatalog : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentStyleCatalog>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentStyleCatalog other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Validate()
+  method public Textalonia.Model.DocumentStyleCatalog <Clone>$()
+  property System.Collections.Immutable.ImmutableDictionary<System.String,Textalonia.Model.CharacterStyleDefinition> Characters { public get; public set; }
+  property System.Collections.Immutable.ImmutableDictionary<System.String,Textalonia.Model.ParagraphStyleDefinition> Paragraphs { public get; public set; }
+  property System.Collections.Immutable.ImmutableDictionary<System.String,Textalonia.Model.TableStyleDefinition> Tables { public get; public set; }
+  property System.String DefaultCharacterStyleId { public get; public set; }
+  property System.String DefaultParagraphStyleId { public get; public set; }
+  property System.String DefaultTableStyleId { public get; public set; }
+type Textalonia.Model.DocumentStyleResolver : System.Object sealed
+  ctor public (Textalonia.Model.FlowDocument document)
+  method public Textalonia.Model.FlowDocument ResolveDocument()
+  method public Textalonia.Model.Paragraph ResolveParagraph(Textalonia.Model.Paragraph paragraph)
+  method public Textalonia.Model.ParagraphStyle ResolveParagraphStyle(Textalonia.Model.ParagraphStyle style)
+  method public Textalonia.Model.TableStyle ResolveTableStyle(Textalonia.Model.Table table)
+  method public Textalonia.Model.TextStyle ResolveText(Textalonia.Model.Paragraph paragraph, Textalonia.Model.TextStyle style)
+type Textalonia.Model.DocumentTheme : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentTheme>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentTheme other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentTheme <Clone>$()
+  property System.Collections.Immutable.ImmutableDictionary<System.String,System.String> Colors { public get; public set; }
+  property System.Collections.Immutable.ImmutableDictionary<System.String,System.String> Fonts { public get; public set; }
+  property System.String Name { public get; public set; }
+type Textalonia.Model.EastAsianGrid : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.EastAsianGrid>
+  ctor public (System.Double CharacterSpacing = 0, System.Double LineSpacing = 0)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.EastAsianGrid other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Double& CharacterSpacing, System.Double& LineSpacing)
+  method public Textalonia.Model.EastAsianGrid <Clone>$()
+  property System.Double CharacterSpacing { public get; public set; }
+  property System.Double LineSpacing { public get; public set; }
 type Textalonia.Model.EdgeInsets : System.Object sealed
   interface System.IEquatable<Textalonia.Model.EdgeInsets>
   ctor public (System.Double Left = 0, System.Double Top = 0, System.Double Right = 0, System.Double Bottom = 0)
@@ -810,9 +927,28 @@ type Textalonia.Model.FlowDocument : System.Object sealed
   method public static System.Void ValidateColor(System.String color)
   method public static Textalonia.Model.FlowDocument FromText(System.String text, Textalonia.Model.TextStyle style = )
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.Block> Blocks { public get; public set; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentFontDefinition> Fonts { public get; public set; }
   property System.Collections.Immutable.ImmutableDictionary<System.String,Textalonia.Model.DocumentResource> Resources { public get; public set; }
   property System.String PlainText { public get; }
   property System.String Text { public get; }
+  property Textalonia.Model.DocumentDefaults Defaults { public get; public set; }
+  property Textalonia.Model.DocumentStyleCatalog Styles { public get; public set; }
+  property Textalonia.Model.DocumentTheme Theme { public get; public set; }
+type Textalonia.Model.FontEmbeddingPolicy : System.Object sealed abstract
+  method public static System.Boolean CanEmbed(System.Nullable<Textalonia.Model.FontEmbeddingRights> rights, System.Boolean forEditing = True)
+  method public static System.Nullable<Textalonia.Model.FontEmbeddingRights> ReadRights(System.ReadOnlySpan<System.Byte> data)
+type Textalonia.Model.FontEmbeddingRights : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.FontEmbeddingRights BitmapOnly static = 512
+  field Textalonia.Model.FontEmbeddingRights Editable static = 8
+  field Textalonia.Model.FontEmbeddingRights Installable static = 0
+  field Textalonia.Model.FontEmbeddingRights NoSubsetting static = 256
+  field Textalonia.Model.FontEmbeddingRights PreviewAndPrint static = 4
+  field Textalonia.Model.FontEmbeddingRights Restricted static = 2
 type Textalonia.Model.ImageInlinePayload : Textalonia.Model.InlinePayload sealed
   interface System.IEquatable<Textalonia.Model.ImageInlinePayload>
   interface System.IEquatable<Textalonia.Model.InlinePayload>
@@ -856,6 +992,16 @@ type Textalonia.Model.InlinePayload : System.Object abstract
   method public System.String ToString() virtual
   method public Textalonia.Model.InlinePayload <Clone>$() virtual
   property System.Type EqualityContract { protected get; }
+type Textalonia.Model.LineSpacingMode : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.LineSpacingMode AtLeast static = 3
+  field Textalonia.Model.LineSpacingMode Exact static = 2
+  field Textalonia.Model.LineSpacingMode Multiple static = 1
+  field Textalonia.Model.LineSpacingMode Natural static = 0
 type Textalonia.Model.ListDefinition : System.Object sealed
   interface System.IEquatable<Textalonia.Model.ListDefinition>
   ctor public ()
@@ -991,23 +1137,97 @@ type Textalonia.Model.ParagraphStyle : System.Object sealed
   method public System.Int32 GetHashCode() virtual
   method public System.String ToString() virtual
   method public Textalonia.Model.ParagraphStyle <Clone>$()
+  method public static Textalonia.Model.ParagraphStyle ForStyle(System.String id)
+  property System.Boolean ContextualSpacing { public get; public set; }
+  property System.Boolean KeepTogether { public get; public set; }
+  property System.Boolean KeepWithNext { public get; public set; }
   property System.Boolean ListRestart { public get; public set; }
+  property System.Boolean PageBreakBefore { public get; public set; }
   property System.Boolean RightToLeft { public get; public set; }
+  property System.Boolean SnapToGrid { public get; public set; }
+  property System.Boolean WidowControl { public get; public set; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Model.TabStop> TabStops { public get; public set; }
+  property System.Double DefaultTabWidth { public get; public set; }
   property System.Double FirstLineIndent { public get; public set; }
   property System.Double Indent { public get; public set; }
   property System.Double LetterSpacing { public get; public set; }
+  property System.Double LineSpacing { public get; public set; }
   property System.Double RightIndent { public get; public set; }
   property System.Double SpaceAfter { public get; public set; }
   property System.Double SpaceBefore { public get; public set; }
   property System.Int32 HeadingLevel { public get; public set; }
   property System.Int32 ListLevel { public get; public set; }
+  property System.Int32 OutlineLevel { public get; public set; }
   property System.Nullable<System.Double> LineHeight { public get; public set; }
   property System.Nullable<System.Guid> ListId { public get; public set; }
   property System.Nullable<System.Int32> ListStart { public get; public set; }
+  property System.String Shading { public get; public set; }
+  property System.String StyleId { public get; public set; }
+  property Textalonia.Model.BlockBorders Borders { public get; public set; }
+  property Textalonia.Model.EastAsianGrid EastAsianGrid { public get; public set; }
+  property Textalonia.Model.LineSpacingMode LineSpacingMode { public get; public set; }
   property Textalonia.Model.ListDefinition ListDefinition { public get; public set; }
   property Textalonia.Model.ListKind List { public get; public set; }
   property Textalonia.Model.ParagraphAlignment Alignment { public get; public set; }
   property Textalonia.Model.ParagraphStyle Default { public static get; }
+  property Textalonia.Model.ParagraphStyleOverrides Overrides { public get; public set; }
+type Textalonia.Model.ParagraphStyleDefinition : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.ParagraphStyleDefinition>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.ParagraphStyleDefinition other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.ParagraphStyleDefinition <Clone>$()
+  property System.String BasedOn { public get; public set; }
+  property System.String Id { public get; public set; }
+  property System.String LinkedStyle { public get; public set; }
+  property System.String Name { public get; public set; }
+  property System.String NextStyle { public get; public set; }
+  property Textalonia.Model.ParagraphStyleOverrides Formatting { public get; public set; }
+  property Textalonia.Model.TextStyleOverrides TextFormatting { public get; public set; }
+type Textalonia.Model.ParagraphStyleOverrides : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.ParagraphStyleOverrides>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.ParagraphStyleOverrides other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.ParagraphStyle Apply(Textalonia.Model.ParagraphStyle value)
+  method public Textalonia.Model.ParagraphStyleOverrides <Clone>$()
+  method public Textalonia.Model.ParagraphStyleOverrides Clear(System.String propertyName)
+  method public static Textalonia.Model.ParagraphStyleOverrides Difference(Textalonia.Model.ParagraphStyle before, Textalonia.Model.ParagraphStyle after, Textalonia.Model.ParagraphStyleOverrides basis = )
+  method public static Textalonia.Model.ParagraphStyleOverrides FromStyle(Textalonia.Model.ParagraphStyle style)
+  property Textalonia.Model.StyleValue<System.Boolean> ContextualSpacing { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> KeepTogether { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> KeepWithNext { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> ListRestart { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> PageBreakBefore { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> RightToLeft { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> SnapToGrid { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> WidowControl { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Collections.Immutable.ImmutableArray<Textalonia.Model.TabStop>> TabStops { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> DefaultTabWidth { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> FirstLineIndent { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> Indent { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> LetterSpacing { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> LineSpacing { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> RightIndent { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> SpaceAfter { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> SpaceBefore { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Int32> HeadingLevel { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Int32> ListLevel { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Int32> OutlineLevel { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Nullable<System.Double>> LineHeight { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Nullable<System.Guid>> ListId { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Nullable<System.Int32>> ListStart { public get; public set; }
+  property Textalonia.Model.StyleValue<System.String> Shading { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.BlockBorders> Borders { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.EastAsianGrid> EastAsianGrid { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.LineSpacingMode> LineSpacingMode { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.ListDefinition> ListDefinition { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.ListKind> List { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.ParagraphAlignment> Alignment { public get; public set; }
 type Textalonia.Model.RichRun : System.Object sealed
   interface System.IEquatable<Textalonia.Model.RichRun>
   ctor public (System.String Text, Textalonia.Model.TextStyle Style)
@@ -1052,6 +1272,58 @@ type Textalonia.Model.SectionSemantic : System.Enum sealed
   field Textalonia.Model.SectionSemantic CodeBlock static = 2
   field Textalonia.Model.SectionSemantic None static = 0
   field Textalonia.Model.SectionSemantic Quote static = 1
+type Textalonia.Model.StrikeKind : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.StrikeKind Double static = 2
+  field Textalonia.Model.StrikeKind None static = 0
+  field Textalonia.Model.StrikeKind Single static = 1
+type Textalonia.Model.StyleValue<T> : System.ValueType sealed
+  interface System.IEquatable<Textalonia.Model.StyleValue<T>>
+  ctor public (System.Boolean isSet, T value)
+  ctor public (T value)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.StyleValue<T> other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  property System.Boolean IsSet { public get; public set; }
+  property T Value { public get; public set; }
+type Textalonia.Model.TabAlignment : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.TabAlignment Center static = 1
+  field Textalonia.Model.TabAlignment Decimal static = 3
+  field Textalonia.Model.TabAlignment Left static = 0
+  field Textalonia.Model.TabAlignment Right static = 2
+type Textalonia.Model.TabLeader : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.TabLeader Dashes static = 2
+  field Textalonia.Model.TabLeader Dots static = 1
+  field Textalonia.Model.TabLeader Line static = 3
+  field Textalonia.Model.TabLeader None static = 0
+type Textalonia.Model.TabStop : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.TabStop>
+  ctor public (System.Double Position, Textalonia.Model.TabAlignment Alignment = Left, Textalonia.Model.TabLeader Leader = None, System.Char DecimalCharacter = .)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.TabStop other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Double& Position, Textalonia.Model.TabAlignment& Alignment, Textalonia.Model.TabLeader& Leader, System.Char& DecimalCharacter)
+  method public Textalonia.Model.TabStop <Clone>$()
+  property System.Char DecimalCharacter { public get; public set; }
+  property System.Double Position { public get; public set; }
+  property Textalonia.Model.TabAlignment Alignment { public get; public set; }
+  property Textalonia.Model.TabLeader Leader { public get; public set; }
 type Textalonia.Model.Table : Textalonia.Model.Block sealed
   interface System.IEquatable<Textalonia.Model.Block>
   interface System.IEquatable<Textalonia.Model.Table>
@@ -1073,7 +1345,9 @@ type Textalonia.Model.Table : Textalonia.Model.Block sealed
   property System.Collections.Immutable.ImmutableArray<System.Double> ColumnWidths { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.TableRowSizing> RowSizing { public get; public set; }
   property System.Int32 ColumnCount { public get; }
+  property System.String StyleId { public get; public set; }
   property System.Type EqualityContract { protected get; }
+  property Textalonia.Model.TableStyleOverrides StyleOverrides { public get; public set; }
 type Textalonia.Model.TableCell : System.Object sealed
   interface System.IEquatable<Textalonia.Model.TableCell>
   ctor public ()
@@ -1116,6 +1390,41 @@ type Textalonia.Model.TableRowSizing : System.Object sealed
   method public Textalonia.Model.TableRowSizing <Clone>$()
   property System.Double Height { public get; public set; }
   property Textalonia.Model.TableRowHeightMode Mode { public get; public set; }
+type Textalonia.Model.TableStyle : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.TableStyle>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.TableStyle other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.TableStyle <Clone>$()
+  property System.String Background { public get; public set; }
+  property Textalonia.Model.BlockBorders Borders { public get; public set; }
+  property Textalonia.Model.EdgeInsets Padding { public get; public set; }
+type Textalonia.Model.TableStyleDefinition : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.TableStyleDefinition>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.TableStyleDefinition other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.TableStyleDefinition <Clone>$()
+  property System.String BasedOn { public get; public set; }
+  property System.String Id { public get; public set; }
+  property System.String Name { public get; public set; }
+  property Textalonia.Model.TableStyleOverrides Formatting { public get; public set; }
+type Textalonia.Model.TableStyleOverrides : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.TableStyleOverrides>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.TableStyleOverrides other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.TableStyle Apply(Textalonia.Model.TableStyle value)
+  method public Textalonia.Model.TableStyleOverrides <Clone>$()
+  property Textalonia.Model.StyleValue<System.String> Background { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.BlockBorders> Borders { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.EdgeInsets> Padding { public get; public set; }
 type Textalonia.Model.TextStyle : System.Object sealed
   interface System.IEquatable<Textalonia.Model.TextStyle>
   ctor public ()
@@ -1124,22 +1433,122 @@ type Textalonia.Model.TextStyle : System.Object sealed
   method public System.Int32 GetHashCode() virtual
   method public System.String ToString() virtual
   method public Textalonia.Model.TextStyle <Clone>$()
+  method public static Textalonia.Model.TextStyle ForStyle(System.String id)
+  property System.Boolean AllCaps { public get; public set; }
   property System.Boolean Bold { public get; public set; }
   property System.Boolean EffectiveBold { public get; }
   property System.Boolean IsCode { public get; public set; }
   property System.Boolean Italic { public get; public set; }
+  property System.Boolean NoProof { public get; public set; }
+  property System.Boolean SmallCaps { public get; public set; }
   property System.Boolean Strikethrough { public get; public set; }
   property System.Boolean Underline { public get; public set; }
+  property System.Boolean UnderlineWordsOnly { public get; public set; }
+  property System.Double BaselineOffset { public get; public set; }
   property System.Double FontSize { public get; public set; }
+  property System.Double HorizontalScale { public get; public set; }
+  property System.Double Tracking { public get; public set; }
   property System.Int32 EffectiveFontWeight { public get; }
   property System.Int32 FontStretch { public get; public set; }
+  property System.Nullable<System.Double> KerningThreshold { public get; public set; }
   property System.Nullable<System.Int32> FontWeight { public get; public set; }
   property System.String Background { public get; public set; }
+  property System.String ComplexScriptFontFamily { public get; public set; }
+  property System.String EastAsianFontFamily { public get; public set; }
   property System.String FontFamily { public get; public set; }
   property System.String Foreground { public get; public set; }
   property System.String Hyperlink { public get; public set; }
+  property System.String Language { public get; public set; }
+  property System.String StyleId { public get; public set; }
+  property System.String UnderlineColor { public get; public set; }
   property Textalonia.Model.Baseline Baseline { public get; public set; }
+  property Textalonia.Model.StrikeKind StrikeKind { public get; public set; }
   property Textalonia.Model.TextStyle Default { public static get; }
+  property Textalonia.Model.TextStyleOverrides Overrides { public get; public set; }
+  property Textalonia.Model.ThemeColorReference ThemeBackground { public get; public set; }
+  property Textalonia.Model.ThemeColorReference ThemeForeground { public get; public set; }
+  property Textalonia.Model.ThemeFontReference ComplexScriptThemeFont { public get; public set; }
+  property Textalonia.Model.ThemeFontReference EastAsianThemeFont { public get; public set; }
+  property Textalonia.Model.ThemeFontReference ThemeFont { public get; public set; }
+  property Textalonia.Model.UnderlineKind UnderlineKind { public get; public set; }
+type Textalonia.Model.TextStyleOverrides : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.TextStyleOverrides>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.TextStyleOverrides other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.TextStyle Apply(Textalonia.Model.TextStyle value)
+  method public Textalonia.Model.TextStyleOverrides <Clone>$()
+  method public Textalonia.Model.TextStyleOverrides Clear(System.String propertyName)
+  method public static Textalonia.Model.TextStyleOverrides Difference(Textalonia.Model.TextStyle before, Textalonia.Model.TextStyle after, Textalonia.Model.TextStyleOverrides basis = )
+  method public static Textalonia.Model.TextStyleOverrides FromStyle(Textalonia.Model.TextStyle style)
+  property Textalonia.Model.StyleValue<System.Boolean> AllCaps { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> Bold { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> IsCode { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> Italic { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> NoProof { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> SmallCaps { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> Strikethrough { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> Underline { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Boolean> UnderlineWordsOnly { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> BaselineOffset { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> FontSize { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> HorizontalScale { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Double> Tracking { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Int32> FontStretch { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Nullable<System.Double>> KerningThreshold { public get; public set; }
+  property Textalonia.Model.StyleValue<System.Nullable<System.Int32>> FontWeight { public get; public set; }
+  property Textalonia.Model.StyleValue<System.String> Background { public get; public set; }
+  property Textalonia.Model.StyleValue<System.String> ComplexScriptFontFamily { public get; public set; }
+  property Textalonia.Model.StyleValue<System.String> EastAsianFontFamily { public get; public set; }
+  property Textalonia.Model.StyleValue<System.String> FontFamily { public get; public set; }
+  property Textalonia.Model.StyleValue<System.String> Foreground { public get; public set; }
+  property Textalonia.Model.StyleValue<System.String> Hyperlink { public get; public set; }
+  property Textalonia.Model.StyleValue<System.String> Language { public get; public set; }
+  property Textalonia.Model.StyleValue<System.String> UnderlineColor { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.Baseline> Baseline { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.StrikeKind> StrikeKind { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.ThemeColorReference> ThemeBackground { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.ThemeColorReference> ThemeForeground { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.ThemeFontReference> ComplexScriptThemeFont { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.ThemeFontReference> EastAsianThemeFont { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.ThemeFontReference> ThemeFont { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.UnderlineKind> UnderlineKind { public get; public set; }
+type Textalonia.Model.ThemeColorReference : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.ThemeColorReference>
+  ctor public (System.String Name, System.Double Tint = 0)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.ThemeColorReference other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Name, System.Double& Tint)
+  method public Textalonia.Model.ThemeColorReference <Clone>$()
+  property System.Double Tint { public get; public set; }
+  property System.String Name { public get; public set; }
+type Textalonia.Model.ThemeFontReference : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.ThemeFontReference>
+  ctor public (System.String Name)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.ThemeFontReference other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Name)
+  method public Textalonia.Model.ThemeFontReference <Clone>$()
+  property System.String Name { public get; public set; }
+type Textalonia.Model.UnderlineKind : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.UnderlineKind Dashed static = 4
+  field Textalonia.Model.UnderlineKind Dotted static = 3
+  field Textalonia.Model.UnderlineKind Double static = 2
+  field Textalonia.Model.UnderlineKind None static = 0
+  field Textalonia.Model.UnderlineKind Single static = 1
+  field Textalonia.Model.UnderlineKind Thick static = 5
+  field Textalonia.Model.UnderlineKind Wave static = 6
 type Textalonia.Serialization.ConversionDiagnostic : System.Object sealed
   interface System.IEquatable<Textalonia.Serialization.ConversionDiagnostic>
   ctor public (System.String Code, Textalonia.Serialization.ConversionDiagnosticSeverity Severity, System.String UnsupportedFeature, System.String Fallback, System.Nullable<System.Guid> ModelId = , System.String SourceLocation = )

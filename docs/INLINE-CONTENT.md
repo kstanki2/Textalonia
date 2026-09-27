@@ -54,7 +54,7 @@ history eviction; caller-held snapshots remain valid. Hosts can call
 `PruneUnusedResources` on snapshots directly. A save never requires a resolver or
 visual factory.
 
-Native JSON reads and writes only current prerelease schema v4, preserving inline
+Native JSON writes schema v5 and reads v4/v5, preserving inline
 descriptors and resources. Other versions are rejected; unused development schemas
 have no migration support. Encoded bytes are base64 and inline payload kinds are an
 explicit allowlist. Unknown members, invalid payloads and excessive resources are rejected.

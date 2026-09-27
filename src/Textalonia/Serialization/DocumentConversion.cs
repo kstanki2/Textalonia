@@ -121,7 +121,7 @@ public static class DocumentFormatExtensions
         if (format is HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or MarkdownDocumentFormat)
         {
             ReportMergeHistory(document.Blocks);
-            ReportUnusedResources(document);
+            ReportUnusedResources(document, format is DocxDocumentFormat);
         }
         if (format is PlainTextDocumentFormat) ReportPlainTextLoss(document);
         if (format is HtmlDocumentFormat or MarkdownDocumentFormat)
@@ -184,6 +184,7 @@ public static class DocumentFormatExtensions
 
     private static void ReportPlainTextLoss(FlowDocument document)
     {
+        StyleConversion.ReportLosses(DocumentFormats.PlainText, document);
         void Visit(IEnumerable<Block> blocks)
         {
             foreach (var block in blocks)
@@ -217,10 +218,11 @@ public static class DocumentFormatExtensions
         ConversionDiagnostics.Report(format + ".merge-field", "Live mail-merge field definition",
             "The field is replaced by its display text and can no longer be merged. Use native JSON, Textalonia XAML, DOCX, or RTF to retain merge fields, or merge the document before exporting.", inline.Id);
 
-    private static void ReportUnusedResources(FlowDocument document)
+    private static void ReportUnusedResources(FlowDocument document, bool includeFonts)
     {
         var visible = new HashSet<string>(new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs)
             .Select(r => r.Inline?.Payload).OfType<ImageInlinePayload>().Select(p => p.ResourceId), StringComparer.Ordinal);
+        if (includeFonts) visible.UnionWith(document.Fonts.Select(font => font.ResourceId));
         foreach (var resource in document.Resources.Keys.Order(StringComparer.Ordinal))
             if (!visible.Contains(resource))
                 ConversionDiagnostics.Report("conversion.unused-resource", "Resource without a visible image reference",

@@ -60,8 +60,8 @@ and is not a complete C# parser.
 
 ## Current native schema
 
-Native JSON reads and writes **version 4 only**. Earlier versions were unused
-development formats and have no migration support. Missing or other versions are
+Native JSON writes **version 5** and reads **versions 4 and 5**. Version 4 concrete
+formatting loads as explicit overrides. Missing or other versions are
 rejected before document decoding, and unknown members are rejected. The current
 schema includes `Section.Semantic` (`None`, `Quote`, `CodeBlock`), nullable
 `Section.CodeLanguage`, and `TextStyle.IsCode`. Their defaults are ordinary

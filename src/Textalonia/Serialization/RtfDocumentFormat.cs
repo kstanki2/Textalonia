@@ -623,6 +623,10 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
     private sealed record ExportList(int Id, ListDefinition Definition, int Start, int Level, ImmutableDictionary<int, int> Ancestors);
     public override string Serialize(FlowDocument document)
     {
+        ArgumentNullException.ThrowIfNull(document);
+        document.Validate();
+        StyleConversion.ReportLosses(this, document);
+        document = new DocumentStyleResolver(document).ResolveDocument();
         document.Validate();
         var foundSection = false;
         foreach (var block in document.Blocks)

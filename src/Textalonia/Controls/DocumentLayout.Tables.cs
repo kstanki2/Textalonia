@@ -42,7 +42,7 @@ internal sealed partial class DocumentLayout
                     var sectionInset = LayoutHeightIndex.SectionPadding(section); x += sectionInset.Left; y += sectionInset.Top;
                     break;
                 case TableCell cell:
-                    var cellInset = LayoutHeightIndex.CellPadding(cell); x += cellInset.Left; y += cellInset.Top;
+                    var cellInset = LayoutHeightIndex.CellPadding(node.Cell ?? cell); x += cellInset.Left; y += cellInset.Top;
                     break;
             }
             Branch(node.Children, x, y, clip);

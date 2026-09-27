@@ -1,8 +1,8 @@
-# Document semantics and schema v4
+# Document semantics and schema v5
 
 The document model is independent of Avalonia controls. Native JSON reads and
-writes only the current prerelease schema, version 4. Earlier versions were unused
-development formats and have no migration support. See [integration semantics](INTEGRATIONS.md)
+writes schema version 5. Version 4 remains readable and migrates concrete styles as
+explicit direct formatting. Versions 1-3 were unused development formats and have no migration support. See [integration semantics](INTEGRATIONS.md)
 for quote/code metadata and [inline content](INLINE-CONTENT.md) for descriptors,
 resources and the coordinate/export contract. The version is checked before
 interpreting the document; missing or unsupported versions fail with
@@ -14,6 +14,9 @@ Model defaults include: null explicit weight uses
 height is automatic, list identity/definitions/start are absent, restart is false,
 column widths are equal, and rows size automatically. Null container padding and
 borders use the default geometry. Current-schema fixtures exercise these contracts.
+
+See [named styles, themes and typography](STYLES.md) for the DX-01 cascade, sparse
+overrides, font ownership, dialogs and format support.
 
 ## Selection formatting
 

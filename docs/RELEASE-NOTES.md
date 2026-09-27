@@ -12,7 +12,7 @@ requires updating these notes before creating the publication candidate.
 Immutable documents and editing sessions; formatting, lists, nested/merged
 tables and undo; editor, selectable viewer and replaceable toolbar/input;
 inline image/control descriptors and host resource services; diagnosed
-text/HTML/RTF/DOCX interchange; native JSON v4; data XAML;
+text/HTML/RTF/DOCX interchange; native JSON v5 (v4 readable); data XAML;
 bounded Markdown codec/viewer and optional host highlighting. There is one shipped
 package, Textalonia. No optional integration package or desktop host is required.
 
@@ -50,8 +50,7 @@ are included in the same package. Use the independent PackageSmoke program as a
 compiling example for extension services and input replacement.
 
 Read [API contracts](API-CONTRACTS.md) before attaching mutable sessions/services
-to controls. Native JSON supports only current prerelease schema v4; other
-versions are rejected. Earlier development schemas were never published or used
+to controls. Native JSON writes schema v5 and reads v4/v5; other versions are rejected. Earlier development schemas were never published or used
 and have no migration support. Use strict conversion reports when export loss
 matters.
 
@@ -69,3 +68,16 @@ inspector records this bounded exception; other unmapped sources fail inspection
 Bit-for-bit equality across different checkout paths/OS hosts is not claimed for
 Avalonia-generated debug metadata; publication always uses the exact reviewed
 artifacts, with source/SDK/dependency identity retained for reproduction.
+
+## DX-01 styles and typography
+
+Added document-owned named character/paragraph/table styles with inheritance,
+linked/next styles, sparse direct overrides, themes and embedded-font services.
+Editing, mixed selections, layout and DOCX share effective style resolution.
+Font/paragraph/tabs/style dialogs are available from the toolbar. Advanced run
+shaping, tab stops/leaders, paragraph spacing and decorations share hit-test and
+caret geometry. Page/keep/widow and grid metadata await DX-02 pagination.
+
+Native JSON now writes v5 and reads v4/v5. XAML and clipboard retain the new model;
+DOCX retains mapped styles/themes/fonts. Other formats report flattened style
+identity and unsupported typography. See [support details](STYLES.md).

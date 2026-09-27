@@ -41,18 +41,18 @@ are covered; native screen-reader text navigation remains unqualified.
 
 ## Current native schema
 
-Native JSON reads and writes **schema v4 only**, preserving the full current
-model, including nested cells and merge backups, inline descriptors and resources,
-quote/code/language annotations, inline-code metadata, and typed merge fields. The project has not been
-published or used; v1-v3 were unused development schemas and have no migration
-support. The version marker remains 4 to identify the current format.
+Native JSON writes **schema v5** and reads **v4 and v5**. The full model includes
+named style definitions, sparse overrides, document themes/fonts, nested cells and
+merge backups, inline descriptors and resources, semantic metadata and merge fields.
+Version 4 concrete formatting remains explicit when loaded. Versions 1-3 remain
+unsupported. See [style contracts](STYLES.md).
 
 The reader checks the envelope version before interpreting document members.
 Missing or unsupported versions throw `NotSupportedException`; unknown members
 are rejected. Current-schema round trips and rejection of other versions are
-covered by tests. Prerelease schema changes do not require readers or migration
-paths for earlier development formats. Establish a compatibility policy for
-published data before making future release commitments.
+covered by tests. The v4 reader is an explicit compatibility path added for DX-01;
+versions 1-3 remain unsupported. Establish a compatibility policy for published
+data before making future release commitments.
 
 The `.textalonia`, `.json`, and `.art` extensions all select the current native
 codec. The data XAML vocabulary has its own version (1); it is neither Avalonia

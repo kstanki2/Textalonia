@@ -50,6 +50,10 @@ public sealed class MarkdownDocumentFormat : TextDocumentFormat
     {
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
+        StyleConversion.ReportLosses(this, document);
+        document = new DocumentStyleResolver(document).ResolveDocument();
+        ArgumentNullException.ThrowIfNull(document);
+        document.Validate();
         return WriteBlocks(document.Blocks, document, ListNumbering.Compute(document));
     }
 

@@ -60,9 +60,9 @@ and clipboard operations. The demo shows conversion reports after file operation
 ## Supported subset and diagnosed losses
 
 All external formats omit hidden physical cells and merge restoration backups with
-`conversion.merge-history`. Resources without visible image references produce
-`conversion.unused-resource`. Native JSON schema 4 preserves the full current model,
-including these values. Other native schema versions are rejected.
+`conversion.merge-history`. Resources without supported references produce
+`conversion.unused-resource` (DOCX also recognizes embedded-font references). Native
+JSON v5 preserves the full model and reads v4/v5; earlier versions remain rejected.
 Plain text retains visible text/paragraph separators and inline alternative text;
 its `text.*` diagnostics describe discarded formatting, containers and resources.
 
@@ -70,9 +70,10 @@ its `text.*` diagnostics describe discarded formatting, containers and resources
 | --- | --- | --- | --- |
 | Lists | Nested lists, identity, levels, start/restart/continuation; model definition metadata | Standard list tables/overrides and ordinary identity/continuation; restart or format changes use a new instance with `rtf.list-instance` | Abstract definitions, instances/overrides, standard formats, starts, restart/continuation; definition/kind changes preserve counters through start overrides |
 | Custom markers | Model metadata retained; browser presentation approximations report `html.list-marker` | Supported literal prefixes/suffixes and ancestor slots; unsupported patterns/number formats reported | Supported prefixes/suffixes/ancestor slots; unusual patterns, restart rules, marker fonts/indentation reported |
-| Typography | Numeric weights/stretch, font family, baseline, colors, paragraph tracking/line height/indents; inline CSS subset | Common font/color/emphasis/baseline/stretch and paragraph metrics; numeric weights, color alpha and precision have diagnostics | Common inherited/default/character styles, effective bold, baseline/colors and paragraph metrics; numeric weights/stretch, theme-only styles, per-run spacing and precision have diagnostics |
+| Typography | Numeric weights/stretch, font family, baseline, colors, paragraph tracking/line height/indents; inline CSS subset | Common font/color/emphasis/baseline/stretch and paragraph metrics; numeric weights, color alpha and precision have diagnostics | Named/default/character styles, theme references, run tracking/scale/baseline, underline/strike/caps/language, tabs/leaders, outline and paragraph rules; unsupported variants and precision have diagnostics |
+| Named styles/themes/fonts | Effective supported appearance; lost identity, overrides, themes and embedded fonts diagnosed | Effective supported appearance; lost identity, overrides, themes and embedded fonts diagnosed | Preserves named style definitions/inheritance/links/next, Office theme slots and permitted embedded TTF/OTF fonts; see [style limits](STYLES.md) |
 | Sections | Styled nested sections with edges/padding | Flow section groups; nested sections and arbitrary mixed section/root grouping have diagnosed normalization; decoration omitted with report | Section content groups encoded as block content controls; page sections/layout/header/footer and decoration reported |
-| Tables | Nested cell blocks, spans, relative columns, rows, cell edges/padding/background | Rectangular grids, horizontal/vertical merges, relative widths, row policies/background; nested table and cell decoration losses reported | Nested tables, grid/vMerge geometry, relative columns, row policies, cell edges/padding/background; table style/layout/position and unsupported cell properties reported |
+| Tables | Nested cell blocks, spans, relative columns, rows, cell edges/padding/background | Rectangular grids, horizontal/vertical merges, relative widths, row policies/background; nested table and cell decoration losses reported | Nested tables, grid/vMerge geometry, relative columns, row policies, cell edges/padding/background; named table shading/padding/borders; conditional styles/layout/position and unsupported cell properties reported |
 | Images | Bounded data-URI PNG/JPEG/GIF/BMP/WebP raster data; dimensions/alt text and deduplication | Embedded PNG/JPEG; alternative text is not retained by standard picture data and is reported | Supported embedded PNG/JPEG/GIF/BMP/TIFF relationships; dimensions/alt text and deduplication; cropping/rotation/floating placement reported |
 | Merge fields | Display text with loss diagnostic | Basic MERGEFIELD name/cached result; unsupported switches and native formatting/fallback options diagnosed | Simple/complex MERGEFIELD import and simple-field export; unsupported switches, nested fields and linked recipient metadata diagnosed |
 | Links | Safe absolute http/https/mailto | Safe HYPERLINK field results | Safe external hyperlink relationships |

@@ -23,7 +23,7 @@ internal sealed class LayoutHeightIndex
                 if (_value is null)
                 {
                     var available = table is null ? width : ColumnWidth(table, width, Source.Value.Column, ((TableCell)Source.Value.Source!).ColumnSpan);
-                    _value = index.GetNode(Source.Value, available);
+                    _value = index.GetNode(Source.Value, available, table);
                     Adjust(_value.Height - Estimate(Source.Value.Length, Source.Value.ParagraphCount, EstimateWidth));
                 }
                 _value.Parent = this;
@@ -88,20 +88,24 @@ internal sealed class LayoutHeightIndex
     internal sealed class Node
     {
         public required DocumentNode Source;
+        public Paragraph? Paragraph;
+        public TableCell? Cell;
+        public TableStyle? InheritedTableStyle;
+        public double SpaceBefore, SpaceAfter;
         public Branch? Children, Parent;
         public double Available, Height, ContentHeight;
         public double[] Rows = [], RowOffsets = [];
         private Node[][] _rowCells = [], _rowDependencies = [];
         private Node[] _spans = [];
-        public double TextWidth => Math.Max(16, Available - Indent - (Source.Source is Paragraph p ? p.Style.RightIndent : 0));
-        public double Indent => Source.Source is Paragraph p ? p.Style.Indent + (p.Style.List == ListKind.None ? 0 : 28 + p.Style.ListLevel * 24) : 0;
+        public double TextWidth => Math.Max(16, Available - Indent - (Paragraph?.Style.RightIndent ?? 0));
+        public double Indent => Paragraph is { } p ? p.Style.Indent + (p.Style.List == ListKind.None ? 0 : 28 + p.Style.ListLevel * 24) : 0;
         public void Update(Node? changedCell = null)
         {
             Height = Source.Source switch
             {
-                Paragraph p => ContentHeight + p.Style.SpaceBefore + p.Style.SpaceAfter,
+                Textalonia.Model.Paragraph => ContentHeight + SpaceBefore + SpaceAfter,
                 Section s => (Children?.Height ?? 0) + SectionPadding(s).Top + SectionPadding(s).Bottom + 10,
-                TableCell cell => (Children?.Height ?? 0) + CellPadding(cell).Top + CellPadding(cell).Bottom,
+                TableCell cell => (Children?.Height ?? 0) + CellPadding(Cell ?? cell).Top + CellPadding(Cell ?? cell).Bottom,
                 Table => TableHeight(changedCell),
                 _ => Children?.Height ?? 0
             };
@@ -163,31 +167,54 @@ internal sealed class LayoutHeightIndex
     private ConditionalWeakTable<StorageTree<OrderKey, DocumentNode>, Branch> _branches = new();
     public Node Root { get; private set; } = null!;
     public int CreatedNodes { get; private set; }
-    public void Synchronize(DocumentTree tree, double width)
+    private DocumentStyleResolver? _resolver;
+    private DocumentIndex? _documentIndex;
+    private bool _contextual;
+    public void Synchronize(DocumentTree tree, double width, DocumentStyleResolver? resolver = null, DocumentIndex? index = null)
     {
+        if (_contextual && _documentIndex?.Tree != tree) { _nodes = new(); _branches = new(); }
+        _resolver = resolver; _documentIndex = index;
         // An undo may revisit a former root whose mutable geometry parent links
         // have since been reassigned. Reconstruct metadata for that reset.
         if (_nodes.TryGetValue(tree.Root, out var old) && !ReferenceEquals(old, Root))
         { _nodes = new(); _branches = new(); }
         Root = GetNode(tree.Root, width);
     }
-    private Node GetNode(DocumentNode source, double available)
+    private Node GetNode(DocumentNode source, double available, Table? table = null)
     {
+        var inherited = source.Source is TableCell ? table is null ? new TableStyle() :
+            _resolver?.ResolveTableStyle(table) ?? new TableStyle() : null;
         if (_nodes.TryGetValue(source, out var existing))
         {
-            if (Math.Abs(existing.Available - available) < .01) return existing;
+            if (Math.Abs(existing.Available - available) < .01 && existing.InheritedTableStyle == inherited) return existing;
             _nodes.Remove(source);
         }
         CreatedNodes++;
-        var node = new Node { Source = source, Available = available };
+        var node = new Node { Source = source, Available = available, InheritedTableStyle = inherited };
         if (source.Source is Paragraph paragraph)
         {
+            node.Paragraph = _resolver?.ResolveParagraph(paragraph) ?? paragraph;
+            node.SpaceBefore = node.Paragraph.Style.SpaceBefore; node.SpaceAfter = node.Paragraph.Style.SpaceAfter;
+            if (node.Paragraph.Style.ContextualSpacing && _documentIndex is { } index)
+            {
+                _contextual = true;
+                var at = index.ById(paragraph.Id);
+                bool Same(ParagraphPosition other) => other.ContainerId == at.ContainerId && other.Paragraph.Style.StyleId == paragraph.Style.StyleId;
+                if (at.Start > 0 && Same(index.At(at.Start - 1))) node.SpaceBefore = 0;
+                if (at.End < index.Length && Same(index.At(at.End + 1))) node.SpaceAfter = 0;
+            }
+            paragraph = node.Paragraph;
             var fontSize = paragraph.DefaultStyle.FontSize;
             node.ContentHeight = Math.Max(1, Math.Ceiling(paragraph.Length * fontSize * .52 / node.TextWidth)) * (paragraph.Style.LineHeight ?? fontSize * 1.25);
         }
         else
         {
-            var childWidth = source.Source switch { Section s => Math.Max(16, available - SectionPadding(s).Left - SectionPadding(s).Right), TableCell cell => Math.Max(16, available - CellPadding(cell).Left - CellPadding(cell).Right), _ => available };
+            if (source.Source is TableCell cellModel)
+            {
+                node.Cell = cellModel with { Background = cellModel.Background ?? inherited!.Background,
+                    Padding = cellModel.Padding ?? inherited!.Padding, Borders = cellModel.Borders ?? inherited!.Borders };
+            }
+            var childWidth = source.Source switch { Section s => Math.Max(16, available - SectionPadding(s).Left - SectionPadding(s).Right), TableCell cell => Math.Max(16, available - CellPadding(node.Cell ?? cell).Left - CellPadding(node.Cell ?? cell).Right), _ => available };
             node.Children = GetBranch(source.Children, childWidth, source.Source as Table);
             if (node.Children is not null) { node.Children.Parent = null; node.Children.Owner = null; }
         }

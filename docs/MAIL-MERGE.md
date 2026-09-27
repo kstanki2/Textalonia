@@ -126,9 +126,8 @@ Use `LoadWithReportAsync` / `SaveWithReportAsync` to inspect losses, or pass
 `new ConversionOptions { Mode = ConversionMode.Strict }` to reject them. Basic
 `LoadAsync` / `SaveAsync` retain the existing tolerant API contract.
 
-The unreleased native schema marker remains 4 under the current prerelease policy;
-the allowlisted `mergeField` payload and optional properties are additive to the
-current model. Older binaries without the field payload reject it rather than
+Native schema v5 preserves the allowlisted `mergeField` payload and optional
+properties. The reader also accepts v4 documents as explicit direct formatting. Older binaries without the field payload reject it rather than
 silently converting it into text. There is no migration promise for unpublished
 prerelease schemas.
 

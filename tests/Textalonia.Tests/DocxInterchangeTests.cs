@@ -163,9 +163,16 @@ public class DocxInterchangeTests
         var original = new FlowDocument([new Paragraph("a  b\tc\u2028d", style) { Style = ps }, new Paragraph("") { DefaultStyle = style, Style = ps }]);
         var loaded = await RoundTrip(original);
         var p = Assert.IsType<Paragraph>(loaded.Blocks[0]);
-        Assert.Equal(original.Text, loaded.Text); Assert.Equal(ps, p.Style); Assert.Equal(style, Assert.Single(p.Runs).Style);
-        Assert.Equal(style, Assert.IsType<Paragraph>(loaded.Blocks[1]).DefaultStyle);
-        Assert.Equal(ps, Assert.IsType<Paragraph>(loaded.Blocks[1]).Style);
+        var resolver = new DocumentStyleResolver(loaded);
+        var expectedParagraph = ps with { DefaultTabWidth = 48, LetterSpacing = 0, LineSpacingMode = LineSpacingMode.Exact, LineSpacing = 32 };
+        var expectedText = style with { Tracking = 2, UnderlineKind = UnderlineKind.Single, StrikeKind = StrikeKind.Single };
+        // Word stores tracking on runs and an exact line-spacing rule. Compare the effective
+        // representation while retaining the newly imported sparse formatting metadata.
+        Assert.Equal(original.Text, loaded.Text); Assert.Equal(expectedParagraph, resolver.ResolveParagraphStyle(p.Style));
+        Assert.Equal(expectedText, resolver.ResolveText(p, Assert.Single(p.Runs).Style));
+        var empty = Assert.IsType<Paragraph>(loaded.Blocks[1]);
+        Assert.Equal(expectedText, resolver.ResolveText(empty, empty.DefaultStyle));
+        Assert.Equal(expectedParagraph, resolver.ResolveParagraphStyle(empty.Style));
     }
 
     [Fact]

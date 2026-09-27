@@ -80,6 +80,13 @@ public static class ListNumbering
     private static long _evaluationMisses;
     internal static long EvaluationMisses => Interlocked.Read(ref _evaluationMisses);
     private static readonly ConditionalWeakTable<FlowDocument, Result> Cache = new();
+    private static readonly ConditionalWeakTable<FlowDocument, FlowDocument> StyleProjections = new();
+    private static FlowDocument ResolveStyles(FlowDocument document) => StyleProjections.GetValue(document, value =>
+    {
+        var resolver = new DocumentStyleResolver(value);
+        return value.RewriteParagraphs(paragraph => [paragraph with { Style = resolver.ResolveParagraphStyle(paragraph.Style) }])
+            with { Styles = new(), Defaults = new() };
+    });
     private static readonly ConditionalWeakTable<StorageTree<OrderKey, DocumentNode>, EvaluationCache> Evaluations = new();
 
     /// <summary>Returns markers keyed by visible paragraph ID.</summary>
@@ -89,6 +96,9 @@ public static class ListNumbering
         return Cache.GetValue(document, d =>
         {
             var index = new DocumentIndex(d);
+            if (!d.Styles.Paragraphs.IsEmpty || d.Defaults.Paragraph != ParagraphStyle.Default ||
+                index.Enumerate(0, index.Length).Any(p => p.Paragraph.Style.Overrides is not null))
+            { d = ResolveStyles(d); index = new DocumentIndex(d); }
             return new() { Markers = index.Enumerate(0, index.Length).Where(p => p.Paragraph.Style.List != ListKind.None)
                 .ToImmutableDictionary(p => p.Paragraph.Id, p => GetMarker(d, p.Paragraph.Id)!) };
         }).Markers;
@@ -104,6 +114,8 @@ public static class ListNumbering
         var index = new DocumentIndex(document);
         var path = index.Tree.Paths?.Find(paragraphId)?.Value ?? throw new ArgumentException("The paragraph is not visible.", nameof(paragraphId));
         var paragraph = index.Tree.Locate(paragraphId).Node.Source as Paragraph ?? throw new ArgumentException("The identifier is not a paragraph.", nameof(paragraphId));
+        if (!document.Styles.Paragraphs.IsEmpty || document.Defaults.Paragraph != ParagraphStyle.Default || paragraph.Style.Overrides is not null)
+            return GetMarker(ResolveStyles(document), paragraphId);
         var style = paragraph.Style;
         if (style.List == ListKind.None) return null;
         var keys = path.Keys().ToArray();

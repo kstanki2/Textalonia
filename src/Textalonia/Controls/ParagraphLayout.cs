@@ -14,18 +14,18 @@ internal sealed class ParagraphLayout : IDisposable
         public int Start, End, InputEnd, LineCount;
         public double Top, Height;
         public double XOffset => Start == 0 ? Owner.Paragraph.Style.FirstLineIndent : 0;
-        public TextLayout? Layout;
+        public ShapingTextLayout? Layout;
         public string? Text;
         public TextStyle? RunStyle, DefaultStyle;
         public ParagraphStyle? ParagraphStyle;
         public long LastUse;
         public int Users;
         public LinkedListNode<Page>? CacheNode;
-        public long Bytes => Layout is null ? 0 : 256L + (InputEnd - Start) * 32L;
+        public long Bytes => Layout is null ? 0 : 256L + (InputEnd - Start) * 32L * Layout.CacheByteMultiplier;
     }
 
     internal const int WindowLength = 2048;
-    private readonly Func<Paragraph, int, string, TextLayout> _shape;
+    private readonly Func<Paragraph, int, string, ShapingTextLayout> _shape;
     private readonly Action _disposed;
     private readonly ShapedLayoutCache _cache;
     private readonly int _maxShapingCharacters;
@@ -40,11 +40,17 @@ internal sealed class ParagraphLayout : IDisposable
     private double MeasuredHeight => _pages.Count == 0 ? 0 : _pages[^1].Top + _pages[^1].Height;
     private bool Complete => _pages.Count > 0 && End == Paragraph.Length;
     private readonly double _width;
-    public double MinimumHeight => Paragraph.Style.LineHeight ?? Paragraph.DefaultStyle.FontSize * 1.25;
+    public double MinimumHeight => Paragraph.Style.LineSpacingMode switch
+    {
+        LineSpacingMode.Exact => Paragraph.Style.LineSpacing,
+        LineSpacingMode.Multiple => Paragraph.DefaultStyle.FontSize * 1.25 * Paragraph.Style.LineSpacing,
+        LineSpacingMode.AtLeast => Math.Max(Paragraph.Style.LineSpacing, Paragraph.DefaultStyle.FontSize * 1.25),
+        _ => Paragraph.Style.LineHeight ?? Paragraph.DefaultStyle.FontSize * 1.25
+    };
     public double Height => Math.Max(MinimumHeight,
         MeasuredHeight + (Complete ? 0 : Estimate(Paragraph.Length - End)));
 
-    public ParagraphLayout(Paragraph paragraph, double width, Func<Paragraph, int, string, TextLayout> shape, Action disposed,
+    public ParagraphLayout(Paragraph paragraph, double width, Func<Paragraph, int, string, ShapingTextLayout> shape, Action disposed,
         ShapedLayoutCache cache, int maxShapingCharacters = 0)
     {
         Paragraph = paragraph; _width = width; _shape = shape; _disposed = disposed; _cache = cache;
@@ -126,7 +132,7 @@ internal sealed class ParagraphLayout : IDisposable
         // bidi paragraph. The rope carries this conservative summary per subtree.
         if (Paragraph.Style.RightToLeft || ParagraphText.For(Paragraph).RequiresBidiContext)
             length = Paragraph.Length - start;
-        TextLayout layout;
+        ShapingTextLayout layout;
         string text;
         int count, end;
         while (true)
@@ -202,7 +208,7 @@ internal sealed class ParagraphLayout : IDisposable
         return next;
     }
 
-    private TextLayout Shape(int start, string text)
+    private ShapingTextLayout Shape(int start, string text)
     {
         if (Paragraph.Style.FirstLineIndent == 0 && _spare is { Layout: { } layout } && _spare.Text == text && Paragraph.Runs.Length == 1 &&
             _spare.RunStyle == Paragraph.Runs[0].Style && _spare.DefaultStyle == Paragraph.DefaultStyle && _spare.ParagraphStyle == Paragraph.Style)

@@ -65,7 +65,8 @@ public class MergeFieldInterchangeTests
         var run = OnlyField(loaded.Document);
         Assert.Equal(name, ((MergeFieldInlinePayload)run.Inline!.Payload).Name);
         Assert.Equal("Zoë & Co", run.Inline.AltText);
-        Assert.Equal(style, run.Style);
+        var paragraph = Assert.IsType<Paragraph>(loaded.Document.Blocks[0]);
+        Assert.Equal(style, new DocumentStyleResolver(loaded.Document).ResolveText(paragraph, run.Style));
         Assert.Equal("\uFFFC", loaded.Document.Text);
         Assert.Equal("Zoë & Co", loaded.Document.PlainText);
     }

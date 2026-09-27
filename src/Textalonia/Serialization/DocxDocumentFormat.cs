@@ -10,7 +10,7 @@ using Textalonia.Model;
 namespace Textalonia.Serialization;
 
 /// <summary>Bounded WordprocessingML interchange; page layout and revision history are diagnosed flow-model losses.</summary>
-public sealed class DocxDocumentFormat : IDocumentFormat
+public sealed partial class DocxDocumentFormat : IDocumentFormat
 {
     private static readonly XNamespace W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
     private static readonly XNamespace R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
@@ -106,7 +106,8 @@ public sealed class DocxDocumentFormat : IDocumentFormat
         }
         var relationships = Xml("word/_rels/document.xml.rels")?.Root?.Elements(Rel + "Relationship")
             .Where(e => e.Attribute("Id") is not null).ToDictionary(e => (string)e.Attribute("Id")!, e => e) ?? [];
-        foreach (var mailMerge in Xml("word/settings.xml")?.Descendants(W + "mailMerge") ?? [])
+        var settings = Xml("word/settings.xml");
+        foreach (var mailMerge in settings?.Descendants(W + "mailMerge") ?? [])
             Loss("mail-merge-source", "Linked mail-merge recipient source and settings",
                 "Retained document merge fields without the recipient connection or merge configuration; no source was accessed.", mailMerge);
         var styleRoot = Xml("word/styles.xml")?.Root;
@@ -115,12 +116,19 @@ public sealed class DocxDocumentFormat : IDocumentFormat
         var numbering = ReadNumbering(Xml("word/numbering.xml")?.Root);
         var defaults = styleRoot?.Element(W + "docDefaults");
         var defaultText = ReadTextStyle(defaults?.Element(W + "rPrDefault")?.Element(W + "rPr"), TextStyle.Default);
-        var defaultParagraph = ReadParagraphStyle(defaults?.Element(W + "pPrDefault")?.Element(W + "pPr"), ParagraphStyle.Default, numbering);
+        var defaultParagraph = ReadParagraphStyle(defaults?.Element(W + "pPrDefault")?.Element(W + "pPr"), ParagraphStyle.Default with { DefaultTabWidth = 48 }, numbering);
+        if (settings?.Root?.Element(W + "defaultTabStop") is { } defaultTabs) defaultParagraph = defaultParagraph with { DefaultTabWidth = Bounded(Number(defaultTabs) / 15d, 1, 100000, defaultTabs) };
         var defaultParagraphId = styles.Values.FirstOrDefault(e => (string?)e.Attribute(W + "type") == "paragraph" && OnAttribute(e, "default"))?.Attribute(W + "styleId")?.Value;
+        var catalog = ReadStyleCatalog(styles, numbering);
+        var themeRelationship = relationships.Values.FirstOrDefault(e => ((string?)e.Attribute("Type"))?.EndsWith("/theme", StringComparison.Ordinal) == true && (string?)e.Attribute("TargetMode") != "External");
+        var themePart = themeRelationship is null ? null : ResolvePart((string?)themeRelationship.Attribute("Target") ?? "");
+        var theme = ReadTheme(themePart is null ? null : Xml(themePart)?.Root);
         var resources = ImmutableDictionary.CreateBuilder<string, DocumentResource>();
+        var fonts = ReadEmbeddedFonts(Xml("word/fontTable.xml")?.Root, Xml("word/_rels/fontTable.xml.rels"),
+            (path, limit) => ReadPart(archive.GetEntry(path) ?? throw new FormatException("Missing DOCX embedded font part."), limit), resources);
         var imageResources = new Dictionary<string, string>();
         var startsUsed = new HashSet<(string, int)>();
-        var resourceBytes = 0L;
+        var resourceBytes = resources.Values.Sum(resource => (long)resource.Data.Length);
         var contentTypes = Xml("[Content_Types].xml")?.Root;
         (TextStyle Text, ParagraphStyle Paragraph) ResolveStyle(string? id, HashSet<string>? visited = null)
         {
@@ -198,16 +206,14 @@ public sealed class DocxDocumentFormat : IDocumentFormat
             var styleId = Value(pp?.Element(W + "pStyle")) ?? defaultParagraphId;
             var basis = ResolveStyle(styleId);
             var paragraphStyle = ReadParagraphStyle(pp, basis.Paragraph, numbering);
-            if (pp?.Element(W + "rPr")?.Element(W + "spacing") is { } markSpacing)
-                paragraphStyle = paragraphStyle with { LetterSpacing = Bounded(Number(markSpacing) / 15d, -1000, 1000, markSpacing) };
-            var paragraphText = ReadTextStyle(pp?.Element(W + "rPr"), basis.Text);
+            var paragraphText = ReadTextStyle(pp?.Element(W + "rPr"), basis.Text) with { Overrides = ReadTextOverrides(pp?.Element(W + "rPr")) };
             if (pp?.Element(W + "outlineLvl") is null && !HasOutline(styleId) && styleId?.StartsWith("Heading", StringComparison.OrdinalIgnoreCase) == true && int.TryParse(styleId[7..], out var heading) && heading is >= 1 and <= 6)
                 paragraphStyle = paragraphStyle with { HeadingLevel = heading };
             var numId = Value(pp?.Element(W + "numPr")?.Element(W + "numId"));
             numId ??= numbering.FirstOrDefault(pair => pair.Value.Identity == paragraphStyle.ListId).Key;
             if (numId is not null && numbering.TryGetValue(numId, out var info) && startsUsed.Add((numId, paragraphStyle.ListLevel)) && info.Starts.TryGetValue(paragraphStyle.ListLevel, out var start))
                 paragraphStyle = paragraphStyle with { ListStart = start, ListRestart = true };
-            var runs = new List<RichRun>(); var spacings = new HashSet<double>();
+            var runs = new List<RichRun>();
             var fields = new Stack<ImportedField>();
             void AddRun(RichRun value)
             {
@@ -284,14 +290,16 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                 }
                 var run = node;
                 var rp = run.Element(W + "rPr");
-                var style = ReadTextStyle(rp, CharacterStyle(Value(rp?.Element(W + "rStyle")), basis.Text));
-                spacings.Add(Number(rp?.Element(W + "spacing")) / 15d);
+                var characterId = Value(rp?.Element(W + "rStyle"));
+                if (characterId is not null && !catalog.Characters.ContainsKey(characterId))
+                { Loss("style-missing", "Missing character style definition", "Paragraph formatting retained.", rp); characterId = null; }
+                var style = ReadTextStyle(rp, CharacterStyle(characterId, basis.Text)) with { StyleId = characterId, Overrides = ReadTextOverrides(rp) };
                 var hyperlink = run.Ancestors(W + "hyperlink").FirstOrDefault();
                 if (hyperlink is not null)
                 {
                     var relationId = (string?)hyperlink.Attribute(R + "id") ?? "";
                     var link = relationships.TryGetValue(relationId, out var relation) ? (string?)relation.Attribute("Target") : null;
-                    if (link is not null && FlowDocument.IsSafeHyperlink(link)) style = style with { Hyperlink = link };
+                    if (link is not null && FlowDocument.IsSafeHyperlink(link)) style = style with { Hyperlink = link, Overrides = style.Overrides! with { Hyperlink = link } };
                     else Loss("hyperlink", "Unsafe or internal hyperlink", "Link text retained without navigation.", hyperlink);
                 }
                 if (fields.Count > 0 && fields.Peek().Separated) fields.Peek().ResultStyle ??= style;
@@ -336,8 +344,12 @@ public sealed class DocxDocumentFormat : IDocumentFormat
             }
             foreach (var child in element.Elements()) ReadInline(child);
             while (fields.Count > 0) EndField(element, unmatched: true);
-            if (spacings.Count == 1) paragraphStyle = paragraphStyle with { LetterSpacing = Bounded(spacings.Single(), -1000, 1000, element) };
-            else if (spacings.Count > 1) Loss("letter-spacing", "Per-run character spacing", "Paragraph uses default spacing.", element);
+            var paragraphOverrides = ReadParagraphOverrides(pp, numbering);
+            if (pp?.Element(W + "tabs") is not null) paragraphOverrides = paragraphOverrides with { TabStops = paragraphStyle.TabStops };
+            if (paragraphStyle.ListRestart) paragraphOverrides = paragraphOverrides with { ListStart = new(paragraphStyle.ListStart), ListRestart = true };
+            if (pp?.Element(W + "outlineLvl") is null && !HasOutline(styleId) && paragraphStyle.HeadingLevel > 0)
+                paragraphOverrides = paragraphOverrides with { HeadingLevel = paragraphStyle.HeadingLevel };
+            paragraphStyle = paragraphStyle with { StyleId = styleId is not null && catalog.Paragraphs.ContainsKey(styleId) ? styleId : null, Overrides = paragraphOverrides };
             return new Paragraph(runs) { Style = paragraphStyle, DefaultStyle = paragraphText };
         }
         Table ReadTable(XElement element, int depth)
@@ -374,9 +386,13 @@ public sealed class DocxDocumentFormat : IDocumentFormat
             }).ToImmutableArray();
             if (sizing.Any(s => s.Mode != TableRowHeightMode.Auto)) table = table with { RowSizing = sizing };
             var tblPr = element.Element(W + "tblPr");
+            var tableStyleId = Value(tblPr?.Element(W + "tblStyle"));
+            if (tableStyleId is not null && catalog.Tables.ContainsKey(tableStyleId)) table = table with { StyleId = tableStyleId };
+            else if (tableStyleId is not null) Loss("style-missing", "Missing table style definition", "Direct table formatting retained.", tblPr);
+            table = table with { StyleOverrides = ReadTableFormatting(tblPr) };
             var tablePadding = ReadPadding(tblPr?.Element(W + "tblCellMar"));
             foreach (var property in tblPr?.Elements() ?? [])
-                if (property.Name != W + "tblW" && property.Name != W + "tblBorders" && property.Name != W + "tblCellMar")
+                if (property.Name != W + "tblW" && property.Name != W + "tblBorders" && property.Name != W + "tblCellMar" && property.Name != W + "tblStyle" && property.Name != W + "shd")
                     Loss("table-property", property.Name.LocalName, "Table grid and direct cell formatting retained.", property);
             if (tblPr?.Element(W + "tblW") is { } tableWidth && (string?)tableWidth.Attribute(W + "type") is not (null or "auto") && Dimension(tableWidth, W + "w") != 0)
                 Loss("table-width", "Fixed or percentage table width", "Relative column proportions retained; table fills available width.", tableWidth);
@@ -464,7 +480,15 @@ public sealed class DocxDocumentFormat : IDocumentFormat
             if (section.Elements().Any() || section.Parent?.Name == W + "pPr") Loss("page-layout", "Page layout, headers, footers, or section pagination", "Flow content retained without page layout.", section);
         // Enumerate before freezing resources, which are populated while reading inline drawings.
         var blocks = ReadBlocks(body.Elements(), 0).ToArray();
-        var document = new FlowDocument(blocks) { Resources = resources.ToImmutable() };
+        var document = new FlowDocument(blocks) { Resources = resources.ToImmutable(), Styles = catalog, Theme = theme, Fonts = fonts,
+            Defaults = new DocumentDefaults { Text = defaultText, Paragraph = defaultParagraph } };
+        foreach (var property in body.Descendants().Concat(styleRoot?.Descendants() ?? []))
+        {
+            foreach (var attribute in property.Attributes().Where(a => a.Name.LocalName is "themeColor" or "themeFill"))
+                if (!theme.Colors.ContainsKey(attribute.Value)) Loss("theme-color", "Unresolved theme color reference", "Reference retained with explicit fallback color.", property);
+            foreach (var attribute in property.Attributes().Where(a => a.Name.LocalName is "asciiTheme" or "hAnsiTheme" or "eastAsiaTheme" or "cstheme"))
+                if (!theme.Fonts.ContainsKey(attribute.Value)) Loss("theme-font", "Unresolved theme font reference", "Reference retained with explicit fallback font.", property);
+        }
         document.Validate();
         return document;
     }
@@ -582,24 +606,37 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                 case "b": style = style with { Bold = On(property), FontWeight = null }; break;
                 case "i": style = style with { Italic = On(property) }; break;
                 case "u":
-                    style = style with { Underline = On(property) };
-                    if (On(property) && Value(property) is not (null or "single")) Loss("underline-style", "Decorative underline", "Single underline retained.", property);
+                    var underline = Value(property) switch { "none" => UnderlineKind.None, "double" => UnderlineKind.Double, "dotted" => UnderlineKind.Dotted,
+                        "dash" => UnderlineKind.Dashed, "thick" => UnderlineKind.Thick, "wave" => UnderlineKind.Wave, _ => UnderlineKind.Single };
+                    style = style with { Underline = underline != UnderlineKind.None, UnderlineKind = underline, UnderlineWordsOnly = Value(property) == "words", UnderlineColor = ReadColor((string?)property.Attribute(W + "color")) };
+                    if (Value(property) is not (null or "none" or "single" or "double" or "dotted" or "dash" or "thick" or "wave" or "words")) Loss("underline-style", "Unsupported underline pattern", "Single underline retained.", property);
                     break;
-                case "strike": case "dstrike": style = style with { Strikethrough = On(property) }; break;
+                case "strike": style = style with { Strikethrough = On(property), StrikeKind = On(property) ? StrikeKind.Single : StrikeKind.None }; break;
+                case "dstrike": if (On(property)) style = style with { Strikethrough = true, StrikeKind = StrikeKind.Double };
+                    else if (style.StrikeKind == StrikeKind.Double) style = style with { Strikethrough = false, StrikeKind = StrikeKind.None }; break;
                 case "sz": style = style with { FontSize = Bounded(Number(property, 24) * 2d / 3, 1, 512, property) }; break;
                 case "rFonts":
-                    style = style with { FontFamily = (string?)property.Attribute(W + "ascii") ?? (string?)property.Attribute(W + "hAnsi") ?? style.FontFamily };
-                    if (property.Attributes().Any(a => a.Name.LocalName.EndsWith("Theme", StringComparison.Ordinal))) Loss("theme-font", "Theme font reference", "Explicit font or inherited font retained.", property);
+                    style = style with { FontFamily = (string?)property.Attribute(W + "ascii") ?? (string?)property.Attribute(W + "hAnsi") ?? style.FontFamily,
+                        EastAsianFontFamily = (string?)property.Attribute(W + "eastAsia") ?? style.EastAsianFontFamily,
+                        ComplexScriptFontFamily = (string?)property.Attribute(W + "cs") ?? style.ComplexScriptFontFamily,
+                        ThemeFont = ThemeFont(property, "asciiTheme") ?? ThemeFont(property, "hAnsiTheme") ?? style.ThemeFont,
+                        EastAsianThemeFont = ThemeFont(property, "eastAsiaTheme") ?? style.EastAsianThemeFont, ComplexScriptThemeFont = ThemeFont(property, "cstheme") ?? style.ComplexScriptThemeFont };
                     break;
                 case "color":
-                    if (property.Attribute(W + "themeColor") is not null) Loss("theme-color", "Theme color reference", "Explicit RGB color or inherited theme color retained.", property);
-                    style = style with { Foreground = ReadColor(Value(property)) }; break;
+                    style = style with { Foreground = ReadColor(Value(property)), ThemeForeground = ThemeColor(property, "themeColor", "themeTint", "themeShade") }; break;
                 case "shd":
-                    if (property.Attribute(W + "themeFill") is not null || property.Attribute(W + "themeColor") is not null) Loss("theme-color", "Theme shading reference", "Explicit RGB fill or inherited background retained.", property);
-                    style = style with { Background = ReadColor((string?)property.Attribute(W + "fill")) }; break;
+                    style = style with { Background = ReadColor((string?)property.Attribute(W + "fill")), ThemeBackground = ThemeColor(property, "themeFill", "themeFillTint", "themeFillShade") }; break;
                 case "highlight": if (Avalonia.Media.Color.TryParse(Value(property), out var color)) style = style with { Background = $"#{color.R:X2}{color.G:X2}{color.B:X2}" }; break;
                 case "vertAlign": style = style with { Baseline = Value(property) switch { "subscript" => Baseline.Subscript, "superscript" => Baseline.Superscript, _ => Baseline.Normal } }; break;
-                case "rStyle": case "spacing": case "lang": case "noProof": case "rtl": case "cs": case "bCs": case "iCs": case "szCs": break;
+                case "caps": style = style with { AllCaps = On(property) }; break;
+                case "smallCaps": style = style with { SmallCaps = On(property) }; break;
+                case "lang": style = style with { Language = Value(property) }; break;
+                case "noProof": style = style with { NoProof = On(property) }; break;
+                case "spacing": style = style with { Tracking = Bounded(Number(property) / 15d, -1000, 1000, property) }; break;
+                case "w": style = style with { HorizontalScale = Bounded(Number(property, 100) / 100d, .01, 6, property) }; break;
+                case "position": style = style with { BaselineOffset = Bounded(Number(property) * 2d / 3, -1000, 1000, property) }; break;
+                case "kern": style = style with { KerningThreshold = Bounded(Number(property) * 2d / 3, 0, 512, property) }; break;
+                case "rStyle": case "rtl": case "cs": case "bCs": case "iCs": case "szCs": break;
                 default: Loss("text-property", property.Name.LocalName, "Unsupported text formatting omitted.", property); break;
             }
         return style;
@@ -621,8 +658,9 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                     style = style with { SpaceBefore = Bounded(Dimension(p, W + "before", style.SpaceBefore * 15) / 15, 0, 1000, p), SpaceAfter = Bounded(Dimension(p, W + "after", style.SpaceAfter * 15) / 15, 0, 1000, p) };
                     if (p.Attribute(W + "line") is not null)
                     {
-                        if ((string?)p.Attribute(W + "lineRule") == "exact") style = style with { LineHeight = Bounded(Dimension(p, W + "line", 240) / 15, 1, 10000, p) };
-                        else if ((string?)p.Attribute(W + "lineRule") is not (null or "auto") || Dimension(p, W + "line") != 240) Loss("line-spacing", "Relative or minimum line spacing", "Natural line height retained.", p);
+                        var mode = (string?)p.Attribute(W + "lineRule") switch { "exact" => LineSpacingMode.Exact, "atLeast" => LineSpacingMode.AtLeast, _ => LineSpacingMode.Multiple };
+                        var line = Bounded(Dimension(p, W + "line", 240) / (mode == LineSpacingMode.Multiple ? 240 : 15), .01, 10000, p);
+                        style = style with { LineSpacingMode = mode, LineSpacing = line, LineHeight = mode == LineSpacingMode.Exact ? line : null };
                     }
                     break;
                 case "numPr":
@@ -633,7 +671,26 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                     else if (numId is null) style = style with { ListLevel = level };
                     else { style = style with { List = ListKind.Numbered, ListLevel = level }; Loss("numbering-missing", "Missing numbering instance", "Decimal markers applied.", p); }
                     break;
-                case "outlineLvl": style = style with { HeadingLevel = Number(p) is >= 0 and < 6 ? Number(p) + 1 : 0 }; break;
+                case "outlineLvl": style = style with { HeadingLevel = Number(p) is >= 0 and < 6 ? Number(p) + 1 : 0, OutlineLevel = Number(p) is >= 0 and < 9 ? Number(p) + 1 : 0 }; break;
+                case "tabs":
+                    var tabs = style.TabStops.ToDictionary(t => t.Position);
+                    foreach (var tab in p.Elements(W + "tab"))
+                    {
+                        var position = Bounded(Dimension(tab, W + "pos") / 15, 0, 100000, tab);
+                        if (Value(tab) == "clear") { tabs.Remove(position); continue; }
+                        if (Value(tab) is "bar" or "num") { Loss("tab-alignment", "Unsupported tab alignment", "Left-aligned tab retained.", tab); }
+                        tabs[position] = new TabStop(position, Value(tab) switch { "center" => TabAlignment.Center, "right" or "end" => TabAlignment.Right, "decimal" => TabAlignment.Decimal, _ => TabAlignment.Left },
+                            (string?)tab.Attribute(W + "leader") switch { "dot" => TabLeader.Dots, "hyphen" => TabLeader.Dashes, "underscore" => TabLeader.Line, _ => TabLeader.None });
+                    }
+                    style = style with { TabStops = tabs.Values.OrderBy(t => t.Position).ToImmutableArray() }; break;
+                case "contextualSpacing": style = style with { ContextualSpacing = On(p) }; break;
+                case "pBdr": style = style with { Borders = ReadBorders(p) }; break;
+                case "shd": style = style with { Shading = ReadColor((string?)p.Attribute(W + "fill")) }; break;
+                case "pageBreakBefore": style = style with { PageBreakBefore = On(p) }; break;
+                case "keepNext": style = style with { KeepWithNext = On(p) }; break;
+                case "keepLines": style = style with { KeepTogether = On(p) }; break;
+                case "widowControl": style = style with { WidowControl = On(p) }; break;
+                case "snapToGrid": style = style with { SnapToGrid = On(p) }; break;
                 case "pStyle": case "rPr": case "sectPr": break;
                 default: Loss("paragraph-property", p.Name.LocalName, "Unsupported paragraph formatting omitted.", p); break;
             }
@@ -650,19 +707,62 @@ public sealed class DocxDocumentFormat : IDocumentFormat
         if (value.Length == 9 && !value.StartsWith("#FF", StringComparison.OrdinalIgnoreCase)) Loss("color-alpha", "Color transparency", "Opaque RGB color retained.", id: id);
         return value[^6..];
     }
-    private static XElement WriteTextStyle(TextStyle style, Guid id, double letterSpacing = 0)
+    private static XElement WriteTextStyle(TextStyle source, Guid id, double letterSpacing = 0)
     {
+        var o = source.Overrides;
+        var style = o?.Apply(TextStyle.Default) ?? source;
+        bool Has(bool specified) => o is null || specified;
         if (style.FontWeight is { } weight && weight is not (400 or 700)) Loss("font-weight", "Numeric font weight", "Nearest regular/bold weight retained.", id: id);
         if (style.FontStretch != 5) Loss("font-stretch", "Font stretch", "Normal font stretch retained.", id: id);
         if (Math.Abs(style.FontSize * 1.5 - Math.Round(style.FontSize * 1.5)) > .000001) Loss("font-size", "Fractional half-point font size", "Font size rounded to the nearest half point.", id: id);
+        if (Math.Abs(style.HorizontalScale * 100 - Math.Round(style.HorizontalScale * 100)) > .000001 ||
+            Math.Abs(style.BaselineOffset * 1.5 - Math.Round(style.BaselineOffset * 1.5)) > .000001 ||
+            style.KerningThreshold is { } kern && Math.Abs(kern * 1.5 - Math.Round(kern * 1.5)) > .000001)
+            Loss("typography-precision", "Run typography outside DOCX numeric precision", "Horizontal scale rounded to whole percent; position and kerning rounded to half points.", id: id);
+        if (o?.FontFamily.IsSet == true && style.FontFamily is null && style.ThemeFont is null ||
+            o?.EastAsianFontFamily.IsSet == true && style.EastAsianFontFamily is null && style.EastAsianThemeFont is null ||
+            o?.ComplexScriptFontFamily.IsSet == true && style.ComplexScriptFontFamily is null && style.ComplexScriptThemeFont is null)
+            Loss("font-inheritance-reset", "Explicit inherited font reset", "Parent or document font retained; DOCX requires a concrete font name or theme reference.", id: id);
+        if (o?.KerningThreshold.IsSet == true && style.KerningThreshold is null)
+            Loss("kerning-reset", "Explicit automatic kerning reset", "Inherited kerning setting retained.", id: id);
+        var fonts = new XElement(W + "rFonts",
+            style.FontFamily is { } family ? new[] { new XAttribute(W + "ascii", family), new XAttribute(W + "hAnsi", family) } : null,
+            style.EastAsianFontFamily is { } east ? new XAttribute(W + "eastAsia", east) : null,
+            style.ComplexScriptFontFamily is { } complex ? new XAttribute(W + "cs", complex) : null,
+            style.ThemeFont is { } font ? new[] { new XAttribute(W + "asciiTheme", font.Name), new XAttribute(W + "hAnsiTheme", font.Name) } : null,
+            style.EastAsianThemeFont is { } eastTheme ? new XAttribute(W + "eastAsiaTheme", eastTheme.Name) : null,
+            style.ComplexScriptThemeFont is { } complexTheme ? new XAttribute(W + "cstheme", complexTheme.Name) : null);
+        var underline = style.UnderlineKind != UnderlineKind.None ? style.UnderlineKind : style.Underline ? UnderlineKind.Single : UnderlineKind.None;
+        var strike = style.StrikeKind != StrikeKind.None ? style.StrikeKind : style.Strikethrough ? StrikeKind.Single : StrikeKind.None;
         return new XElement(W + "rPr",
-            style.FontFamily is not null ? new XElement(W + "rFonts", new XAttribute(W + "ascii", style.FontFamily), new XAttribute(W + "hAnsi", style.FontFamily)) : null,
-            Val("b", style.EffectiveBold ? 1 : 0), Val("i", style.Italic ? 1 : 0), Val("strike", style.Strikethrough ? 1 : 0),
-            style.Foreground is not null ? Val("color", Color(style.Foreground, id)) : null,
-            letterSpacing != 0 ? Val("spacing", Twips(letterSpacing)) : null, Val("sz", (int)Math.Round(style.FontSize * 1.5)),
-            Val("u", style.Underline ? "single" : "none"),
-            style.Background is not null ? new XElement(W + "shd", new XAttribute(W + "val", "clear"), new XAttribute(W + "fill", Color(style.Background, id))) : null,
-            Val("vertAlign", style.Baseline switch { Baseline.Subscript => "subscript", Baseline.Superscript => "superscript", _ => "baseline" }));
+            source.StyleId is { } styleId ? Val("rStyle", styleId) : null,
+            fonts.HasAttributes ? fonts : null,
+            Has(o?.Bold.IsSet == true || o?.FontWeight.IsSet == true) ? Val("b", style.EffectiveBold ? 1 : 0) : null,
+            Has(o?.Italic.IsSet == true) ? Val("i", style.Italic ? 1 : 0) : null,
+            Has(o?.Strikethrough.IsSet == true || o?.StrikeKind.IsSet == true) ? new[] { Val("strike", strike == StrikeKind.Single ? 1 : 0), Val("dstrike", strike == StrikeKind.Double ? 1 : 0) } : null,
+            Has(o?.Foreground.IsSet == true || o?.ThemeForeground.IsSet == true) ? ColorElement("color", "val", style.Foreground, style.ThemeForeground, id) ?? (o is not null ? Val("color", "auto") : null) : null,
+            Has(o?.Background.IsSet == true || o?.ThemeBackground.IsSet == true) ? ColorElement("shd", "fill", style.Background, style.ThemeBackground, id) ?? (o is not null ? new XElement(W + "shd", new XAttribute(W + "fill", "auto"), new XAttribute(W + "val", "clear")) : null) : null,
+            Has(o?.Tracking.IsSet == true) && (style.Tracking != 0 || letterSpacing != 0 || o?.Tracking.IsSet == true) ? Val("spacing", Twips(style.Tracking + letterSpacing)) : null,
+            Has(o?.FontSize.IsSet == true) ? Val("sz", (int)Math.Round(style.FontSize * 1.5)) : null,
+            Has(o?.Underline.IsSet == true || o?.UnderlineKind.IsSet == true || o?.UnderlineWordsOnly.IsSet == true || o?.UnderlineColor.IsSet == true) ?
+                new XElement(W + "u", new XAttribute(W + "val", style.UnderlineWordsOnly && underline != UnderlineKind.None ? "words" : underline switch { UnderlineKind.Single => "single", UnderlineKind.Double => "double", UnderlineKind.Dotted => "dotted", UnderlineKind.Dashed => "dash", UnderlineKind.Thick => "thick", UnderlineKind.Wave => "wave", _ => "none" }), style.UnderlineColor is { } underlineColor ? new XAttribute(W + "color", Color(underlineColor, id)) : null) : null,
+            Has(o?.Baseline.IsSet == true) ? Val("vertAlign", style.Baseline switch { Baseline.Subscript => "subscript", Baseline.Superscript => "superscript", _ => "baseline" }) : null,
+            Has(o?.AllCaps.IsSet == true) && (style.AllCaps || o is not null) ? Val("caps", style.AllCaps ? 1 : 0) : null,
+            Has(o?.SmallCaps.IsSet == true) && (style.SmallCaps || o is not null) ? Val("smallCaps", style.SmallCaps ? 1 : 0) : null,
+            Has(o?.NoProof.IsSet == true) && (style.NoProof || o is not null) ? Val("noProof", style.NoProof ? 1 : 0) : null,
+            style.Language is { } language ? Val("lang", language) : null,
+            Has(o?.HorizontalScale.IsSet == true) && (style.HorizontalScale != 1 || o is not null) ? Val("w", (int)Math.Round(style.HorizontalScale * 100)) : null,
+            Has(o?.BaselineOffset.IsSet == true) && (style.BaselineOffset != 0 || o is not null) ? Val("position", (int)Math.Round(style.BaselineOffset * 1.5)) : null,
+            style.KerningThreshold is { } threshold ? Val("kern", (int)Math.Round(threshold * 1.5)) : null);
+    }
+    private static XElement? ColorElement(string element, string valueAttribute, string? color, ThemeColorReference? reference, Guid id)
+    {
+        if (color is null && reference is null) return null;
+        var shading = element == "shd";
+        return new XElement(W + element, new XAttribute(W + valueAttribute, color is null ? "auto" : Color(color, id)),
+            shading ? new XAttribute(W + "val", "clear") : null,
+            reference is null ? null : new XAttribute(W + (shading ? "themeFill" : "themeColor"), reference.Name),
+            reference is not null && reference.Tint != 0 ? new XAttribute(W + (shading ? "themeFill" : "theme") + (reference.Tint > 0 ? "Tint" : "Shade"), ((int)Math.Round((1 - Math.Abs(reference.Tint)) * 255)).ToString("X2", CultureInfo.InvariantCulture)) : null);
     }
     private static XElement WritePadding(string name, EdgeInsets edges) => new(W + name,
         new[] { ("top", edges.Top), ("left", edges.Left), ("bottom", edges.Bottom), ("right", edges.Right) }.Select(s =>
@@ -681,6 +781,7 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                 s.Item2?.Color is { } color ? new XAttribute(W + "color", Color(color, id)) : null)));
     private static byte[] Write(FlowDocument document, CancellationToken token)
     {
+        document = MapStyleIdentifiers(document);
         using var result = new MemoryStream();
         using (var archive = new ZipArchive(result, ZipArchiveMode.Create, true))
         {
@@ -695,6 +796,7 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                 new(Rel + "Relationship", new XAttribute("Id", "styles"), new XAttribute("Type", R.NamespaceName + "/styles"), new XAttribute("Target", "styles.xml")),
                 new(Rel + "Relationship", new XAttribute("Id", "numbering"), new XAttribute("Type", R.NamespaceName + "/numbering"), new XAttribute("Target", "numbering.xml"))
             };
+            var resolver = new DocumentStyleResolver(document);
             var numbering = new XElement(W + "numbering"); var numbers = new List<XElement>();
             var identities = new Dictionary<Guid, (int Abstract, int Number, ListDefinition Definition, ListKind Kind)>();
             var imageIds = new Dictionary<string, string>(); var mediaTypes = new Dictionary<string, string>();
@@ -767,15 +869,12 @@ public sealed class DocxDocumentFormat : IDocumentFormat
             XElement WriteParagraph(Paragraph paragraph, Guid anonymousIdentity)
             {
                 token.ThrowIfCancellationRequested();
-                var ps = paragraph.Style;
-                var pp = new XElement(W + "pPr",
-                    ps.List != ListKind.None ? new XElement(W + "numPr", Val("ilvl", ps.ListLevel), Val("numId", NumberFor(paragraph, anonymousIdentity))) : null,
-                    Val("bidi", ps.RightToLeft ? 1 : 0),
-                    new XElement(W + "spacing", new XAttribute(W + "before", Twips(ps.SpaceBefore)), new XAttribute(W + "after", Twips(ps.SpaceAfter)),
-                        ps.LineHeight is { } line ? new[] { new XAttribute(W + "line", Twips(line)), new XAttribute(W + "lineRule", "exact") } : null),
-                    new XElement(W + "ind", new XAttribute(W + "left", Twips(ps.Indent)), new XAttribute(W + "right", Twips(ps.RightIndent)), new XAttribute(W + (ps.FirstLineIndent < 0 ? "hanging" : "firstLine"), Twips(Math.Abs(ps.FirstLineIndent)))),
-                    Val("jc", ps.Alignment switch { ParagraphAlignment.Center => "center", ParagraphAlignment.Right => "right", ParagraphAlignment.Justify => "both", _ => "left" }),
-                    ps.HeadingLevel > 0 ? Val("outlineLvl", ps.HeadingLevel - 1) : null, WriteTextStyle(paragraph.DefaultStyle, paragraph.Id, ps.LetterSpacing));
+                var ps = resolver.ResolveParagraphStyle(paragraph.Style);
+                var inheritedTabs = paragraph.Style.Overrides?.TabStops.IsSet == true ? resolver.ResolveParagraphStyle(paragraph.Style with { Overrides = paragraph.Style.Overrides with { TabStops = default } }).TabStops : [];
+                var pp = WriteParagraphProperties(paragraph.Style, paragraph.Id, inheritedTabs, document.Defaults.Paragraph.DefaultTabWidth > 0 ? document.Defaults.Paragraph.DefaultTabWidth : 48);
+                if (ps.List != ListKind.None && (paragraph.Style.Overrides is null || paragraph.Style.Overrides.List.IsSet || paragraph.Style.Overrides.ListId.IsSet || paragraph.Style.Overrides.ListLevel.IsSet)) pp.Add(new XElement(W + "numPr", Val("ilvl", ps.ListLevel), Val("numId", NumberFor(paragraph with { Style = ps }, anonymousIdentity))));
+                if (ps.List == ListKind.None && paragraph.Style.Overrides?.List.IsSet == true) pp.Add(new XElement(W + "numPr", Val("numId", 0)));
+                pp.Add(WriteTextStyle(paragraph.DefaultStyle, paragraph.Id, ps.LetterSpacing));
                 var p = new XElement(W + "p", pp);
                 foreach (var run in paragraph.Runs)
                 {
@@ -788,7 +887,7 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                         else if (segment == "\u2028") r.Add(new XElement(W + "br"));
                         else if (segment.Length > 0) r.Add(new XElement(W + "t", new XAttribute(XNamespace.Xml + "space", "preserve"), segment));
                     var content = mergeField is null ? r : new XElement(W + "fldSimple", new XAttribute(W + "instr", MergeFieldInstructions.Write(mergeField.Name)), r);
-                    if (run.Style.Hyperlink is { } link)
+                    if (resolver.ResolveText(paragraph, run.Style).Hyperlink is { } link)
                     {
                         var id = $"link{relationships.Count}";
                         relationships.Add(new(Rel + "Relationship", new XAttribute("Id", id), new XAttribute("Type", R.NamespaceName + "/hyperlink"), new XAttribute("Target", link), new XAttribute("TargetMode", "External")));
@@ -821,8 +920,9 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                         var widths = table.ColumnWidths.IsEmpty ? Enumerable.Repeat(600d / table.ColumnCount, table.ColumnCount).ToArray() : table.ColumnWidths.ToArray();
                         var scale = 9000d / widths.Sum(); var gridWidths = widths.Select(width => Math.Max(1, (int)Math.Round(width * scale))).ToArray();
                         if (widths.Select((width, i) => Math.Abs(width * scale - gridWidths[i])).Any(delta => delta > .000001)) Loss("dimension-precision", "Relative column width precision", "Column proportions rounded to a 9000-twip grid.", id: table.Id);
-                        var t = new XElement(W + "tbl", new XElement(W + "tblPr", new XElement(W + "tblW", new XAttribute(W + "w", 0), new XAttribute(W + "type", "auto"))),
+                        var t = new XElement(W + "tbl", new XElement(W + "tblPr", table.StyleId is { } tableStyle ? Val("tblStyle", tableStyle) : null, new XElement(W + "tblW", new XAttribute(W + "w", 0), new XAttribute(W + "type", "auto"))),
                             new XElement(W + "tblGrid", gridWidths.Select(width => new XElement(W + "gridCol", new XAttribute(W + "w", width)))));
+                        if (table.StyleOverrides is { } tableOverrides) t.Element(W + "tblPr")!.Add(WriteTableStyle(tableOverrides).Elements());
                         for (var row = 0; row < table.Rows.Length; row++)
                         {
                             var tr = new XElement(W + "tr");
@@ -853,18 +953,31 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                     }
                 }
             }
+            var stylesXml = WriteStyles(document, style => NumberFor(new Paragraph() { Style = style }, style.ListId ?? Guid.NewGuid()));
             var body = new XElement(W + "body", WriteBlocks(document.Blocks)); body.Add(new XElement(W + "sectPr"));
             Part("word/document.xml", new XElement(W + "document", new XAttribute(XNamespace.Xmlns + "w", W), new XAttribute(XNamespace.Xmlns + "r", R), body));
             Part("_rels/.rels", new XElement(Rel + "Relationships", new XElement(Rel + "Relationship", new XAttribute("Id", "document"), new XAttribute("Type", R.NamespaceName + "/officeDocument"), new XAttribute("Target", "word/document.xml"))));
+            Part("word/settings.xml", new XElement(W + "settings", document.Defaults.Paragraph.DefaultTabWidth > 0 ? Val("defaultTabStop", Twips(document.Defaults.Paragraph.DefaultTabWidth)) : null));
+            relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", "settings"), new XAttribute("Type", R.NamespaceName + "/settings"), new XAttribute("Target", "settings.xml")));
+            var hasFonts = WriteEmbeddedFonts(document, archive, Part);
+            if (hasFonts) relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", "fontTable"), new XAttribute("Type", R.NamespaceName + "/fontTable"), new XAttribute("Target", "fontTable.xml")));
+            var hasTheme = document.Theme.Colors.Count != 0 || document.Theme.Fonts.Count != 0;
+            if (hasTheme)
+            {
+                relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", "theme"), new XAttribute("Type", R.NamespaceName + "/theme"), new XAttribute("Target", "theme/theme1.xml")));
+                Part("word/theme/theme1.xml", WriteTheme(document.Theme));
+            }
             Part("word/_rels/document.xml.rels", new XElement(Rel + "Relationships", relationships));
-            Part("word/styles.xml", new XElement(W + "styles", new XElement(W + "docDefaults", new XElement(W + "rPrDefault", WriteTextStyle(TextStyle.Default, Guid.Empty))),
-                new XElement(W + "style", new XAttribute(W + "type", "paragraph"), new XAttribute(W + "styleId", CellEndStyle), Val("name", "Textalonia cell terminator"))));
+            Part("word/styles.xml", stylesXml);
             numbering.Add(numbers); Part("word/numbering.xml", numbering);
             Part("[Content_Types].xml", new XElement(Ct + "Types",
                 new XElement(Ct + "Default", new XAttribute("Extension", "rels"), new XAttribute("ContentType", "application/vnd.openxmlformats-package.relationships+xml")),
                 new XElement(Ct + "Default", new XAttribute("Extension", "xml"), new XAttribute("ContentType", "application/xml")),
+                hasFonts ? new XElement(Ct + "Default", new XAttribute("Extension", "odttf"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.obfuscatedFont")) : null,
+                hasFonts ? new XElement(Ct + "Override", new XAttribute("PartName", "/word/fontTable.xml"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml")) : null,
+                hasTheme ? new XElement(Ct + "Override", new XAttribute("PartName", "/word/theme/theme1.xml"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.theme+xml")) : null,
                 mediaTypes.Select(m => new XElement(Ct + "Default", new XAttribute("Extension", m.Key), new XAttribute("ContentType", m.Value))),
-                new[] { ("document", "document.main"), ("styles", "styles"), ("numbering", "numbering") }.Select(p => new XElement(Ct + "Override", new XAttribute("PartName", $"/word/{p.Item1}.xml"), new XAttribute("ContentType", $"application/vnd.openxmlformats-officedocument.wordprocessingml.{p.Item2}+xml")))));
+                new[] { ("document", "document.main"), ("styles", "styles"), ("numbering", "numbering"), ("settings", "settings") }.Select(p => new XElement(Ct + "Override", new XAttribute("PartName", $"/word/{p.Item1}.xml"), new XAttribute("ContentType", $"application/vnd.openxmlformats-officedocument.wordprocessingml.{p.Item2}+xml")))));
         }
         return result.ToArray();
     }

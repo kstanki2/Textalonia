@@ -574,6 +574,10 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
 
     public override string Serialize(FlowDocument document)
     {
+        ArgumentNullException.ThrowIfNull(document);
+        document.Validate();
+        StyleConversion.ReportLosses(this, document);
+        document = new DocumentStyleResolver(document).ResolveDocument();
         document.Validate();
         var builder = new StringBuilder("<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body>");
         WriteBlocks(builder, document.Blocks, document, ListNumbering.Compute(document));

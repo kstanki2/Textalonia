@@ -1,3 +1,4 @@
+using Textalonia.Model;
 using Avalonia;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -72,7 +73,8 @@ public class DefaultPointerComponent : DocumentInputComponent, IPointerComponent
             return;
         }
         var paragraph = session.Index.At(position);
-        var link = paragraph.Paragraph.StyleAt(position - paragraph.Start).Hyperlink;
+        var link = new DocumentStyleResolver(session.Document).ResolveText(paragraph.Paragraph,
+            paragraph.Paragraph.StyleAt(position - paragraph.Start)).Hyperlink;
         if (link is not null && (Context.Editor.IsReadOnly || e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
         { Context.Editor.OpenLink(link); e.Handled = true; return; }
         if (e.ClickCount == 1 && !e.KeyModifiers.HasFlag(KeyModifiers.Shift) &&

@@ -149,6 +149,9 @@ public sealed record TableRowSizing
 
 public sealed record Table : Block
 {
+    /// <summary>Named table formatting, shared by every cell without a direct cell override.</summary>
+    public string? StyleId { get; init; }
+    public TableStyleOverrides? StyleOverrides { get; init; }
     public ImmutableArray<ImmutableArray<TableCell>> Rows { get; init; } = [];
     /// <summary>Positive relative column widths; an empty array gives equal columns.</summary>
     public ImmutableArray<double> ColumnWidths { get; init; } = [];

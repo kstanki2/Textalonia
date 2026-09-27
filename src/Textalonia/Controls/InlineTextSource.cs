@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using System.Globalization;
 using Textalonia.Model;
 
 namespace Textalonia.Controls;
@@ -10,27 +11,111 @@ internal sealed class InlineTextSource : ITextSource
 {
     private readonly List<(int Start, int Length, TextRunProperties Properties, InlineDescriptor? Inline)> _runs = [];
     private readonly string _text;
+    private readonly bool _customTabs;
 
-    public InlineTextSource(Paragraph paragraph, int start, string text, FontFamily font, IBrush foreground)
+    public InlineTextSource(Paragraph paragraph, int start, string text, FontFamily font, IBrush foreground,
+        DocumentFontService? fonts = null, bool customTabs = false)
     {
         _text = text;
+        _customTabs = customTabs;
         var offset = 0;
         foreach (var run in paragraph.Runs)
         {
             var from = Math.Max(start, offset);
             var to = Math.Min(start + text.Length, offset + run.Storage.Length);
             offset += run.Storage.Length;
-            if (to > from) _runs.Add((from - start, to - from, Properties(run.Style, font, foreground), run.Inline));
+            if (to <= from) continue;
+            if ((run.Style.AllCaps || run.Style.SmallCaps) && run.Inline is null)
+            {
+                var upper = _text.Substring(from - start, to - from).ToUpper(Culture(run.Style));
+                // A display projection must preserve storage positions used by selection and IME.
+                if (upper.Length == to - from) _text = _text[..(from - start)] + upper + _text[(to - start)..];
+            }
+            var segment = from - start;
+            while (segment < to - start)
+            {
+                var whitespace = char.IsWhiteSpace(_text[segment]);
+                var small = run.Style.SmallCaps && !run.Style.AllCaps && IsLower(text, segment);
+                var family = ScriptFamily(run.Style, text, segment);
+                var end = segment + 1;
+                while (end < to - start &&
+                    (!run.Style.UnderlineWordsOnly || char.IsWhiteSpace(_text[end]) == whitespace) &&
+                    (!run.Style.SmallCaps || IsLower(text, end) == small || IsContinuation(text, end)) &&
+                    (ScriptFamily(run.Style, text, end) == family || IsContinuation(text, end))) end++;
+                var segmentStyle = run.Style with { FontFamily = family };
+                if (small) segmentStyle = segmentStyle with { FontSize = run.Style.FontSize * .8, SmallCaps = false };
+                var runFont = fonts?.Resolve(segmentStyle) ?? font;
+                if (fonts is not null) segmentStyle = segmentStyle with { FontFamily = null };
+                _runs.Add((segment, end - segment,
+                    Properties(segmentStyle, runFont, foreground, whitespace && run.Style.UnderlineWordsOnly), run.Inline));
+                segment = end;
+            }
         }
     }
 
-    internal static TextRunProperties Properties(TextStyle style, FontFamily font, IBrush foreground)
+    private static bool IsLower(string text, int index) =>
+        System.Text.Rune.TryGetRuneAt(text, index, out var rune) && System.Text.Rune.IsLower(rune);
+
+    private static bool IsContinuation(string text, int index)
+    {
+        if (char.IsLowSurrogate(text[index])) return true;
+        if (!System.Text.Rune.TryGetRuneAt(text, index, out var rune)) return false;
+        return rune.Value == 0x200D || System.Text.Rune.GetUnicodeCategory(rune) is
+            UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark or UnicodeCategory.EnclosingMark;
+    }
+
+    private static string? ScriptFamily(TextStyle style, string text, int index)
+    {
+        if (style.EastAsianFontFamily is null && style.ComplexScriptFontFamily is null) return style.FontFamily;
+        if (index > 0 && char.IsLowSurrogate(text[index]) && char.IsHighSurrogate(text[index - 1])) index--;
+        var scalar = System.Text.Rune.TryGetRuneAt(text, index, out var rune) ? rune.Value : text[index];
+        if (scalar is >= 0x2E80 and <= 0xA4CF or >= 0xAC00 and <= 0xD7AF or >= 0xF900 and <= 0xFAFF or
+            >= 0xFE30 and <= 0xFE4F or >= 0xFF00 and <= 0xFFEF or >= 0x20000 and <= 0x323AF)
+            return style.EastAsianFontFamily ?? style.FontFamily;
+        if (scalar is >= 0x0590 and <= 0x1CFF or >= 0xFB1D and <= 0xFDFF or >= 0xFE70 and <= 0xFEFF or
+            >= 0x1E800 and <= 0x1EEFF)
+            return style.ComplexScriptFontFamily ?? style.FontFamily;
+        return style.FontFamily;
+    }
+
+    internal static CultureInfo Culture(TextStyle style)
+    {
+        try { return style.Language is null ? CultureInfo.InvariantCulture : CultureInfo.GetCultureInfo(style.Language); }
+        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture; }
+    }
+
+    internal static TextRunProperties Properties(TextStyle style, FontFamily font, IBrush foreground, bool suppressUnderline = false)
     {
         TextDecorationCollection? decorations = null;
-        if (style.Underline || style.Hyperlink is not null)
-            (decorations ??= []).Add(new TextDecoration { Location = TextDecorationLocation.Underline });
-        if (style.Strikethrough)
-            (decorations ??= []).Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
+        var underline = style.UnderlineKind != UnderlineKind.None ? style.UnderlineKind :
+            style.Underline || style.Hyperlink is not null ? UnderlineKind.Single : UnderlineKind.None;
+        if (!suppressUnderline && underline is not (UnderlineKind.None or UnderlineKind.Wave))
+        {
+            Add(TextDecorationLocation.Underline, 0, underline == UnderlineKind.Thick ? 2 : 1);
+            if (underline == UnderlineKind.Double) Add(TextDecorationLocation.Underline, 3);
+        }
+        var strike = style.StrikeKind != StrikeKind.None ? style.StrikeKind : style.Strikethrough ? StrikeKind.Single : StrikeKind.None;
+        if (strike != StrikeKind.None)
+        {
+            Add(TextDecorationLocation.Strikethrough, 0);
+            if (strike == StrikeKind.Double) Add(TextDecorationLocation.Strikethrough, 3);
+        }
+        void Add(TextDecorationLocation location, double offset, double thickness = 1)
+        {
+            var decoration = new TextDecoration { Location = location, StrokeThickness = thickness,
+                StrokeThicknessUnit = TextDecorationUnit.Pixel, StrokeOffset = offset, StrokeOffsetUnit = TextDecorationUnit.Pixel };
+            if (location == TextDecorationLocation.Underline)
+            {
+                decoration.Stroke = DocumentLayout.Brush(style.UnderlineColor);
+                if (underline == UnderlineKind.Dotted) decoration.StrokeDashArray = [1, 2];
+                else if (underline == UnderlineKind.Dashed) decoration.StrokeDashArray = [4, 2];
+            }
+            (decorations ??= []).Add(decoration);
+        }
+        FontFeatureCollection? features = null;
+        if (style.SmallCaps) (features ??= []).Add(new FontFeature { Tag = "smcp", Value = 1 });
+        if (style.KerningThreshold is { } threshold)
+            (features ??= []).Add(new FontFeature { Tag = "kern", Value = style.FontSize >= threshold ? 1 : 0 });
         return new GenericTextRunProperties(DocumentLayout.Typeface(style, font),
             style.FontSize * (style.Baseline == Baseline.Normal ? 1 : .75), decorations,
             DocumentLayout.Brush(style.Foreground) ?? (style.Hyperlink is null ? foreground : Brushes.RoyalBlue),
@@ -39,7 +124,7 @@ internal sealed class InlineTextSource : ITextSource
                 Baseline.Subscript => BaselineAlignment.Subscript,
                 Baseline.Superscript => BaselineAlignment.Superscript,
                 _ => BaselineAlignment.Baseline
-            });
+            }, Culture(style), features);
     }
 
     public TextRun? GetTextRun(int textSourceIndex)
@@ -48,8 +133,16 @@ internal sealed class InlineTextSource : ITextSource
         foreach (var run in _runs)
         {
             if (textSourceIndex < run.Start || textSourceIndex >= run.Start + run.Length) continue;
-            return run.Inline is { } inline ? new InlineObjectRun(inline, run.Properties) :
-                new TextCharacters(_text.AsMemory(textSourceIndex, run.Start + run.Length - textSourceIndex), run.Properties);
+            if (run.Inline is { } inline) return new InlineObjectRun(inline, run.Properties);
+            var length = run.Start + run.Length - textSourceIndex;
+            if (_customTabs)
+            {
+                if (_text[textSourceIndex] == '\t') return new TabTextRun(run.Properties);
+                if (_text[textSourceIndex] is '\u2028' or '\n' or '\r') return new TextEndOfLine(1);
+                var special = _text.AsSpan(textSourceIndex, length).IndexOfAny('\t', '\u2028', '\n');
+                if (special > 0) length = special;
+            }
+            return new TextCharacters(_text.AsMemory(textSourceIndex, length), run.Properties);
         }
         return null;
     }

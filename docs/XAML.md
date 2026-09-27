@@ -92,3 +92,12 @@ See [XamlSerializationTests](../tests/Textalonia.Tests/XamlSerializationTests.cs
 Named merge fields use the allowlisted `MergeField` inline payload with `Name`, optional
 `Format` and `FallbackText` attributes. Cached display and descriptor data round-trip;
 missing display text defaults to the field label. See [mail merge](MAIL-MERGE.md).
+
+## Styles and themes
+
+DX-01 adds optional `Styles`, `Defaults`, `Theme` and `Fonts` document elements.
+These contain bounded typed JSON using the same allowlisted records as native v5.
+Extended character/paragraph formatting uses a single `Data` child instead of legacy
+attributes; combining both forms is rejected. Tables accept `StyleId` and a
+`StyleOverrides` data element. Legacy XAML version 1 files remain readable. See
+[style contracts](STYLES.md).

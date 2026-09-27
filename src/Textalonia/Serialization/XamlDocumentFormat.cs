@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using System.Xml;
 using System.Xml.Linq;
 using Textalonia.Model;
@@ -37,8 +38,15 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         if (Required(root, "Version") != "1") throw new NotSupportedException("Only Textalonia XAML data version 1 is supported.");
         foreach (var instruction in xml.DescendantNodes().OfType<XProcessingInstruction>())
             Report("xaml.processing-instruction", instruction.Target, "Processing instruction was ignored.", instruction);
-        Check(root, "Version", "Resources Blocks");
-        var document = new FlowDocument(ReadBlocks(Child(root, "Blocks"))) { Resources = ReadResources(Child(root, "Resources")) };
+        Check(root, "Version", "Resources Blocks Styles Defaults Theme Fonts");
+        var document = new FlowDocument(ReadBlocks(Child(root, "Blocks")))
+        {
+            Resources = ReadResources(Child(root, "Resources")),
+            Styles = ReadData<DocumentStyleCatalog>(Child(root, "Styles")) ?? new(),
+            Defaults = ReadData<DocumentDefaults>(Child(root, "Defaults")) ?? new(),
+            Theme = ReadData<DocumentTheme>(Child(root, "Theme")) ?? new(),
+            Fonts = (ReadData<DocumentFontDefinition[]>(Child(root, "Fonts")) ?? []).ToImmutableArray()
+        };
         document.Validate();
         return document;
     }
@@ -48,6 +56,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
         var root = Element("Document", Attr("Version", 1),
+            WriteData("Styles", document.Styles), WriteData("Defaults", document.Defaults), WriteData("Theme", document.Theme), WriteData("Fonts", document.Fonts),
             Element("Resources", document.Resources.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p =>
                 Element("Resource", Attr("Key", p.Key), Attr("Kind", p.Value.Kind), Attr("MediaType", p.Value.MediaType),
                     Attr("Location", p.Value.Location), Element("Data", Convert.ToBase64String(p.Value.Data.AsSpan()))))),
@@ -151,7 +160,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
 
     private static Table ReadTable(XElement element)
     {
-        Check(element, "Id", "ColumnWidths RowSizing Rows");
+        Check(element, "Id StyleId", "ColumnWidths RowSizing Rows StyleOverrides");
         var columns = Child(element, "ColumnWidths");
         if (columns is not null) Check(columns, "", "Column");
         var sizes = Child(element, "RowSizing");
@@ -160,7 +169,8 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         if (rows is not null) Check(rows, "", "Row");
         return new Table
         {
-            Id = Identity(element),
+            Id = Identity(element), StyleId = Value(element, "StyleId"),
+            StyleOverrides = ReadData<TableStyleOverrides>(Child(element, "StyleOverrides")),
             ColumnWidths = columns?.Elements(Ns + "Column").Select(column =>
             { Check(column, "Width", ""); return Number(column, "Width", 1); }).ToImmutableArray() ?? [],
             RowSizing = sizes?.Elements(Ns + "RowSize").Select(size =>
@@ -240,6 +250,12 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
     private static TextStyle ReadTextStyle(XElement? element)
     {
         if (element is null) return TextStyle.Default;
+        if (Child(element, "Data") is { } data)
+        {
+            if (element.Attributes().Any(a => !a.IsNamespaceDeclaration) || element.Elements().Count() != 1)
+                throw new FormatException("Style Data cannot coexist with legacy formatting attributes.");
+            return ReadData<TextStyle>(data)!;
+        }
         Check(element, "FontFamily FontSize Bold FontWeight FontStretch Italic Underline Strikethrough Foreground Background Hyperlink Baseline IsCode", "");
         return new TextStyle
         {
@@ -254,6 +270,12 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
     private static ParagraphStyle ReadParagraphStyle(XElement? element)
     {
         if (element is null) return ParagraphStyle.Default;
+        if (Child(element, "Data") is { } data)
+        {
+            if (element.Attributes().Any(a => !a.IsNamespaceDeclaration) || element.Elements().Count() != 1)
+                throw new FormatException("Style Data cannot coexist with legacy formatting attributes.");
+            return ReadData<ParagraphStyle>(data)!;
+        }
         Check(element, "Alignment List ListLevel ListId ListStart ListRestart HeadingLevel SpaceBefore SpaceAfter Indent RightIndent FirstLineIndent LineHeight LetterSpacing RightToLeft", "ListDefinition");
         var definition = Child(element, "ListDefinition");
         if (definition is not null) Check(definition, "", "Level");
@@ -308,7 +330,8 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
             Element("Runs", p.Runs.Select(run => Element("Run", Attr("Text", run.Text), WriteTextStyle("Style", run.Style), WriteInline(run.Inline))))),
         Section s => Element("Section", Attr("Id", s.Id), Attr("Background", s.Background), Attr("BorderColor", s.BorderColor), Attr("Padding", s.Padding),
             Attr("Semantic", s.Semantic), Attr("CodeLanguage", s.CodeLanguage), WriteEdges("PaddingEdges", s.PaddingEdges), WriteBorders(s.Borders), WriteBlocks("Blocks", s.Blocks)),
-        Table t => Element("Table", Attr("Id", t.Id), Element("ColumnWidths", t.ColumnWidths.Select(width => Element("Column", Attr("Width", width)))),
+        Table t => Element("Table", Attr("Id", t.Id), Attr("StyleId", t.StyleId),
+            t.StyleOverrides is null ? null : WriteData("StyleOverrides", t.StyleOverrides), Element("ColumnWidths", t.ColumnWidths.Select(width => Element("Column", Attr("Width", width)))),
             Element("RowSizing", t.RowSizing.Select(size => Element("RowSize", Attr("Mode", size.Mode), Attr("Height", size.Height)))),
             Element("Rows", t.Rows.Select(row => Element("Row", row.Select(cell => Element("Cell", Attr("Id", cell.Id), Attr("ColumnSpan", cell.ColumnSpan),
                 Attr("RowSpan", cell.RowSpan), Attr("Background", cell.Background), WriteEdges("Padding", cell.Padding), WriteBorders(cell.Borders),
@@ -329,12 +352,16 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         });
     }
 
-    private static XElement WriteTextStyle(string name, TextStyle style) => Element(name,
+    private static XElement WriteTextStyle(string name, TextStyle style) =>
+        HasExtended(style, TextStyle.Default, "fontFamily fontSize bold fontWeight fontStretch italic underline strikethrough foreground background hyperlink baseline isCode")
+        ? Element(name, WriteData("Data", style)) : Element(name,
         Attr("FontFamily", style.FontFamily), Attr("FontSize", style.FontSize), Attr("Bold", style.Bold), Attr("FontWeight", style.FontWeight), Attr("FontStretch", style.FontStretch),
         Attr("Italic", style.Italic), Attr("Underline", style.Underline), Attr("Strikethrough", style.Strikethrough), Attr("Foreground", style.Foreground), Attr("Background", style.Background),
         Attr("Hyperlink", style.Hyperlink), Attr("Baseline", style.Baseline), Attr("IsCode", style.IsCode));
 
-    private static XElement WriteParagraphStyle(ParagraphStyle style) => Element("ParagraphStyle",
+    private static XElement WriteParagraphStyle(ParagraphStyle style) =>
+        HasExtended(style, ParagraphStyle.Default, "alignment list listLevel listId listStart listRestart headingLevel spaceBefore spaceAfter indent rightIndent firstLineIndent lineHeight letterSpacing rightToLeft listDefinition")
+        ? Element("ParagraphStyle", WriteData("Data", style)) : Element("ParagraphStyle",
         Attr("Alignment", style.Alignment), Attr("List", style.List), Attr("ListLevel", style.ListLevel), Attr("ListId", style.ListId), Attr("ListStart", style.ListStart),
         Attr("ListRestart", style.ListRestart), Attr("HeadingLevel", style.HeadingLevel), Attr("SpaceBefore", style.SpaceBefore), Attr("SpaceAfter", style.SpaceAfter),
         Attr("Indent", style.Indent), Attr("RightIndent", style.RightIndent), Attr("FirstLineIndent", style.FirstLineIndent), Attr("LineHeight", style.LineHeight),
@@ -348,6 +375,29 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
     {
         XElement? Side(string name, BorderSide? side) => side is null ? null : Element(name, Attr("Width", side.Width), Attr("Color", side.Color));
         return borders is null ? null : Element("Borders", Side("Left", borders.Left), Side("Top", borders.Top), Side("Right", borders.Right), Side("Bottom", borders.Bottom));
+    }
+
+    // Typed JSON payloads carry the extensible style vocabulary; no CLR type names or
+    // executable XAML are accepted. Legacy attributes continue to read and write unchanged.
+    private static XElement WriteData<T>(string name, T value) => Element(name,
+        JsonSerializer.Serialize(value, JsonDocumentFormat.Options));
+
+    private static T? ReadData<T>(XElement? element) where T : class
+    {
+        if (element is null) return null;
+        Check(element, "", "", text: true);
+        using var json = JsonDocument.Parse(DirectText(element), new JsonDocumentOptions { MaxDepth = 256 });
+        JsonDocumentFormat.ValidateUniqueMembers(json.RootElement);
+        return json.RootElement.Deserialize<T>(JsonDocumentFormat.Options) ?? throw new FormatException("Missing formatting data.");
+    }
+
+    private static bool HasExtended<T>(T value, T defaults, string legacy)
+    {
+        var properties = legacy.Split(' ').ToHashSet(StringComparer.Ordinal);
+        var data = JsonSerializer.SerializeToElement(value, JsonDocumentFormat.Options);
+        var baseline = JsonSerializer.SerializeToElement(defaults, JsonDocumentFormat.Options);
+        return data.EnumerateObject().Any(p => !properties.Contains(p.Name) &&
+            p.Value.GetRawText() != baseline.GetProperty(p.Name).GetRawText());
     }
 
     private static XElement Element(string name, params object?[] content) => new(Ns + name, content);
