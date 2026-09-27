@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Globalization;
 using System.IO.Compression;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
@@ -41,6 +42,18 @@ public sealed class DocxDocumentFormat : IDocumentFormat
         await stream.WriteAsync(bytes, cancellationToken);
     }
     private sealed record NumberingInfo(Guid Identity, ListDefinition Definition, Dictionary<int, int> Starts);
+    private sealed class ImportedField(XElement source, TextStyle style, string? instruction = null)
+    {
+        internal XElement Source { get; } = source;
+        internal StringBuilder Instruction { get; } = new(instruction ?? "");
+        internal List<RichRun> Results { get; } = [];
+        internal TextStyle Style { get; set; } = style;
+        internal TextStyle? ResultStyle { get; set; }
+        internal bool HasInstructionStyle { get; set; }
+        internal bool Simple { get; } = instruction is not null;
+        internal bool Separated { get; set; } = instruction is not null;
+        internal bool Invalid { get; set; }
+    }
     private static void Loss(string code, string feature, string fallback, XElement? source = null, Guid? id = null) =>
         ConversionDiagnostics.Report("docx." + code, feature, fallback, id,
             source is IXmlLineInfo info && info.HasLineInfo() ? $"{source.Document?.Annotation<string>() ?? "word/document.xml"}:{info.LineNumber}:{info.LinePosition}" : null);
@@ -93,6 +106,9 @@ public sealed class DocxDocumentFormat : IDocumentFormat
         }
         var relationships = Xml("word/_rels/document.xml.rels")?.Root?.Elements(Rel + "Relationship")
             .Where(e => e.Attribute("Id") is not null).ToDictionary(e => (string)e.Attribute("Id")!, e => e) ?? [];
+        foreach (var mailMerge in Xml("word/settings.xml")?.Descendants(W + "mailMerge") ?? [])
+            Loss("mail-merge-source", "Linked mail-merge recipient source and settings",
+                "Retained document merge fields without the recipient connection or merge configuration; no source was accessed.", mailMerge);
         var styleRoot = Xml("word/styles.xml")?.Root;
         var styles = styleRoot?.Elements(W + "style").Where(e => e.Attribute(W + "styleId") is not null)
             .ToDictionary(e => (string)e.Attribute(W + "styleId")!, e => e) ?? [];
@@ -176,7 +192,7 @@ public sealed class DocxDocumentFormat : IDocumentFormat
             token.ThrowIfCancellationRequested();
             foreach (var child in element.Elements().Where(e => e.Name != W + "pPr" && e.Name != W + "r" && e.Name != W + "hyperlink" &&
                 e.Name != W + "ins" && e.Name != W + "del" && e.Name != W + "moveFrom" && e.Name != W + "moveTo" &&
-                e.Name != W + "bookmarkStart" && e.Name != W + "bookmarkEnd" && e.Name != W + "proofErr"))
+                e.Name != W + "bookmarkStart" && e.Name != W + "bookmarkEnd" && e.Name != W + "proofErr" && e.Name != W + "fldSimple"))
                 Loss("paragraph-content", child.Name.LocalName, "Recognized run content retained; unsupported paragraph content omitted.", child);
             var pp = element.Element(W + "pPr");
             var styleId = Value(pp?.Element(W + "pStyle")) ?? defaultParagraphId;
@@ -192,8 +208,81 @@ public sealed class DocxDocumentFormat : IDocumentFormat
             if (numId is not null && numbering.TryGetValue(numId, out var info) && startsUsed.Add((numId, paragraphStyle.ListLevel)) && info.Starts.TryGetValue(paragraphStyle.ListLevel, out var start))
                 paragraphStyle = paragraphStyle with { ListStart = start, ListRestart = true };
             var runs = new List<RichRun>(); var spacings = new HashSet<double>();
-            foreach (var run in element.Descendants(W + "r").Where(e => e.Ancestors(W + "p").FirstOrDefault() == element && !e.Ancestors().Any(a => a.Name == W + "del" || a.Name == W + "moveFrom")))
+            var fields = new Stack<ImportedField>();
+            void AddRun(RichRun value)
             {
+                if (fields.Count == 0) runs.Add(value);
+                else if (fields.Peek().Separated) fields.Peek().Results.Add(value);
+                else
+                {
+                    fields.Peek().Invalid = true;
+                    Loss("field-structure", "Field result before its separator", "Retained visible text without active field semantics.", fields.Peek().Source);
+                    fields.Peek().Results.Add(value);
+                }
+            }
+            void BeginField(XElement source, TextStyle style, string? instruction = null)
+            {
+                if (fields.Count >= 32) throw new FormatException("DOCX field nesting exceeds the limit.");
+                var field = new ImportedField(source, style, instruction);
+                if (fields.Count > 0)
+                {
+                    field.Invalid = true;
+                    foreach (var parent in fields) parent.Invalid = true;
+                    Loss("nested-field", "Nested Word fields", "Retained cached display text without active field semantics.", source);
+                }
+                fields.Push(field);
+            }
+            void EndField(XElement source, bool unmatched = false)
+            {
+                if (fields.Count == 0)
+                {
+                    Loss("field-structure", "Unmatched field end", "Omitted the marker and retained surrounding text.", source);
+                    return;
+                }
+                var field = fields.Pop();
+                if (unmatched)
+                {
+                    field.Invalid = true;
+                    Loss("field-structure", "Unclosed or cross-paragraph field", "Retained cached display text without active field semantics.", field.Source);
+                }
+                var parsed = MergeFieldInstructions.Parse(field.Instruction.ToString());
+                if (parsed is null)
+                    Loss("field", "Unsupported or malformed Word field instruction", "Cached display text retained without active field semantics.", field.Source);
+                var cached = string.Concat(field.Results.Select(r => r.PlainText));
+                if (field.Results.Any(r => r.Inline is not null) || cached.Length > 16_384)
+                {
+                    field.Invalid = true;
+                    Loss("field-result", "Non-text or oversized field result", "Retained the result content without active field semantics.", field.Source);
+                }
+                if (parsed is not null && !field.Invalid)
+                {
+                    if (parsed.UnsupportedSwitches)
+                        Loss("merge-field-switch", "Unsupported merge-field switches", "Retained the field name and cached display without the switch behavior.", field.Source);
+                    var style = parsed.CharacterFormat && field.HasInstructionStyle ? field.Style : field.Results.FirstOrDefault()?.Style ?? field.ResultStyle ?? field.Style;
+                    if (field.Results.Any(r => r.Style != style))
+                        Loss("field-result-formatting", "Multiple styles in an atomic merge field", "Applied one character style to the field display.", field.Source);
+                    if (fields.Count == 0 || fields.Peek().Separated) AddRun(MergeFieldInstructions.Create(parsed.Name, cached, style));
+                }
+                else if (fields.Count == 0 || fields.Peek().Separated)
+                    foreach (var result in field.Results) AddRun(result);
+            }
+            void ReadInline(XElement node)
+            {
+                if (node.Name == W + "del" || node.Name == W + "moveFrom" || node.Name == W + "pPr" || node.Name == W + "p") return;
+                if (node.Name == W + "fldSimple")
+                {
+                    BeginField(node, paragraphText, (string?)node.Attribute(W + "instr") ?? "");
+                    foreach (var child in node.Elements()) ReadInline(child);
+                    while (fields.Count > 0 && fields.Peek().Source != node) EndField(node, unmatched: true);
+                    EndField(node);
+                    return;
+                }
+                if (node.Name != W + "r")
+                {
+                    foreach (var child in node.Elements()) ReadInline(child);
+                    return;
+                }
+                var run = node;
                 var rp = run.Element(W + "rPr");
                 var style = ReadTextStyle(rp, CharacterStyle(Value(rp?.Element(W + "rStyle")), basis.Text));
                 spacings.Add(Number(rp?.Element(W + "spacing")) / 15d);
@@ -205,20 +294,48 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                     if (link is not null && FlowDocument.IsSafeHyperlink(link)) style = style with { Hyperlink = link };
                     else Loss("hyperlink", "Unsafe or internal hyperlink", "Link text retained without navigation.", hyperlink);
                 }
+                if (fields.Count > 0 && fields.Peek().Separated) fields.Peek().ResultStyle ??= style;
                 foreach (var content in run.Elements().Where(e => e.Name != W + "rPr"))
                 {
-                    if (content.Name == W + "drawing") runs.Add(ReadDrawing(content, style));
-                    else if (content.Name == W + "t") runs.Add(new RichRun(content.Value.Replace('\n', '\u2028').Replace("\r", ""), style));
-                    else if (content.Name == W + "tab") runs.Add(new RichRun("\t", style));
+                    if (content.Name == W + "drawing") AddRun(ReadDrawing(content, style));
+                    else if (content.Name == W + "t") AddRun(new RichRun(content.Value.Replace('\n', '\u2028').Replace("\r", ""), style));
+                    else if (content.Name == W + "tab") AddRun(new RichRun("\t", style));
                     else if (content.Name == W + "br" || content.Name == W + "cr")
                     {
                         if ((string?)content.Attribute(W + "type") is "page" or "column") Loss("page-break", "Page or column break", "Soft line break retained.", content);
-                        runs.Add(new RichRun("\u2028", style));
+                        AddRun(new RichRun("\u2028", style));
                     }
-                    else if (content.Name == W + "instrText" || content.Name == W + "fldChar") Loss("field", "Dynamic field", "Cached display text retained.", content);
+                    else if (content.Name == W + "instrText")
+                    {
+                        if (fields.Count == 0 || fields.Peek().Separated)
+                        {
+                            if (fields.Count > 0) fields.Peek().Invalid = true;
+                            Loss("field-structure", "Field instruction outside the instruction span", "Omitted the instruction and retained visible text.", content);
+                        }
+                        else
+                        {
+                            var field = fields.Peek(); field.Instruction.Append(content.Value);
+                            if (!field.HasInstructionStyle && !string.IsNullOrWhiteSpace(content.Value))
+                            { field.Style = style; field.HasInstructionStyle = true; }
+                        }
+                    }
+                    else if (content.Name == W + "fldChar")
+                    {
+                        var kind = (string?)content.Attribute(W + "fldCharType");
+                        if (kind == "begin") BeginField(content, style);
+                        else if (kind == "end" && (fields.Count == 0 || !fields.Peek().Simple)) EndField(content);
+                        else if (kind == "separate" && fields.Count > 0 && !fields.Peek().Separated) fields.Peek().Separated = true;
+                        else
+                        {
+                            if (fields.Count > 0) fields.Peek().Invalid = true;
+                            Loss("field-structure", "Invalid or unmatched field marker", "Retained visible text without active field semantics.", content);
+                        }
+                    }
                     else if (content.Name != W + "lastRenderedPageBreak") Loss("run-content", content.Name.LocalName, "Unsupported run content omitted.", content);
                 }
             }
+            foreach (var child in element.Elements()) ReadInline(child);
+            while (fields.Count > 0) EndField(element, unmatched: true);
             if (spacings.Count == 1) paragraphStyle = paragraphStyle with { LetterSpacing = Bounded(spacings.Single(), -1000, 1000, element) };
             else if (spacings.Count > 1) Loss("letter-spacing", "Per-run character spacing", "Paragraph uses default spacing.", element);
             return new Paragraph(runs) { Style = paragraphStyle, DefaultStyle = paragraphText };
@@ -663,18 +780,21 @@ public sealed class DocxDocumentFormat : IDocumentFormat
                 foreach (var run in paragraph.Runs)
                 {
                     var r = new XElement(W + "r", WriteTextStyle(run.Style, paragraph.Id, ps.LetterSpacing));
-                    if (run.Inline is { } inline && WriteImage(inline) is { } drawing) r.Add(drawing);
+                    var mergeField = run.Inline?.Payload as MergeFieldInlinePayload;
+                    if (mergeField is not null) MergeFieldInstructions.ReportExportOptions("docx", run.Inline!, mergeField);
+                    if (mergeField is null && run.Inline is { } inline && WriteImage(inline) is { } drawing) r.Add(drawing);
                     else foreach (var segment in Regex.Split(run.PlainText, "([\t\u2028])"))
                         if (segment == "\t") r.Add(new XElement(W + "tab"));
                         else if (segment == "\u2028") r.Add(new XElement(W + "br"));
                         else if (segment.Length > 0) r.Add(new XElement(W + "t", new XAttribute(XNamespace.Xml + "space", "preserve"), segment));
+                    var content = mergeField is null ? r : new XElement(W + "fldSimple", new XAttribute(W + "instr", MergeFieldInstructions.Write(mergeField.Name)), r);
                     if (run.Style.Hyperlink is { } link)
                     {
                         var id = $"link{relationships.Count}";
                         relationships.Add(new(Rel + "Relationship", new XAttribute("Id", id), new XAttribute("Type", R.NamespaceName + "/hyperlink"), new XAttribute("Target", link), new XAttribute("TargetMode", "External")));
-                        p.Add(new XElement(W + "hyperlink", new XAttribute(R + "id", id), r));
+                        p.Add(new XElement(W + "hyperlink", new XAttribute(R + "id", id), content));
                     }
-                    else p.Add(r);
+                    else p.Add(content);
                 }
                 return p;
             }

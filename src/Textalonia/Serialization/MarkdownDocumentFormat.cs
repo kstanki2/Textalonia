@@ -431,7 +431,8 @@ public sealed class MarkdownDocumentFormat : TextDocumentFormat
             }
             if (destination is null)
             {
-                ConversionDiagnostics.Report("markdown.inline", "Unrepresentable inline object or image resource", "Alternative text is retained; no resource is resolved.", inline.Id);
+                if (inline.Payload is not MergeFieldInlinePayload)
+                    ConversionDiagnostics.Report("markdown.inline", "Unrepresentable inline object or image resource", "Alternative text is retained; no resource is resolved.", inline.Id);
                 value = Escape(alt);
             }
             else

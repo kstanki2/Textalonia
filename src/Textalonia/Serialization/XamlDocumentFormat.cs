@@ -190,10 +190,12 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         var style = ReadTextStyle(Child(element, "Style"));
         var inline = Child(element, "Inline");
         if (inline is null) return new RichRun(Value(element, "Text") ?? "", style);
-        Check(inline, "Id AltText Width Height", "Image Control");
+        Check(inline, "Id AltText Width Height", "Image Control MergeField");
         var image = Child(inline, "Image");
         var control = Child(inline, "Control");
-        if (image is not null && control is not null) throw new FormatException("Inline must contain exactly one payload.");
+        var mergeField = Child(inline, "MergeField");
+        if ((image is not null ? 1 : 0) + (control is not null ? 1 : 0) + (mergeField is not null ? 1 : 0) > 1)
+            throw new FormatException("Inline must contain exactly one payload.");
         InlinePayload payload;
         if (image is not null)
         {
@@ -213,6 +215,14 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
             }
             payload = new ControlInlinePayload(Required(control, "Type")) { Properties = properties.ToImmutable() };
         }
+        else if (mergeField is not null)
+        {
+            Check(mergeField, "Name Format FallbackText", "");
+            payload = new MergeFieldInlinePayload(Required(mergeField, "Name"))
+            {
+                Format = Value(mergeField, "Format"), FallbackText = Value(mergeField, "FallbackText")
+            };
+        }
         else
         {
             Report("xaml.inline-payload", "Missing or unsupported inline payload", "Alternative text was retained.", inline);
@@ -222,7 +232,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
             Report("xaml.inline-text", "Text alongside an inline descriptor", "The inline descriptor's atomic position was retained.", element);
         return new RichRun(new InlineDescriptor
         {
-            Id = Identity(inline), AltText = Value(inline, "AltText") ?? "", Width = Number(inline, "Width", 32),
+            Id = Identity(inline), AltText = Value(inline, "AltText") ?? (payload is MergeFieldInlinePayload field ? "\u00AB" + field.Name + "\u00BB" : ""), Width = Number(inline, "Width", 32),
             Height = Number(inline, "Height", 32), Payload = payload
         }, style);
     }
@@ -312,6 +322,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         return Element("Inline", Attr("Id", inline.Id), Attr("AltText", inline.AltText), Attr("Width", inline.Width), Attr("Height", inline.Height), inline.Payload switch
         {
             ImageInlinePayload image => Element("Image", Attr("ResourceId", image.ResourceId)),
+            MergeFieldInlinePayload field => Element("MergeField", Attr("Name", field.Name), Attr("Format", field.Format), Attr("FallbackText", field.FallbackText)),
             ControlInlinePayload control => Element("Control", Attr("Type", control.Type), control.Properties.OrderBy(p => p.Key, StringComparer.Ordinal)
                 .Select(p => Element("Property", Attr("Name", p.Key), Attr("Value", p.Value)))),
             _ => throw new FormatException("Unsupported inline payload.")

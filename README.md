@@ -151,6 +151,15 @@ Available commands: `BoldCommand`, `ItalicCommand`, `UnderlineCommand`, `Striket
 
 Selection uses UTF-16 offsets in `Document.Text`, with one LF between visible paragraphs. Caret navigation and deletion respect .NET grapheme boundaries. A soft line break is U+2028. Drag, double-click word selection, triple-click paragraph selection, Shift selection, and standard Ctrl/Cmd editing shortcuts are supported. Shift+Enter inserts a soft break; Enter splits a paragraph. Tab moves between table cells or inserts a tab when `AcceptsTab` is enabled.
 
+## Merge fields and mail merge
+
+Insert/edit named fields using the toolbar or `editor.InsertMergeField("FirstName")`.
+`MailMergeProcessor.Preview`, `Merge`, and `MergeMany` produce immutable previews
+and per-record output with explicit culture and missing-value handling. Native JSON,
+data XAML and clipboard preserve field definitions; DOCX/RTF preserve basic
+`MERGEFIELD` instructions. See [mail merge](docs/MAIL-MERGE.md) for examples,
+the demo workflow, format limits and diagnostics.
+
 ## Save and load
 
 ```csharp

@@ -273,8 +273,10 @@ public sealed class DocumentTextProvider
             foreach (var run in paragraph.Paragraph.Runs)
             {
                 if (run.Inline is { } inline && offset < range.End && offset + 1 > range.Start)
-                    result.Add(new(offset, 1, inline.Payload is ImageInlinePayload ? "image" : "control",
-                        string.IsNullOrWhiteSpace(inline.AltText) ? "Embedded object" : inline.AltText));
+                    result.Add(new(offset, 1, inline.Payload switch
+                        { ImageInlinePayload => "image", MergeFieldInlinePayload => "merge-field", _ => "control" },
+                        inline.Payload is MergeFieldInlinePayload field ? $"Merge field {field.Name}: {inline.AltText}" :
+                            string.IsNullOrWhiteSpace(inline.AltText) ? "Embedded object" : inline.AltText));
                 offset += run.Storage.Length;
             }
         }

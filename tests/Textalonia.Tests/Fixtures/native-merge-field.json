@@ -1,0 +1,25 @@
+﻿{
+  "version": 4,
+  "document": {
+    "blocks": [
+      {
+        "kind": "paragraph",
+        "id": "9dd8a7e0-6336-4a53-9c36-27b1a69d4111",
+        "runs": [
+          { "text": "Invoice: ", "style": {} },
+          {
+            "text": "\ufffc",
+            "style": { "bold": true },
+            "inline": {
+              "id": "9dd8a7e0-6336-4a53-9c36-27b1a69d4222",
+              "altText": "«Total»",
+              "width": 100,
+              "height": 24,
+              "payload": { "kind": "mergeField", "name": "Total", "format": "N2", "fallbackText": "0.00" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

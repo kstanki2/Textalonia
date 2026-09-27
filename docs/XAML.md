@@ -88,3 +88,7 @@ Unknown elements (including elements from foreign namespaces) are omitted with t
 Malformed XML, incorrect root/namespace, duplicate singleton elements or resource/property keys, invalid scalar values, and model invariant violations fail in either mode. Future versions fail with `NotSupportedException`. DTDs and entity declarations are prohibited; the XML resolver is disabled. Parsing has a 32 Mi-character limit, XML reader depth limit of 256, and a 1,000,000-node reader limit, applied even to unsupported subtrees before allocating the XML tree. The XML depth allowance accommodates the model's full 32-level nesting with table/container wrappers. Stream imports also have the shared 32 MiB byte limit. Export rejects XML-unrepresentable text and output exceeding these bounds or 32 MiB in UTF-8. Model validation additionally limits nesting, identities, lists, table geometry, descriptor properties, and resource sizes (8 MiB per resource and 16 MiB embedded bytes per document).
 
 See [XamlSerializationTests](../tests/Textalonia.Tests/XamlSerializationTests.cs) for strict snapshot roundtrips, stream ownership, hidden merge data, literal markup syntax, malicious element/directive/event inputs, external entity rejection, and parser bounds.
+
+Named merge fields use the allowlisted `MergeField` inline payload with `Name`, optional
+`Format` and `FallbackText` attributes. Cached display and descriptor data round-trip;
+missing display text defaults to the field label. See [mail merge](MAIL-MERGE.md).
