@@ -30,6 +30,7 @@ public sealed partial class PaginationEngine
         private readonly Dictionary<Guid, DocumentNote> _notesById = document.Notes.ToDictionary(n => n.Id);
         private readonly HashSet<Guid> _placedEndnotes = [];
         private PageContext? _storyContext;
+        private Guid _displayStoryId;
         private bool _placingEndnotes;
         private const double SeparatorHeight = 20;
 
@@ -37,7 +38,7 @@ public sealed partial class PaginationEngine
         {
             _storyFragments.Clear(); _storyRegions.Clear(); _storyCells.Clear(); _layoutDiagnostics.Clear();
             _pendingNotes.Clear(); _noteParts.Clear(); _noteHeights.Clear(); _noteSeparatorHeights.Clear(); _noteOwners.Clear(); _placedEndnotes.Clear();
-            _storyContext = null; _placingEndnotes = false;
+            _storyContext = null; _displayStoryId = Guid.Empty; _placingEndnotes = false;
         }
 
         private PageContext Context(int page) => new(page, _pages[page].Number, _pages.Count,
@@ -45,15 +46,15 @@ public sealed partial class PaginationEngine
 
         private StoryMeasure MeasureStory(DocumentStory story, double width, int page)
         {
-            var oldIndex = _index; var oldContext = _storyContext;
-            _index = new(document.GetStoryDocument(story.Id)); _storyContext = Context(page);
+            var oldIndex = _index; var oldContext = _storyContext; var oldStoryId = _displayStoryId;
+            _index = new(document.GetStoryDocument(story.Id)); _storyContext = Context(page); _displayStoryId = story.Id;
             try
             {
                 var content = new CellContent { Table = null!, Width = width };
                 var height = MeasureLocal(story.Blocks, 0, 0, width, content);
                 return new(story, content, Math.Max(1, height));
             }
-            finally { _index = oldIndex; _storyContext = oldContext; }
+            finally { _index = oldIndex; _storyContext = oldContext; _displayStoryId = oldStoryId; }
         }
 
         private Paragraph DisplayReferenceMarks(Paragraph paragraph)
@@ -69,17 +70,28 @@ public sealed partial class PaginationEngine
             return changed ? paragraph with { Runs = runs } : paragraph;
         }
 
-        private Paragraph DisplayParagraph(Paragraph paragraph)
+        private Paragraph DisplayParagraph(Paragraph paragraph, Guid? storyId = null)
         {
             if (_storyContext is not { } context || !paragraph.Runs.Any(r => r.Inline?.Payload is PageFieldInlinePayload)) return paragraph;
-            return paragraph with { Runs = paragraph.Runs.Select(run => run.Inline is { Payload: PageFieldInlinePayload field } inline ?
+            var owner = storyId ?? _displayStoryId;
+            var index = storyId is null ? _index : document.GetStoryIndex(owner);
+            var paragraphStart = index.ById(paragraph.Id).Start;
+            var locked = document.Fields.Where(f => f.IsLocked && f.Start.StoryId == owner)
+                .Select(f => (Start: f.Start.Resolve(document) - paragraphStart, End: f.End.Resolve(document) - paragraphStart))
+                .Where(range => range.Start < paragraph.Length && range.End > 0).ToArray();
+            var localOffset = 0;
+            return paragraph with { Runs = paragraph.Runs.Select(run =>
+            {
+                var offset = localOffset; localOffset += run.Text.Length;
+                return run.Inline is { Payload: PageFieldInlinePayload field } inline && !locked.Any(r => offset >= r.Start && offset < r.End) ?
                 run with { Inline = inline with { AltText = field.Field switch
                 {
                     PageFieldKind.Page => NumberText(context.PageNumber, _pages[context.PageIndex].Section.PageNumberFormat),
                     PageFieldKind.NumPages => context.PageCount.ToString(System.Globalization.CultureInfo.InvariantCulture),
                     PageFieldKind.SectionPages => context.SectionPageCount.ToString(System.Globalization.CultureInfo.InvariantCulture),
                     _ => inline.AltText
-                } } } : run).ToImmutableArray() };
+                } } } : run;
+            }).ToImmutableArray() };
         }
 
         private static LineFragment ShiftStoryFragment(LineFragment f, Vector shift) => f with
@@ -362,7 +374,7 @@ public sealed partial class PaginationEngine
             {
                 var fragment = fragments[i];
                 _storyContext = Context(fragment.PageIndex);
-                var source = DisplayParagraph(DisplayReferenceMarks(fragment.Measurement.Source));
+                var source = DisplayParagraph(DisplayReferenceMarks(fragment.Measurement.Source), fragment.StoryKey);
                 if (source == fragment.Measurement.Source) continue;
                 var measurement = Measure(source, fragment.Measurement.Width, fragment.Measurement.Offset);
                 var line = measurement.Lines.FirstOrDefault(l => l.Start == fragment.Line.Start && l.End == fragment.Line.End);

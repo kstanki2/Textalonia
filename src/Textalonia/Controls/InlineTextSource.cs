@@ -88,7 +88,7 @@ internal sealed class InlineTextSource : ITextSource
     {
         TextDecorationCollection? decorations = null;
         var underline = style.UnderlineKind != UnderlineKind.None ? style.UnderlineKind :
-            style.Underline || style.Hyperlink is not null ? UnderlineKind.Single : UnderlineKind.None;
+            style.Underline || style.Hyperlink is not null || style.InternalLink is not null ? UnderlineKind.Single : UnderlineKind.None;
         if (!suppressUnderline && underline is not (UnderlineKind.None or UnderlineKind.Wave))
         {
             Add(TextDecorationLocation.Underline, 0, underline == UnderlineKind.Thick ? 2 : 1);
@@ -118,7 +118,7 @@ internal sealed class InlineTextSource : ITextSource
             (features ??= []).Add(new FontFeature { Tag = "kern", Value = style.FontSize >= threshold ? 1 : 0 });
         return new GenericTextRunProperties(DocumentLayout.Typeface(style, font),
             style.FontSize * (style.Baseline == Baseline.Normal ? 1 : .75), decorations,
-            DocumentLayout.Brush(style.Foreground) ?? (style.Hyperlink is null ? foreground : Brushes.RoyalBlue),
+            DocumentLayout.Brush(style.Foreground) ?? (style.Hyperlink is null && style.InternalLink is null ? foreground : Brushes.RoyalBlue),
             DocumentLayout.Brush(style.Background), style.Baseline switch
             {
                 Baseline.Subscript => BaselineAlignment.Subscript,

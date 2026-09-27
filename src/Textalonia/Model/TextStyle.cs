@@ -26,6 +26,7 @@ public sealed partial record TextStyle
     public string? Foreground { get; init; }
     public string? Background { get; init; }
     public string? Hyperlink { get; init; }
+    public InternalLinkDestination? InternalLink { get; init; }
     public Baseline Baseline { get; init; }
 }
 

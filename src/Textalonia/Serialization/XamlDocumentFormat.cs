@@ -35,10 +35,10 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         var xml = XDocument.Load(input, LoadOptions.SetLineInfo | LoadOptions.PreserveWhitespace);
         var root = xml.Root ?? throw new FormatException("Missing Document element.");
         if (root.Name != Ns + "Document") throw new FormatException("Expected a Textalonia Document in " + NamespaceUri + ".");
-        if (Required(root, "Version") is not ("1" or "2")) throw new NotSupportedException("Only Textalonia XAML data versions 1 and 2 are supported.");
+        if (Required(root, "Version") is not ("1" or "2" or "3")) throw new NotSupportedException("Only Textalonia XAML data versions 1, 2 and 3 are supported.");
         foreach (var instruction in xml.DescendantNodes().OfType<XProcessingInstruction>())
             Report("xaml.processing-instruction", instruction.Target, "Processing instruction was ignored.", instruction);
-        Check(root, "Version", "Resources Blocks Styles Defaults Theme Fonts Sections Stories Notes FootnoteSettings EndnoteSettings");
+        Check(root, "Version", "Resources Blocks Styles Defaults Theme Fonts Sections Stories Notes FootnoteSettings EndnoteSettings Bookmarks Fields Properties");
         var document = new FlowDocument(ReadBlocks(Child(root, "Blocks")))
         {
             Resources = ReadResources(Child(root, "Resources")),
@@ -49,6 +49,9 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
             Sections = (ReadData<DocumentSection[]>(Child(root, "Sections")) ?? []).ToImmutableArray(),
             Stories = ReadData<ImmutableDictionary<Guid, DocumentStory>>(Child(root, "Stories")) ?? ImmutableDictionary<Guid, DocumentStory>.Empty,
             Notes = (ReadData<DocumentNote[]>(Child(root, "Notes")) ?? []).ToImmutableArray(),
+            Bookmarks = (ReadData<DocumentBookmark[]>(Child(root, "Bookmarks")) ?? []).ToImmutableArray(),
+            Fields = (ReadData<DocumentField[]>(Child(root, "Fields")) ?? []).ToImmutableArray(),
+            Properties = ReadData<ImmutableDictionary<string, string>>(Child(root, "Properties")) ?? ImmutableDictionary<string, string>.Empty,
             FootnoteSettings = ReadData<NoteSettings>(Child(root, "FootnoteSettings")) ?? new(),
             EndnoteSettings = ReadData<NoteSettings>(Child(root, "EndnoteSettings")) ?? new() { Placement = NotePlacement.DocumentEnd }
         };
@@ -60,9 +63,10 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
     {
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
-        var root = Element("Document", Attr("Version", 2),
+        var root = Element("Document", Attr("Version", 3),
             WriteData("Styles", document.Styles), WriteData("Defaults", document.Defaults), WriteData("Theme", document.Theme), WriteData("Fonts", document.Fonts), WriteData("Sections", document.Sections),
             WriteData("Stories", document.Stories), WriteData("Notes", document.Notes), WriteData("FootnoteSettings", document.FootnoteSettings), WriteData("EndnoteSettings", document.EndnoteSettings),
+            WriteData("Bookmarks", document.Bookmarks), WriteData("Fields", document.Fields), WriteData("Properties", document.Properties),
             Element("Resources", document.Resources.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p =>
                 Element("Resource", Attr("Key", p.Key), Attr("Kind", p.Value.Kind), Attr("MediaType", p.Value.MediaType),
                     Attr("Location", p.Value.Location), Element("Data", Convert.ToBase64String(p.Value.Data.AsSpan()))))),

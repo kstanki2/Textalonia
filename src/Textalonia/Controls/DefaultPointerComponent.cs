@@ -73,8 +73,12 @@ public class DefaultPointerComponent : DocumentInputComponent, IPointerComponent
             return;
         }
         var paragraph = session.Index.At(position);
-        var link = new DocumentStyleResolver(session.Document).ResolveText(paragraph.Paragraph,
-            paragraph.Paragraph.StyleAt(position - paragraph.Start)).Hyperlink;
+        var linkStyle = new DocumentStyleResolver(session.Document).ResolveText(paragraph.Paragraph,
+            paragraph.Paragraph.StyleAt(position - paragraph.Start));
+        var link = linkStyle.Hyperlink;
+        if (linkStyle.InternalLink is { } destination && (destination.Activation == InternalLinkActivation.Click ||
+            Context.Editor.IsReadOnly || e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
+        { Context.Editor.NavigateToBookmark(destination.BookmarkName); e.Handled = true; return; }
         if (link is not null && (Context.Editor.IsReadOnly || e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta)))
         { Context.Editor.OpenLink(link); e.Handled = true; return; }
         if (e.ClickCount == 1 && !e.KeyModifiers.HasFlag(KeyModifiers.Shift) &&
@@ -108,6 +112,12 @@ public class DefaultPointerComponent : DocumentInputComponent, IPointerComponent
     }
     public virtual void PointerMoved(PointerEventArgs e)
     {
+        if (!_dragging && Context.TryHitTest(e.GetPosition(Context.Surface), out var hover))
+        {
+            var entry = Context.Session.Index.At(hover);
+            var style = new DocumentStyleResolver(Context.Session.Document).ResolveText(entry.Paragraph, entry.Paragraph.StyleAt(hover - entry.Start));
+            Avalonia.Controls.ToolTip.SetTip(Context.Surface, style.InternalLink?.Tooltip ?? style.InternalLink?.BookmarkName ?? style.Hyperlink);
+        }
         if (_table?.Moved(e) == true) return;
         if (_touch?.Moved(e) == true) return;
         if (_pendingContentDrag is { } press)

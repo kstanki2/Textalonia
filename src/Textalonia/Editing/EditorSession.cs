@@ -16,7 +16,9 @@ public sealed partial class EditorSession
             if (!Document.Fonts.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Fonts)!);
             visit(Document.Stories); visit(DocumentTree.For(Document));
             if (!Document.Notes.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Notes)!);
-            visit(Document.FootnoteSettings); visit(Document.EndnoteSettings); visit(StorySelections); visit(TypingStyle); }
+            if (!Document.Bookmarks.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Bookmarks)!);
+            if (!Document.Fields.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Fields)!);
+            visit(Document.Properties); visit(Document.FootnoteSettings); visit(Document.EndnoteSettings); visit(StorySelections); visit(TypingStyle); }
     }
     private readonly List<State> _undo = [];
     private readonly List<State> _redo = [];
@@ -207,15 +209,17 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(fragment);
         if (IsReadOnly) return;
-        var (document, caret) = BuildFragmentInsertion(ActiveDocument, Selection, fragment);
+        var (document, caret) = BuildFragmentInsertion(ActiveDocument, Selection, fragment, Document.Bookmarks.Select(bookmark => bookmark.Name));
         Commit(document, new(caret, caret), editedRange: Selection);
     }
 
-    private static (FlowDocument Document, int Caret) BuildFragmentInsertion(FlowDocument destination, TextSelection selection, DocumentFragment fragment)
+    internal static (FlowDocument Document, int Caret) BuildFragmentInsertion(FlowDocument destination, TextSelection selection, DocumentFragment fragment, IEnumerable<string>? bookmarkNamesInScope = null)
     {
         fragment.Validate();
-        var prepared = DocumentFragments.Prepare(fragment.Document, destination);
         var index = new DocumentIndex(destination);
+        var wholeReplacement = selection.Start == 0 && selection.End == index.Length && (!selection.IsEmpty || destination.Blocks is [Paragraph { Length: 0 }]);
+        var occupiedNames = wholeReplacement ? bookmarkNamesInScope?.Except(destination.Bookmarks.Select(bookmark => bookmark.Name), StringComparer.Ordinal) : bookmarkNamesInScope;
+        var prepared = DocumentFragments.Prepare(fragment.Document, wholeReplacement ? destination with { Bookmarks = [] } : destination, occupiedNames);
         FlowDocument document; int caret;
         if (selection.Start == 0 && selection.End == index.Length &&
             (!selection.IsEmpty || destination.Blocks is [Paragraph { Length: 0 }]))
@@ -286,7 +290,7 @@ public sealed partial class EditorSession
         var resolver = new DocumentStyleResolver(ActiveDocument);
         var activeParagraph = Index.At(Selection.Active).Paragraph;
         var newStyle = ChangeTextStyle(activeParagraph, TypingStyle, change, resolver);
-        (ActiveDocument with { Blocks = [new Paragraph("", newStyle)], Sections = [] }).Validate();
+        (ActiveDocument with { Blocks = [new Paragraph("", newStyle)], Sections = [], Bookmarks = [], Fields = [] }).Validate();
         if (Selection.IsEmpty)
         {
             Commit(ActiveDocument, Selection, editedRange: Selection, typingStyle: newStyle); return;
@@ -406,7 +410,7 @@ public sealed partial class EditorSession
             if (!Selection.IsEmpty && entry.Start >= Selection.End) break;
             var paragraph = change(entry);
             if (ReferenceEquals(paragraph, entry.Paragraph)) continue;
-            (ActiveDocument with { Blocks = [paragraph], Sections = [] }).Validate();
+            (ActiveDocument with { Blocks = [paragraph], Sections = [], Bookmarks = [], Fields = [] }).Validate();
             replacements.Add(paragraph.Id, [paragraph]);
         }
         return Index.Tree.Rewrite(ActiveDocument, replacements);
@@ -450,7 +454,7 @@ public sealed partial class EditorSession
     public void Execute(Func<FlowDocument, FlowDocument> operation)
     {
         if (IsReadOnly) return;
-        var document = operation(ActiveDocument);
+        var document = DocumentAnchors.Reconcile(ActiveDocument, operation(ActiveDocument));
         document.Validate();
         Commit(document, Selection);
     }
@@ -566,13 +570,13 @@ public sealed partial class EditorSession
     private void Commit(FlowDocument document, TextSelection selection, bool typing = false, TextSelection? editedRange = null, TextStyle? typingStyle = null, bool wholeDocument = false)
     {
         if (!wholeDocument && ActiveStoryId != Guid.Empty)
-            document = Document with { Stories = Document.Stories.SetItem(ActiveStoryId, Document.Stories[ActiveStoryId] with { Blocks = document.Blocks }),
-                Resources = Document.Resources.SetItems(document.Resources), Styles = document.Styles, Defaults = document.Defaults, Theme = document.Theme, Fonts = document.Fonts };
+            document = DocumentAnchors.WithStory(Document, ActiveStoryId, document);
+        document = DocumentAnchors.Reconcile(Document, document);
         document = DocumentSection.Reconcile(document);
         var previousStories = document.Stories;
         if (!document.Notes.IsEmpty) document = PruneDetachedNotes(document);
         var removedNoteStories = !ReferenceEquals(previousStories, document.Stories);
-        if (!document.Stories.IsEmpty) document.Validate();
+        if (!document.Stories.IsEmpty || !document.Bookmarks.IsEmpty || !document.Fields.IsEmpty) document.Validate();
         // Typing formatting can own a named reference even when no run uses it yet.
         // Check before changing history or document roots, including application edits.
         DocumentStyleCatalog.Reference(document.Styles.Characters, (typingStyle ?? TypingStyle).StyleId);
@@ -645,7 +649,9 @@ public sealed partial class EditorSession
     private void RetainFormatting(FlowDocument document, bool add)
     {
         void Change(object value) { if (add) _retained.Add(value, current: true); else _retained.Remove(value, current: true); }
-        Change(document.Styles); Change(document.Defaults); Change(document.Theme);
+        Change(document.Styles); Change(document.Defaults); Change(document.Theme); Change(document.Properties);
+        if (!document.Bookmarks.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Bookmarks)!);
+        if (!document.Fields.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Fields)!);
         Change(document.Stories); Change(DocumentTree.For(document)); Change(document.FootnoteSettings); Change(document.EndnoteSettings);
         if (!document.Notes.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Notes)!);
         if (!document.Sections.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Sections)!);
@@ -655,7 +661,15 @@ public sealed partial class EditorSession
     { foreach (var state in _redo) _retained.Remove(state); _redo.Clear(); }
     private void OnChanged() => Changed?.Invoke(this, EventArgs.Empty);
 
-    private static (FlowDocument Document, int Caret) ReplaceRange(
+    internal static (FlowDocument Document, int Caret) ReplaceRange(
+        FlowDocument document, TextSelection selection, ImmutableArray<Paragraph> fragment)
+    {
+        var (result, caret) = ReplaceRangeCore(document, selection, fragment);
+        var added = new DocumentIndex(result).Length - new DocumentIndex(document).Length + selection.Length;
+        return (DocumentAnchors.Transform(document, result, Guid.Empty, selection.Start, selection.Length, added), caret);
+    }
+
+    private static (FlowDocument Document, int Caret) ReplaceRangeCore(
         FlowDocument document, TextSelection selection, ImmutableArray<Paragraph> fragment)
     {
         var index = new DocumentIndex(document);

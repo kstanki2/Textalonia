@@ -10,6 +10,7 @@ using Textalonia.Export;
 using Textalonia.Layout;
 using Textalonia.Printing;
 using Textalonia.Rendering;
+using Textalonia.Model.Fields;
 
 namespace Textalonia.Controls;
 
@@ -21,6 +22,8 @@ public partial class TextaloniaEditor
     public IPrintService? PrintService { get; set; }
     /// <summary>Output representations and unsupported-content policy, captured when output begins.</summary>
     public DocumentRenderOptions? OutputRenderOptions { get; set; }
+    /// <summary>Null preserves cached field results. Otherwise output updates a detached snapshot using this explicit clock and resolver policy.</summary>
+    public FieldEvaluationOptions? OutputFieldOptions { get; set; }
 
     /// <summary>
     /// Captures exact physical pages, independently of the current view, zoom, selection and active story.
@@ -30,7 +33,15 @@ public partial class TextaloniaEditor
     {
         Dispatcher.UIThread.VerifyAccess();
         using var engine = new PaginationEngine();
-        var snapshot = engine.Paginate(Document, FontFamily, Brushes.Black,
+        var document = Document;
+        if (OutputFieldOptions is { } fieldOptions)
+        {
+            var updated = engine.UpdateFields(document, fieldOptions, FontFamily);
+            if (updated.Diagnostics.Any(d => d.Code == "field.pagination-not-converged"))
+                throw new InvalidOperationException("Output field pagination did not converge.");
+            document = updated.Document;
+        }
+        var snapshot = engine.Paginate(document, FontFamily, Brushes.Black,
             options: new PaginationOptions { PageGap = 0, MaxShapingCharacters = MaxShapingCharacters });
         try { return new DocumentRenderer(snapshot, OutputRenderOptions, ownsSnapshot: true); }
         catch { snapshot.Dispose(); throw; }

@@ -63,6 +63,7 @@ public partial class TextaloniaEditor : TemplatedControl
 
     public TextaloniaEditor()
     {
+        InitializeNavigationCommands();
         Session.Changed += OnSessionChanged;
         Highlights.CollectionChanged += (_, _) => _surface?.InvalidateVisual();
         BoldCommand = Command(ToggleSelectedBold);

@@ -6,6 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Textalonia.Model;
 using Textalonia.Editing;
+using Textalonia.Model.Fields;
 
 namespace Textalonia.Controls;
 
@@ -22,7 +23,8 @@ public class TextaloniaToolbar : WrapPanel
     private Button? _findButton;
     private Button? _mergeFieldUpdate;
     private Guid? _mergeFieldId;
-    private TextBox? _query;
+    private TextaloniaFindReplacePanel? _findPanel;
+    private Button? _navigationButton;
     private ComboBox? _viewMode;
     private NumericUpDown? _zoom;
     private NumericUpDown? _pagesPerRow;
@@ -59,6 +61,7 @@ public class TextaloniaToolbar : WrapPanel
 
     private void Build()
     {
+        if (_findPanel is not null) _findPanel.Editor = null;
         Children.Clear(); _toggles.Clear(); _editingControls.Clear(); _numericFormatting.Clear();
         _mergeFieldUpdate = null; _mergeFieldId = null; _storyStatus = null;
         _viewMode = null; _zoom = null; _pagesPerRow = null; _pageGap = null; _pageNumber = null; _pageStatus = null;
@@ -100,7 +103,11 @@ public class TextaloniaToolbar : WrapPanel
         ActionButton("Clear", "Clear character formatting", () => editor.ApplyStyle(_ => TextStyle.Default));
         CommandButton("Undo", "Undo", editor.UndoCommand);
         CommandButton("Redo", "Redo", editor.RedoCommand);
-        _findButton = AddFlyout("Find", "Find and replace", FindPanel(), editing: false);
+        _findPanel = new TextaloniaFindReplacePanel { Editor = editor };
+        _findButton = AddFlyout("Find", "Find and replace", _findPanel, editing: false);
+        _findPanel.CloseRequested += (_, _) => _findButton.Flyout?.Hide();
+        AddNavigationFlyout();
+        AddFieldsFlyout();
     }
 
     private ComboBox Choice(string[] values, double width, string name)
@@ -456,44 +463,123 @@ public class TextaloniaToolbar : WrapPanel
         update.Click += (_, _) => { if (Editor?.LastError is null) button.Flyout.Hide(); };
     }
 
-    private Control FindPanel()
-    {
-        var panel = new StackPanel { Width = 270, Spacing = 6 };
-        panel.Children.Add(Label("Find and replace"));
-        _query = new TextBox { PlaceholderText = "Find text" };
-        var replacement = new TextBox { PlaceholderText = "Replace with" };
-        var caseSensitive = new CheckBox { Content = "Match case" };
-        var result = new TextBlock { TextWrapping = TextWrapping.Wrap };
-        AutomationProperties.SetName(_query, "Find text"); AutomationProperties.SetName(replacement, "Replacement text");
-        panel.Children.Add(_query); panel.Children.Add(replacement); panel.Children.Add(caseSensitive);
-        var next = MakeButton("Find next", "Find next");
-        next.Click += (_, _) =>
-        {
-            if (Editor is null) return;
-            var found = Editor.FindNext(_query.Text ?? "", caseSensitive.IsChecked == true);
-            result.Text = found ? "Match selected" : "No matches";
-            Editor.Highlights.Clear();
-            foreach (var match in Editor.Session.FindAll(_query.Text ?? "", caseSensitive.IsChecked == true).Take(500))
-                Editor.Highlights.Add(new(match.Start, match.Length, new SolidColorBrush(Color.FromArgb(85, 245, 190, 65))));
-        };
-        panel.Children.Add(next);
-        panel.Children.Add(MenuAction("Replace all", () =>
-        {
-            result.Text = $"{Editor!.ReplaceAll(_query.Text ?? "", replacement.Text ?? "", caseSensitive.IsChecked == true)} replacement(s)";
-            Editor.Highlights.Clear();
-        }));
-        panel.Children.Add(MenuAction("Clear search highlights", () => Editor!.Highlights.Clear(), false));
-        panel.Children.Add(result);
-        return panel;
-    }
+    public void OpenFind() => OpenFind(false);
 
-    public void OpenFind()
+    public void OpenFind(bool replace)
     {
         if (_findButton?.Flyout is not { } flyout) return;
         flyout.ShowAt(_findButton);
-        _query?.Focus();
+        _findPanel?.RefreshResults(); _findPanel?.FocusQuery(replace);
     }
 
+    public void OpenNavigation()
+    {
+        if (_navigationButton?.Flyout is { } flyout) flyout.ShowAt(_navigationButton);
+    }
+
+    private void AddNavigationFlyout()
+    {
+        var panel = new StackPanel { Width = 310, Spacing = 6 };
+        var outline = new ComboBox { PlaceholderText = "Heading", HorizontalAlignment = HorizontalAlignment.Stretch };
+        var bookmarks = new ComboBox { PlaceholderText = "Bookmark", HorizontalAlignment = HorizontalAlignment.Stretch };
+        var name = new TextBox { PlaceholderText = "Bookmark name" };
+        var tooltip = new TextBox { PlaceholderText = "Link tooltip (optional)" };
+        var activation = new ComboBox { ItemsSource = Enum.GetValues<InternalLinkActivation>(), SelectedItem = InternalLinkActivation.ModifierClick };
+        AutomationProperties.SetName(outline, "Document outline"); AutomationProperties.SetName(bookmarks, "Bookmarks");
+        AutomationProperties.SetName(name, "Bookmark name"); AutomationProperties.SetName(tooltip, "Internal link tooltip");
+        AutomationProperties.SetName(activation, "Internal link activation");
+        panel.Children.Add(Label("Outline")); panel.Children.Add(outline);
+        panel.Children.Add(MenuAction("Go to heading", () => { if (outline.SelectedItem is OutlineItem item) Editor!.NavigateToOutline(item.Entry); }, false));
+        panel.Children.Add(Label("Bookmarks")); panel.Children.Add(bookmarks); panel.Children.Add(name);
+        bookmarks.SelectionChanged += (_, _) => { if (bookmarks.SelectedItem is string selected) name.Text = selected; };
+        panel.Children.Add(MenuAction("Go to bookmark", () => { if (bookmarks.SelectedItem is string selected) Editor!.NavigateToBookmark(selected); }, false));
+        panel.Children.Add(MenuAction("Add bookmark at selection", () => { Editor!.AddBookmark(name.Text ?? ""); Refresh(); }));
+        panel.Children.Add(MenuAction("Rename bookmark", () => { if (bookmarks.SelectedItem is string selected) { Editor!.RenameBookmark(selected, name.Text ?? ""); Refresh(); } }));
+        panel.Children.Add(MenuAction("Delete bookmark", () => { if (bookmarks.SelectedItem is string selected) { Editor!.DeleteBookmark(selected); Refresh(); } }));
+        panel.Children.Add(Label("Internal link on selection")); panel.Children.Add(tooltip); panel.Children.Add(activation);
+        panel.Children.Add(MenuAction("Link selection to bookmark", () =>
+        {
+            if (bookmarks.SelectedItem is string selected)
+                Editor!.SetInternalLink(selected, string.IsNullOrEmpty(tooltip.Text) ? null : tooltip.Text,
+                    activation.SelectedItem is InternalLinkActivation value ? value : InternalLinkActivation.ModifierClick);
+        }));
+        panel.Children.Add(MenuAction("Remove internal link", () => Editor!.ApplyStyle(s => s with { InternalLink = null })));
+        _navigationButton = AddFlyout("Navigate", "Outline, bookmarks and internal links", new ScrollViewer { Content = panel, MaxHeight = 560 }, editing: false);
+        _navigationButton.Flyout!.Opened += (_, _) => Refresh();
+        void Refresh()
+        {
+            if (Editor is not { } editor) return;
+            var selectedName = bookmarks.SelectedItem as string;
+            outline.ItemsSource = editor.GetOutline().Select(e => new OutlineItem(e)).ToArray();
+            bookmarks.ItemsSource = editor.Document.Bookmarks.Select(b => b.Name).OrderBy(n => n, StringComparer.Ordinal).ToArray();
+            if (selectedName is not null) bookmarks.SelectedItem = selectedName;
+        }
+    }
+    private sealed record OutlineItem(DocumentOutlineEntry Entry)
+    { public override string ToString() => new string(' ', (Entry.Level - 1) * 2) + Entry.Text; }
+
+    private void AddFieldsFlyout()
+    {
+        var panel = new StackPanel { Width = 310, Spacing = 6 };
+        var instruction = new TextBox { PlaceholderText = "Field instruction, e.g. DATE or TOC", Text = "DATE" };
+        var fields = new ComboBox { HorizontalAlignment = HorizontalAlignment.Stretch, PlaceholderText = "Field" };
+        var status = new TextBlock { TextWrapping = TextWrapping.Wrap };
+        var previewCodes = new CheckBox { Content = "Show field codes", IsChecked = true };
+        var previewText = new TextBox { IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MaxHeight = 180 };
+        AutomationProperties.SetName(previewCodes, "Preview field codes"); AutomationProperties.SetName(previewText, "Read-only active story field preview");
+        var previewContent = new StackPanel { Spacing = 4 };
+        previewContent.Children.Add(previewCodes); previewContent.Children.Add(previewText);
+        var preview = new Expander { Header = "Preview active story", Content = previewContent, HorizontalAlignment = HorizontalAlignment.Stretch };
+        AutomationProperties.SetName(instruction, "Field instruction"); AutomationProperties.SetName(fields, "Document fields");
+        AutomationProperties.SetName(status, "Field update status");
+        panel.Children.Add(Label("Fields")); panel.Children.Add(instruction);
+        panel.Children.Add(MenuAction("Insert field", () => { Editor!.Session.InsertField(instruction.Text ?? ""); Refresh(); }));
+        panel.Children.Add(MenuAction("Update fields", () =>
+        {
+            var result = Editor!.UpdateFieldsWithLayout(new() { Clock = DateTimeOffset.Now, Culture = System.Globalization.CultureInfo.CurrentCulture });
+            status.Text = $"{result.UpdatedCount} field(s) updated" + (result.Diagnostics.IsEmpty ? "" : Environment.NewLine + string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message).Distinct().Take(5)));
+            Refresh();
+        }));
+        panel.Children.Add(status); panel.Children.Add(fields);
+        panel.Children.Add(preview);
+        previewCodes.IsCheckedChanged += (_, _) => RefreshPreview();
+        preview.PropertyChanged += (_, change) => { if (change.Property == Expander.IsExpandedProperty) RefreshPreview(); };
+        fields.SelectionChanged += (_, _) => { if (fields.SelectedItem is FieldItem item) instruction.Text = item.Instruction; };
+        panel.Children.Add(MenuAction("Apply field instruction", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.SetFieldInstruction(item.Id, instruction.Text ?? ""); Refresh(); } }));
+        panel.Children.Add(MenuAction("Lock field", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.SetFieldLocked(item.Id, true); Refresh(); } }));
+        panel.Children.Add(MenuAction("Unlock field", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.SetFieldLocked(item.Id, false); Refresh(); } }));
+        panel.Children.Add(MenuAction("Remove field, keep result", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.RemoveField(item.Id); Refresh(); } }));
+        panel.Children.Add(Label("Contents and captions"));
+        panel.Children.Add(MenuAction("Insert table of contents", () => { Editor!.Session.InsertField("TOC \\o \"1-3\" \\h"); Refresh(); }));
+        panel.Children.Add(MenuAction("Insert list of figures", () => { Editor!.Session.InsertField("TOC \\c \"Figure\" \\h"); Refresh(); }));
+        panel.Children.Add(MenuAction("Insert list of tables", () => { Editor!.Session.InsertField("TOC \\c \"Table\" \\h"); Refresh(); }));
+        var label = new TextBox { Text = "Figure", PlaceholderText = "Caption label" };
+        var caption = new TextBox { PlaceholderText = "Caption text" };
+        AutomationProperties.SetName(label, "Caption label"); AutomationProperties.SetName(caption, "Caption text");
+        panel.Children.Add(label); panel.Children.Add(caption);
+        panel.Children.Add(MenuAction("Insert caption", () => { Editor!.Session.InsertCaption(label.Text ?? "Figure", caption.Text ?? ""); Refresh(); }));
+        _editingControls.AddRange([instruction, label, caption]);
+        var button = AddFlyout("Fields", "Insert and update document fields", new ScrollViewer { Content = panel, MaxHeight = 560 }, editing: false);
+        button.Flyout!.Opened += (_, _) => Refresh();
+        void Refresh()
+        {
+            if (Editor is not { } editor) return;
+            var selected = (fields.SelectedItem as FieldItem)?.Id;
+            var items = editor.Document.Fields.Select(f => new FieldItem(f.Id, f.Instruction, f.IsLocked)).ToArray();
+            fields.ItemsSource = items;
+            fields.SelectedItem = items.FirstOrDefault(f => f.Id == selected);
+            RefreshPreview();
+        }
+        void RefreshPreview()
+        {
+            if (!preview.IsExpanded || Editor is not { } editor) { previewText.Text = ""; return; }
+            previewText.Text = previewCodes.IsChecked == true
+                ? FieldCodeProjection.Create(editor.Document, editor.ActiveStoryId, showAll: true).Text
+                : editor.Document.GetStoryDocument(editor.ActiveStoryId).PlainText;
+        }
+    }
+    private sealed record FieldItem(Guid Id, string Instruction, bool Locked)
+    { public override string ToString() => Instruction + (Locked ? " (locked)" : ""); }
     private void ToggleRightToLeft()
     {
         var value = Editor!.FormattingState.Paragraph(s => s.RightToLeft);

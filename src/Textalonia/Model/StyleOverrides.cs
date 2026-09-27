@@ -18,6 +18,7 @@ public sealed record TextStyleOverrides
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<string?> Foreground { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<string?> Background { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<string?> Hyperlink { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<InternalLinkDestination?> InternalLink { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<Baseline> Baseline { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<UnderlineKind> UnderlineKind { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<string?> UnderlineColor { get; init; }
@@ -53,6 +54,7 @@ public sealed record TextStyleOverrides
         Foreground = Foreground.IsSet ? Foreground.Value : value.Foreground,
         Background = Background.IsSet ? Background.Value : value.Background,
         Hyperlink = Hyperlink.IsSet ? Hyperlink.Value : value.Hyperlink,
+        InternalLink = InternalLink.IsSet ? InternalLink.Value : value.InternalLink,
         Baseline = Baseline.IsSet ? Baseline.Value : value.Baseline,
         UnderlineKind = UnderlineKind.IsSet ? UnderlineKind.Value : Underline.IsSet && !Underline.Value ? global::Textalonia.Model.UnderlineKind.None : value.UnderlineKind,
         UnderlineColor = UnderlineColor.IsSet ? UnderlineColor.Value : value.UnderlineColor,
@@ -89,6 +91,7 @@ public sealed record TextStyleOverrides
         Foreground = new(style.Foreground),
         Background = new(style.Background),
         Hyperlink = new(style.Hyperlink),
+        InternalLink = new(style.InternalLink),
         Baseline = new(style.Baseline),
         UnderlineKind = new(style.UnderlineKind),
         UnderlineColor = new(style.UnderlineColor),
@@ -129,6 +132,7 @@ public sealed record TextStyleOverrides
             Foreground = EqualityComparer<string?>.Default.Equals(before.Foreground, after.Foreground) ? basis.Foreground : new(after.Foreground),
             Background = EqualityComparer<string?>.Default.Equals(before.Background, after.Background) ? basis.Background : new(after.Background),
             Hyperlink = EqualityComparer<string?>.Default.Equals(before.Hyperlink, after.Hyperlink) ? basis.Hyperlink : new(after.Hyperlink),
+            InternalLink = before.InternalLink == after.InternalLink ? basis.InternalLink : new(after.InternalLink),
             Baseline = EqualityComparer<Baseline>.Default.Equals(before.Baseline, after.Baseline) ? basis.Baseline : new(after.Baseline),
             UnderlineKind = EqualityComparer<UnderlineKind>.Default.Equals(before.UnderlineKind, after.UnderlineKind) ? basis.UnderlineKind : new(after.UnderlineKind),
             UnderlineColor = EqualityComparer<string?>.Default.Equals(before.UnderlineColor, after.UnderlineColor) ? basis.UnderlineColor : new(after.UnderlineColor),
@@ -167,6 +171,7 @@ public sealed record TextStyleOverrides
         nameof(Foreground) => this with { Foreground = default },
         nameof(Background) => this with { Background = default },
         nameof(Hyperlink) => this with { Hyperlink = default },
+        nameof(InternalLink) => this with { InternalLink = default },
         nameof(Baseline) => this with { Baseline = default },
         nameof(UnderlineKind) => this with { UnderlineKind = default },
         nameof(UnderlineColor) => this with { UnderlineColor = default },

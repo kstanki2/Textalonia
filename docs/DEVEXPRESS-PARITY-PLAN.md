@@ -2,7 +2,7 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **implementation plan; DX-01 through DX-04 implementation and
+candidate. Status: **implementation plan; DX-01 through DX-05 implementation and
 qualification status is recorded below. Other workstreams remain proposed unless explicitly noted.**
 
 The audit tables in sections 2-3 describe the baseline commit above; the DX-01
@@ -13,6 +13,8 @@ and document views. The DX-03 implementation entry and [story guide](STORIES.md)
 supersede baseline findings for headers, footers and notes. The DX-04 implementation
 entry and [output guide](OUTPUT.md) supersede baseline findings for print preview,
 host printing and basic PDF export; conformance and native qualification remain open.
+The DX-05 implementation entry and [field/navigation guide](FIELDS.md) supersede
+baseline findings for bookmarks, general fields, contents and navigation.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -429,6 +431,28 @@ bookmark/outline service. Preserve the existing merge-field convenience API.
 **Exit evidence:** a nested conditional merge; rich DOCVARIABLE result; stable page
 counts after a TOC changes length; cross-story fields; bookmark edits and paste
 conflicts; locked/unknown/cyclic fields; native/DOCX/RTF field round trips.
+
+**Implementation (2026-09-27):** delivered persistent story-local bookmark/field
+ranges, internal destinations and activation, an instruction AST and rich cached
+results, nested conditional/merge/date/property/reference/sequence/symbol/formula
+and host-resolved fields, contents/captions, bounded physical-page re-evaluation,
+story/revision-aware transactional search, outline/bookmark navigation, reusable
+find/replace and toolbar authoring. Native JSON v8, XAML v3 and clipboard v4 preserve
+the new model; DOCX/RTF preserve standard field/bookmark structures and rich caches.
+Existing atomic merge and page-field APIs remain supported. See [FIELDS.md](FIELDS.md)
+for the exact field families, update policies, coordinate contract and evidence.
+Validation: Release solution build passed without warnings; 990 managed tests
+passed with three existing skips, including two 180-step anchor fuzz seeds. The
+fresh-cache independent NuGet consumer passed against the packaged build; offline
+cached dependencies were used. This is managed/package evidence, not native or
+external Office qualification.
+
+Qualification boundaries remain explicit: full Word switch compatibility, advanced
+formatted/nested page expressions in repeated stories, editable mixed code/result
+views, typed property authoring and external Office/native accessibility qualification
+are not claimed by this implementation. Code views currently use a read-only
+projection; ordinary editing retains cached-result coordinates. DX-14 release gates
+remain open.
 
 ### DX-06 — Table and list extensions
 

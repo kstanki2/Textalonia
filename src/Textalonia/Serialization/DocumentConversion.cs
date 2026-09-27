@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Textalonia.Model;
+using Textalonia.Model.Fields;
 
 namespace Textalonia.Serialization;
 
@@ -29,6 +30,8 @@ public sealed record ConversionOptions
     public ConversionMode Mode { get; init; }
     /// <summary>Explicitly flatten the successfully parsed document or export snapshot to plain text.</summary>
     public bool PlainTextOnly { get; init; }
+    /// <summary>Null preserves cached results. An explicit policy updates fields on the loaded or saved snapshot.</summary>
+    public FieldEvaluationOptions? FieldOptions { get; init; }
 }
 
 public sealed record DocumentLoadResult(FlowDocument Document, ConversionReport Report);
@@ -66,7 +69,7 @@ public static class DocumentFormatExtensions
         FlowDocument document;
         if (format is IReportingDocumentFormat reporting)
         {
-            var result = await reporting.LoadWithReportAsync(stream, options with { Mode = ConversionMode.Tolerant, PlainTextOnly = false }, cancellationToken);
+            var result = await reporting.LoadWithReportAsync(stream, options with { Mode = ConversionMode.Tolerant, PlainTextOnly = false, FieldOptions = null }, cancellationToken);
             document = result.Document;
             diagnostics.AddRange(result.Report.Diagnostics);
         }
@@ -77,6 +80,7 @@ public static class DocumentFormatExtensions
         }
         cancellationToken.ThrowIfCancellationRequested();
         document.Validate();
+        document = UpdateFields(document, options, cancellationToken);
         if (options.PlainTextOnly) document = Flatten(document);
         cancellationToken.ThrowIfCancellationRequested();
         var report = diagnostics.ToReport();
@@ -94,12 +98,13 @@ public static class DocumentFormatExtensions
         cancellationToken.ThrowIfCancellationRequested();
         document.Validate();
         using var diagnostics = ConversionDiagnostics.Begin();
+        document = UpdateFields(document, options, cancellationToken);
         if (options.PlainTextOnly) document = Flatten(document);
         ReportExportLosses(format, document);
         using var buffer = new MemoryStream();
         if (format is IReportingDocumentFormat reporting)
         {
-            var result = await reporting.SaveWithReportAsync(document, buffer, options with { Mode = ConversionMode.Tolerant, PlainTextOnly = false }, cancellationToken);
+            var result = await reporting.SaveWithReportAsync(document, buffer, options with { Mode = ConversionMode.Tolerant, PlainTextOnly = false, FieldOptions = null }, cancellationToken);
             diagnostics.AddRange(result.Report.Diagnostics);
         }
         else
@@ -116,8 +121,26 @@ public static class DocumentFormatExtensions
         return new(report);
     }
 
+    private static FlowDocument UpdateFields(FlowDocument document, ConversionOptions options, CancellationToken token)
+    {
+        if (options.FieldOptions is not { } fieldOptions) return document;
+        var result = FieldEvaluator.Update(document, fieldOptions with { CancellationToken = token });
+        foreach (var diagnostic in result.Diagnostics)
+            ConversionDiagnostics.Report(diagnostic.Code, "Field evaluation", diagnostic.Message, diagnostic.FieldId);
+        return result.Document;
+    }
+
     internal static void ReportExportLosses(IDocumentFormat format, FlowDocument document)
     {
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat))
+        {
+            if (!document.Fields.IsEmpty) ConversionDiagnostics.Report("conversion.fields", "General fields", "Cached rich results retained; instructions and update semantics omitted.");
+            if (!document.Bookmarks.IsEmpty) ConversionDiagnostics.Report("conversion.bookmarks", "Bookmark ranges", "Bookmark destinations omitted.");
+            if (new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs).Any(r => r.Style.InternalLink is not null))
+                ConversionDiagnostics.Report("conversion.internal-links", "Internal hyperlinks", "Visible link text retained; destination omitted.");
+        }
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat) && !document.Properties.IsEmpty)
+            ConversionDiagnostics.Report("conversion.document-properties", "Document properties", "Property metadata omitted; cached field results retained.");
         if (format is not (JsonDocumentFormat or XamlDocumentFormat))
         {
             var resolver = new DocumentStyleResolver(document);

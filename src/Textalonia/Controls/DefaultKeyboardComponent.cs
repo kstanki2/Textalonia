@@ -42,7 +42,8 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
                 Key.V => Context.Editor.PasteCommand, Key.A => Context.Editor.SelectAllCommand, _ => null
             };
             if (action is not null) { Context.CancelComposition(); if (action.CanExecute(null)) action.Execute(null); e.Handled = true; return; }
-            if (e.Key == Key.F) { Context.Editor.RequestFind(); e.Handled = true; return; }
+            if (e.Key == Key.F) { Context.CancelComposition(); Context.Editor.FindCommand.Execute(null); e.Handled = true; return; }
+            if (e.Key == Key.H) { Context.CancelComposition(); Context.Editor.ReplaceCommand.Execute(null); e.Handled = true; return; }
         }
         Context.Surface.EnsureLayout(Context.Surface.Bounds.Width);
         try

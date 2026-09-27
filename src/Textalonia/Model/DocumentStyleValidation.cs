@@ -43,6 +43,9 @@ internal static class DocumentStyleValidation
         FlowDocument.ValidateColor(style.UnderlineColor);
         if (style.Hyperlink is not null && !FlowDocument.IsSafeHyperlink(style.Hyperlink))
             throw new FormatException("Links must use http, https, or mailto.");
+        if (style.InternalLink is { } destination && (!InlineDescriptor.ValidKey(destination.BookmarkName) ||
+            destination.Tooltip is { Length: > 4096 } || !Enum.IsDefined(destination.Activation) || style.Hyperlink is not null))
+            throw new FormatException("Invalid internal link destination or conflicting external URI.");
         if (!Enum.IsDefined(style.UnderlineKind) || !Enum.IsDefined(style.StrikeKind) ||
             !double.IsFinite(style.Tracking) || style.Tracking is < -1000 or > 1000 ||
             !double.IsFinite(style.HorizontalScale) || style.HorizontalScale is < 0.01 or > 10 ||

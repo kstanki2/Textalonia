@@ -69,9 +69,16 @@ public sealed partial class EditorSession
         else
         {
             var inherited = document.ResolveHeaderFooter(at, footer, variant);
-            var story = new DocumentStory { Kind = footer ? DocumentStoryKind.Footer : DocumentStoryKind.Header,
-                Blocks = inherited is null ? [new Paragraph()] : BlockOperations.Clone(inherited.Blocks) };
-            document = document with { Stories = document.Stories.Add(story.Id, story) };
+            var copy = inherited is null ? new FlowDocument() : DocumentFragments.Prepare(document.GetStoryDocument(inherited.Id), document);
+            var story = new DocumentStory { Kind = footer ? DocumentStoryKind.Footer : DocumentStoryKind.Header, Blocks = copy.Blocks };
+            DocumentAnchor Own(DocumentAnchor anchor) => anchor with { StoryId = story.Id };
+            document = document with
+            {
+                Stories = document.Stories.Add(story.Id, story), Resources = inherited is null ? document.Resources : copy.Resources,
+                Styles = inherited is null ? document.Styles : copy.Styles, Fonts = inherited is null ? document.Fonts : copy.Fonts,
+                Bookmarks = document.Bookmarks.AddRange(copy.Bookmarks.Select(bookmark => bookmark with { Start = Own(bookmark.Start), End = Own(bookmark.End) })),
+                Fields = document.Fields.AddRange(copy.Fields.Select(field => field with { Start = Own(field.Start), End = Own(field.End) }))
+            };
             reference = new() { LinkToPrevious = false, StoryId = story.Id };
         }
         document = document with { Sections = sections.SetItem(at, sections[at] with { HeaderFooter = settings.WithReference(footer, variant, reference) }) };
@@ -105,7 +112,7 @@ public sealed partial class EditorSession
         if (IsReadOnly) return;
         var note = Document.Notes.FirstOrDefault(n => n.Id == noteId) ?? throw new ArgumentException("The note does not exist.", nameof(noteId));
         var document = Document.RewriteParagraphs(p => [p with { Runs = p.Runs.Where(r => r.Inline?.Payload is not NoteInlinePayload reference || reference.NoteId != noteId).ToImmutableArray() }]);
-        document = document with { Notes = document.Notes.Remove(note), Stories = document.Stories.Remove(note.StoryId) };
+        document = DocumentAnchors.Reconcile(Document, document with { Notes = document.Notes.Remove(note), Stories = document.Stories.Remove(note.StoryId) });
         if (ActiveStoryId == note.StoryId) ReturnToBody();
         document.Validate(); Commit(document.PruneUnusedResources(), Selection, wholeDocument: true);
     }
@@ -142,6 +149,8 @@ public sealed partial class EditorSession
         Visit(document.Blocks);
         var removed = document.Notes.Where(n => !referenced.Contains(n.Id)).ToArray();
         return removed.Length == 0 ? document : document with
-        { Notes = document.Notes.Where(n => referenced.Contains(n.Id)).ToImmutableArray(), Stories = document.Stories.RemoveRange(removed.Select(n => n.StoryId)) };
+        { Notes = document.Notes.Where(n => referenced.Contains(n.Id)).ToImmutableArray(), Stories = document.Stories.RemoveRange(removed.Select(n => n.StoryId)),
+            Bookmarks = document.Bookmarks.Where(bookmark => !removed.Any(note => note.StoryId == bookmark.Start.StoryId)).ToImmutableArray(),
+            Fields = document.Fields.Where(field => !removed.Any(note => note.StoryId == field.Start.StoryId)).ToImmutableArray() };
     }
 }

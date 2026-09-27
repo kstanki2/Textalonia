@@ -45,7 +45,7 @@ internal static class Program
         if (saved.Report.HasLoss || loaded.Report.HasLoss || DocumentFormats.Json.Serialize(loaded.Document) != DocumentFormats.Json.Serialize(document))
             throw new InvalidOperationException("Packaged strict native conversion failed.");
         var envelope = System.Text.Json.Nodes.JsonNode.Parse(DocumentFormats.Json.Serialize(document))!;
-        foreach (var version in new[] { 1, 2, 3, 8 })
+        foreach (var version in new[] { 1, 2, 3, 9 })
         {
             envelope["version"] = version;
             try
@@ -98,6 +98,14 @@ internal static class Program
     {
         VerifyInterchange();
         VerifyIntegrationCodecs();
+        var fieldSession = new Textalonia.Editing.EditorSession(FlowDocument.FromText("cached"));
+        fieldSession.SelectAll();
+        fieldSession.InsertField("IF { MERGEFIELD Count } > 1 \"many\" \"one\"", FlowDocument.FromText("cached"));
+        fieldSession.UpdateFields(new() { MergeValues = new Dictionary<string, object?> { ["Count"] = 2 } });
+        fieldSession.SelectAll(); fieldSession.AddBookmark("result");
+        var fieldReopened = DocumentFormats.Json.Parse(DocumentFormats.Json.Serialize(fieldSession.Document));
+        if (fieldReopened.Text != "many" || fieldReopened.Fields.Length != 1 || fieldReopened.Bookmarks.Length != 1)
+            throw new InvalidOperationException("Packaged general fields and bookmark round trip failed.");
         using var session = HeadlessUnitTestSession.StartNew(typeof(Bootstrap));
         // Keep disposal on the entry thread, outside the headless dispatcher.
         session.Dispatch<bool>(async () =>
@@ -214,7 +222,7 @@ internal static class Program
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
                 await StoryExample.VerifyAsync(editor, window);
                 await ExtensionExamples.VerifyAsync(window);
-                Console.WriteLine("Package consumer passed: custom codecs/resources/input/viewer lifecycle, compiled XAML, themes, input, formatting, native v7, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, editable header/note stories, DOCX stories, page regions, and rendering.");
+                Console.WriteLine("Package consumer passed: general fields/bookmarks, custom codecs/resources/input/viewer lifecycle, compiled XAML, themes, input, formatting, native v8, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, editable header/note stories, DOCX stories, page regions, and rendering.");
             }
             finally { window.Close(); }
             return true;

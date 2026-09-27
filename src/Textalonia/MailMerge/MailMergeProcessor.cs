@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Globalization;
 using Textalonia.Model;
+using Textalonia.Model.Fields;
 
 namespace Textalonia.MailMerge;
 
@@ -195,7 +196,15 @@ public static class MailMergeProcessor
             if (storyBlocks != pair.Value.Blocks) stories = stories.SetItem(pair.Key, pair.Value with { Blocks = storyBlocks });
         }
         token.ThrowIfCancellationRequested();
-        return blocks == template.Blocks && ReferenceEquals(stories, template.Stories) ? template : template with { Blocks = blocks, Stories = stories };
+        var result = blocks == template.Blocks && ReferenceEquals(stories, template.Stories) ? template : template with { Blocks = blocks, Stories = stories };
+        result = DocumentAnchors.Reconcile(template, result);
+        if (options.FieldOptions is { } fieldOptions)
+        {
+            var evaluated = FieldEvaluator.Update(result, fieldOptions with { MergeValues = data, Culture = options.Culture, CancellationToken = token });
+            foreach (var diagnostic in evaluated.Diagnostics) options.FieldDiagnostic?.Invoke(diagnostic);
+            result = evaluated.Document;
+        }
+        return result;
     }
 
     // A null result means retain the live field. An empty string is a resolved value.

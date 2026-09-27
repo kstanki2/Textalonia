@@ -16,6 +16,11 @@ public enum MissingFieldBehavior
 /// <summary>Deterministic options shared by preview and document generation.</summary>
 public sealed record MailMergeOptions
 {
+    /// <summary>Explicitly evaluates general fields using each record. Null preserves their cached results.</summary>
+    public Textalonia.Model.Fields.FieldEvaluationOptions? FieldOptions { get; init; }
+    /// <summary>Receives diagnostics from general field evaluation. Callback exceptions abort the merge.</summary>
+    public Action<Textalonia.Model.Fields.FieldDiagnostic>? FieldDiagnostic { get; init; }
+
     /// <summary>Formatting culture; invariant by default. A read-only copy is captured when processing starts.</summary>
     public CultureInfo Culture { get; init; } = CultureInfo.InvariantCulture;
 

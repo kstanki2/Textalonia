@@ -118,7 +118,7 @@ public class MarkdownCodecTests
     {
         var original = Format.Parse("> Quote\n\n```csharp\ncode\n```\n\n`inline`");
         var json = DocumentFormats.Json.Serialize(original);
-        Assert.Contains("\"version\": 7", json);
+        Assert.Contains("\"version\": 8", json);
         Assert.Equal(json, DocumentFormats.Json.Serialize(DocumentFormats.Json.Parse(json)));
     }
 

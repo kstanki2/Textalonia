@@ -62,7 +62,7 @@ and clipboard operations. The demo shows conversion reports after file operation
 All external formats omit hidden physical cells and merge restoration backups with
 `conversion.merge-history`. Resources without supported references produce
 `conversion.unused-resource` (DOCX also recognizes embedded-font references). Native
-JSON v7 preserves the full model and reads v4/v5/v6/v7; earlier versions remain rejected.
+JSON v8 preserves the full model and reads v4/v5/v6/v7/v8; earlier versions remain rejected.
 Plain text retains visible text/paragraph separators and inline alternative text;
 its `text.*` diagnostics describe discarded formatting, containers and resources.
 
@@ -77,9 +77,12 @@ its `text.*` diagnostics describe discarded formatting, containers and resources
 | Tables | Nested cell blocks, spans, relative columns, rows, cell edges/padding/background | Rectangular grids, horizontal/vertical merges, relative widths, row policies/background; nested table and cell decoration losses reported | Nested tables, grid/vMerge geometry, relative columns, row policies, cell edges/padding/background; named table shading/padding/borders; conditional styles/layout/position and unsupported cell properties reported |
 | Images | Bounded data-URI PNG/JPEG/GIF/BMP/WebP raster data; dimensions/alt text and deduplication | Embedded PNG/JPEG; alternative text is not retained by standard picture data and is reported | Supported embedded PNG/JPEG/GIF/BMP/TIFF relationships; dimensions/alt text and deduplication; cropping/rotation/floating placement reported |
 | Headers, footers and notes | Story omission diagnosed | Primary/first/even header/footer destinations, footnotes/endnotes, custom marks/settings and page fields; rich-content and section limitations diagnosed | Rich relationship-scoped stories, linked variants, note markers/settings, separators and page fields; unsupported variants diagnosed. See [STORIES.md](STORIES.md) |
-| Merge fields | Display text with loss diagnostic | Basic MERGEFIELD name/cached result; unsupported switches and native formatting/fallback options diagnosed | Simple/complex MERGEFIELD import and simple-field export; unsupported switches, nested fields and linked recipient metadata diagnosed |
-| Links | Safe absolute http/https/mailto | Safe HYPERLINK field results | Safe external hyperlink relationships |
-| Unsafe/unavailable content | Scripts, unknown elements/CSS, relative or unsafe links, remote/unsupported images produce notices; no fetch | Unknown controls/destinations, unsafe fields, unavailable/unsupported images produce notices; no fetch | Revision history, dynamic fields outside the merge/page-field subset, drawings outside subset, unsupported XML properties, unsafe/external images produce notices; no fetch |
+| Merge fields | Display text with loss diagnostic | Atomic MERGEFIELD compatibility plus general rich result ranges; unsupported atomic switches and native formatting/fallback options diagnosed | Simple/complex atomic MERGEFIELD compatibility plus general rich result ranges; unsupported atomic switches and linked recipient metadata diagnosed |
+| General fields | Cached rich results with loss diagnostic | Standard field instruction/result groups, nested instruction expressions and rich ranges, lock/dirty state and secondary stories; unknown/malformed instructions retained with diagnostics | Simple/complex field import, complex-marker export, nested instruction expressions and rich ranges across paragraphs/stories; unknown/malformed instructions retained with diagnostics |
+| Bookmarks | Range omission diagnosed | Standard bookmark start/end destinations; duplicate names renamed with diagnostics | Standard bookmark start/end markers; duplicate names renamed with diagnostics |
+| Document properties | Metadata omission diagnosed | String property catalog retained in a Textalonia ignorable destination | String property catalog in standard custom-properties part; typed/core property mapping remains outside this subset |
+| Links | Safe absolute http/https/mailto; internal destination omission diagnosed | Safe external HYPERLINK fields and internal bookmark targets with tooltip; activation preference retained in ignorable metadata | Safe external hyperlink relationships and internal bookmark anchors with tooltip; activation preference retained in ignorable metadata |
+| Unsafe/unavailable content | Scripts, unknown elements/CSS, relative or unsafe links, remote/unsupported images produce notices; no fetch | Unknown controls/destinations, unsafe fields, unavailable/unsupported images produce notices; no fetch | Revision history, unsupported field evaluation codes, drawings outside subset, unsupported XML properties, unsafe/external images produce notices; no fetch |
 
 HTML metadata preserves model semantics that CSS cannot exactly render, notably
 custom markers and exact row-height policy. These are still reported as browser
@@ -94,6 +97,35 @@ invalid byte sequences; RTF honors declared supported code pages and groups adja
 encoded bytes before decoding. No parser executes embedded content. See
 [the API and clipboard contracts](INTERCHANGE.md) for stream ownership, cancellation,
 strict rejection, boundary merging, destination shells and fallback order.
+
+## Anchored fields, bookmarks and internal links
+
+Native JSON v8 and data XAML v3 retain range identities, story/paragraph anchors,
+boundary affinity, instructions, lock/dirty/show-code flags, internal-link metadata
+and the string property catalog. Data XAML also reads v1/v2. Existing atomic
+`MERGEFIELD` and page-field descriptors remain supported.
+
+A general field's cached result is ordinary rich story content. DOCX and RTF emit
+standard field/bookmark markup, including child fields inside nested instructions, so another reader can display cached content and
+recognize field instructions and destinations. Textalonia extension metadata retains
+range IDs, boundary affinity, native field options and link activation preferences.
+DOCX declares these attributes with markup-compatibility `Ignorable`; RTF uses
+ignorable destinations. Other applications may drop that metadata. Preservation
+in Textalonia does not establish another application's support for every field code.
+
+Import never evaluates fields or fetches external data. Unknown or malformed codes
+retain instructions and cached results with `<format>.unsupported-field` diagnostics;
+empty instructions retain cached content with a diagnostic and no field metadata.
+Unmatched bookmark markers are omitted with a diagnostic. Field nesting is bounded
+at 32 and instructions at 16,384 UTF-16 units. Invalid anchors, crossed field ranges,
+invalid extension metadata and size limits are rejected during parsing/validation.
+Evaluation policies and host resolvers are described in [FIELDS.md](FIELDS.md).
+
+Legacy single atomic MERGEFIELD/page imports retain their earlier result-formatting
+limits and diagnostics. General ranged fields preserve multiple run styles and
+inline results. RTF foreign merge results containing unsupported block controls
+continue to report their legacy fallback. DOCX/RTF property persistence currently
+covers string values; it is not a typed built-in/custom-property API.
 
 ## Corpus and comparison
 
@@ -121,7 +153,7 @@ or desktop interoperability evidence.
 
 ## Fragment transfer
 
-`DocumentFragment` version 3 (readers also accept v1/v2) contains a native document and paragraph boundary
+`DocumentFragment` version 4 (readers also accept v1/v2/v3) contains a native document and paragraph boundary
 flags. `EditorSession.CopyFragment`, `CopyCells`, and `InsertFragment` work without
 a control, and can also be used by a future drag/drop adapter. `CopySelection` and
 `InsertDocument` remain available as document-based compatibility APIs.
@@ -131,7 +163,10 @@ selection bounds expand to a rectangle and then to include every intersecting
 merged cell. `CopyCells` takes explicit table coordinates and expands across merged
 owners. Whole selected cells retain nested blocks and merge restoration data;
 partially selected merged contents discard unselected hidden text and backups.
-Unused resources are pruned from the resulting fragment.
+Unused resources are pruned from the resulting fragment. Bookmarks clip to the copied
+range; a general field is copied only when its complete cached result is included.
+Paste remaps range and content identities, resolves bookmark-name conflicts, and
+rewrites internal links and reference-field instructions for renamed destinations.
 
 Insertion targets the innermost destination block container. It clones block,
 cell, inline and list identities, including hidden cells/backups. Each paste gets

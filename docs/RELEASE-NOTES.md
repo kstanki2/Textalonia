@@ -12,7 +12,7 @@ requires updating these notes before creating the publication candidate.
 Immutable documents and editing sessions; formatting, lists, nested/merged
 tables and undo; editor, selectable viewer and replaceable toolbar/input;
 inline image/control descriptors and host resource services; diagnosed
-text/HTML/RTF/DOCX interchange; native JSON v7 (v4-v7 readable); data XAML v2;
+text/HTML/RTF/DOCX interchange; native JSON v8 (v4-v8 readable); data XAML v3;
 bounded Markdown codec/viewer and optional host highlighting. The core package is
 Textalonia; PDF export is available through optional Textalonia.Pdf.Skia.
 The core editor does not require that backend or a desktop host.
@@ -51,7 +51,7 @@ are included in the same package. Use the independent PackageSmoke program as a
 compiling example for extension services and input replacement.
 
 Read [API contracts](API-CONTRACTS.md) before attaching mutable sessions/services
-to controls. Native JSON writes schema v7 and reads v4/v5/v6/v7; other versions are rejected. Earlier development schemas were never published or used
+to controls. Native JSON writes schema v8 and reads v4/v5/v6/v7/v8; other versions are rejected. Earlier development schemas were never published or used
 and have no migration support. Use strict conversion reports when export loss
 matters.
 
@@ -79,7 +79,7 @@ Font/paragraph/tabs/style dialogs are available from the toolbar. Advanced run
 shaping, tab stops/leaders, paragraph spacing and decorations share hit-test and
 caret geometry. DX-02 subsequently added pagination for page/keep/widow and grid metadata.
 
-DX-01 introduced native v5; the current native schema is v7 as described above.
+DX-01 introduced native v5; the current native schema is v8 as described above.
 XAML and clipboard retain the new model;
 DOCX retains mapped styles/themes/fonts. Other formats report flattened style
 identity and unsupported typography. See [support details](STYLES.md).
@@ -98,3 +98,15 @@ and platform font qualification remain pending. Tagged PDF, PDF/A and PDF/UA are
 not exposed; logical structure and external-validator conformance remain future
 DX-04 work. The optional backend adds Avalonia.Skia and its native dependencies;
 see [third-party notices](../THIRD-PARTY-NOTICES.md).
+
+
+## DX-05 fields and navigation
+
+Persistent bookmarks and internal destinations, rich general fields, deterministic
+field evaluation, contents/captions, bounded page re-evaluation, outline navigation
+and reusable story-aware find/replace are available in this candidate. Field
+results retain ordinary rich-text coordinates; code previews are read-only.
+Native v8, data XAML v3 and clipboard v4 preserve the new metadata, with DOCX/RTF
+standard field/bookmark interchange and diagnosed unsupported cases. See
+[FIELDS.md](FIELDS.md) for exact field families, update policy and remaining
+formatted repeated-field, complete switch and native/Office qualification limits.

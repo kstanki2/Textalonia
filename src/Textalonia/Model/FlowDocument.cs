@@ -18,13 +18,20 @@ public sealed record FlowDocument
     public ImmutableArray<DocumentSection> Sections { get; init; } = [];
     public ImmutableDictionary<Guid, DocumentStory> Stories { get; init; } = ImmutableDictionary<Guid, DocumentStory>.Empty;
     public ImmutableArray<DocumentNote> Notes { get; init; } = [];
+    public ImmutableArray<DocumentBookmark> Bookmarks { get; init; } = [];
+    public ImmutableArray<DocumentField> Fields { get; init; } = [];
+    public ImmutableDictionary<string, string> Properties { get; init; } = ImmutableDictionary<string, string>.Empty;
     public NoteSettings FootnoteSettings { get; init; } = new();
     public NoteSettings EndnoteSettings { get; init; } = new() { Placement = NotePlacement.DocumentEnd };
 
     /// <summary>Returns the main story for Guid.Empty, or a standalone view of a secondary story.</summary>
     public FlowDocument GetStoryDocument(Guid storyId) => storyId == Guid.Empty ? this :
         Stories.TryGetValue(storyId, out var story) ? this with
-        { Blocks = story.Blocks, Sections = [], Stories = ImmutableDictionary<Guid, DocumentStory>.Empty, Notes = [] } :
+        { Blocks = story.Blocks, Sections = [], Stories = ImmutableDictionary<Guid, DocumentStory>.Empty, Notes = [],
+            Bookmarks = Bookmarks.Where(b => b.Start.StoryId == storyId).Select(b => b with
+                { Start = b.Start with { StoryId = Guid.Empty }, End = b.End with { StoryId = Guid.Empty } }).ToImmutableArray(),
+            Fields = Fields.Where(f => f.Start.StoryId == storyId).Select(f => f with
+                { Start = f.Start with { StoryId = Guid.Empty }, End = f.End with { StoryId = Guid.Empty } }).ToImmutableArray() } :
         throw new ArgumentException("The document story does not exist.", nameof(storyId));
 
     public DocumentIndex GetStoryIndex(Guid storyId) => new(GetStoryDocument(storyId));
@@ -133,6 +140,7 @@ public sealed record FlowDocument
         if (resourceBytes > DocumentResource.MaximumDocumentEmbeddedBytes) throw new FormatException("Document embedded resources exceed the size limit.");
         DocumentStyleValidation.Validate(this);
         DocumentFontValidation.Validate(this);
+        DocumentAnchors.Validate(this);
         var resolver = new DocumentStyleResolver(this);
         var ids = new HashSet<Guid>();
         var noteReferences = new HashSet<Guid>();

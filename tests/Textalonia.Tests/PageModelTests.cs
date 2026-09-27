@@ -64,7 +64,7 @@ public class PageModelTests
         }
         var payload = ClipboardInterchange.Serialize(new() { Document = document });
         Assert.Equal(DocumentFormats.Json.Serialize(document), DocumentFormats.Json.Serialize(ClipboardInterchange.Parse(payload).Document));
-        Assert.Contains("\"version\": 7", DocumentFormats.Json.Serialize(document));
+        Assert.Contains("\"version\": 8", DocumentFormats.Json.Serialize(document));
     }
 
     [Theory]

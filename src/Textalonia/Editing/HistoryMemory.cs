@@ -82,6 +82,12 @@ internal sealed class RetentionGraph
         DocumentStory story => 64 + story.Blocks.Length * 8L,
         DocumentNote[] notes => 24 + notes.Length * 8L,
         DocumentNote => 64,
+        DocumentBookmark[] bookmarks => 24 + bookmarks.Length * 8L,
+        DocumentField[] fields => 24 + fields.Length * 8L,
+        DocumentBookmark => 64,
+        DocumentField => 88,
+        DocumentAnchor => 64,
+        InternalLinkDestination => 40,
         DocumentFontDefinition[] fonts => 24 + fonts.Length * 8L,
         TabStop[] tabs => 24 + tabs.Length * 8L,
         TextStyle => 320,
@@ -98,6 +104,14 @@ internal sealed class RetentionGraph
             case DocumentStory story: foreach (var block in story.Blocks) visit(DocumentNode.HiddenBlock(block)); break;
             case DocumentNote[] notes: foreach (var note in notes) visit(note); break;
             case DocumentNote note: if (note.CustomMark is not null) visit(note.CustomMark); break;
+            case DocumentBookmark[] bookmarks: foreach (var bookmark in bookmarks) visit(bookmark); break;
+            case DocumentBookmark bookmark: visit(bookmark.Name); visit(bookmark.Start); visit(bookmark.End); break;
+            case DocumentField[] fields: foreach (var field in fields) visit(field); break;
+            case DocumentField field:
+                visit(field.Instruction); visit(field.Start); visit(field.End);
+                if (field.LegacyMergeField is not null) visit(field.LegacyMergeField);
+                break;
+            case InternalLinkDestination link: visit(link.BookmarkName); if (link.Tooltip is not null) visit(link.Tooltip); break;
             case NoteSettings settings: visit(settings.SeparatorText); visit(settings.ContinuationSeparatorText); break;
             case HeaderFooterSettings settings:
                 foreach (var footer in new[] { false, true }) foreach (var variant in Enum.GetValues<HeaderFooterVariant>()) visit(settings.GetReference(footer, variant)); break;
@@ -225,6 +239,7 @@ internal sealed class RetentionGraph
                 if (style.Foreground is not null) visit(style.Foreground);
                 if (style.Background is not null) visit(style.Background);
                 if (style.Hyperlink is not null) visit(style.Hyperlink);
+                if (style.InternalLink is not null) visit(style.InternalLink);
                 break;
         }
     }

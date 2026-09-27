@@ -370,16 +370,16 @@ internal sealed partial class DocumentLayout : IDisposable
             if (to <= from) continue;
             var style = run.Style;
             if (paragraph.Runs.Length == 1 && style == paragraph.DefaultStyle && style.Baseline == Baseline.Normal &&
-                !style.Underline && !style.Strikethrough && style.Hyperlink is null && style.Foreground is null && style.Background is null)
+                !style.Underline && !style.Strikethrough && style.Hyperlink is null && style.InternalLink is null && style.Foreground is null && style.Background is null)
                 break;
             TextDecorationCollection? decorations = null;
             // Preset decorations are mutable AvaloniaObjects shared globally. Own
             // these objects on the surface's dispatcher, just like its layouts.
-            if (style.Underline || style.Hyperlink is not null) (decorations ??= []).Add(new TextDecoration { Location = TextDecorationLocation.Underline });
+            if (style.Underline || style.Hyperlink is not null || style.InternalLink is not null) (decorations ??= []).Add(new TextDecoration { Location = TextDecorationLocation.Underline });
             if (style.Strikethrough) (decorations ??= []).Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
             var properties = new GenericTextRunProperties(
                 Typeface(style, font), style.FontSize * (style.Baseline == Baseline.Normal ? 1 : .75),
-                decorations, Brush(style.Foreground) ?? (style.Hyperlink is not null ? Brush("#3478CE") : foreground),
+                decorations, Brush(style.Foreground) ?? (style.Hyperlink is not null || style.InternalLink is not null ? Brush("#3478CE") : foreground),
                 Brush(style.Background), style.Baseline switch
                 { Baseline.Subscript => BaselineAlignment.Subscript, Baseline.Superscript => BaselineAlignment.Superscript, _ => BaselineAlignment.Baseline });
             (overrides ??= []).Add(new(from - start, to - from, properties));

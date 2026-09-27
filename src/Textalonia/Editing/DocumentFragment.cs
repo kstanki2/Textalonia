@@ -6,7 +6,7 @@ namespace Textalonia.Editing;
 /// <summary>A versioned, self-contained clipboard fragment. Partial containers retain their formatting.</summary>
 public sealed record DocumentFragment
 {
-    public const int CurrentVersion = 3;
+    public const int CurrentVersion = 4;
     public int Version { get; init; } = CurrentVersion;
     public FlowDocument Document { get; init; } = new();
     /// <summary>Whether the first paragraph edge merges when pasted inside destination text.</summary>
@@ -16,7 +16,7 @@ public sealed record DocumentFragment
 
     public void Validate()
     {
-        if (Version is not (1 or 2 or CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {Version} is not supported.");
+        if (Version is not (1 or 2 or 3 or CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {Version} is not supported.");
         if (Document is null) throw new FormatException("Missing clipboard document.");
         Document.Validate();
     }
@@ -93,7 +93,7 @@ internal static class DocumentFragments
         var first = index.At(selection.Start); var last = index.At(selection.End);
         var result = document with { Blocks = blocks.Select(BlockOperations.CloneWithNewIds).ToImmutableArray() };
         result = result with { Sections = CopySections(document, index, blocks, result.Blocks, selection.Start) };
-        result = PruneStories(result).PruneUnusedResources();
+        result = CopyRanges(document, PruneStories(result), blocks, selection.Start, selection.End).PruneUnusedResources();
         result.Validate();
         return new() { Document = result, StartsInsideParagraph = selection.Start > first.Start,
             EndsInsideParagraph = selection.End < last.End && selection.End > last.Start };
@@ -108,7 +108,57 @@ internal static class DocumentFragments
         var bottom = row + rowCount - 1; var right = column + columnCount - 1;
         ExpandRectangle(table, ref row, ref column, ref bottom, ref right);
         var cropped = Crop(table, row, column, bottom, right, (r, c) => table.Rows[r][c]);
-        return new() { Document = PruneStories(document with { Blocks = [BlockOperations.CloneWithNewIds(cropped)], Sections = [] }).PruneUnusedResources() };
+        var result = PruneStories(document with { Blocks = [BlockOperations.CloneWithNewIds(cropped)], Sections = [] });
+        result = CopyRanges(document, result, [cropped], 0).PruneUnusedResources();
+        result.Validate();
+        return new() { Document = result };
+    }
+
+    // Clipboard ranges are retained only when their complete content is copied. In
+    // particular, clipping a bookmark does not create a new target with a misleading
+    // meaning, and clipping a field copies its visible cached result as ordinary text.
+    // Collapsed ranges on either selected boundary are included.
+    private static FlowDocument CopyRanges(FlowDocument source, FlowDocument fragment,
+        ImmutableArray<Block> original, int selectionStart, int? selectionEnd = null)
+    {
+        var sourceIndex = new DocumentIndex(source);
+        var sourceParagraphs = sourceIndex.Paragraphs;
+        var sourcePositions = sourceParagraphs.Select((entry, ordinal) => (Entry: entry, Ordinal: ordinal))
+            .ToDictionary(item => item.Entry.Paragraph.Id);
+        var paragraphs = new Dictionary<Guid, (Paragraph Paragraph, int Removed)>();
+        var pairs = VisibleParagraphs(original).Zip(VisibleParagraphs(fragment.Blocks)).ToArray();
+        foreach (var pair in pairs)
+        {
+            if (sourcePositions.TryGetValue(pair.First.Id, out var position))
+                paragraphs.Add(pair.First.Id, (pair.Second, Math.Max(0, selectionStart - position.Entry.Start)));
+            else if (selectionEnd is { } end && pair.Second.Id == pairs[^1].Second.Id &&
+                sourceIndex.At(end) is { } boundary && boundary.Start == end && pair.Second.Length == 0)
+                paragraphs.TryAdd(boundary.Paragraph.Id, (pair.Second, 0));
+        }
+        var omitted = new int[sourceParagraphs.Length + 1];
+        for (var i = 0; i < sourceParagraphs.Length; i++)
+            omitted[i + 1] = omitted[i] + (paragraphs.ContainsKey(sourceParagraphs[i].Paragraph.Id) ? 0 : 1);
+        bool Included(DocumentAnchor start, DocumentAnchor end)
+        {
+            if (start.StoryId != Guid.Empty) return fragment.Stories.ContainsKey(start.StoryId);
+            if (!paragraphs.TryGetValue(start.ParagraphId, out var first) ||
+                !paragraphs.TryGetValue(end.ParagraphId, out var last) ||
+                start.Offset < first.Removed || start.Offset > first.Removed + first.Paragraph.Length ||
+                end.Offset < last.Removed || end.Offset > last.Removed + last.Paragraph.Length) return false;
+            var from = sourcePositions[start.ParagraphId].Ordinal;
+            var to = sourcePositions[end.ParagraphId].Ordinal;
+            // A rectangular table selection can omit cells between its endpoints.
+            return omitted[to + 1] == omitted[from];
+        }
+        DocumentAnchor Remap(DocumentAnchor anchor) => anchor.StoryId != Guid.Empty ? anchor : anchor with
+        { ParagraphId = paragraphs[anchor.ParagraphId].Paragraph.Id, Offset = anchor.Offset - paragraphs[anchor.ParagraphId].Removed };
+        return fragment with
+        {
+            Bookmarks = source.Bookmarks.Where(bookmark => Included(bookmark.Start, bookmark.End)).Select(bookmark => bookmark with
+            { Id = Guid.NewGuid(), Start = Remap(bookmark.Start), End = Remap(bookmark.End) }).ToImmutableArray(),
+            Fields = source.Fields.Where(field => Included(field.Start, field.End)).Select(field => field with
+            { Id = Guid.NewGuid(), Start = Remap(field.Start), End = Remap(field.End) }).ToImmutableArray()
+        };
     }
 
     // Clipboard fragments carry only note bodies and header/footer stories owned by their copied content.
@@ -235,7 +285,7 @@ internal static class DocumentFragments
             }
     }
 
-    internal static FlowDocument Prepare(FlowDocument fragment, FlowDocument destination)
+    internal static FlowDocument Prepare(FlowDocument fragment, FlowDocument destination, IEnumerable<string>? bookmarkNamesInScope = null)
     {
         fragment = DocumentStyleImport.Prepare(fragment, destination);
         var resources = destination.Resources;
@@ -243,7 +293,36 @@ internal static class DocumentFragments
         var listIds = new Dictionary<Guid, Guid>();
         var storyIds = fragment.Stories.Keys.ToDictionary(id => id, _ => Guid.NewGuid());
         var noteIds = fragment.Notes.ToDictionary(note => note.Id, _ => Guid.NewGuid());
+        var paragraphIds = new Dictionary<Guid, Guid>();
+        var bookmarkNames = new Dictionary<string, string>(StringComparer.Ordinal);
+        var destinationNames = (bookmarkNamesInScope ?? destination.Bookmarks.Select(bookmark => bookmark.Name)).ToHashSet(StringComparer.Ordinal);
+        var occupiedNames = destinationNames.Concat(fragment.Bookmarks.Select(bookmark => bookmark.Name)).ToHashSet(StringComparer.Ordinal);
+        foreach (var bookmark in fragment.Bookmarks)
+        {
+            var name = bookmark.Name;
+            if (destinationNames.Contains(name))
+            {
+                var suffix = 2;
+                do
+                {
+                    var ending = "_" + suffix++;
+                    name = bookmark.Name[..Math.Min(bookmark.Name.Length, 256 - ending.Length)] + ending;
+                } while (!occupiedNames.Add(name));
+            }
+            bookmarkNames.Add(bookmark.Name, name);
+        }
         var resolver = new DocumentStyleResolver(fragment);
+        TextStyle RemapLinks(TextStyle style, Paragraph paragraph)
+        {
+            var link = resolver.ResolveText(paragraph, style).InternalLink;
+            if (link is null || !bookmarkNames.TryGetValue(link.BookmarkName, out var name) || name == link.BookmarkName) return style;
+            var remapped = link with { BookmarkName = name };
+            return style with
+            {
+                InternalLink = remapped,
+                Overrides = style.Overrides is { } overrides ? overrides with { InternalLink = new(remapped) } : null
+            };
+        }
         string Resource(string id)
         {
             if (resourceIds.TryGetValue(id, out var mapped)) return mapped;
@@ -267,6 +346,8 @@ internal static class DocumentFragments
             switch (block)
             {
                 case Paragraph p:
+                    var paragraphId = Guid.NewGuid();
+                    paragraphIds.Add(p.Id, paragraphId);
                     var style = p.Style;
                     if (resolver.ResolveParagraphStyle(style).ListId is { } id)
                     {
@@ -274,8 +355,9 @@ internal static class DocumentFragments
                         style = style with { ListId = replacement,
                             Overrides = style.Overrides is { } overrides ? overrides with { ListId = replacement } : null };
                     }
-                    return p with { Id = Guid.NewGuid(), Style = style, Runs = p.Runs.Select(run =>
+                    return p with { Id = paragraphId, Style = style, DefaultStyle = RemapLinks(p.DefaultStyle, p), Runs = p.Runs.Select(run =>
                     {
+                        run = run with { Style = RemapLinks(run.Style, p) };
                         if (run.Inline is not { } inline) return run;
                         var payload = inline.Payload;
                         if (payload is ImageInlinePayload image)
@@ -305,8 +387,19 @@ internal static class DocumentFragments
             }
             return section with { HeaderFooter = settings };
         }).ToImmutableArray();
+        string RemapInstruction(string instruction)
+        {
+            try { return Textalonia.Model.Fields.FieldInstructionParser.RewriteBookmarkReferences(instruction, bookmarkNames); }
+            catch (FormatException) { return instruction; }
+        }
+        DocumentAnchor RemapAnchor(DocumentAnchor anchor) => anchor with
+        { StoryId = anchor.StoryId == Guid.Empty ? Guid.Empty : storyIds[anchor.StoryId], ParagraphId = paragraphIds[anchor.ParagraphId] };
         return fragment with { Blocks = copied, Resources = resources, Fonts = fonts.ToImmutable(), Stories = stories,
-            Notes = fragment.Notes.Select(note => note with { Id = noteIds[note.Id], StoryId = storyIds[note.StoryId] }).ToImmutableArray(), Sections = sections };
+            Notes = fragment.Notes.Select(note => note with { Id = noteIds[note.Id], StoryId = storyIds[note.StoryId] }).ToImmutableArray(), Sections = sections,
+            Bookmarks = fragment.Bookmarks.Select(bookmark => bookmark with { Id = Guid.NewGuid(), Name = bookmarkNames[bookmark.Name],
+                Start = RemapAnchor(bookmark.Start), End = RemapAnchor(bookmark.End) }).ToImmutableArray(),
+            Fields = fragment.Fields.Select(field => field with { Id = Guid.NewGuid(), Instruction = RemapInstruction(field.Instruction),
+                Start = RemapAnchor(field.Start), End = RemapAnchor(field.End) }).ToImmutableArray() };
     }
 
     internal static (FlowDocument Document, int Caret) Insert(FlowDocument destination, int offset, FlowDocument fragment, bool startsInsideParagraph, bool endsInsideParagraph)
@@ -328,6 +421,7 @@ internal static class DocumentFragments
         var interior = !prefix.IsEmpty && !suffix.IsEmpty;
         var mergeStart = !interior || startsInsideParagraph;
         var mergeEnd = !interior || endsInsideParagraph;
+        var firstParagraph = mergeStart ? blocks[0] as Paragraph : null;
         if (mergeStart && blocks[0] is Paragraph first)
         {
             var merged = first with { Id = at.Paragraph.Id,
@@ -364,6 +458,17 @@ internal static class DocumentFragments
         var result = destination with { Blocks = Replace(destination.Blocks), Resources = fragment.Resources,
             Styles = fragment.Styles, Fonts = fragment.Fonts, Stories = destination.Stories.SetItems(fragment.Stories), Notes = destination.Notes.AddRange(fragment.Notes) };
         result = MergeSections(destination, fragment, result, at.Paragraph.Id);
+        result = DocumentAnchors.Transform(destination, result, Guid.Empty, offset, 0,
+            new DocumentIndex(result).Length - new DocumentIndex(destination).Length);
+        DocumentAnchor Place(DocumentAnchor anchor) => anchor.StoryId == Guid.Empty && anchor.ParagraphId == firstParagraph?.Id
+            ? anchor with { ParagraphId = at.Paragraph.Id, Offset = anchor.Offset + prefix.Sum(run => run.Text.Length) } : anchor;
+        result = result with
+        {
+            Bookmarks = result.Bookmarks.AddRange(fragment.Bookmarks.Select(bookmark => bookmark with
+            { Start = Place(bookmark.Start), End = Place(bookmark.End) })),
+            Fields = result.Fields.AddRange(fragment.Fields.Select(field => field with
+            { Start = Place(field.Start), End = Place(field.End) }))
+        };
         result.Validate();
         return (result, new DocumentIndex(result).ById(caretParagraph).Start + caretLocal);
     }

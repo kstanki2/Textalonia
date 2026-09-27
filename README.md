@@ -13,7 +13,7 @@ dotnet restore Textalonia.sln --configfile NuGet.Config
 dotnet run --project samples/Textalonia.Demo
 ```
 
-The demo includes editable sample content, light/dark themes, read-only mode, search, tables, page setup and numbering dialogs, document views, zoom, page navigation, print preview, PDF export, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
+The demo includes bookmarks, outline navigation, story-aware find/replace, general fields, TOCs and captions (see [fields and navigation](docs/FIELDS.md)), editable sample content, light/dark themes, read-only mode, search, tables, page setup and numbering dialogs, document views, zoom, page navigation, print preview, PDF export, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
 
 ## Build, test, and pack
 

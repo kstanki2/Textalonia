@@ -100,7 +100,7 @@ public sealed partial class EditorSession
                 paragraph with { DefaultStyle = change(paragraph.DefaultStyle) };
         });
         document.Validate();
-        (document with { Blocks = [new Paragraph("", typing)], Sections = [] }).Validate();
+        (document with { Blocks = [new Paragraph("", typing)], Sections = [], Bookmarks = [], Fields = [] }).Validate();
         Commit(document, selection, editedRange: selection, typingStyle: typing);
     }
 

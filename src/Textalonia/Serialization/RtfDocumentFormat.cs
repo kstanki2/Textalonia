@@ -3,11 +3,12 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Textalonia.Model;
+using Textalonia.Model.Fields;
 
 namespace Textalonia.Serialization;
 
 /// <summary>Bounded RTF interchange for flow text, lists, tables, sections, links and embedded PNG/JPEG images.</summary>
-public sealed class RtfDocumentFormat : TextDocumentFormat
+public sealed partial class RtfDocumentFormat : TextDocumentFormat
 {
     public override string Name => "Rich Text Format";
     public override IReadOnlyList<string> Extensions => [".rtf"];
@@ -109,7 +110,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
         public List<Block> Blocks { get; } = [];
         public TableRowSizing Sizing { get; set; } = new();
     }
-    private sealed class Reader(Group root, bool byteSource = false, bool readingStory = false)
+    private sealed partial class Reader(Group root, bool byteSource = false, bool readingStory = false)
     {
         private readonly Dictionary<int, string> _fonts = [];
         private readonly List<string?> _colors = [null];
@@ -189,9 +190,10 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 }
                 else Loss("rtf.undefined-list", "Undefined list override", "Imported the paragraph without numbering.");
             }
-            var paragraph = new Paragraph(_runs) { Style = style, DefaultStyle = state.Text };
+            var paragraph = new Paragraph(_runs) { Id = _paragraphId, Style = style, DefaultStyle = state.Text };
             if (_row is not null) _row.Blocks.Add(paragraph);
             else { EndTable(); _section.Add(paragraph); }
+            _paragraphId = Guid.NewGuid();
             _runs.Clear(); _lastState = state;
         }
         private void PendingParagraph(State state) { if (_buffer.Length > 0 || _runs.Count > 0) Paragraph(state); }
@@ -291,9 +293,12 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             }
             Walk(root, new(_defaultText, ParagraphStyle.Default), true);
             if (_row is not null) throw new FormatException("Unterminated RTF table row.");
+            if (_anchorParagraphs.Contains(_paragraphId)) Paragraph(_lastState);
             PendingParagraph(_lastState); EndSection(false);
             var document = new FlowDocument(_blocks) { Resources = _resources.ToImmutable(), Stories = _stories.ToImmutable(), Notes = _notes.ToImmutableArray(),
                 Sections = _hasPhysicalSections ? _physicalSections.ToImmutableArray() : [], FootnoteSettings = _footnoteSettings, EndnoteSettings = _endnoteSettings };
+            foreach (var unmatched in _bookmarkStarts.Values) Loss("rtf.bookmark", "Unclosed bookmark", "Omitted the detached bookmark.");
+            document = document with { Bookmarks = _bookmarks.ToImmutableArray(), Fields = _fields.ToImmutableArray(), Properties = _properties };
             document.Validate(); return document;
         }
         private string DecodeLiterals(List<Node> nodes, ref int index, ref int fallback)
@@ -422,6 +427,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             if (!documentRoot)
             {
                 var destination = group.Destination;
+                if (RangeDestination(group, state)) return;
                 if (destination is "fonttbl" or "colortbl" or "listtable" or "listoverridetable" or "generator" or "info" or "nonesttables") return;
                 if (destination is "listtext" or "pntext")
                 {
@@ -474,6 +480,8 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             var story = new DocumentStory { Kind = kind, Blocks = storyDocument.Blocks };
             if (_stories.Count >= 10000) throw new FormatException("RTF contains too many stories.");
             _stories.Add(story.Id, story);
+            _bookmarks.AddRange(storyDocument.Bookmarks.Select(bookmark => bookmark with { Start = bookmark.Start with { StoryId = story.Id }, End = bookmark.End with { StoryId = story.Id } }));
+            _fields.AddRange(storyDocument.Fields.Select(field => field with { Start = field.Start with { StoryId = story.Id }, End = field.End with { StoryId = story.Id } }));
             return story;
         }
         private void HeaderFooter(Group group)
@@ -587,7 +595,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                     var stretch = Enumerable.Range(1, 9).MinBy(s => Math.Abs(StretchPercent(s) - number));
                     if (StretchPercent(stretch) != number) Loss("rtf.font-stretch", "Arbitrary character scaling", "Used the nearest font width class.", control.Offset);
                     return state with { Text = state.Text with { FontStretch = stretch } };
-                case "plain": return state with { Text = _defaultText with { Hyperlink = state.Text.Hyperlink } };
+                case "plain": return state with { Text = _defaultText with { Hyperlink = state.Text.Hyperlink, InternalLink = state.Text.InternalLink } };
                 case "pard":
                     if (_row is null) EndTable();
                     return state with { Paragraph = ParagraphStyle.Default, List = 0 };
@@ -686,11 +694,16 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             }
             var instructions = group.Groups("fldinst").ToArray();
             var instruction = instructions.Length == 1 ? instructions[0] : null;
-            var value = instruction is null ? "" : Plain(instruction, state.UnicodeFallback).Trim();
+            var value = instruction is null ? "" : Plain(InstructionGroup(instruction), state.UnicodeFallback).Trim();
             var results = group.Groups("fldrslt").ToArray();
             var nested = Descendants(group).OfType<Group>().Any(g => g.Destination == "field");
             var structured = results.SelectMany(Descendants).OfType<Control>().Any(c => c.Word is "par" or "pard" or "sectd" or "sect" or "cell" or "row" or "trowd" or "nestcell" or "nestrow" or "itap" or "nesttableprops" or "cellx" or "clcbpat" or "clmgf" or "clmrg" or "clvmgf" or "clvmrg" or "trrh");
             var parsed = MergeFieldInstructions.Parse(value);
+            var metadata = group.Groups("textaloniafield").FirstOrDefault();
+            if (metadata is not null || results.SelectMany(Descendants).OfType<Group>().Any(g => g.Destination is "bkmkstart" or "bkmkend") || _fieldDepth > 0 && !value.StartsWith("HYPERLINK", StringComparison.OrdinalIgnoreCase) || !_flattenFields && results.Length <= 1 && (nested || !structured && parsed is null && !PageFieldInstructions.TryParse(value, out _) && !value.StartsWith("HYPERLINK", StringComparison.OrdinalIgnoreCase)))
+            {
+                ReadGeneralField(group, state, value, results, metadata); return;
+            }
             if (!_flattenFields && !nested && !structured && results.Length <= 1 && PageFieldInstructions.TryParse(value, out var pageField))
             {
                 Flush(); var start = _runs.Count;
@@ -734,7 +747,30 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 Loss("rtf.field-result", "Block structure in a merge-field result", "Retained the result content without active field semantics.", group.Offset);
             var match = Regex.Match(value, "^HYPERLINK\\s+(?:\"([^\"]*)\"|(\\S+))\\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             var link = match.Success ? (match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value) : null;
-            if (!_flattenFields && !nested && link is not null && FlowDocument.IsSafeHyperlink(link)) state = state with { Text = state.Text with { Hyperlink = link } };
+            InternalLinkDestination? internalLink = null;
+            if (value.StartsWith("HYPERLINK", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    var code = FieldInstructionParser.Parse(value);
+                    if (code.Code == "HYPERLINK" && code.Arguments.IsEmpty && code.Switch("l")?.Argument?.Literal is { } bookmark &&
+                        InlineDescriptor.ValidKey(bookmark) && code.Switches.All(s => s.Name.Equals("l", StringComparison.OrdinalIgnoreCase) || s.Name.Equals("o", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        internalLink = new() { BookmarkName = bookmark, Tooltip = code.Switch("o")?.Argument?.Literal };
+                        if (group.Groups("textalonialink").FirstOrDefault() is { } linkMetadata)
+                        {
+                            var stored = RangeInterchange.Decode<InternalLinkDestination>(Plain(linkMetadata, state.UnicodeFallback).Trim());
+                            if (stored.BookmarkName != bookmark) throw new FormatException("Internal hyperlink metadata disagrees with its destination.");
+                            internalLink = stored;
+                        }
+                    }
+                }
+                catch (FormatException) { internalLink = null; }
+            }
+            if (!_flattenFields && !nested && internalLink is not null)
+                state = state with { Text = state.Text with { Hyperlink = null, InternalLink = internalLink } };
+            else if (!_flattenFields && !nested && link is not null && FlowDocument.IsSafeHyperlink(link))
+                state = state with { Text = state.Text with { Hyperlink = link, InternalLink = null } };
             else Loss(link is null || _flattenFields || nested ? "rtf.unsupported-field" : "rtf.unsafe-link", link is null || _flattenFields || nested ? "RTF field instruction" : "Unsafe hyperlink", "Retained the visible field result without an active link.", group.Offset);
             var previous = _flattenFields;
             _flattenFields = true;
@@ -845,6 +881,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             b.Append("{\\*\\").Append(prefix).Append("sep ").Append(Escape(settings.SeparatorText)).Append('}')
                 .Append("{\\*\\").Append(prefix).Append("sepc ").Append(Escape(settings.ContinuationSeparatorText)).Append('}');
         }
+        if (document.Properties.Count != 0) b.Append("{\\*\\textaloniaproperties ").Append(RangeInterchange.Encode(document.Properties)).Append('}');
         WriteNoteSettings(document.FootnoteSettings, false);
         WriteNoteSettings(document.EndnoteSettings, true);
         if (document.Sections.Any(section => section.HeaderFooter.DifferentOddEvenPages)) b.Append("\\facingp ");
@@ -896,8 +933,9 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             if (p.Style.HeadingLevel > 0) b.Append("\\outlinelevel").Append(p.Style.HeadingLevel - 1);
             if (paragraphLists.TryGetValue(p.Id, out var list)) b.Append("\\ls").Append(list).Append("\\ilvl").Append(p.Style.ListLevel);
             b.Append(' '); CharacterStyle(p.DefaultStyle, p.Id);
-            foreach (var run in p.Runs)
+            foreach (var item in RangeInterchange.Items(document, p))
             {
+                if (item.Run is not { } run) { WriteRangeBoundary(b, item); continue; }
                 if (run.Inline is { Payload: NoteInlinePayload notePayload } noteInline)
                 {
                     var note = document.Notes.Single(n => n.Id == notePayload.NoteId);
@@ -931,6 +969,15 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                     b.Append(Escape(fieldInline.AltText)).Append("}}}");
                     continue;
                 }
+                if (run.Style.InternalLink is { } destination)
+                {
+                    var switches = ImmutableArray.Create(new FieldSwitch("l", new([new FieldLiteral(destination.BookmarkName)], true)));
+                    if (destination.Tooltip is { } tip) switches = switches.Add(new("o", new([new FieldLiteral(tip)], true)));
+                    var instruction = FieldInstructionParser.Write(new("", "HYPERLINK", [], switches));
+                    b.Append("{\\field{\\*\\textalonialink ").Append(RangeInterchange.Encode(destination)).Append("}{\\*\\fldinst ")
+                        .Append(Escape(instruction)).Append("}{\\fldrslt ");
+                }
+                else
                 if (run.Style.Hyperlink is { } link) b.Append("{\\field{\\*\\fldinst HYPERLINK \"").Append(Escape(link.Replace("\"", "%22"))).Append("\"}{\\fldrslt ");
                 b.Append('{'); CharacterStyle(run.Style, p.Id);
                 if (run.Inline is { } inline)
@@ -944,7 +991,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                     else { ConversionDiagnostics.Report("rtf.inline-fallback", "Inline control or unavailable/unsupported image", "Exported the alternative text without fetching external resources.", inline.Id); b.Append(Escape(inline.AltText)); }
                 }
                 else b.Append(Escape(run.Text));
-                b.Append('}'); if (run.Style.Hyperlink is not null) b.Append("}}");
+                b.Append('}'); if (run.Style.Hyperlink is not null || run.Style.InternalLink is not null) b.Append("}}");
             }
             b.Append("\\par\n");
         }

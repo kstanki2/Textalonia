@@ -99,7 +99,7 @@ public sealed class PlainTextDocumentFormat : TextDocumentFormat
 /// <summary>Versioned, lossless native storage, including hidden cells retained by table merges.</summary>
 public sealed class JsonDocumentFormat : TextDocumentFormat
 {
-    private const int CurrentVersion = 7;
+    private const int CurrentVersion = 8;
     private sealed record Envelope(int Version, FlowDocument Document);
     internal static readonly JsonSerializerOptions Options = new()
     {
@@ -125,7 +125,7 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
     public override FlowDocument Parse(string text)
     {
         // Version 4 concrete styles migrate as explicit direct formatting. Version 5
-        // adds sparse formatting, named styles and physical document themes; version 6 adds page sections; version 7 adds secondary stories and notes.
+        // adds sparse formatting, named styles and physical document themes; version 6 adds page sections; version 7 adds secondary stories and notes; version 8 adds bookmarks and general fields.
         using var json = JsonDocument.Parse(text, new JsonDocumentOptions { MaxDepth = Options.MaxDepth });
         if (json.RootElement.ValueKind != JsonValueKind.Object) throw new FormatException("Missing document envelope.");
         var versions = json.RootElement.EnumerateObject().Where(p => p.NameEquals("version")).ToArray();
@@ -133,7 +133,7 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
         if (versions.Length != 1 || versions[0].Value.ValueKind != JsonValueKind.Number ||
             !versions[0].Value.TryGetInt32(out var version))
             throw new FormatException("Document version must be one integer.");
-        if (version is not (4 or 5 or 6 or CurrentVersion))
+        if (version is not (4 or 5 or 6 or 7 or CurrentVersion))
             throw new NotSupportedException($"Document version {version} is not supported. Supported version is {CurrentVersion}.");
         ValidateUniqueMembers(json.RootElement);
         var document = json.RootElement.Deserialize<Envelope>(Options)?.Document
