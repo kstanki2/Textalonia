@@ -11,6 +11,7 @@ The target is the feature set described by [Avalonia's editor announcement](http
 | IME | Composition client, transient preedit and committed text | Native Windows/macOS/Linux and mobile keyboard qualification |
 | Clipboard | Versioned section/table/resource fragments, platform HTML adapter, plain text | Native cross-application qualification on every platform |
 | Formats | Native JSON, data XAML, Markdown, text, expanded HTML/RTF/DOCX subsets with strict/tolerant diagnostics | Arbitrary RTF/DOCX fidelity, application-export corpus and native qualification |
+| Merge fields / mail merge | Atomic editable fields, native/XAML/clipboard persistence, headless preview and lazy per-record generation, basic DOCX/RTF MERGEFIELD interchange; [contract](MAIL-MERGE.md) | Word field expressions/switches, repeating regions, linked recipient sources and native Office qualification |
 | Embedded content | Atomic inline images, registered host controls, immutable resources, native save/load and bounded view caches | External image interchange fidelity; native qualification |
 | Display | Viewer mode, light/dark, replaceable theme/toolbar/input components, text highlights, managed text-range contract | Native accessibility text-provider bridges and screen-reader evidence |
 | Markdown | [Explicit bounded dialect, async viewer, optional host highlighting](INTEGRATIONS.md) | Broader dialects and native release qualification |

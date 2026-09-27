@@ -20,6 +20,8 @@ public class TextaloniaToolbar : WrapPanel
     private ComboBox? _size;
     private ComboBox? _heading;
     private Button? _findButton;
+    private Button? _mergeFieldUpdate;
+    private Guid? _mergeFieldId;
     private TextBox? _query;
     private bool _updating;
     private readonly List<(NumericUpDown Control, Func<SelectionFormattingState, FormattingValue<double?>> Read)> _numericFormatting = [];
@@ -44,6 +46,7 @@ public class TextaloniaToolbar : WrapPanel
     private void Build()
     {
         Children.Clear(); _toggles.Clear(); _editingControls.Clear(); _numericFormatting.Clear();
+        _mergeFieldUpdate = null; _mergeFieldId = null;
         if (Editor is not { } editor) return;
         _heading = Choice(["Body", "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6"], 128, "Paragraph style");
         _heading.SelectionChanged += (_, _) => { if (!_updating) editor.Run(() => editor.SetSelectedHeading(_heading.SelectedIndex)); };
@@ -68,6 +71,7 @@ public class TextaloniaToolbar : WrapPanel
         AddFlyout("Typography", "Typography and spacing", TypographyMenu());
         AddFlyout("Paragraph", "Paragraph formatting", ParagraphMenu());
         AddFlyout("Insert", "Insert link or table", InsertMenu());
+        AddMergeFieldFlyout();
         ActionButton("Clear", "Clear character formatting", () => editor.ApplyStyle(_ => TextStyle.Default));
         CommandButton("Undo", "Undo", editor.UndoCommand);
         CommandButton("Redo", "Redo", editor.RedoCommand);
@@ -258,6 +262,58 @@ public class TextaloniaToolbar : WrapPanel
         return new ScrollViewer { Content = panel, MaxHeight = 520 };
     }
 
+    private void AddMergeFieldFlyout()
+    {
+        var panel = new StackPanel { Width = 280, Spacing = 6 };
+        panel.Children.Add(Label("Merge field"));
+        var name = new TextBox { PlaceholderText = "CustomerName" };
+        var format = new TextBox { PlaceholderText = "Optional: N2 or MMMM d, yyyy" };
+        var useFallback = new CheckBox { Content = "Use a fallback for missing values" };
+        var fallback = new TextBox { PlaceholderText = "Fallback text (may be empty)", IsEnabled = false };
+        AutomationProperties.SetName(name, "Merge field name");
+        AutomationProperties.SetName(format, "Merge field value format");
+        AutomationProperties.SetName(fallback, "Merge field fallback text");
+        panel.Children.Add(Label("Field name")); panel.Children.Add(name);
+        panel.Children.Add(Label("Value format")); panel.Children.Add(format);
+        panel.Children.Add(useFallback); panel.Children.Add(fallback);
+        useFallback.IsCheckedChanged += (_, _) => fallback.IsEnabled = useFallback.IsChecked == true;
+        string? ValueFormat() => string.IsNullOrEmpty(format.Text) ? null : format.Text;
+        string? Fallback() => useFallback.IsChecked == true ? fallback.Text ?? "" : null;
+        var insert = MenuAction("Insert merge field", () => Editor!.InsertMergeField(name.Text ?? "", ValueFormat(), Fallback()));
+        panel.Children.Add(insert);
+        var update = MenuAction("Update selected merge field", () =>
+        {
+            if (_mergeFieldId is { } id && Editor?.CurrentMergeField?.Id == id)
+                Editor.UpdateMergeField(id, name.Text ?? "", ValueFormat(), Fallback());
+        });
+        _mergeFieldUpdate = update;
+        panel.Children.Add(update);
+        panel.Children.Add(new TextBlock
+        {
+            Text = "Select a field or place the caret beside it to edit its definition. Field names must match your recipient data.",
+            TextWrapping = TextWrapping.Wrap, FontSize = 12
+        });
+        var button = AddFlyout("Merge field", "Insert or edit a merge field", panel);
+        button.Flyout!.Opened += (_, _) =>
+        {
+            var current = Editor?.CurrentMergeField;
+            _mergeFieldId = current?.Id;
+            if (current?.Payload is MergeFieldInlinePayload field)
+            {
+                name.Text = field.Name; format.Text = field.Format;
+                useFallback.IsChecked = field.FallbackText is not null; fallback.Text = field.FallbackText;
+            }
+            else
+            {
+                name.Text = ""; format.Text = ""; useFallback.IsChecked = false; fallback.Text = "";
+            }
+            update.IsEnabled = _mergeFieldId is not null && Editor?.IsReadOnly == false;
+            name.Focus();
+        };
+        insert.Click += (_, _) => { if (Editor?.LastError is null) button.Flyout.Hide(); };
+        update.Click += (_, _) => { if (Editor?.LastError is null) button.Flyout.Hide(); };
+    }
+
     private Control FindPanel()
     {
         var panel = new StackPanel { Width = 270, Spacing = 6 };
@@ -320,6 +376,8 @@ public class TextaloniaToolbar : WrapPanel
             var state = editor.FormattingState;
             foreach (var (button, read) in _toggles) button.IsChecked = read(state);
             foreach (var control in _editingControls) control.IsEnabled = !editor.IsReadOnly;
+            if (_mergeFieldUpdate is not null)
+                _mergeFieldUpdate.IsEnabled = !editor.IsReadOnly && _mergeFieldId is not null && editor.CurrentMergeField?.Id == _mergeFieldId;
             foreach (var (control, read) in _numericFormatting)
             {
                 if (control.IsKeyboardFocusWithin) continue;

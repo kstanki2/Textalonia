@@ -434,6 +434,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   FindNext(text: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , matchCase: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   FocusDocument() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertInline(descriptor: Textalonia.Model.InlineDescriptor[NotNull/NotNull] in=False out=False modreq() modopt() , resource: Textalonia.Model.DocumentResource[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  InsertMergeField(name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , format: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], fallbackText: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertTable(rows: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], columns: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertTableColumn(after: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertTableRow(after: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -461,6 +462,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   SplitSelectedTableCells() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   Undo() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   UpdateInline(id: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , change: System.Func<Textalonia.Model.InlineDescriptor,Textalonia.Model.InlineDescriptor>[NotNull/NotNull] args(Textalonia.Model.InlineDescriptor[NotNull/NotNull],Textalonia.Model.InlineDescriptor[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  UpdateMergeField(id: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , format: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], fallbackText: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_ConversionCompleted(value: System.EventHandler<Textalonia.Controls.ConversionCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.ConversionCompletedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_DocumentChanged(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_FindRequested(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -500,6 +502,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   get_CellSelection() return Textalonia.Controls.TableCellSelection[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
   get_CompositionComponent() return Textalonia.Controls.ICompositionComponent[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
   get_CopyCommand() return System.Windows.Input.ICommand[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_CurrentMergeField() return Textalonia.Model.InlineDescriptor[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
   get_CutCommand() return System.Windows.Input.ICommand[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_Document() return Textalonia.Model.FlowDocument[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_DocumentPadding() return Avalonia.Thickness[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -539,6 +542,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   property CellSelection Textalonia.Controls.TableCellSelection[Nullable/Unknown]
   property CompositionComponent Textalonia.Controls.ICompositionComponent[Nullable/Nullable]
   property CopyCommand System.Windows.Input.ICommand[NotNull/Unknown]
+  property CurrentMergeField Textalonia.Model.InlineDescriptor[Nullable/Unknown]
   property CutCommand System.Windows.Input.ICommand[NotNull/Unknown]
   property Document Textalonia.Model.FlowDocument[NotNull/NotNull]
   property DocumentPadding Avalonia.Thickness[NotNull/NotNull]
@@ -672,6 +676,7 @@ type Textalonia.Editing.EditorSession
   InsertDocument(fragment: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertFragment(fragment: Textalonia.Editing.DocumentFragment[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertInline(descriptor: Textalonia.Model.InlineDescriptor[NotNull/NotNull] in=False out=False modreq() modopt() , resource: Textalonia.Model.DocumentResource[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  InsertMergeField(name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , format: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], fallbackText: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertParagraph() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertTable(rows: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], columns: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertText(text: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , coalesceTyping: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -696,10 +701,12 @@ type Textalonia.Editing.EditorSession
   Undo() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   UpdateCurrentTable(update: System.Func<Textalonia.Model.Table,System.Int32,System.Int32,Textalonia.Model.Table>[NotNull/NotNull] args(Textalonia.Model.Table[NotNull/NotNull],System.Int32[NotNull/NotNull],System.Int32[NotNull/NotNull],Textalonia.Model.Table[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   UpdateInline(id: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , update: System.Func<Textalonia.Model.InlineDescriptor,Textalonia.Model.InlineDescriptor>[NotNull/NotNull] args(Textalonia.Model.InlineDescriptor[NotNull/NotNull],Textalonia.Model.InlineDescriptor[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  UpdateMergeField(id: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , format: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], fallbackText: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_Changed(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   event Changed System.EventHandler[Nullable/Nullable]
   get_CanRedo() return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_CanUndo() return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_CurrentMergeField() return Textalonia.Model.InlineDescriptor[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
   get_Document() return Textalonia.Model.FlowDocument[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_FormattingState() return Textalonia.Editing.SelectionFormattingState[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_HistoryByteLimit() return System.Int64[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -713,6 +720,7 @@ type Textalonia.Editing.EditorSession
   get_UndoLimit() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   property CanRedo System.Boolean[NotNull/Unknown]
   property CanUndo System.Boolean[NotNull/Unknown]
+  property CurrentMergeField Textalonia.Model.InlineDescriptor[Nullable/Unknown]
   property Document Textalonia.Model.FlowDocument[NotNull/NotNull]
   property FormattingState Textalonia.Editing.SelectionFormattingState[NotNull/Unknown]
   property HistoryByteLimit System.Int64[NotNull/NotNull]
@@ -797,6 +805,31 @@ type Textalonia.Editing.TextSelection [System.Runtime.CompilerServices.IsReadOnl
   property Start System.Int32[NotNull/Unknown]
   set_Active(value: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Anchor(value: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.MailMerge.MailMergeOptions
+  .ctor()  abstract=False virtual=False final=False
+  <Clone>$() return Textalonia.MailMerge.MailMergeOptions[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.MailMerge.MailMergeOptions[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_Culture() return System.Globalization.CultureInfo[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_MissingFieldBehavior() return Textalonia.MailMerge.MissingFieldBehavior[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.MailMerge.MailMergeOptions[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.MailMerge.MailMergeOptions[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.MailMerge.MailMergeOptions[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.MailMerge.MailMergeOptions[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property Culture System.Globalization.CultureInfo[NotNull/NotNull]
+  property MissingFieldBehavior Textalonia.MailMerge.MissingFieldBehavior[NotNull/NotNull]
+  set_Culture(value: System.Globalization.CultureInfo[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_MissingFieldBehavior(value: Textalonia.MailMerge.MissingFieldBehavior[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.MailMerge.MailMergeProcessor
+  GetFieldNames(template: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Collections.Immutable.ImmutableArray<System.String>[NotNull/NotNull] args(System.String[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
+  Merge(template: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , data: System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>[NotNull/NotNull] args(System.String[NotNull/NotNull],System.Object[Nullable/Nullable]) in=False out=False modreq() modopt() , options: Textalonia.MailMerge.MailMergeOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return Textalonia.Model.FlowDocument[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  MergeMany(template: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , records: System.Collections.Generic.IEnumerable<System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>>[NotNull/NotNull] args(System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>[NotNull/NotNull] args(System.String[NotNull/NotNull],System.Object[Nullable/Nullable])) in=False out=False modreq() modopt() , options: Textalonia.MailMerge.MailMergeOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Collections.Generic.IEnumerable<Textalonia.Model.FlowDocument>[NotNull/NotNull] args(Textalonia.Model.FlowDocument[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
+  Preview(template: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , data: System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>[NotNull/NotNull] args(System.String[NotNull/NotNull],System.Object[Nullable/Nullable]) in=False out=False modreq() modopt() , options: Textalonia.MailMerge.MailMergeOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return Textalonia.Model.FlowDocument[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+type Textalonia.MailMerge.MissingFieldBehavior
+  field Empty Textalonia.MailMerge.MissingFieldBehavior[NotNull/NotNull]
+  field KeepField Textalonia.MailMerge.MissingFieldBehavior[NotNull/NotNull]
+  field Throw Textalonia.MailMerge.MissingFieldBehavior[NotNull/NotNull]
+  field value__ System.Int32[NotNull/NotNull]
 type Textalonia.Model.Baseline
   field Normal Textalonia.Model.Baseline[NotNull/NotNull]
   field Subscript Textalonia.Model.Baseline[NotNull/NotNull]
@@ -1016,7 +1049,7 @@ type Textalonia.Model.InlineDescriptor [System.Runtime.CompilerServices.Required
   set_Id(value: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Payload(value: Textalonia.Model.InlinePayload[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Width(value: System.Double[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
-type Textalonia.Model.InlinePayload [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.ControlInlinePayload), "control")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.ImageInlinePayload), "image")] [System.Text.Json.Serialization.JsonPolymorphicAttribute(TypeDiscriminatorPropertyName = "kind")]
+type Textalonia.Model.InlinePayload [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.ControlInlinePayload), "control")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.ImageInlinePayload), "image")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.MergeFieldInlinePayload), "mergeField")] [System.Text.Json.Serialization.JsonPolymorphicAttribute(TypeDiscriminatorPropertyName = "kind")]
   .ctor()  abstract=False virtual=False final=False
   .ctor(original: Textalonia.Model.InlinePayload[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
   <Clone>$() return Textalonia.Model.InlinePayload[NotNull/NotNull] modreq() modopt()  abstract=True virtual=True final=False
@@ -1109,6 +1142,31 @@ type Textalonia.Model.ListMarkerStyle
 type Textalonia.Model.ListNumbering
   Compute(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Collections.Generic.IReadOnlyDictionary<System.Guid,Textalonia.Model.ListMarker>[NotNull/NotNull] args(System.Guid[NotNull/NotNull],Textalonia.Model.ListMarker[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   GetMarker(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , paragraphId: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() ) return Textalonia.Model.ListMarker[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+type Textalonia.Model.MergeFieldInlinePayload
+  .ctor(Name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
+  <Clone>$() return Textalonia.Model.MergeFieldInlinePayload[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False [System.Runtime.CompilerServices.PreserveBaseOverridesAttribute()]
+  Deconstruct(Name: System.String&[NotNull/NotNull] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.Model.InlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  Equals(other: Textalonia.Model.MergeFieldInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  PrintMembers(builder: System.Text.StringBuilder[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_EqualityContract() return System.Type[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_FallbackText() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Format() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.Model.MergeFieldInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.MergeFieldInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.Model.MergeFieldInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.MergeFieldInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property EqualityContract System.Type[NotNull/Unknown]
+  property FallbackText System.String[Nullable/Nullable]
+  property Format System.String[Nullable/Nullable]
+  property Name System.String[NotNull/NotNull]
+  set_FallbackText(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Format(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Name(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.Model.MergeFields
+  Create(name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , format: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], fallbackText: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return Textalonia.Model.InlineDescriptor[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
 type Textalonia.Model.Paragraph
   .ctor()  abstract=False virtual=False final=False
   .ctor(runs: System.Collections.Generic.IEnumerable<Textalonia.Model.RichRun>[NotNull/NotNull] args(Textalonia.Model.RichRun[NotNull/NotNull]) in=False out=False modreq() modopt() )  abstract=False virtual=False final=False

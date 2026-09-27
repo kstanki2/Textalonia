@@ -124,6 +124,10 @@ public static class DocumentFormatExtensions
             ReportUnusedResources(document);
         }
         if (format is PlainTextDocumentFormat) ReportPlainTextLoss(document);
+        if (format is HtmlDocumentFormat or MarkdownDocumentFormat)
+            foreach (var inline in new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs)
+                .Select(r => r.Inline).OfType<InlineDescriptor>().Where(inline => inline.Payload is MergeFieldInlinePayload))
+                ReportMergeFieldLoss(inline, format is HtmlDocumentFormat ? "html" : "markdown");
         if (format is HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat)
             ReportIntegrationSemantics(document.Blocks);
     }
@@ -189,7 +193,8 @@ public static class DocumentFormatExtensions
                         if (p.Style != ParagraphStyle.Default || p.DefaultStyle != TextStyle.Default || p.Runs.Any(r => r.Style != TextStyle.Default))
                             ConversionDiagnostics.Report("text.formatting", "Paragraph or character formatting", "Formatting is discarded; text is retained.", p.Id);
                         foreach (var inline in p.Runs.Select(r => r.Inline).OfType<InlineDescriptor>())
-                            ConversionDiagnostics.Report("text.inline", "Inline content", "The inline object is replaced by its alternative text.", inline.Id);
+                            if (inline.Payload is MergeFieldInlinePayload) ReportMergeFieldLoss(inline, "text");
+                            else ConversionDiagnostics.Report("text.inline", "Inline content", "The inline object is replaced by its alternative text.", inline.Id);
                         break;
                     case Section section:
                         ConversionDiagnostics.Report("text.section", "Section structure and decoration", "Visible paragraphs are flattened.", section.Id);
@@ -207,6 +212,10 @@ public static class DocumentFormatExtensions
         if (document.Resources.Count != 0)
             ConversionDiagnostics.Report("text.resources", "Document resources", "Resource descriptors and embedded data are discarded.");
     }
+
+    private static void ReportMergeFieldLoss(InlineDescriptor inline, string format) =>
+        ConversionDiagnostics.Report(format + ".merge-field", "Live mail-merge field definition",
+            "The field is replaced by its display text and can no longer be merged. Use native JSON, Textalonia XAML, DOCX, or RTF to retain merge fields, or merge the document before exporting.", inline.Id);
 
     private static void ReportUnusedResources(FlowDocument document)
     {

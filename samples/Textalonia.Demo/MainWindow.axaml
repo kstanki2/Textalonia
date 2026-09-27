@@ -24,6 +24,7 @@
         <Button x:Name="OpenButton" Content="Open..." />
         <Button x:Name="SaveButton" Content="Save as..." />
         <Button x:Name="IntegrationsButton" Content="Markdown / XAML" />
+        <Button x:Name="MailMergeButton" Content="Mail merge" />
       </StackPanel>
       <TextBlock Grid.Column="1" Text="NATIVE / HTML / RTF / DOCX / TXT / XAML / MD"
                  VerticalAlignment="Center" FontSize="11" Opacity="0.6" />

@@ -20,6 +20,11 @@ Minimum framework is .NET 8. Minimum and pinned tested Avalonia version is 12.1.
 the declared <13 range is a restore constraint, not certification of every version.
 AngleSharp's minimum/pinned tested version is 1.8.2.
 
+Merge fields and mail merge add typed editable fields, lossless native/XAML/clipboard
+persistence, preview and per-record generation, culture-aware .NET formatting and
+missing-value policies, plus basic DOCX/RTF field preservation. See
+[the supported subset](MAIL-MERGE.md); general Word field evaluation remains unsupported.
+
 ## Support and known limits
 
 | Capability / platform | Candidate claim |

@@ -55,22 +55,59 @@ internal sealed class InlineTextSource : ITextSource
     }
 }
 
-internal sealed class InlineObjectRun(InlineDescriptor descriptor, TextRunProperties properties) : DrawableTextRun
+internal sealed class InlineObjectRun : DrawableTextRun
 {
-    public InlineDescriptor Descriptor { get; } = descriptor;
+    private readonly TextRunProperties _properties;
+    private readonly Size _size;
+    private readonly double _baseline;
+    public InlineDescriptor Descriptor { get; }
+
+    public InlineObjectRun(InlineDescriptor descriptor, TextRunProperties properties)
+    {
+        Descriptor = descriptor;
+        _properties = properties;
+        if (descriptor.Payload is MergeFieldInlinePayload)
+        {
+            using var label = FieldLabel();
+            _size = new(Math.Max(12, label.WidthIncludingTrailingWhitespace + 8), label.Height + 4);
+            _baseline = label.Baseline + 2;
+        }
+        else
+        {
+            _size = new(descriptor.Width, descriptor.Height);
+            _baseline = descriptor.Height;
+        }
+    }
+
     public override int Length => 1;
     public override ReadOnlyMemory<char> Text => "\uFFFC".AsMemory();
-    public override TextRunProperties Properties => properties;
-    public override Size Size => new(Descriptor.Width, Descriptor.Height);
-    public override double Baseline => Descriptor.Height;
+    public override TextRunProperties Properties => _properties;
+    public override Size Size => _size;
+    public override double Baseline => _baseline;
+
+    // Field labels use their run typography and measured geometry. Long/multiline previews
+    // are a single bounded chip; final merged text uses normal wrapping and soft breaks.
+    private TextLayout FieldLabel() => new(
+        Descriptor.AltText.Length == 0 ? "\u200B" : Descriptor.AltText.Replace('\r', ' ').Replace('\n', ' ').Replace('\u2028', ' '),
+        _properties.Typeface, _properties.FontRenderingEmSize, _properties.ForegroundBrush,
+        textDecorations: _properties.TextDecorations, maxWidth: 600, maxLines: 1,
+        textTrimming: TextTrimming.CharacterEllipsis);
 
     public override void Draw(DrawingContext context, Point origin)
     {
         var bounds = new Rect(origin, Size);
         using var clip = context.PushClip(bounds);
+        if (Descriptor.Payload is MergeFieldInlinePayload)
+        {
+            using (context.PushOpacity(.12)) context.DrawRectangle(_properties.ForegroundBrush, null, bounds);
+            using (context.PushOpacity(.4)) context.DrawRectangle(null, new Pen(_properties.ForegroundBrush, 1), bounds.Deflate(.5));
+            using var fieldLabel = FieldLabel();
+            fieldLabel.Draw(context, origin + new Vector(4, 2));
+            return;
+        }
         context.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Gray, 1), bounds.Deflate(.5));
         using var label = new TextLayout(string.IsNullOrEmpty(Descriptor.AltText) ? "Object" : Descriptor.AltText,
-            properties.Typeface, Math.Min(12, properties.FontRenderingEmSize), properties.ForegroundBrush,
+            _properties.Typeface, Math.Min(12, _properties.FontRenderingEmSize), _properties.ForegroundBrush,
             maxWidth: Math.Max(1, Descriptor.Width - 6), maxLines: 1, textTrimming: TextTrimming.CharacterEllipsis);
         label.Draw(context, origin + new Vector(3, Math.Max(0, (Descriptor.Height - label.Height) / 2)));
     }

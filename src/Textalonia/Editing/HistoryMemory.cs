@@ -95,6 +95,11 @@ internal sealed class RetentionGraph
             case ImageInlinePayload image:
                 visit(image.ResourceId);
                 break;
+            case MergeFieldInlinePayload field:
+                visit(field.Name);
+                if (field.Format is not null) visit(field.Format);
+                if (field.FallbackText is not null) visit(field.FallbackText);
+                break;
             case ControlInlinePayload control:
                 visit(control.Type); visit(control.Properties);
                 break;

@@ -717,7 +717,8 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
             }
             else
             {
-                ConversionDiagnostics.Report("html.resource", inline.Payload is ImageInlinePayload ? "Unavailable, external, or unsupported image resource" : "Host inline control", "Inline object was replaced with alternative text; no resource was fetched.", inline.Id);
+                if (inline.Payload is not MergeFieldInlinePayload)
+                    ConversionDiagnostics.Report("html.resource", inline.Payload is ImageInlinePayload ? "Unavailable, external, or unsupported image resource" : "Host inline control", "Inline object was replaced with alternative text; no resource was fetched.", inline.Id);
                 builder.Append(WebUtility.HtmlEncode(inline.AltText).Replace("\u2028", "<br>"));
             }
         }

@@ -25,3 +25,6 @@ visible and covered cells, and nested merge backups. `NativeSchemaTests` compare
 both fixtures with their reviewed generators, checks optional-property defaults,
 and rejects unsupported versions and ambiguous or unknown schema members.
 `--capture-contracts` writes the structured document as `native-current.json`.
+
+`native-merge-field.json` exercises the current allowlisted merge-field payload,
+including a named field, numeric format, fallback and cached label.

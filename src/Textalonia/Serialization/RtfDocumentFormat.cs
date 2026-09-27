@@ -133,6 +133,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
         private int _fallback;
         private bool _sectionActive;
         private bool _nestedProperties;
+        private bool _flattenFields;
         private long _resourceBytes;
 
         private void Loss(string code, string feature, string fallback, int? offset = null)
@@ -293,7 +294,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             try { return _ansi.GetString(bytes.GetBuffer(), 0, (int)bytes.Length); }
             catch (DecoderFallbackException) { throw new FormatException("Invalid byte sequence for the declared RTF code page."); }
         }
-        private string Plain(Group group)
+        private string Plain(Group group, int unicodeFallback = 1)
         {
             var result = new StringBuilder(); var fallback = 0;
             void Visit(Group value, int unicodeFallback)
@@ -311,7 +312,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                             result.Append(unchecked((char)n)); fallback = unicodeFallback; break;
                     }
             }
-            Visit(group, 1); return result.ToString();
+            Visit(group, unicodeFallback); return result.ToString();
         }
         private void ReadTables()
         {
@@ -543,12 +544,54 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
         }
         private void Field(Group group, State state)
         {
-            var instruction = group.Groups("fldinst").FirstOrDefault(); var value = instruction is null ? "" : Plain(instruction).Trim();
+            static IEnumerable<Node> Descendants(Group parent)
+            {
+                foreach (var node in parent.Nodes)
+                {
+                    yield return node;
+                    if (node is Group child) foreach (var descendant in Descendants(child)) yield return descendant;
+                }
+            }
+            var instructions = group.Groups("fldinst").ToArray();
+            var instruction = instructions.Length == 1 ? instructions[0] : null;
+            var value = instruction is null ? "" : Plain(instruction, state.UnicodeFallback).Trim();
+            var results = group.Groups("fldrslt").ToArray();
+            var nested = Descendants(group).OfType<Group>().Any(g => g.Destination == "field");
+            var structured = results.SelectMany(Descendants).OfType<Control>().Any(c => c.Word is "par" or "pard" or "sectd" or "sect" or "cell" or "row" or "trowd" or "nestcell" or "nestrow" or "itap" or "nesttableprops" or "cellx" or "clcbpat" or "clmgf" or "clmrg" or "clvmgf" or "clvmrg" or "trrh");
+            var parsed = MergeFieldInstructions.Parse(value);
+            if (nested) Loss("rtf.nested-field", "Nested RTF fields", "Retained visible results without active field semantics.", group.Offset);
+            if (results.Length > 1) Loss("rtf.field-structure", "Multiple field results", "Retained visible results without active field semantics.", group.Offset);
+            if (parsed is not null && !_flattenFields && !nested && !structured && results.Length <= 1)
+            {
+                Flush(); var start = _runs.Count;
+                foreach (var result in results) Walk(result, state);
+                Flush();
+                var cachedRuns = _runs.Skip(start).ToArray();
+                var cached = string.Concat(cachedRuns.Select(r => r.PlainText));
+                if (cachedRuns.Any(r => r.Inline is not null) || cached.Length > 16_384)
+                {
+                    Loss("rtf.field-result", "Non-text or oversized field result", "Retained the result content without active field semantics.", group.Offset);
+                    return;
+                }
+                _runs.RemoveRange(start, _runs.Count - start);
+                var style = cachedRuns.FirstOrDefault()?.Style ?? (results.Length == 0 ? state.Text : _lastState.Text);
+                if (cachedRuns.Any(r => r.Style != style))
+                    Loss("rtf.field-result-formatting", "Multiple styles in an atomic merge field", "Applied the first character style to the field display.", group.Offset);
+                if (parsed.UnsupportedSwitches || parsed.CharacterFormat)
+                    Loss("rtf.merge-field-switch", "Unsupported merge-field switches", "Retained the field name and cached display style without the switch behavior.", group.Offset);
+                _runs.Add(MergeFieldInstructions.Create(parsed.Name, cached, style));
+                return;
+            }
+            if (structured && parsed is not null)
+                Loss("rtf.field-result", "Block structure in a merge-field result", "Retained the result content without active field semantics.", group.Offset);
             var match = Regex.Match(value, "^HYPERLINK\\s+(?:\"([^\"]*)\"|(\\S+))\\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             var link = match.Success ? (match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value) : null;
-            if (link is not null && FlowDocument.IsSafeHyperlink(link)) state = state with { Text = state.Text with { Hyperlink = link } };
-            else Loss(link is null ? "rtf.unsupported-field" : "rtf.unsafe-link", link is null ? "RTF field instruction" : "Unsafe hyperlink", "Retained the visible field result without an active link.", group.Offset);
-            foreach (var result in group.Groups("fldrslt")) Walk(result, state);
+            if (!_flattenFields && !nested && link is not null && FlowDocument.IsSafeHyperlink(link)) state = state with { Text = state.Text with { Hyperlink = link } };
+            else Loss(link is null || _flattenFields || nested ? "rtf.unsupported-field" : "rtf.unsafe-link", link is null || _flattenFields || nested ? "RTF field instruction" : "Unsafe hyperlink", "Retained the visible field result without an active link.", group.Offset);
+            var previous = _flattenFields;
+            _flattenFields = true;
+            try { foreach (var result in results) Walk(result, state); }
+            finally { _flattenFields = previous; }
         }
         private void Picture(Group group, State state)
         {
@@ -658,6 +701,16 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             b.Append(' '); CharacterStyle(p.DefaultStyle, p.Id);
             foreach (var run in p.Runs)
             {
+                if (run.Inline is { Payload: MergeFieldInlinePayload field } fieldInline)
+                {
+                    MergeFieldInstructions.ReportExportOptions("rtf", fieldInline, field);
+                    if (run.Style.Hyperlink is not null)
+                        ConversionDiagnostics.Report("rtf.merge-field-hyperlink", "Hyperlinked merge field", "Retained the merge field and display formatting without hyperlink navigation.", fieldInline.Id);
+                    b.Append("{\\field{\\*\\fldinst ").Append(Escape(MergeFieldInstructions.Write(field.Name))).Append("}{\\fldrslt {");
+                    CharacterStyle(run.Style, p.Id);
+                    b.Append(Escape(fieldInline.AltText)).Append("}}}");
+                    continue;
+                }
                 if (run.Style.Hyperlink is { } link) b.Append("{\\field{\\*\\fldinst HYPERLINK \"").Append(Escape(link.Replace("\"", "%22"))).Append("\"}{\\fldrslt ");
                 b.Append('{'); CharacterStyle(run.Style, p.Id);
                 if (run.Inline is { } inline)

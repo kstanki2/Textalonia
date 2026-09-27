@@ -2,7 +2,7 @@
 
 Inline content is immutable document data. `RichRun.Inline` holds an
 `InlineDescriptor` with a stable `Id`, `AltText`, positive `Width`/`Height` in DIPs,
-and an `ImageInlinePayload` or `ControlInlinePayload`. Neither snapshots nor
+and an `ImageInlinePayload`, `ControlInlinePayload`, or `MergeFieldInlinePayload`. Neither snapshots nor
 codecs contain controls, bitmaps, factories, callbacks, or CLR type names to load.
 
 ```csharp
@@ -109,3 +109,7 @@ remain enabled in a viewer.
 
 See [input contracts](INPUT-COMPONENTS.md) and the
 [accessibility evidence and bridge limitations](ACCESSIBILITY.md).
+
+Merge fields use measured run typography for their label geometry rather than fixed
+descriptor dimensions. See [mail merge](MAIL-MERGE.md) for preview, generation and
+field interchange contracts.

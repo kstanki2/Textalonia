@@ -2,6 +2,8 @@
 
 ## 0.1.0-preview.1
 
+- Added atomic named merge fields with toolbar editing, clipboard/history/native/XAML persistence, measured labels and accessibility descriptions; immutable preview, lazy per-record mail merge, culture/format/fallback policies, basic DOCX/RTF field preservation and a desktop merge workflow. See `docs/MAIL-MERGE.md` for supported field syntax and diagnosed limits.
+
 - Added additive tolerant/strict conversion reports; expanded HTML/RTF/DOCX list, typography, table and embedded-image mappings; versioned structural clipboard fragments with identity/resource remapping and stale cut/paste protection; a locally authored interchange corpus and explicit application qualification gaps. See `docs/INTERCHANGE.md#supported-subset-and-diagnosed-losses`.
 
 - Added replaceable input components; atomic inline images/host controls with immutable resources, native persistence and bounded view ownership; managed text accessibility ranges with the native Avalonia bridge limitation documented. See `docs/INPUT-COMPONENTS.md` and `docs/INLINE-CONTENT.md`.

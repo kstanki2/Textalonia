@@ -107,3 +107,10 @@ Structural operations and native import/export traverse their affected snapshots
 `ListNumbering.GetMarker` reuses numbering transitions on unchanged persistent
 subtrees; `Compute` enumerates and caches the full marker map for a snapshot.
 See the [current interchange support matrix](INTERCHANGE.md#supported-subset-and-diagnosed-losses) for supported mappings, loss diagnostics and application qualification gaps.
+
+## Merge fields
+
+`MergeFieldInlinePayload` is a named atomic inline with optional .NET value format and
+literal missing/null fallback. It shares inline coordinates, clipboard identity remapping,
+formatting and history. The pure mail-merge transforms include retained table cells and
+merge backups. See [mail merge](MAIL-MERGE.md) for the complete contract.

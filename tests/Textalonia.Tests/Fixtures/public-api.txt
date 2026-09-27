@@ -423,6 +423,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Void ExtendTableCellSelection(System.Int32 rows, System.Int32 columns)
   method public System.Void FocusDocument()
   method public System.Void InsertInline(Textalonia.Model.InlineDescriptor descriptor, Textalonia.Model.DocumentResource resource = )
+  method public System.Void InsertMergeField(System.String name, System.String format = , System.String fallbackText = )
   method public System.Void InsertTable(System.Int32 rows = 2, System.Int32 columns = 3)
   method public System.Void InsertTableColumn(System.Boolean after = True)
   method public System.Void InsertTableRow(System.Boolean after = True)
@@ -441,6 +442,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Void SplitSelectedTableCells()
   method public System.Void Undo()
   method public System.Void UpdateInline(System.Guid id, System.Func<Textalonia.Model.InlineDescriptor,Textalonia.Model.InlineDescriptor> change)
+  method public System.Void UpdateMergeField(System.Guid id, System.String name, System.String format = , System.String fallbackText = )
   property Avalonia.Media.IBrush SelectionBrush { public get; public set; }
   property Avalonia.Thickness DocumentPadding { public get; public set; }
   property System.Boolean AcceptsTab { public get; public set; }
@@ -479,6 +481,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property Textalonia.Editing.EditorSession Session { public get; }
   property Textalonia.Editing.SelectionFormattingState FormattingState { public get; }
   property Textalonia.Model.FlowDocument Document { public get; public set; }
+  property Textalonia.Model.InlineDescriptor CurrentMergeField { public get; }
   property Textalonia.Serialization.ConversionReport LastConversionReport { public get; }
 type Textalonia.Controls.TextaloniaToolbar : Avalonia.Controls.WrapPanel
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
@@ -578,6 +581,7 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Void InsertDocument(Textalonia.Model.FlowDocument fragment)
   method public System.Void InsertFragment(Textalonia.Editing.DocumentFragment fragment)
   method public System.Void InsertInline(Textalonia.Model.InlineDescriptor descriptor, Textalonia.Model.DocumentResource resource = )
+  method public System.Void InsertMergeField(System.String name, System.String format = , System.String fallbackText = )
   method public System.Void InsertParagraph()
   method public System.Void InsertTable(System.Int32 rows = 2, System.Int32 columns = 3)
   method public System.Void InsertText(System.String text, System.Boolean coalesceTyping = False)
@@ -596,6 +600,7 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Void Undo()
   method public System.Void UpdateCurrentTable(System.Func<Textalonia.Model.Table,System.Int32,System.Int32,Textalonia.Model.Table> update)
   method public System.Void UpdateInline(System.Guid id, System.Func<Textalonia.Model.InlineDescriptor,Textalonia.Model.InlineDescriptor> update)
+  method public System.Void UpdateMergeField(System.Guid id, System.String name, System.String format = , System.String fallbackText = )
   method public Textalonia.Editing.DocumentFragment CopyCells(System.Guid tableId, System.Int32 row, System.Int32 column, System.Int32 rowCount, System.Int32 columnCount)
   method public Textalonia.Editing.DocumentFragment CopyFragment()
   method public Textalonia.Editing.DocumentPosition CreatePosition(System.Int32 offset)
@@ -612,6 +617,7 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   property Textalonia.Editing.TextSelection Selection { public get; }
   property Textalonia.Model.DocumentIndex Index { public get; }
   property Textalonia.Model.FlowDocument Document { public get; }
+  property Textalonia.Model.InlineDescriptor CurrentMergeField { public get; }
   property Textalonia.Model.TextStyle TypingStyle { public get; }
 type Textalonia.Editing.FormattingValue<T> : System.ValueType sealed
   interface System.IEquatable<Textalonia.Editing.FormattingValue<T>>
@@ -654,6 +660,30 @@ type Textalonia.Editing.TextSelection : System.ValueType sealed
   property System.Int32 End { public get; }
   property System.Int32 Length { public get; }
   property System.Int32 Start { public get; }
+type Textalonia.MailMerge.MailMergeOptions : System.Object sealed
+  interface System.IEquatable<Textalonia.MailMerge.MailMergeOptions>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.MailMerge.MailMergeOptions other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.MailMerge.MailMergeOptions <Clone>$()
+  property System.Globalization.CultureInfo Culture { public get; public set; }
+  property Textalonia.MailMerge.MissingFieldBehavior MissingFieldBehavior { public get; public set; }
+type Textalonia.MailMerge.MailMergeProcessor : System.Object sealed abstract
+  method public static System.Collections.Generic.IEnumerable<Textalonia.Model.FlowDocument> MergeMany(Textalonia.Model.FlowDocument template, System.Collections.Generic.IEnumerable<System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>> records, Textalonia.MailMerge.MailMergeOptions options = , System.Threading.CancellationToken cancellationToken = )
+  method public static System.Collections.Immutable.ImmutableArray<System.String> GetFieldNames(Textalonia.Model.FlowDocument template)
+  method public static Textalonia.Model.FlowDocument Merge(Textalonia.Model.FlowDocument template, System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> data, Textalonia.MailMerge.MailMergeOptions options = , System.Threading.CancellationToken cancellationToken = )
+  method public static Textalonia.Model.FlowDocument Preview(Textalonia.Model.FlowDocument template, System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> data, Textalonia.MailMerge.MailMergeOptions options = , System.Threading.CancellationToken cancellationToken = )
+type Textalonia.MailMerge.MissingFieldBehavior : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.MailMerge.MissingFieldBehavior Empty static = 2
+  field Textalonia.MailMerge.MissingFieldBehavior KeepField static = 1
+  field Textalonia.MailMerge.MissingFieldBehavior Throw static = 0
 type Textalonia.Model.Baseline : System.Enum sealed
   interface System.IComparable
   interface System.IConvertible
@@ -887,6 +917,24 @@ type Textalonia.Model.ListMarkerStyle : System.Enum sealed
 type Textalonia.Model.ListNumbering : System.Object sealed abstract
   method public static System.Collections.Generic.IReadOnlyDictionary<System.Guid,Textalonia.Model.ListMarker> Compute(Textalonia.Model.FlowDocument document)
   method public static Textalonia.Model.ListMarker GetMarker(Textalonia.Model.FlowDocument document, System.Guid paragraphId)
+type Textalonia.Model.MergeFieldInlinePayload : Textalonia.Model.InlinePayload sealed
+  interface System.IEquatable<Textalonia.Model.InlinePayload>
+  interface System.IEquatable<Textalonia.Model.MergeFieldInlinePayload>
+  ctor public (System.String Name)
+  method protected System.Boolean PrintMembers(System.Text.StringBuilder builder) virtual
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.InlinePayload other) virtual
+  method public System.Boolean Equals(Textalonia.Model.MergeFieldInlinePayload other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Name)
+  method public Textalonia.Model.MergeFieldInlinePayload <Clone>$() virtual
+  property System.String FallbackText { public get; public set; }
+  property System.String Format { public get; public set; }
+  property System.String Name { public get; public set; }
+  property System.Type EqualityContract { protected get; }
+type Textalonia.Model.MergeFields : System.Object sealed abstract
+  method public static Textalonia.Model.InlineDescriptor Create(System.String name, System.String format = , System.String fallbackText = )
 type Textalonia.Model.Paragraph : Textalonia.Model.Block sealed
   interface System.IEquatable<Textalonia.Model.Block>
   interface System.IEquatable<Textalonia.Model.Paragraph>

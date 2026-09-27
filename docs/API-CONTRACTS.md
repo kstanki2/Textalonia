@@ -2,7 +2,7 @@
 
 The 0.1 preview contract is the exported API in public-api.txt plus the nullable,
 attribute and modifier baseline in public-api-contracts.txt (both under
-tests/Textalonia.Tests/Fixtures). Phase 8 changes no exported library signatures.
+tests/Textalonia.Tests/Fixtures). Additive merge-field and mail-merge APIs are included in these baselines.
 The model, session, commands, input, resources, diagnostics, editor, viewers,
 toolbar and codecs are all captured. Generated record members and protected
 extension members participate in the checks.
@@ -43,7 +43,7 @@ are covered; native screen-reader text navigation remains unqualified.
 
 Native JSON reads and writes **schema v4 only**, preserving the full current
 model, including nested cells and merge backups, inline descriptors and resources,
-quote/code/language annotations, and inline-code metadata. The project has not been
+quote/code/language annotations, inline-code metadata, and typed merge fields. The project has not been
 published or used; v1-v3 were unused development schemas and have no migration
 support. The version marker remains 4 to identify the current format.
 

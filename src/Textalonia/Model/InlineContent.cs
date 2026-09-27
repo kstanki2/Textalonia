@@ -22,6 +22,9 @@ public sealed record InlineDescriptor
         switch (Payload)
         {
             case ImageInlinePayload image when ValidKey(image.ResourceId): break;
+            case MergeFieldInlinePayload field:
+                field.Validate();
+                break;
             case ControlInlinePayload control when ValidKey(control.Type) && control.Properties is not null &&
                 control.Properties.Count <= 128 && control.Properties.All(p => ValidKey(p.Key) && p.Value is not null && p.Value.Length <= 16_384): break;
             default: throw new FormatException("Invalid inline payload.");
@@ -34,6 +37,7 @@ public sealed record InlineDescriptor
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
 [JsonDerivedType(typeof(ImageInlinePayload), "image")]
 [JsonDerivedType(typeof(ControlInlinePayload), "control")]
+[JsonDerivedType(typeof(MergeFieldInlinePayload), "mergeField")]
 public abstract record InlinePayload;
 
 public sealed record ImageInlinePayload(string ResourceId) : InlinePayload;
