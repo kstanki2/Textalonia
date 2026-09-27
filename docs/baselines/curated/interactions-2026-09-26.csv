@@ -1,0 +1,17 @@
+Workload,Operation,BudgetMilliseconds,MedianMilliseconds,P95Milliseconds,P95AllocatedBytes,WithinLatencyBudget
+paragraphs-10000,caret,16,4.0306,5.2371,71904,True
+paragraphs-10000,viewport-transition,16,3.7476,5.0624,48648,True
+paragraphs-10000,width-resize,100,66.3144,84.422,9929536,True
+paragraphs-10000,stationary-edge-autoscroll-mixed-clock-stress,16,5.1284,25.7358,182152,False
+paragraphs-10000,stationary-edge-autoscroll-manual-clock,16,3.9629,4.6049,77792,True
+long-paragraph,caret,16,3.8529,6.0783,108248,True
+long-paragraph,viewport-transition,16,3.9601,6.0181,81552,True
+long-paragraph,width-resize,100,35.3849,103.0921,4967936,False
+long-paragraph,stationary-edge-autoscroll-mixed-clock-stress,16,3.6053,8.301,347144,True
+long-paragraph,stationary-edge-autoscroll-manual-clock,16,3.2006,4.3869,159008,True
+table-heavy,caret,16,3.8471,11.7944,145808,True
+table-heavy,viewport-transition,16,3.7485,7.2645,279896,True
+table-heavy,width-resize,100,43.344,89.0141,6585952,True
+table-heavy,table-resize-preview,100,7.2339,59.6409,2815192,True
+table-heavy,stationary-edge-autoscroll-mixed-clock-stress,16,4.6181,32.839,1433160,False
+table-heavy,stationary-edge-autoscroll-manual-clock,16,3.8471,12.8811,648296,True

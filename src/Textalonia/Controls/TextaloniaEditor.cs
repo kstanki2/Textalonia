@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Text;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
@@ -18,33 +17,45 @@ namespace Textalonia.Controls;
 public sealed record TextHighlight(int Start, int Length, IBrush Brush);
 public sealed class HyperlinkEventArgs(string uri) : EventArgs { public string Uri { get; } = uri; }
 public sealed class EditorErrorEventArgs(Exception exception) : EventArgs { public Exception Exception { get; } = exception; }
+public sealed class ConversionCompletedEventArgs(ConversionReport report) : EventArgs { public ConversionReport Report { get; } = report; }
 
 [TemplatePart("PART_Surface", typeof(DocumentSurface), IsRequired = true)]
 [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer), IsRequired = true)]
 [TemplatePart("PART_Toolbar", typeof(TextaloniaToolbar))]
-public class TextaloniaEditor : TemplatedControl
+public partial class TextaloniaEditor : TemplatedControl
 {
     public static readonly StyledProperty<FlowDocument?> DocumentProperty =
         AvaloniaProperty.Register<TextaloniaEditor, FlowDocument?>(nameof(Document), defaultBindingMode: BindingMode.TwoWay);
     public static readonly StyledProperty<string> TextProperty =
         AvaloniaProperty.Register<TextaloniaEditor, string>(nameof(Text), "", defaultBindingMode: BindingMode.TwoWay);
+    public static readonly StyledProperty<bool> SynchronizeTextProperty =
+        AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(SynchronizeText), true);
+    public static readonly StyledProperty<int> MaxShapingCharactersProperty =
+        AvaloniaProperty.Register<TextaloniaEditor, int>(nameof(MaxShapingCharacters), 0,
+            validate: value => value == 0 || value >= ParagraphLayout.WindowLength);
+    public static readonly DirectProperty<TextaloniaEditor, ShapingLimitExceededException?> LayoutErrorProperty =
+        AvaloniaProperty.RegisterDirect<TextaloniaEditor, ShapingLimitExceededException?>(nameof(LayoutError), editor => editor.LayoutError);
     public static readonly StyledProperty<bool> IsReadOnlyProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(IsReadOnly));
     public static readonly StyledProperty<bool> ShowToolbarProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(ShowToolbar), true);
     public static readonly StyledProperty<bool> AcceptsTabProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(AcceptsTab));
     public static readonly StyledProperty<string> PlaceholderTextProperty = AvaloniaProperty.Register<TextaloniaEditor, string>(nameof(PlaceholderText), "Start writing...");
     public static readonly StyledProperty<IBrush> SelectionBrushProperty =
-        AvaloniaProperty.Register<TextaloniaEditor, IBrush>(nameof(SelectionBrush), new SolidColorBrush(Color.FromArgb(85, 59, 130, 246)));
+        AvaloniaProperty.Register<TextaloniaEditor, IBrush>(nameof(SelectionBrush), new Avalonia.Media.Immutable.ImmutableSolidColorBrush(Color.FromArgb(85, 59, 130, 246)));
     public static readonly StyledProperty<int> SelectionStartProperty =
         AvaloniaProperty.Register<TextaloniaEditor, int>(nameof(SelectionStart), defaultBindingMode: BindingMode.TwoWay);
     public static readonly StyledProperty<int> SelectionEndProperty =
         AvaloniaProperty.Register<TextaloniaEditor, int>(nameof(SelectionEnd), defaultBindingMode: BindingMode.TwoWay);
     public static readonly StyledProperty<Thickness> DocumentPaddingProperty =
         AvaloniaProperty.Register<TextaloniaEditor, Thickness>(nameof(DocumentPadding), new Thickness(28));
+    private static readonly DataFormat<string> FragmentClipboardFormat = DataFormat.CreateStringApplicationFormat("org.textalonia.fragment");
     private static readonly DataFormat<string> NativeClipboardFormat = DataFormat.CreateStringApplicationFormat("org.textalonia.document");
     private static readonly DataFormat<byte[]> WindowsHtmlFormat = DataFormat.CreateBytesPlatformFormat("HTML Format");
     private static readonly DataFormat<string> HtmlClipboardFormat = DataFormat.CreateStringPlatformFormat(OperatingSystem.IsMacOS() ? "public.html" : "text/html");
 
     private bool _synchronizing;
+    private bool _preservingView;
+    private int _textRevision = -1;
+    private ShapingLimitExceededException? _layoutError;
     private readonly List<EditorCommand> _commands = [];
     private DocumentSurface? _surface;
     private TextaloniaToolbar? _toolbar;
@@ -54,14 +65,14 @@ public class TextaloniaEditor : TemplatedControl
     {
         Session.Changed += OnSessionChanged;
         Highlights.CollectionChanged += (_, _) => _surface?.InvalidateVisual();
-        BoldCommand = Command(Session.ToggleBold);
-        ItalicCommand = Command(Session.ToggleItalic);
-        UnderlineCommand = Command(Session.ToggleUnderline);
-        StrikethroughCommand = Command(Session.ToggleStrikethrough);
+        BoldCommand = Command(ToggleSelectedBold);
+        ItalicCommand = Command(ToggleSelectedItalic);
+        UnderlineCommand = Command(ToggleSelectedUnderline);
+        StrikethroughCommand = Command(ToggleSelectedStrikethrough);
         UndoCommand = Command(Session.Undo, () => Session.CanUndo);
         RedoCommand = Command(Session.Redo, () => Session.CanRedo);
-        CutCommand = AsyncCommand(CutAsync, () => !IsReadOnly && !Session.Selection.IsEmpty);
-        CopyCommand = AsyncCommand(CopyAsync, () => !Session.Selection.IsEmpty);
+        CutCommand = AsyncCommand(CutAsync, () => !IsReadOnly && (!Session.Selection.IsEmpty || CellSelection is not null));
+        CopyCommand = AsyncCommand(CopyAsync, () => !Session.Selection.IsEmpty || CellSelection is not null);
         PasteCommand = AsyncCommand(PasteAsync, () => !IsReadOnly);
         SelectAllCommand = Command(Session.SelectAll, () => true);
         SetCurrentValue(DocumentProperty, Session.Document);
@@ -71,6 +82,12 @@ public class TextaloniaEditor : TemplatedControl
     public ObservableCollection<TextHighlight> Highlights { get; } = [];
     public FlowDocument Document { get => GetValue(DocumentProperty) ?? Session.Document; set => SetValue(DocumentProperty, value); }
     public string Text { get => GetValue(TextProperty); set => SetValue(TextProperty, value); }
+    /// <summary>False opts into document binding without eager full-text notifications. Text retains its last published value.</summary>
+    public bool SynchronizeText { get => GetValue(SynchronizeTextProperty); set => SetValue(SynchronizeTextProperty, value); }
+    /// <summary>Maximum UTF-16 units per exact shaping input. Zero preserves unrestricted compatibility; positive values must be at least 2048.</summary>
+    public int MaxShapingCharacters { get => GetValue(MaxShapingCharactersProperty); set => SetValue(MaxShapingCharactersProperty, value); }
+    /// <summary>Current rendering-limit error, or null. The document and its history remain available when rendering is suspended.</summary>
+    public ShapingLimitExceededException? LayoutError => _layoutError;
     public bool IsReadOnly { get => GetValue(IsReadOnlyProperty); set => SetValue(IsReadOnlyProperty, value); }
     public bool ShowToolbar { get => GetValue(ShowToolbarProperty); set => SetValue(ShowToolbarProperty, value); }
     public bool AcceptsTab { get => GetValue(AcceptsTabProperty); set => SetValue(AcceptsTabProperty, value); }
@@ -81,6 +98,7 @@ public class TextaloniaEditor : TemplatedControl
     public Thickness DocumentPadding { get => GetValue(DocumentPaddingProperty); set => SetValue(DocumentPaddingProperty, value); }
     public string SelectedText => Session.SelectedText;
     public Exception? LastError { get; private set; }
+    public ConversionReport LastConversionReport { get; private set; } = ConversionReport.Empty;
 
     public ICommand BoldCommand { get; }
     public ICommand ItalicCommand { get; }
@@ -97,6 +115,7 @@ public class TextaloniaEditor : TemplatedControl
     public event EventHandler<HyperlinkEventArgs>? HyperlinkActivated;
     public event EventHandler<EditorErrorEventArgs>? OperationFailed;
     public event EventHandler? FindRequested;
+    public event EventHandler<ConversionCompletedEventArgs>? ConversionCompleted;
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -113,6 +132,9 @@ public class TextaloniaEditor : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == InlineResourceResolverProperty || change.Property == InlineImageOptionsProperty || change.Property == InlineControlFactoriesProperty)
+        { _surface?.ResetInlineViews(); _surface?.Refresh(); return; }
+        if (change.Property == MaxShapingCharactersProperty) { _surface?.Refresh(); return; }
         if (_synchronizing) return;
         if (change.Property == DocumentProperty)
         {
@@ -123,6 +145,7 @@ public class TextaloniaEditor : TemplatedControl
             if ((string?)change.NewValue != Session.Index.Text) Session.Load(FlowDocument.FromText((string?)change.NewValue ?? ""));
         }
         else if (change.Property == IsReadOnlyProperty) Session.IsReadOnly = IsReadOnly;
+        else if (change.Property == SynchronizeTextProperty && SynchronizeText) OnSessionChanged(this, EventArgs.Empty);
         else if (change.Property == SelectionStartProperty || change.Property == SelectionEndProperty)
             Session.Select(SelectionStart, SelectionEnd);
         else if (change.Property == ForegroundProperty || change.Property == FontFamilyProperty ||
@@ -138,25 +161,38 @@ public class TextaloniaEditor : TemplatedControl
         try
         {
             SetCurrentValue(DocumentProperty, Session.Document);
-            SetCurrentValue(TextProperty, Session.Index.Text);
+            if (SynchronizeText && (_textRevision != Session.Revision || sender == this))
+            { SetCurrentValue(TextProperty, Session.Index.Text); _textRevision = Session.Revision; }
             SetCurrentValue(SelectionStartProperty, Session.Selection.Anchor);
             SetCurrentValue(SelectionEndProperty, Session.Selection.Active);
             SetCurrentValue(IsReadOnlyProperty, Session.IsReadOnly);
         }
         finally { _synchronizing = false; }
         foreach (var command in _commands) command.RaiseCanExecuteChanged();
-        _surface?.Refresh();
+        _surface?.Refresh(!_preservingView && (selectionChanged || documentChanged && Session.LastEdit is { Reset: false }), invalidateLayout: documentChanged);
         if (documentChanged) DocumentChanged?.Invoke(this, EventArgs.Empty);
         if (selectionChanged) SelectionChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void FocusDocument() => _surface?.Focus();
+    internal virtual FlowDocument PresentationDocument => Document;
+    internal void RefreshPresentation() => _surface?.Refresh();
+    internal void ReplaceDocumentPreservingView(FlowDocument document, int anchor, int active)
+    {
+        _preservingView = true;
+        try { Document = document; Session.Select(anchor, active); }
+        finally { _preservingView = false; }
+    }
     public void SelectAll() => Session.SelectAll();
     public void Undo() => Session.Undo();
     public void Redo() => Session.Redo();
     public void InsertText(string text) => Session.InsertText(text);
     public void InsertTable(int rows = 2, int columns = 3) => Session.InsertTable(rows, columns);
-    public void ApplyStyle(Func<TextStyle, TextStyle> change) => Session.ApplyStyle(change);
+    public void ApplyStyle(Func<TextStyle, TextStyle> change)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        if (CellSelection is null) Session.ApplyStyle(change); else ApplySelectedTextStyle(change);
+    }
     public bool FindNext(string text, bool matchCase = false) => Session.FindNext(text, matchCase);
     public int ReplaceAll(string find, string replace, bool matchCase = false) => Session.ReplaceAll(find, replace, matchCase);
 
@@ -170,21 +206,64 @@ public class TextaloniaEditor : TemplatedControl
     public Task SaveAsync(Stream stream, IDocumentFormat format, CancellationToken cancellationToken = default) =>
         format.SaveAsync(Session.Document, stream, cancellationToken);
 
+    public async Task<DocumentLoadResult> LoadWithReportAsync(Stream stream, IDocumentFormat format,
+        ConversionOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var revision = Session.Revision;
+        var result = await format.LoadWithReportAsync(stream, options, cancellationToken);
+        if (Session.Revision != revision) throw new InvalidOperationException("The document changed while the file was loading.");
+        Document = result.Document;
+        PublishConversion(result.Report);
+        return result;
+    }
+
+    public async Task<DocumentSaveResult> SaveWithReportAsync(Stream stream, IDocumentFormat format,
+        ConversionOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        var result = await format.SaveWithReportAsync(Session.Document, stream, options, cancellationToken);
+        PublishConversion(result.Report);
+        return result;
+    }
+
+    private void PublishConversion(ConversionReport report)
+    {
+        LastConversionReport = report;
+        ConversionCompleted?.Invoke(this, new(report));
+    }
+
+    // An injectable adapter lets delayed/failed clipboard operations be exercised without changing platform ownership.
+    internal Func<IEditorClipboard?>? ClipboardProvider { get; set; }
+    private IEditorClipboard? Clipboard => ClipboardProvider is { } provider ? provider() :
+        TopLevel.GetTopLevel(this)?.Clipboard is { } clipboard ? new PlatformEditorClipboard(clipboard) : null;
+
     public async Task CopyAsync() => await CopyCoreAsync();
     private async Task<bool> CopyCoreAsync()
     {
-        if (Session.Selection.IsEmpty || TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard) return false;
-        var fragment = Session.CopySelection();
+        var cells = CellSelection;
+        if (Session.Selection.IsEmpty && cells is null || Clipboard is not { } clipboard) return false;
+        using var diagnostics = ConversionDiagnostics.Begin();
+        var fragment = cells is null ? Session.CopyFragment() : Session.CopyCells(cells.TableId, cells.Row, cells.Column, cells.RowCount, cells.ColumnCount);
         var data = new DataTransfer();
         var item = new DataTransferItem();
-        item.SetText(Session.SelectedText);
-        item.Set(NativeClipboardFormat, DocumentFormats.Json.Serialize(fragment));
-        var html = DocumentFormats.Html.Serialize(fragment);
-        if (OperatingSystem.IsWindows()) item.Set(WindowsHtmlFormat, WindowsHtml(html));
+        item.SetText(cells is null ? Session.SelectedText : fragment.Document.Text);
+        item.Set(FragmentClipboardFormat, ClipboardInterchange.Serialize(fragment));
+        // Keep the older native document flavor available to older Textalonia builds.
+        item.Set(NativeClipboardFormat, DocumentFormats.Json.Serialize(fragment.Document));
+        // Clipboard commands finish preparing all flavors before yielding to platform access.
+        // A worker dispatch here would let an immediately following paste overtake the copy.
+        string html;
+        using (var htmlDiagnostics = ConversionDiagnostics.Begin())
+        {
+            DocumentFormatExtensions.ReportExportLosses(DocumentFormats.Html, fragment.Document);
+            html = DocumentFormats.Html.Serialize(fragment.Document);
+            diagnostics.AddRange(htmlDiagnostics.ToReport().Diagnostics.Select(d => d with { Fallback = "HTML fallback: " + d.Fallback }));
+        }
+        if (OperatingSystem.IsWindows()) item.Set(WindowsHtmlFormat, ClipboardInterchange.EncodeWindowsHtml(html));
         else item.Set(HtmlClipboardFormat, html);
         data.Add(item);
-        // Ownership transfers to the clipboard; do not dispose data here.
+        // Ownership transfers to the clipboard; do not dispose data after a successful transfer.
         await clipboard.SetDataAsync(data);
+        PublishConversion(diagnostics.ToReport());
         return true;
     }
 
@@ -193,57 +272,56 @@ public class TextaloniaEditor : TemplatedControl
         if (IsReadOnly) return;
         var revision = Session.Revision;
         var selection = Session.Selection;
-        if (await CopyCoreAsync() && !IsReadOnly && Session.Revision == revision && Session.Selection == selection)
-            Session.InsertText("");
+        var cells = CellSelection;
+        if (await CopyCoreAsync() && !IsReadOnly && Session.Revision == revision && Session.Selection == selection && CellSelection == cells)
+        {
+            if (cells is not null) ClearSelectedTableCellContents();
+            else Session.InsertText("");
+        }
     }
 
     public async Task PasteAsync()
     {
-        if (IsReadOnly || TopLevel.GetTopLevel(this)?.Clipboard is not { } clipboard) return;
+        if (IsReadOnly || Clipboard is not { } clipboard) return;
         var revision = Session.Revision;
         var selection = Session.Selection;
+        using var diagnostics = ConversionDiagnostics.Begin();
         using var data = await clipboard.TryGetDataAsync();
         if (data is null) return;
-        FlowDocument? fragment = null;
-        var native = await data.TryGetValueAsync(NativeClipboardFormat);
-        if (native is not null)
+        DocumentFragment? fragment = null;
+        // Preference order is versioned native, legacy native, HTML, then plain text.
+        foreach (var format in new[] { FragmentClipboardFormat, NativeClipboardFormat })
         {
-            try { fragment = DocumentFormats.Json.Parse(native); }
-            catch (Exception ex) when (ex is FormatException or System.Text.Json.JsonException or NotSupportedException) { }
+            var native = await data.TryGetValueAsync(format);
+            if (native is null) continue;
+            try { fragment = ClipboardInterchange.Parse(native); break; }
+            catch (Exception ex) when (ex is FormatException or System.Text.Json.JsonException or NotSupportedException)
+            {
+                ConversionDiagnostics.Report("clipboard.native-rejected", "Invalid or unsupported native clipboard payload",
+                    "Try the next native flavor, then HTML, then plain text.");
+            }
         }
         if (fragment is null)
         {
-            var html = OperatingSystem.IsWindows()
-                ? (await data.TryGetValueAsync(WindowsHtmlFormat) is { } bytes ? Encoding.UTF8.GetString(bytes).TrimEnd('\0') : null)
-                : await data.TryGetValueAsync(HtmlClipboardFormat);
-            if (html is not null)
+            try
             {
-                var start = html.IndexOf("<!--StartFragment-->", StringComparison.OrdinalIgnoreCase);
-                var end = html.IndexOf("<!--EndFragment-->", StringComparison.OrdinalIgnoreCase);
-                if (start >= 0 && end > start) html = html[(start + 20)..end];
-                try { fragment = DocumentFormats.Html.Parse(html); }
-                catch (FormatException) { }
+                var html = OperatingSystem.IsWindows()
+                    ? (await data.TryGetValueAsync(WindowsHtmlFormat) is { } bytes ? ClipboardInterchange.DecodeWindowsHtml(bytes) : null)
+                    : await data.TryGetValueAsync(HtmlClipboardFormat);
+                if (html is not null)
+                    fragment = new() { Document = DocumentFormats.Html.Parse(ClipboardInterchange.ExtractHtmlFragment(html)) };
+            }
+            catch (Exception ex) when (ex is FormatException or System.Text.Json.JsonException or NotSupportedException)
+            {
+                ConversionDiagnostics.Report("clipboard.html-rejected", "Invalid or unsupported HTML clipboard payload", "Try plain text.");
             }
         }
         var text = fragment is null ? await data.TryGetTextAsync() : null;
         if (IsReadOnly || revision != Session.Revision || Session.Selection != selection) return;
-        if (fragment is not null) Session.InsertDocument(fragment);
+        if (fragment is not null) Session.InsertFragment(fragment);
         else if (text is not null) Session.InsertText(text);
+        PublishConversion(diagnostics.ToReport());
     }
-
-    private static byte[] WindowsHtml(string html)
-    {
-        var fragment = html[(html.IndexOf("<body>", StringComparison.Ordinal) + 6)..html.LastIndexOf("</body>", StringComparison.Ordinal)];
-        const string prefix = "<html><body><!--StartFragment-->";
-        const string suffix = "<!--EndFragment--></body></html>";
-        const string template = "Version:1.0\r\nStartHTML:{0:0000000000}\r\nEndHTML:{1:0000000000}\r\nStartFragment:{2:0000000000}\r\nEndFragment:{3:0000000000}\r\n";
-        var headerLength = Encoding.UTF8.GetByteCount(string.Format(System.Globalization.CultureInfo.InvariantCulture, template, 0, 0, 0, 0));
-        var start = headerLength + Encoding.UTF8.GetByteCount(prefix);
-        var end = start + Encoding.UTF8.GetByteCount(fragment);
-        var header = string.Format(System.Globalization.CultureInfo.InvariantCulture, template, headerLength, end + Encoding.UTF8.GetByteCount(suffix), start, end);
-        return Encoding.UTF8.GetBytes(header + prefix + fragment + suffix);
-    }
-
     internal void OpenLink(string uri) => HyperlinkActivated?.Invoke(this, new(uri));
     internal void RequestFind()
     {
@@ -254,9 +332,18 @@ public class TextaloniaEditor : TemplatedControl
     {
         LastError = exception; OperationFailed?.Invoke(this, new(exception));
     }
-    internal void Run(Action action)
+    internal void SetLayoutError(ShapingLimitExceededException? error)
     {
-        try { LastError = null; action(); FocusDocument(); }
+        var previous = _layoutError;
+        if (previous?.ParagraphId == error?.ParagraphId && previous?.CharacterLimit == error?.CharacterLimit &&
+            previous?.RequestedCharacters == error?.RequestedCharacters) return;
+        SetAndRaise(LayoutErrorProperty, ref _layoutError, error);
+        if (error is not null) ReportError(error);
+        else if (ReferenceEquals(LastError, previous)) LastError = null;
+    }
+    internal void Run(Action action, bool focusDocument = true)
+    {
+        try { LastError = null; action(); if (focusDocument) FocusDocument(); }
         catch (Exception ex) { ReportError(ex); }
     }
     private EditorCommand Command(Action execute, Func<bool>? canExecute = null) =>
@@ -292,4 +379,18 @@ public class TextaloniaViewer : TextaloniaEditor
 {
     protected override Type StyleKeyOverride => typeof(TextaloniaEditor);
     public TextaloniaViewer() { IsReadOnly = true; ShowToolbar = false; }
+}
+
+
+
+internal interface IEditorClipboard
+{
+    Task SetDataAsync(DataTransfer data);
+    Task<IAsyncDataTransfer?> TryGetDataAsync();
+}
+
+internal sealed class PlatformEditorClipboard(IClipboard clipboard) : IEditorClipboard
+{
+    public Task SetDataAsync(DataTransfer data) => clipboard.SetDataAsync(data);
+    public Task<IAsyncDataTransfer?> TryGetDataAsync() => clipboard.TryGetDataAsync();
 }

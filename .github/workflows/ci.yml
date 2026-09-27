@@ -1,15 +1,27 @@
 name: build-test-package
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+    inputs:
+      version:
+        description: Preview package version (empty uses Directory.Build.props)
+        required: false
+        type: string
+      release_workloads:
+        description: Run 2,000 operations per seed and the full release performance captures
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 jobs:
   verify:
+    timeout-minutes: 60
+    env:
+      AVALONIA_TELEMETRY_OPTOUT: '1'
+      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_EXTENDED: ${{ inputs.release_workloads }}
     strategy:
       fail-fast: false
       matrix:
@@ -20,22 +32,30 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-      - name: Restore
-        run: dotnet restore Textalonia.sln --configfile NuGet.Config
-      - name: Build
-        run: dotnet build Textalonia.sln -c Release --no-restore
-      - name: Test
-        run: dotnet test tests/Textalonia.Tests -c Release --no-build --logger trx
-      - name: Pack
-        run: dotnet pack src/Textalonia -c Release --no-build -o artifacts/packages
-      - name: Restore independent package consumer
-        run: dotnet restore tests/Textalonia.PackageSmoke --configfile tests/Textalonia.PackageSmoke/NuGet.Config
-      - name: Run independent package consumer
-        run: dotnet run --project tests/Textalonia.PackageSmoke -c Release --no-restore
+      - name: Validate exact candidate and independent consumers
+        shell: pwsh
+        run: |
+          $extended = $env:RELEASE_EXTENDED -eq 'true'
+          ./scripts/Invoke-ReleaseCandidate.ps1 -Version $env:RELEASE_VERSION -OutputDirectory artifacts/candidate -LongCorpus:$extended -Performance:$extended
+      - name: Verify bundle integrity
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash artifacts/candidate/candidate.json -Algorithm SHA256).Hash
+          ./scripts/Test-ReleaseCandidate.ps1 -CandidateDirectory artifacts/candidate -ManifestSha256 $hash
+          ./scripts/Test-ReleaseTooling.ps1 -CandidateDirectory artifacts/candidate -OutputDirectory artifacts/tooling-tests
+          "Candidate manifest SHA256: $hash" >> $env:GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: verification-${{ runner.os }}
+          name: candidate-${{ runner.os }}-${{ github.sha }}
+          retention-days: 30
           path: |
-            artifacts/
-            tests/**/TestResults/*.trx
+            artifacts/candidate/
+            !artifacts/candidate/consumer/
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-tooling-${{ runner.os }}-${{ github.sha }}
+          retention-days: 30
+          path: artifacts/tooling-tests/tooling-tests.json

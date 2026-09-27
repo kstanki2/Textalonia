@@ -13,4 +13,7 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="Fixtures/**/*.json;Fixtures/**/*.txt;Fixtures/**/*.html;Fixtures/**/*.rtf;Fixtures/**/*.xml;Fixtures/**/*.md" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

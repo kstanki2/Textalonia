@@ -1,0 +1,1524 @@
+{
+  "version": 2,
+  "document": {
+    "blocks": [
+      {
+        "kind": "paragraph",
+        "runs": [
+          {
+            "text": "Weighted and spaced",
+            "style": {
+              "fontFamily": null,
+              "fontSize": 16,
+              "bold": true,
+              "fontWeight": 600,
+              "fontStretch": 6,
+              "italic": false,
+              "underline": false,
+              "strikethrough": false,
+              "foreground": null,
+              "background": null,
+              "hyperlink": null,
+              "baseline": "Normal"
+            }
+          }
+        ],
+        "style": {
+          "alignment": "Left",
+          "list": "None",
+          "listLevel": 0,
+          "listId": null,
+          "listDefinition": null,
+          "listStart": null,
+          "listRestart": false,
+          "headingLevel": 0,
+          "spaceBefore": 5,
+          "spaceAfter": 13,
+          "indent": 12,
+          "rightIndent": 15,
+          "firstLineIndent": -8,
+          "lineHeight": 28,
+          "letterSpacing": 1.25,
+          "rightToLeft": false
+        },
+        "defaultStyle": {
+          "fontFamily": null,
+          "fontSize": 16,
+          "bold": true,
+          "fontWeight": 350,
+          "fontStretch": 4,
+          "italic": false,
+          "underline": false,
+          "strikethrough": false,
+          "foreground": null,
+          "background": null,
+          "hyperlink": null,
+          "baseline": "Normal"
+        },
+        "id": "f4f0411e-96e3-c896-fa80-fb2c98e1b0d6"
+      },
+      {
+        "kind": "paragraph",
+        "runs": [
+          {
+            "text": "Start at three",
+            "style": {
+              "fontFamily": null,
+              "fontSize": 16,
+              "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
+              "italic": false,
+              "underline": false,
+              "strikethrough": false,
+              "foreground": null,
+              "background": null,
+              "hyperlink": null,
+              "baseline": "Normal"
+            }
+          }
+        ],
+        "style": {
+          "alignment": "Left",
+          "list": "Numbered",
+          "listLevel": 0,
+          "listId": "7dfebf35-21c4-b088-4740-3c0ba8c3dccd",
+          "listDefinition": {
+            "levels": [
+              {
+                "start": 3,
+                "kind": "Numbered",
+                "marker": "Decimal",
+                "text": null,
+                "prefix": "[",
+                "suffix": "]",
+                "includeAncestors": false
+              },
+              {
+                "start": 2,
+                "kind": "Numbered",
+                "marker": "LowerRoman",
+                "text": null,
+                "prefix": "",
+                "suffix": ")",
+                "includeAncestors": true
+              },
+              {
+                "start": 1,
+                "kind": "Bullet",
+                "marker": "Bullet",
+                "text": "\u25C6",
+                "prefix": "",
+                "suffix": ".",
+                "includeAncestors": false
+              }
+            ]
+          },
+          "listStart": null,
+          "listRestart": false,
+          "headingLevel": 0,
+          "spaceBefore": 0,
+          "spaceAfter": 8,
+          "indent": 0,
+          "rightIndent": 0,
+          "firstLineIndent": 0,
+          "lineHeight": null,
+          "letterSpacing": 0,
+          "rightToLeft": false
+        },
+        "defaultStyle": {
+          "fontFamily": null,
+          "fontSize": 16,
+          "bold": false,
+          "fontWeight": null,
+          "fontStretch": 5,
+          "italic": false,
+          "underline": false,
+          "strikethrough": false,
+          "foreground": null,
+          "background": null,
+          "hyperlink": null,
+          "baseline": "Normal"
+        },
+        "id": "bb2409dc-b793-7f72-b7b9-b4752615bbe7"
+      },
+      {
+        "kind": "section",
+        "blocks": [
+          {
+            "kind": "paragraph",
+            "runs": [
+              {
+                "text": "Intervening paragraph",
+                "style": {
+                  "fontFamily": null,
+                  "fontSize": 16,
+                  "bold": false,
+                  "fontWeight": null,
+                  "fontStretch": 5,
+                  "italic": false,
+                  "underline": false,
+                  "strikethrough": false,
+                  "foreground": null,
+                  "background": null,
+                  "hyperlink": null,
+                  "baseline": "Normal"
+                }
+              }
+            ],
+            "style": {
+              "alignment": "Left",
+              "list": "None",
+              "listLevel": 0,
+              "listId": null,
+              "listDefinition": null,
+              "listStart": null,
+              "listRestart": false,
+              "headingLevel": 0,
+              "spaceBefore": 0,
+              "spaceAfter": 8,
+              "indent": 0,
+              "rightIndent": 0,
+              "firstLineIndent": 0,
+              "lineHeight": null,
+              "letterSpacing": 0,
+              "rightToLeft": false
+            },
+            "defaultStyle": {
+              "fontFamily": null,
+              "fontSize": 16,
+              "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
+              "italic": false,
+              "underline": false,
+              "strikethrough": false,
+              "foreground": null,
+              "background": null,
+              "hyperlink": null,
+              "baseline": "Normal"
+            },
+            "id": "791ec260-59f3-522c-995e-3ecf402e0dc2"
+          },
+          {
+            "kind": "paragraph",
+            "runs": [
+              {
+                "text": "Nested level",
+                "style": {
+                  "fontFamily": null,
+                  "fontSize": 16,
+                  "bold": false,
+                  "fontWeight": null,
+                  "fontStretch": 5,
+                  "italic": false,
+                  "underline": false,
+                  "strikethrough": false,
+                  "foreground": null,
+                  "background": null,
+                  "hyperlink": null,
+                  "baseline": "Normal"
+                }
+              }
+            ],
+            "style": {
+              "alignment": "Left",
+              "list": "Numbered",
+              "listLevel": 1,
+              "listId": "7dfebf35-21c4-b088-4740-3c0ba8c3dccd",
+              "listDefinition": {
+                "levels": [
+                  {
+                    "start": 3,
+                    "kind": "Numbered",
+                    "marker": "Decimal",
+                    "text": null,
+                    "prefix": "[",
+                    "suffix": "]",
+                    "includeAncestors": false
+                  },
+                  {
+                    "start": 2,
+                    "kind": "Numbered",
+                    "marker": "LowerRoman",
+                    "text": null,
+                    "prefix": "",
+                    "suffix": ")",
+                    "includeAncestors": true
+                  },
+                  {
+                    "start": 1,
+                    "kind": "Bullet",
+                    "marker": "Bullet",
+                    "text": "\u25C6",
+                    "prefix": "",
+                    "suffix": ".",
+                    "includeAncestors": false
+                  }
+                ]
+              },
+              "listStart": null,
+              "listRestart": false,
+              "headingLevel": 0,
+              "spaceBefore": 0,
+              "spaceAfter": 8,
+              "indent": 0,
+              "rightIndent": 0,
+              "firstLineIndent": 0,
+              "lineHeight": null,
+              "letterSpacing": 0,
+              "rightToLeft": false
+            },
+            "defaultStyle": {
+              "fontFamily": null,
+              "fontSize": 16,
+              "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
+              "italic": false,
+              "underline": false,
+              "strikethrough": false,
+              "foreground": null,
+              "background": null,
+              "hyperlink": null,
+              "baseline": "Normal"
+            },
+            "id": "4676c72a-5679-7449-87e7-7834ce0ae167"
+          },
+          {
+            "kind": "paragraph",
+            "runs": [
+              {
+                "text": "Custom bullet",
+                "style": {
+                  "fontFamily": null,
+                  "fontSize": 16,
+                  "bold": false,
+                  "fontWeight": null,
+                  "fontStretch": 5,
+                  "italic": false,
+                  "underline": false,
+                  "strikethrough": false,
+                  "foreground": null,
+                  "background": null,
+                  "hyperlink": null,
+                  "baseline": "Normal"
+                }
+              }
+            ],
+            "style": {
+              "alignment": "Left",
+              "list": "Numbered",
+              "listLevel": 2,
+              "listId": "7dfebf35-21c4-b088-4740-3c0ba8c3dccd",
+              "listDefinition": {
+                "levels": [
+                  {
+                    "start": 3,
+                    "kind": "Numbered",
+                    "marker": "Decimal",
+                    "text": null,
+                    "prefix": "[",
+                    "suffix": "]",
+                    "includeAncestors": false
+                  },
+                  {
+                    "start": 2,
+                    "kind": "Numbered",
+                    "marker": "LowerRoman",
+                    "text": null,
+                    "prefix": "",
+                    "suffix": ")",
+                    "includeAncestors": true
+                  },
+                  {
+                    "start": 1,
+                    "kind": "Bullet",
+                    "marker": "Bullet",
+                    "text": "\u25C6",
+                    "prefix": "",
+                    "suffix": ".",
+                    "includeAncestors": false
+                  }
+                ]
+              },
+              "listStart": null,
+              "listRestart": false,
+              "headingLevel": 0,
+              "spaceBefore": 0,
+              "spaceAfter": 8,
+              "indent": 0,
+              "rightIndent": 0,
+              "firstLineIndent": 0,
+              "lineHeight": null,
+              "letterSpacing": 0,
+              "rightToLeft": false
+            },
+            "defaultStyle": {
+              "fontFamily": null,
+              "fontSize": 16,
+              "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
+              "italic": false,
+              "underline": false,
+              "strikethrough": false,
+              "foreground": null,
+              "background": null,
+              "hyperlink": null,
+              "baseline": "Normal"
+            },
+            "id": "91a2dcb7-b864-a397-a7a6-b931e4ea38cd"
+          }
+        ],
+        "background": null,
+        "borderColor": null,
+        "padding": 12,
+        "paddingEdges": null,
+        "borders": null,
+        "id": "21769a9f-28a0-6f48-f3b8-bb6206e00fc2"
+      },
+      {
+        "kind": "paragraph",
+        "runs": [
+          {
+            "text": "Continue",
+            "style": {
+              "fontFamily": null,
+              "fontSize": 16,
+              "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
+              "italic": false,
+              "underline": false,
+              "strikethrough": false,
+              "foreground": null,
+              "background": null,
+              "hyperlink": null,
+              "baseline": "Normal"
+            }
+          }
+        ],
+        "style": {
+          "alignment": "Left",
+          "list": "Numbered",
+          "listLevel": 0,
+          "listId": "7dfebf35-21c4-b088-4740-3c0ba8c3dccd",
+          "listDefinition": {
+            "levels": [
+              {
+                "start": 3,
+                "kind": "Numbered",
+                "marker": "Decimal",
+                "text": null,
+                "prefix": "[",
+                "suffix": "]",
+                "includeAncestors": false
+              },
+              {
+                "start": 2,
+                "kind": "Numbered",
+                "marker": "LowerRoman",
+                "text": null,
+                "prefix": "",
+                "suffix": ")",
+                "includeAncestors": true
+              },
+              {
+                "start": 1,
+                "kind": "Bullet",
+                "marker": "Bullet",
+                "text": "\u25C6",
+                "prefix": "",
+                "suffix": ".",
+                "includeAncestors": false
+              }
+            ]
+          },
+          "listStart": null,
+          "listRestart": false,
+          "headingLevel": 0,
+          "spaceBefore": 0,
+          "spaceAfter": 8,
+          "indent": 0,
+          "rightIndent": 0,
+          "firstLineIndent": 0,
+          "lineHeight": null,
+          "letterSpacing": 0,
+          "rightToLeft": false
+        },
+        "defaultStyle": {
+          "fontFamily": null,
+          "fontSize": 16,
+          "bold": false,
+          "fontWeight": null,
+          "fontStretch": 5,
+          "italic": false,
+          "underline": false,
+          "strikethrough": false,
+          "foreground": null,
+          "background": null,
+          "hyperlink": null,
+          "baseline": "Normal"
+        },
+        "id": "4ead1dec-6217-32df-934c-3771efa0f096"
+      },
+      {
+        "kind": "paragraph",
+        "runs": [
+          {
+            "text": "Restart at seven",
+            "style": {
+              "fontFamily": null,
+              "fontSize": 16,
+              "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
+              "italic": false,
+              "underline": false,
+              "strikethrough": false,
+              "foreground": null,
+              "background": null,
+              "hyperlink": null,
+              "baseline": "Normal"
+            }
+          }
+        ],
+        "style": {
+          "alignment": "Left",
+          "list": "Numbered",
+          "listLevel": 0,
+          "listId": "7dfebf35-21c4-b088-4740-3c0ba8c3dccd",
+          "listDefinition": {
+            "levels": [
+              {
+                "start": 3,
+                "kind": "Numbered",
+                "marker": "Decimal",
+                "text": null,
+                "prefix": "[",
+                "suffix": "]",
+                "includeAncestors": false
+              },
+              {
+                "start": 2,
+                "kind": "Numbered",
+                "marker": "LowerRoman",
+                "text": null,
+                "prefix": "",
+                "suffix": ")",
+                "includeAncestors": true
+              },
+              {
+                "start": 1,
+                "kind": "Bullet",
+                "marker": "Bullet",
+                "text": "\u25C6",
+                "prefix": "",
+                "suffix": ".",
+                "includeAncestors": false
+              }
+            ]
+          },
+          "listStart": 7,
+          "listRestart": true,
+          "headingLevel": 0,
+          "spaceBefore": 0,
+          "spaceAfter": 8,
+          "indent": 0,
+          "rightIndent": 0,
+          "firstLineIndent": 0,
+          "lineHeight": null,
+          "letterSpacing": 0,
+          "rightToLeft": false
+        },
+        "defaultStyle": {
+          "fontFamily": null,
+          "fontSize": 16,
+          "bold": false,
+          "fontWeight": null,
+          "fontStretch": 5,
+          "italic": false,
+          "underline": false,
+          "strikethrough": false,
+          "foreground": null,
+          "background": null,
+          "hyperlink": null,
+          "baseline": "Normal"
+        },
+        "id": "6c9f226b-ce31-1f09-31c2-e84688783117"
+      },
+      {
+        "kind": "table",
+        "rows": [
+          [
+            {
+              "id": "90d75359-68c2-df62-f98b-d99e5a9814c5",
+              "blocks": [
+                {
+                  "kind": "section",
+                  "blocks": [
+                    {
+                      "kind": "table",
+                      "rows": [
+                        [
+                          {
+                            "id": "7abe74eb-44a1-6446-1d62-9bc6cd739df7",
+                            "blocks": [
+                              {
+                                "kind": "paragraph",
+                                "runs": [
+                                  {
+                                    "text": "Cell 000/00 caf\u00E9 \u4E2D\u6587",
+                                    "style": {
+                                      "fontFamily": null,
+                                      "fontSize": 16,
+                                      "bold": false,
+                                      "fontWeight": null,
+                                      "fontStretch": 5,
+                                      "italic": false,
+                                      "underline": false,
+                                      "strikethrough": false,
+                                      "foreground": null,
+                                      "background": null,
+                                      "hyperlink": null,
+                                      "baseline": "Normal"
+                                    }
+                                  }
+                                ],
+                                "style": {
+                                  "alignment": "Left",
+                                  "list": "None",
+                                  "listLevel": 0,
+                                  "listId": null,
+                                  "listDefinition": null,
+                                  "listStart": null,
+                                  "listRestart": false,
+                                  "headingLevel": 0,
+                                  "spaceBefore": 0,
+                                  "spaceAfter": 8,
+                                  "indent": 0,
+                                  "rightIndent": 0,
+                                  "firstLineIndent": 0,
+                                  "lineHeight": null,
+                                  "letterSpacing": 0,
+                                  "rightToLeft": false
+                                },
+                                "defaultStyle": {
+                                  "fontFamily": null,
+                                  "fontSize": 16,
+                                  "bold": false,
+                                  "fontWeight": null,
+                                  "fontStretch": 5,
+                                  "italic": false,
+                                  "underline": false,
+                                  "strikethrough": false,
+                                  "foreground": null,
+                                  "background": null,
+                                  "hyperlink": null,
+                                  "baseline": "Normal"
+                                },
+                                "id": "4427b45f-7132-17ad-ac64-021b8d3af631"
+                              }
+                            ],
+                            "columnSpan": 1,
+                            "rowSpan": 1,
+                            "background": "#EEF2FF",
+                            "padding": null,
+                            "borders": null,
+                            "mergeOriginalBlocks": []
+                          },
+                          {
+                            "id": "ad65671e-9c4d-f34a-5701-f586942def62",
+                            "blocks": [
+                              {
+                                "kind": "paragraph",
+                                "runs": [
+                                  {
+                                    "text": "Cell 000/01 caf\u00E9 \u4E2D\u6587",
+                                    "style": {
+                                      "fontFamily": null,
+                                      "fontSize": 16,
+                                      "bold": false,
+                                      "fontWeight": null,
+                                      "fontStretch": 5,
+                                      "italic": false,
+                                      "underline": false,
+                                      "strikethrough": false,
+                                      "foreground": null,
+                                      "background": null,
+                                      "hyperlink": null,
+                                      "baseline": "Normal"
+                                    }
+                                  }
+                                ],
+                                "style": {
+                                  "alignment": "Left",
+                                  "list": "None",
+                                  "listLevel": 0,
+                                  "listId": null,
+                                  "listDefinition": null,
+                                  "listStart": null,
+                                  "listRestart": false,
+                                  "headingLevel": 0,
+                                  "spaceBefore": 0,
+                                  "spaceAfter": 8,
+                                  "indent": 0,
+                                  "rightIndent": 0,
+                                  "firstLineIndent": 0,
+                                  "lineHeight": null,
+                                  "letterSpacing": 0,
+                                  "rightToLeft": false
+                                },
+                                "defaultStyle": {
+                                  "fontFamily": null,
+                                  "fontSize": 16,
+                                  "bold": false,
+                                  "fontWeight": null,
+                                  "fontStretch": 5,
+                                  "italic": false,
+                                  "underline": false,
+                                  "strikethrough": false,
+                                  "foreground": null,
+                                  "background": null,
+                                  "hyperlink": null,
+                                  "baseline": "Normal"
+                                },
+                                "id": "2f75bbc9-7246-1111-1ad3-9d44d430e167"
+                              }
+                            ],
+                            "columnSpan": 1,
+                            "rowSpan": 1,
+                            "background": null,
+                            "padding": null,
+                            "borders": null,
+                            "mergeOriginalBlocks": []
+                          }
+                        ],
+                        [
+                          {
+                            "id": "15c87d43-5069-154f-b4bc-e44c627e3ecf",
+                            "blocks": [
+                              {
+                                "kind": "paragraph",
+                                "runs": [
+                                  {
+                                    "text": "Cell 001/00 caf\u00E9 \u4E2D\u6587",
+                                    "style": {
+                                      "fontFamily": null,
+                                      "fontSize": 16,
+                                      "bold": false,
+                                      "fontWeight": null,
+                                      "fontStretch": 5,
+                                      "italic": false,
+                                      "underline": false,
+                                      "strikethrough": false,
+                                      "foreground": null,
+                                      "background": null,
+                                      "hyperlink": null,
+                                      "baseline": "Normal"
+                                    }
+                                  }
+                                ],
+                                "style": {
+                                  "alignment": "Left",
+                                  "list": "None",
+                                  "listLevel": 0,
+                                  "listId": null,
+                                  "listDefinition": null,
+                                  "listStart": null,
+                                  "listRestart": false,
+                                  "headingLevel": 0,
+                                  "spaceBefore": 0,
+                                  "spaceAfter": 8,
+                                  "indent": 0,
+                                  "rightIndent": 0,
+                                  "firstLineIndent": 0,
+                                  "lineHeight": null,
+                                  "letterSpacing": 0,
+                                  "rightToLeft": false
+                                },
+                                "defaultStyle": {
+                                  "fontFamily": null,
+                                  "fontSize": 16,
+                                  "bold": false,
+                                  "fontWeight": null,
+                                  "fontStretch": 5,
+                                  "italic": false,
+                                  "underline": false,
+                                  "strikethrough": false,
+                                  "foreground": null,
+                                  "background": null,
+                                  "hyperlink": null,
+                                  "baseline": "Normal"
+                                },
+                                "id": "7fadc94c-47b7-e57d-b27a-c0b6d14abd51"
+                              }
+                            ],
+                            "columnSpan": 1,
+                            "rowSpan": 1,
+                            "background": null,
+                            "padding": null,
+                            "borders": null,
+                            "mergeOriginalBlocks": []
+                          },
+                          {
+                            "id": "602f75d4-c516-d099-06ad-a03368707cd2",
+                            "blocks": [
+                              {
+                                "kind": "paragraph",
+                                "runs": [
+                                  {
+                                    "text": "Cell 001/01 caf\u00E9 \u4E2D\u6587",
+                                    "style": {
+                                      "fontFamily": null,
+                                      "fontSize": 16,
+                                      "bold": false,
+                                      "fontWeight": null,
+                                      "fontStretch": 5,
+                                      "italic": false,
+                                      "underline": false,
+                                      "strikethrough": false,
+                                      "foreground": null,
+                                      "background": null,
+                                      "hyperlink": null,
+                                      "baseline": "Normal"
+                                    }
+                                  }
+                                ],
+                                "style": {
+                                  "alignment": "Left",
+                                  "list": "None",
+                                  "listLevel": 0,
+                                  "listId": null,
+                                  "listDefinition": null,
+                                  "listStart": null,
+                                  "listRestart": false,
+                                  "headingLevel": 0,
+                                  "spaceBefore": 0,
+                                  "spaceAfter": 8,
+                                  "indent": 0,
+                                  "rightIndent": 0,
+                                  "firstLineIndent": 0,
+                                  "lineHeight": null,
+                                  "letterSpacing": 0,
+                                  "rightToLeft": false
+                                },
+                                "defaultStyle": {
+                                  "fontFamily": null,
+                                  "fontSize": 16,
+                                  "bold": false,
+                                  "fontWeight": null,
+                                  "fontStretch": 5,
+                                  "italic": false,
+                                  "underline": false,
+                                  "strikethrough": false,
+                                  "foreground": null,
+                                  "background": null,
+                                  "hyperlink": null,
+                                  "baseline": "Normal"
+                                },
+                                "id": "cb552ba4-8bf1-1b85-621f-2695d3ec1951"
+                              }
+                            ],
+                            "columnSpan": 1,
+                            "rowSpan": 1,
+                            "background": "#EEF2FF",
+                            "padding": null,
+                            "borders": null,
+                            "mergeOriginalBlocks": []
+                          }
+                        ]
+                      ],
+                      "columnWidths": [],
+                      "rowSizing": [],
+                      "id": "621a7861-e043-827e-a4db-1b0a43e08e87"
+                    }
+                  ],
+                  "background": null,
+                  "borderColor": null,
+                  "padding": 12,
+                  "paddingEdges": {
+                    "left": 3,
+                    "top": 5,
+                    "right": 7,
+                    "bottom": 9
+                  },
+                  "borders": {
+                    "left": {
+                      "width": 2,
+                      "color": "#445566"
+                    },
+                    "top": {
+                      "width": 1,
+                      "color": "#556677"
+                    },
+                    "right": {
+                      "width": 3,
+                      "color": "#667788"
+                    },
+                    "bottom": {
+                      "width": 4,
+                      "color": "#778899"
+                    }
+                  },
+                  "id": "a74eb21b-5beb-b830-b63e-d2a3242a6a63"
+                },
+                {
+                  "kind": "table",
+                  "rows": [
+                    [
+                      {
+                        "id": "e92ef1ff-771d-bd05-0e4d-eae19ddb0fb2",
+                        "blocks": [
+                          {
+                            "kind": "paragraph",
+                            "runs": [
+                              {
+                                "text": "Cell 000/00 caf\u00E9 \u4E2D\u6587",
+                                "style": {
+                                  "fontFamily": null,
+                                  "fontSize": 16,
+                                  "bold": false,
+                                  "fontWeight": null,
+                                  "fontStretch": 5,
+                                  "italic": false,
+                                  "underline": false,
+                                  "strikethrough": false,
+                                  "foreground": null,
+                                  "background": null,
+                                  "hyperlink": null,
+                                  "baseline": "Normal"
+                                }
+                              }
+                            ],
+                            "style": {
+                              "alignment": "Left",
+                              "list": "None",
+                              "listLevel": 0,
+                              "listId": null,
+                              "listDefinition": null,
+                              "listStart": null,
+                              "listRestart": false,
+                              "headingLevel": 0,
+                              "spaceBefore": 0,
+                              "spaceAfter": 8,
+                              "indent": 0,
+                              "rightIndent": 0,
+                              "firstLineIndent": 0,
+                              "lineHeight": null,
+                              "letterSpacing": 0,
+                              "rightToLeft": false
+                            },
+                            "defaultStyle": {
+                              "fontFamily": null,
+                              "fontSize": 16,
+                              "bold": false,
+                              "fontWeight": null,
+                              "fontStretch": 5,
+                              "italic": false,
+                              "underline": false,
+                              "strikethrough": false,
+                              "foreground": null,
+                              "background": null,
+                              "hyperlink": null,
+                              "baseline": "Normal"
+                            },
+                            "id": "4d4c2577-1e1c-3ff4-30e1-2b99a03a9c68"
+                          }
+                        ],
+                        "columnSpan": 1,
+                        "rowSpan": 1,
+                        "background": "#EEF2FF",
+                        "padding": null,
+                        "borders": null,
+                        "mergeOriginalBlocks": []
+                      }
+                    ]
+                  ],
+                  "columnWidths": [],
+                  "rowSizing": [],
+                  "id": "d111b3c6-efd8-e77d-2fc1-5ea9448e9738"
+                }
+              ],
+              "columnSpan": 1,
+              "rowSpan": 2,
+              "background": "#EEF2FF",
+              "padding": {
+                "left": 8,
+                "top": 4,
+                "right": 12,
+                "bottom": 6
+              },
+              "borders": {
+                "left": {
+                  "width": 1,
+                  "color": "#112233"
+                },
+                "top": {
+                  "width": 2,
+                  "color": "#223344"
+                },
+                "right": {
+                  "width": 4,
+                  "color": "#334455"
+                },
+                "bottom": {
+                  "width": 3,
+                  "color": "#445566"
+                }
+              },
+              "mergeOriginalBlocks": [
+                {
+                  "kind": "section",
+                  "blocks": [
+                    {
+                      "kind": "table",
+                      "rows": [
+                        [
+                          {
+                            "id": "f321a462-871f-e568-80db-65835c8a40c5",
+                            "blocks": [
+                              {
+                                "kind": "paragraph",
+                                "runs": [
+                                  {
+                                    "text": "Cell 000/00 caf\u00E9 \u4E2D\u6587",
+                                    "style": {
+                                      "fontFamily": null,
+                                      "fontSize": 16,
+                                      "bold": false,
+                                      "fontWeight": null,
+                                      "fontStretch": 5,
+                                      "italic": false,
+                                      "underline": false,
+                                      "strikethrough": false,
+                                      "foreground": null,
+                                      "background": null,
+                                      "hyperlink": null,
+                                      "baseline": "Normal"
+                                    }
+                                  }
+                                ],
+                                "style": {
+                                  "alignment": "Left",
+                                  "list": "None",
+                                  "listLevel": 0,
+                                  "listId": null,
+                                  "listDefinition": null,
+                                  "listStart": null,
+                                  "listRestart": false,
+                                  "headingLevel": 0,
+                                  "spaceBefore": 0,
+                                  "spaceAfter": 8,
+                                  "indent": 0,
+                                  "rightIndent": 0,
+                                  "firstLineIndent": 0,
+                                  "lineHeight": null,
+                                  "letterSpacing": 0,
+                                  "rightToLeft": false
+                                },
+                                "defaultStyle": {
+                                  "fontFamily": null,
+                                  "fontSize": 16,
+                                  "bold": false,
+                                  "fontWeight": null,
+                                  "fontStretch": 5,
+                                  "italic": false,
+                                  "underline": false,
+                                  "strikethrough": false,
+                                  "foreground": null,
+                                  "background": null,
+                                  "hyperlink": null,
+                                  "baseline": "Normal"
+                                },
+                                "id": "008bca6e-bdab-03c3-e247-9326b72def02"
+                              }
+                            ],
+                            "columnSpan": 1,
+                            "rowSpan": 1,
+                            "background": "#EEF2FF",
+                            "padding": null,
+                            "borders": null,
+                            "mergeOriginalBlocks": []
+                          },
+                          {
+                            "id": "c4c240be-8808-a366-0c90-9e83cb275fec",
+                            "blocks": [
+                              {
+                                "kind": "paragraph",
+                                "runs": [
+                                  {
+                                    "text": "Cell 000/01 caf\u00E9 \u4E2D\u6587",
+                                    "style": {
+                                      "fontFamily": null,
+                                      "fontSize": 16,
+                                      "bold": false,
+                                      "fontWeight": null,
+                                      "fontStretch": 5,
+                                      "italic": false,
+                                      "underline": false,
+                                      "strikethrough": false,
+                                      "foreground": null,
+                                      "background": null,
+                                      "hyperlink": null,
+                                      "baseline": "Normal"
+                                    }
+                                  }
+                                ],
+                                "style": {
+                                  "alignment": "Left",
+                                  "list": "None",
+                                  "listLevel": 0,
+                                  "listId": null,
+                                  "listDefinition": null,
+                                  "listStart": null,
+                                  "listRestart": false,
+                                  "headingLevel": 0,
+                                  "spaceBefore": 0,
+                                  "spaceAfter": 8,
+                                  "indent": 0,
+                                  "rightIndent": 0,
+                                  "firstLineIndent": 0,
+                                  "lineHeight": null,
+                                  "letterSpacing": 0,
+                                  "rightToLeft": false
+                                },
+                                "defaultStyle": {
+                                  "fontFamily": null,
+                                  "fontSize": 16,
+                                  "bold": false,
+                                  "fontWeight": null,
+                                  "fontStretch": 5,
+                                  "italic": false,
+                                  "underline": false,
+                                  "strikethrough": false,
+                                  "foreground": null,
+                                  "background": null,
+                                  "hyperlink": null,
+                                  "baseline": "Normal"
+                                },
+                                "id": "e1101f61-1aa1-3449-4ed0-b7a2609d3f24"
+                              }
+                            ],
+                            "columnSpan": 1,
+                            "rowSpan": 1,
+                            "background": null,
+                            "padding": null,
+                            "borders": null,
+                            "mergeOriginalBlocks": []
+                          }
+                        ],
+                        [
+                          {
+                            "id": "0c254f23-0ef4-4787-9128-046d38f59a7f",
+                            "blocks": [
+                              {
+                                "kind": "paragraph",
+                                "runs": [
+                                  {
+                                    "text": "Cell 001/00 caf\u00E9 \u4E2D\u6587",
+                                    "style": {
+                                      "fontFamily": null,
+                                      "fontSize": 16,
+                                      "bold": false,
+                                      "fontWeight": null,
+                                      "fontStretch": 5,
+                                      "italic": false,
+                                      "underline": false,
+                                      "strikethrough": false,
+                                      "foreground": null,
+                                      "background": null,
+                                      "hyperlink": null,
+                                      "baseline": "Normal"
+                                    }
+                                  }
+                                ],
+                                "style": {
+                                  "alignment": "Left",
+                                  "list": "None",
+                                  "listLevel": 0,
+                                  "listId": null,
+                                  "listDefinition": null,
+                                  "listStart": null,
+                                  "listRestart": false,
+                                  "headingLevel": 0,
+                                  "spaceBefore": 0,
+                                  "spaceAfter": 8,
+                                  "indent": 0,
+                                  "rightIndent": 0,
+                                  "firstLineIndent": 0,
+                                  "lineHeight": null,
+                                  "letterSpacing": 0,
+                                  "rightToLeft": false
+                                },
+                                "defaultStyle": {
+                                  "fontFamily": null,
+                                  "fontSize": 16,
+                                  "bold": false,
+                                  "fontWeight": null,
+                                  "fontStretch": 5,
+                                  "italic": false,
+                                  "underline": false,
+                                  "strikethrough": false,
+                                  "foreground": null,
+                                  "background": null,
+                                  "hyperlink": null,
+                                  "baseline": "Normal"
+                                },
+                                "id": "392256d5-c4ef-3bfd-9591-98587b45ed0a"
+                              }
+                            ],
+                            "columnSpan": 1,
+                            "rowSpan": 1,
+                            "background": null,
+                            "padding": null,
+                            "borders": null,
+                            "mergeOriginalBlocks": []
+                          },
+                          {
+                            "id": "66056939-d26e-6b00-7b30-0c2170099284",
+                            "blocks": [
+                              {
+                                "kind": "paragraph",
+                                "runs": [
+                                  {
+                                    "text": "Cell 001/01 caf\u00E9 \u4E2D\u6587",
+                                    "style": {
+                                      "fontFamily": null,
+                                      "fontSize": 16,
+                                      "bold": false,
+                                      "fontWeight": null,
+                                      "fontStretch": 5,
+                                      "italic": false,
+                                      "underline": false,
+                                      "strikethrough": false,
+                                      "foreground": null,
+                                      "background": null,
+                                      "hyperlink": null,
+                                      "baseline": "Normal"
+                                    }
+                                  }
+                                ],
+                                "style": {
+                                  "alignment": "Left",
+                                  "list": "None",
+                                  "listLevel": 0,
+                                  "listId": null,
+                                  "listDefinition": null,
+                                  "listStart": null,
+                                  "listRestart": false,
+                                  "headingLevel": 0,
+                                  "spaceBefore": 0,
+                                  "spaceAfter": 8,
+                                  "indent": 0,
+                                  "rightIndent": 0,
+                                  "firstLineIndent": 0,
+                                  "lineHeight": null,
+                                  "letterSpacing": 0,
+                                  "rightToLeft": false
+                                },
+                                "defaultStyle": {
+                                  "fontFamily": null,
+                                  "fontSize": 16,
+                                  "bold": false,
+                                  "fontWeight": null,
+                                  "fontStretch": 5,
+                                  "italic": false,
+                                  "underline": false,
+                                  "strikethrough": false,
+                                  "foreground": null,
+                                  "background": null,
+                                  "hyperlink": null,
+                                  "baseline": "Normal"
+                                },
+                                "id": "c12b1c75-e30f-b5bf-fd44-aa46c6de5591"
+                              }
+                            ],
+                            "columnSpan": 1,
+                            "rowSpan": 1,
+                            "background": "#EEF2FF",
+                            "padding": null,
+                            "borders": null,
+                            "mergeOriginalBlocks": []
+                          }
+                        ]
+                      ],
+                      "columnWidths": [],
+                      "rowSizing": [],
+                      "id": "8e59412a-aa99-ac78-9731-5e3a09127abd"
+                    }
+                  ],
+                  "background": null,
+                  "borderColor": null,
+                  "padding": 12,
+                  "paddingEdges": {
+                    "left": 3,
+                    "top": 5,
+                    "right": 7,
+                    "bottom": 9
+                  },
+                  "borders": {
+                    "left": {
+                      "width": 2,
+                      "color": "#445566"
+                    },
+                    "top": {
+                      "width": 1,
+                      "color": "#556677"
+                    },
+                    "right": {
+                      "width": 3,
+                      "color": "#667788"
+                    },
+                    "bottom": {
+                      "width": 4,
+                      "color": "#778899"
+                    }
+                  },
+                  "id": "c27f4ed0-6972-3d99-9b49-326dee2c0b2e"
+                }
+              ]
+            },
+            {
+              "id": "d4fdab8a-c30c-6318-df90-b398af6e2b76",
+              "blocks": [
+                {
+                  "kind": "paragraph",
+                  "runs": [
+                    {
+                      "text": "Cell 000/01 caf\u00E9 \u4E2D\u6587",
+                      "style": {
+                        "fontFamily": null,
+                        "fontSize": 16,
+                        "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
+                        "italic": false,
+                        "underline": false,
+                        "strikethrough": false,
+                        "foreground": null,
+                        "background": null,
+                        "hyperlink": null,
+                        "baseline": "Normal"
+                      }
+                    }
+                  ],
+                  "style": {
+                    "alignment": "Left",
+                    "list": "None",
+                    "listLevel": 0,
+                    "listId": null,
+                    "listDefinition": null,
+                    "listStart": null,
+                    "listRestart": false,
+                    "headingLevel": 0,
+                    "spaceBefore": 0,
+                    "spaceAfter": 8,
+                    "indent": 0,
+                    "rightIndent": 0,
+                    "firstLineIndent": 0,
+                    "lineHeight": null,
+                    "letterSpacing": 0,
+                    "rightToLeft": false
+                  },
+                  "defaultStyle": {
+                    "fontFamily": null,
+                    "fontSize": 16,
+                    "bold": false,
+                    "fontWeight": null,
+                    "fontStretch": 5,
+                    "italic": false,
+                    "underline": false,
+                    "strikethrough": false,
+                    "foreground": null,
+                    "background": null,
+                    "hyperlink": null,
+                    "baseline": "Normal"
+                  },
+                  "id": "477b3ebd-f268-145b-bbb2-84f2d6727a1a"
+                }
+              ],
+              "columnSpan": 1,
+              "rowSpan": 1,
+              "background": null,
+              "padding": null,
+              "borders": null,
+              "mergeOriginalBlocks": []
+            }
+          ],
+          [
+            {
+              "id": "ee8ac9e3-cb46-f31b-3b39-41127e1a7223",
+              "blocks": [
+                {
+                  "kind": "table",
+                  "rows": [
+                    [
+                      {
+                        "id": "61e64e7a-2996-5f8e-b1f9-46227c3db930",
+                        "blocks": [
+                          {
+                            "kind": "paragraph",
+                            "runs": [
+                              {
+                                "text": "Cell 000/00 caf\u00E9 \u4E2D\u6587",
+                                "style": {
+                                  "fontFamily": null,
+                                  "fontSize": 16,
+                                  "bold": false,
+                                  "fontWeight": null,
+                                  "fontStretch": 5,
+                                  "italic": false,
+                                  "underline": false,
+                                  "strikethrough": false,
+                                  "foreground": null,
+                                  "background": null,
+                                  "hyperlink": null,
+                                  "baseline": "Normal"
+                                }
+                              }
+                            ],
+                            "style": {
+                              "alignment": "Left",
+                              "list": "None",
+                              "listLevel": 0,
+                              "listId": null,
+                              "listDefinition": null,
+                              "listStart": null,
+                              "listRestart": false,
+                              "headingLevel": 0,
+                              "spaceBefore": 0,
+                              "spaceAfter": 8,
+                              "indent": 0,
+                              "rightIndent": 0,
+                              "firstLineIndent": 0,
+                              "lineHeight": null,
+                              "letterSpacing": 0,
+                              "rightToLeft": false
+                            },
+                            "defaultStyle": {
+                              "fontFamily": null,
+                              "fontSize": 16,
+                              "bold": false,
+                              "fontWeight": null,
+                              "fontStretch": 5,
+                              "italic": false,
+                              "underline": false,
+                              "strikethrough": false,
+                              "foreground": null,
+                              "background": null,
+                              "hyperlink": null,
+                              "baseline": "Normal"
+                            },
+                            "id": "296b79e7-76f9-e04f-e886-3c14a40880e2"
+                          }
+                        ],
+                        "columnSpan": 1,
+                        "rowSpan": 1,
+                        "background": "#EEF2FF",
+                        "padding": null,
+                        "borders": null,
+                        "mergeOriginalBlocks": []
+                      }
+                    ]
+                  ],
+                  "columnWidths": [],
+                  "rowSizing": [],
+                  "id": "e92d51d6-5b11-edcf-4d65-de17629ab064"
+                }
+              ],
+              "columnSpan": 1,
+              "rowSpan": 1,
+              "background": null,
+              "padding": null,
+              "borders": null,
+              "mergeOriginalBlocks": []
+            },
+            {
+              "id": "3cb4cf13-9c34-1e0f-222f-3fdecc4d8cb6",
+              "blocks": [
+                {
+                  "kind": "paragraph",
+                  "runs": [
+                    {
+                      "text": "Cell 001/01 caf\u00E9 \u4E2D\u6587",
+                      "style": {
+                        "fontFamily": null,
+                        "fontSize": 16,
+                        "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
+                        "italic": false,
+                        "underline": false,
+                        "strikethrough": false,
+                        "foreground": null,
+                        "background": null,
+                        "hyperlink": null,
+                        "baseline": "Normal"
+                      }
+                    }
+                  ],
+                  "style": {
+                    "alignment": "Left",
+                    "list": "None",
+                    "listLevel": 0,
+                    "listId": null,
+                    "listDefinition": null,
+                    "listStart": null,
+                    "listRestart": false,
+                    "headingLevel": 0,
+                    "spaceBefore": 0,
+                    "spaceAfter": 8,
+                    "indent": 0,
+                    "rightIndent": 0,
+                    "firstLineIndent": 0,
+                    "lineHeight": null,
+                    "letterSpacing": 0,
+                    "rightToLeft": false
+                  },
+                  "defaultStyle": {
+                    "fontFamily": null,
+                    "fontSize": 16,
+                    "bold": false,
+                    "fontWeight": null,
+                    "fontStretch": 5,
+                    "italic": false,
+                    "underline": false,
+                    "strikethrough": false,
+                    "foreground": null,
+                    "background": null,
+                    "hyperlink": null,
+                    "baseline": "Normal"
+                  },
+                  "id": "a31b110d-d3a0-db5c-945e-07b17ee9464d"
+                }
+              ],
+              "columnSpan": 1,
+              "rowSpan": 1,
+              "background": "#EEF2FF",
+              "padding": null,
+              "borders": null,
+              "mergeOriginalBlocks": []
+            }
+          ]
+        ],
+        "columnWidths": [
+          140,
+          220
+        ],
+        "rowSizing": [
+          {
+            "mode": "AtLeast",
+            "height": 60
+          },
+          {
+            "mode": "Exact",
+            "height": 80
+          }
+        ],
+        "id": "ef17f357-e529-7c20-77c4-d4285f03d691"
+      }
+    ]
+  }
+}

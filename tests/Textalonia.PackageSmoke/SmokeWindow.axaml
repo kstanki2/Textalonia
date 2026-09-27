@@ -3,5 +3,8 @@
         xmlns:text="using:Textalonia.Controls"
         x:Class="Textalonia.PackageSmoke.SmokeWindow"
         Width="640" Height="360">
-  <text:TextaloniaEditor x:Name="Editor" Text="Package consumer" />
+  <Grid RowDefinitions="*,*">
+    <text:TextaloniaEditor x:Name="Editor" Text="Package consumer" />
+    <text:MarkdownViewer x:Name="Markdown" Grid.Row="1" Markdown="# Package Markdown" />
+  </Grid>
 </Window>

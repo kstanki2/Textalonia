@@ -43,6 +43,7 @@ public static class SampleDocument
                 });
         return new FlowDocument([
             title, intro, features,
+            new Paragraph([new RichRun("An interactive inline: "), new RichRun(SampleInlineControls.Counter())]),
             Bullet("Style a paragraph, make a list, or add a table."),
             Bullet("Open and export documents with the buttons above."),
             note,

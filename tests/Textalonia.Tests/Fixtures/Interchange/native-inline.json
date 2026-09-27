@@ -1,0 +1,23 @@
+{
+  "version": 3,
+  "document": {
+    "blocks": [{
+      "kind": "paragraph",
+      "id": "5593ea8d-a155-4b22-a5fb-7b58b6619d33",
+      "runs": [{ "text": "￼", "style": {}, "inline": {
+        "id": "c06b2763-4f62-4f15-8184-ead93c27eef6",
+        "altText": "one pixel",
+        "width": 16,
+        "height": 16,
+        "payload": { "kind": "image", "resourceId": "pixel" }
+      }}]
+    }],
+    "resources": {
+      "pixel": {
+        "kind": "Embedded",
+        "mediaType": "image/png",
+        "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a5WQAAAAASUVORK5CYII="
+      }
+    }
+  }
+}

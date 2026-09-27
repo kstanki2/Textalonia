@@ -2,7 +2,7 @@
 
 An independent, native rich text editor for **Avalonia 12** and **.NET 8+**, distributed as one NuGet package.
 
-**Status: 0.1.0-preview.1.** This repository contains a working editor, desktop demo, tests, and local NuGet packaging. It is not a feature-complete or API-compatible replacement for Avalonia's commercial editor. See [the feature matrix and roadmap](docs/ROADMAP.md) before adopting it.
+**Status: 0.1.0-preview.1 candidate; not yet published.** This repository contains a working editor, desktop demo, tests, and local NuGet packaging. It is not a feature-complete or API-compatible replacement for Avalonia's commercial editor. See [the feature matrix and roadmap](docs/ROADMAP.md) before adopting it.
 
 ## Run the demo
 
@@ -106,6 +106,26 @@ Documents and their arrays are immutable snapshots. An edit publishes a new `Doc
 
 `Text` is a plain-text convenience binding: **assigning Text replaces all document structure and formatting**. Bind either `Document` or `Text`, rather than both to competing sources.
 
+For large structured documents, opt out of eager full-text synchronization:
+
+```xml
+<text:TextaloniaEditor Document="{Binding Document, Mode=TwoWay}"
+                      SynchronizeText="False" />
+```
+
+In this mode `Text` retains its last published/assigned value. Read `Document.Text`
+explicitly for complete current text, or `Session.Index.ReadText(start, length)`
+for a range. Re-enabling synchronization immediately updates `Text`. The default
+mode preserves existing text bindings and their linear materialization cost.
+See [the engine decision](docs/ADR-002-SCALABLE-CORE.md) and
+[performance limits](docs/PERFORMANCE.md) for windowed layout and qualification.
+
+Hosts can also set `MaxShapingCharacters` (for example, `65536`) to cap each
+document-paragraph shaping input. It defaults to zero for unrestricted exact
+rendering. Oversized contexts suspend rendering and expose `LayoutError` without
+changing the document or history. See [the optional limit contract](docs/COMPATIBILITY.md#optional-shaping-limit).
+
+
 ## Editing API
 
 ```csharp
@@ -117,6 +137,7 @@ editor.Undo();
 editor.Redo();
 
 editor.Session.UndoLimit = 100;
+editor.Session.HistoryByteLimit = 64 * 1024 * 1024; // exclusive retained-history estimate
 editor.FindNext("Avalonia");
 editor.ReplaceAll("old", "new");
 
@@ -126,7 +147,7 @@ editor.Session.Execute(document => document with { /* replace Blocks here */ });
 
 Available commands: `BoldCommand`, `ItalicCommand`, `UnderlineCommand`, `StrikethroughCommand`, `UndoCommand`, `RedoCommand`, `CutCommand`, `CopyCommand`, `PasteCommand`, and `SelectAllCommand`. Set `ShowToolbar="False"` to supply your own toolbar.
 
-`EditorSession` can be used without creating any UI. `DocumentChanged`, `SelectionChanged`, and `Session.Changed` expose change notifications. UI controls and their sessions must be accessed on the UI thread; immutable documents can be passed to worker threads.
+`EditorSession` can be used without creating any UI. `DocumentChanged`, `SelectionChanged`, and `Session.Changed` expose change notifications. UI controls and their sessions must be accessed on the UI thread; immutable documents can be passed to worker threads. `CreatePosition` returns a session/revision-scoped position; `TryResolvePosition` rejects it after edits, load, undo or redo. History byte limits can evict even a single oversized entry; `RetainedHistoryBytes` reports the estimate, excluding the current document and caller-owned snapshots.
 
 Selection uses UTF-16 offsets in `Document.Text`, with one LF between visible paragraphs. Caret navigation and deletion respect .NET grapheme boundaries. A soft line break is U+2028. Drag, double-click word selection, triple-click paragraph selection, Shift selection, and standard Ctrl/Cmd editing shortcuts are supported. Shift+Enter inserts a soft break; Enter splits a paragraph. Tab moves between table cells or inserts a tab when `AcceptsTab` is enabled.
 
@@ -151,12 +172,21 @@ Streams remain owned by the caller. Encoding/parsing runs on a worker thread; as
 | --- | --- |
 | Textalonia / JSON | Versioned, lossless native model, including section styling and merge backups |
 | Plain text | Visible text and paragraph separators |
-| HTML | Styled runs, headings, simple lists, safe links, sections, tables and spans; a whitelist of inline CSS |
-| RTF | Unicode text, fonts, emphasis, size/colors, baseline, paragraph alignment/spacing/direction; tables and sections flatten, list semantics and link targets are not retained |
-| DOCX | Paragraphs, common inline formatting, headings, links, lists, tables and spans; styled sections flatten |
+| HTML | Identified/nested lists, start/restart, rich typography, safe links, styled sections, nested tables/spans/sizing, embedded raster images and a bounded inline CSS subset |
+| RTF | Unicode and common typography, numbered/bullet lists, safe link fields, flow sections, rectangular tables/merges/sizing, embedded PNG/JPEG; nested tables and section/cell decoration have diagnosed losses |
+| DOCX | Numbering definitions/restarts, inherited styles, safe links, nested tables/merge geometry/sizing/edges, section content groups and embedded raster images; page layout/revisions and section decoration have diagnosed losses |
 
-HTML import never executes scripts or loads remote images/styles. Image alt text is imported as text. DOCX parsing prohibits XML DTDs/external entities and limits package sizes. Only http, https, and mailto link targets are accepted. These converters do not guarantee arbitrary Word/browser document fidelity.
+HTML import never executes scripts or loads remote images/styles. Supported embedded images retain their data; unavailable images degrade to alternative text with diagnostics. DOCX parsing prohibits XML DTDs/external entities and limits package sizes. Only http, https, and mailto link targets are accepted. These converters do not guarantee arbitrary Word/browser document fidelity.
 
+Use `format.LoadWithReportAsync` / `SaveWithReportAsync` (also available on the
+editor) to receive stable diagnostic codes, severity, model/source locations and
+the fallback taken. `ConversionOptions.Mode = ConversionMode.Strict` rejects
+reported loss before writing export bytes; `PlainTextOnly = true` explicitly
+requests text degradation. The original API remains compatible. Legacy custom
+codecs report unknown fidelity; implement `IReportingDocumentFormat` to supply
+reports. The demo displays reports and offers a **Conversion report** button for
+clipboard notices. See [the full support and stream contracts](docs/INTERCHANGE.md)
+and [platform qualification](docs/QUALIFICATION.md).
 Implement `IDocumentFormat` to add a format and pass your instance to `LoadAsync`/`SaveAsync`. The native `.textalonia` format is a versioned JSON schema, **not Avalonia XAML**. The `.json` and legacy `.art` extensions remain supported.
 
 ## Viewer, themes, highlights, and links
@@ -175,11 +205,24 @@ Highlights use snapshot offsets: update or clear them after edits. Ctrl/Cmd-clic
 
 ## Table behavior
 
-Table text participates in normal selection, formatting, and undo. Insert/delete rows and columns, merge/split cells, and change cell backgrounds through the toolbar or model APIs. Row/column structure changes require unmerged cells.
+Table text participates in normal selection, formatting, and undo. Insert/delete rows and columns through merged spans, merge/split cells, and change cell backgrounds through the toolbar or model APIs. Cell `Blocks` can contain nested tables and sections; table commands target the innermost cell. Persisted column widths, row sizing, cell padding and independent borders are available through model APIs.
 
-Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited paragraphs in the anchor cell and restores the other original cells. Undo always restores the exact previous state.
+Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited blocks in the anchor cell and restores the other original cells. Undo always restores the exact previous state. See [document semantics](docs/DOCUMENT-MODEL.md) for structural deletion rules, schema v1-to-v2 migration, list restart/continuation, mixed-selection state and typography APIs.
 
-Cross-cell text replacement preserves table structure; selecting and replacing the entire document clears its structure. Rich clipboard fragments preserve paragraph/run formatting but flatten tables/sections. Use native document save/load to retain full structure.
+Cross-cell text replacement preserves table structure; selecting and replacing the entire document clears its structure. Versioned rich clipboard fragments preserve sections, nested/merged tables and inline resources. Repeated paste remaps object/list identities and colliding resource keys; partial table selections clip unselected content. See [conversion and clipboard contracts](docs/INTERCHANGE.md) for boundary and destination merging rules.
+
+## Editing gestures
+
+The default components provide visual bidi navigation, stationary-pointer edge
+scrolling, structured content drag/drop, table resize previews and rectangular cell
+selection. Alt-drag or Alt+Shift+Arrow selects table cells; release commits a resize
+once and Escape cancels. The toolbar exposes typography, table borders/padding and
+list restart/continuation. See [interaction contracts](docs/INTERACTIONS.md) for
+modifiers, undo ownership and the additive table APIs.
+
+Touch gestures and isolated Android/iOS qualification hosts are implemented.
+[Qualification status](docs/QUALIFICATION.md) keeps native desktop and mobile-device
+qualification explicit; headless tests do not certify those integrations.
 
 ## Repository and release status
 
@@ -189,6 +232,51 @@ Cross-cell text replacement preserves table structure; selecting and replacing t
 - `tests/Textalonia.PackageSmoke`: separate consumer that references the generated NuGet package.
 - `docs/ARCHITECTURE.md`: design and extension points.
 - `docs/ROADMAP.md`: remaining work toward the reference editor's feature set.
-- `.github/workflows/ci.yml`: build/test/pack and consumer checks; no publishing.
+- `.github/workflows/ci.yml`: manual build/test/pack and consumer checks; no publishing.
 
-Before public release, finalize ownership metadata, the repository URL, and a project license, and confirm availability of the Textalonia package ID on nuget.org. Dependency licenses remain their respective owners' terms. No project redistribution license has been selected here.
+Retained measurements are indexed in [benchmark baselines](docs/BENCHMARK-BASELINES.md), with
+[qualification targets](docs/QUALIFICATION.md), [compatibility rules](docs/COMPATIBILITY.md),
+[native procedures](docs/NATIVE-BASELINES.md), and [performance budgets](docs/PERFORMANCE.md).
+Run the complete verification route with `pwsh -File scripts/Invoke-Baselines.ps1`.
+Add `-LongCorpus` for 2,000 operations per seed and `-Performance` for full control benchmarks.
+Automatic CI is paused. Both GitHub workflows use manual `workflow_dispatch` triggers;
+`.github/workflows/baselines.yml` retains the longer corpus and performance captures.
+Local verification commands remain available. Manual runs retain native pending records in their artifacts.
+
+Textalonia is [MIT licensed](LICENSE), attributed to Textalonia contributors.
+[Dependency notices](THIRD-PARTY-NOTICES.md) retain upstream terms. The
+[API contracts](docs/API-CONTRACTS.md),
+[preview notes](docs/RELEASE-NOTES.md) and [release procedure](docs/RELEASE.md)
+describe candidate validation and remaining owner/native qualification gates.
+Run PowerShell 7+ with `scripts/Invoke-ReleaseCandidate.ps1 -LongCorpus -Performance`
+to retain exact packages, source/symbol checks, clean consumer logs and workload
+evidence. Authenticated NuGet package control, completed OS-matrix evidence and an
+explicit publication action are still required; nothing is automatically published.
+
+### Extensible input and inline content
+
+Replace keyboard, pointer, caret or IME behavior independently through the editor's
+component properties. Defaults preserve standard selection, clipboard and typing;
+the demo includes an alternate keymap and caret. See [input contracts](docs/INPUT-COMPONENTS.md).
+
+Insert immutable inline image/control descriptors with `Session.InsertInline`,
+resize or update them with `Session.UpdateInline`, resolve external images through
+`InlineResourceResolver`, and register explicit control factories through
+`InlineControlFactories`. Native schema v4 preserves descriptors and encoded
+resources without creating controls during save/load. See
+[inline content and ownership](docs/INLINE-CONTENT.md).
+
+`editor.Accessibility` exposes a tested text-range contract for host bridges.
+Avalonia 12.1.3 does not expose a public native text-provider contract; full native
+screen-reader text navigation remains [explicitly blocked](docs/ACCESSIBILITY.md).
+
+
+## XAML and Markdown
+
+Use `DocumentFormats.Xaml` for Textalonia's versioned, data-only `.txaml`/`.xaml`
+vocabulary and `DocumentFormats.Markdown` for the documented `.md`/`.markdown`
+dialect. `MarkdownViewer` adds asynchronous source updates and optional host-provided
+code highlighting while reusing selection, themes, links and resource services.
+No new dependencies are required. Native JSON writes schema v4 and still reads
+v1-v3. See [integration boundaries and examples](docs/INTEGRATIONS.md),
+[Markdown dialect](docs/MARKDOWN.md), and [XAML vocabulary](docs/XAML.md).

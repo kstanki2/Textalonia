@@ -1,0 +1,74 @@
+name: extended-baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      fuzz_steps:
+        description: Operations per fixed seed (1-100000)
+        default: '2000'
+        required: true
+      repetitions:
+        description: Performance repetitions (3-200)
+        default: '15'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  corpus:
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      TEXTALONIA_FUZZ_STEPS: ${{ inputs.fuzz_steps || '2000' }}
+      TEXTALONIA_FAILURE_DIR: ${{ github.workspace }}/artifacts/fixture-failures
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore Textalonia.sln --configfile NuGet.Config
+      - run: dotnet test tests/Textalonia.Tests -c Release --no-restore --logger trx --results-directory artifacts/test-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: extended-corpus-${{ runner.os }}
+          path: |
+            artifacts/
+            docs/baselines/native/
+
+  performance:
+    timeout-minutes: 60
+    runs-on: windows-latest
+    env:
+      REPETITIONS: ${{ inputs.repetitions || '15' }}
+      TEXTALONIA_REVISION: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore benchmarks/Textalonia.Benchmarks --configfile NuGet.Config
+      - run: dotnet build benchmarks/Textalonia.Benchmarks -c Release --no-restore
+      - name: Measure complete headless control path
+        shell: pwsh
+        run: |
+          $env:TEXTALONIA_SDK = (& dotnet --version)
+          dotnet --info | Out-File -FilePath dotnet-info.txt
+          dotnet run --project benchmarks/Textalonia.Benchmarks -c Release --no-build -- --warmups 3 --repetitions $env:REPETITIONS --output artifacts/benchmarks/latest
+          exit $LASTEXITCODE
+      - name: Report Phase 2 latency and memory budget gaps
+        shell: pwsh
+        run: ./scripts/Compare-BaselineBudgets.ps1 -Results artifacts/benchmarks/latest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-${{ runner.os }}
+          path: |
+            artifacts/benchmarks/
+            dotnet-info.txt
+            docs/baselines/native/
