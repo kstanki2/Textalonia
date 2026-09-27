@@ -6,7 +6,7 @@ Phase 1 baseline, 2026-09-26. This is a preview support policy, not platform cer
 
 | Target and pinned engine/backend | Tier | Reproducible test route and execution owner |
 | --- | --- | --- |
-| .NET 8 model, editing and native v1 serialization; Avalonia 12.1.3 | Supported preview contracts | `dotnet test tests/Textalonia.Tests -c Release`; core maintainer. Local Windows execution in [report](BASELINE-REPORT.md). |
+| .NET 8 model, editing and native v1-v4 serialization; Avalonia 12.1.3 | Supported preview contracts | `dotnet test tests/Textalonia.Tests -c Release`; core maintainer. Local Windows execution in [report](BASELINE-REPORT.md). |
 | Windows 11 24H2, build 26100; Avalonia Win32/Skia 12.1.3 | Experimental native integration | Desktop demo, N01-N07 at 100%/150% DPI; Windows QA maintainer. Headless Skia tests pass locally; native evidence pending. |
 | macOS 14, Cocoa/Skia 12.1.3 (x64/arm64 hosts) | Untested native target | Demo, N01-N07 at standard/Retina scaling; macOS QA maintainer must record exact OS patch and architecture before execution. CI `macos-latest` is a moving automated runner, not this qualification image. |
 | Ubuntu 24.04 LTS, Avalonia X11/Skia 12.1.3 | Untested native target | Demo in an X11 session, N01-N07; Linux QA maintainer records OS point release, X server, desktop, display scale and font packages. Wayland/XWayland is a separate experimental configuration, not covered by an X11 result. |
@@ -36,8 +36,8 @@ Roles identify responsibility, not a claimed assignment to a named person. Maint
 | D01 | Adopt the preview tiers above for baseline work. Preserve current model/API contracts in Phase 2; do not promote native/mobile support based on headless tests. Final advertised support scope remains open. | Product/core maintainer | Baseline policy adopted for P2.1; final scope P8.2 |
 | D02 | Preserve v1 files, UTF-16 offsets, immutable public snapshots and eager `Text` binding during Phase 2; any opt-in alternative needs the [migration process](COMPATIBILITY.md#native-schema-policy). | Core/schema maintainer | Adopted for P2.1; version-2 design before P3 model additions |
 | D03 | Adopt [latency/memory budgets](PERFORMANCE.md#phase-2-budgets) as Phase 2 acceptance targets; current overruns remain visible. The [completion decision](PHASE2-REPORT.md#completion-decision) accepts residual latency qualification as PERF-01 with numeric targets unchanged. | Performance/core maintainer | P2.7 complete; PERF-01 review with P3 tables and P8.2 |
-| D04 | Project copyright ownership and project license remain **unselected**. `Authors=Textalonia contributors` is descriptive metadata, not legal ownership or a redistribution license. | Project owner / release maintainer | P8.3, before redistribution/public publication |
-| D05 | Local `origin` is `https://github.com/kstanki2/Textalonia.git`, confirmed public by GitHub API; `RepositoryUrl` is absent from package metadata. Owner must confirm canonical repository and authority before adding release metadata. | Repository owner | P8.3 |
+| D04 | MIT selected by the maintainer on 2026-09-27; LICENSE and package metadata added. Contributor attribution retained; copyright authority and named NuGet owner still require confirmation. | Project owner / release maintainer | P8.3, before redistribution/public publication |
+| D05 | Local `origin` is `https://github.com/kstanki2/Textalonia.git`, confirmed public by GitHub API; Repository/project/source-link metadata now use that URL. Maintainers must confirm authority before publication. | Repository owner | P8.3 |
 | D06 | Package ID `Textalonia`, version `0.1.0-preview.1`; public NuGet version endpoint returned 404 on 2026-09-26. Availability/reservation/control remains **unverified**; a missing version listing is not ownership evidence. | Package/release maintainer | P8.3 before reserving/publishing |
 | D07 | Freeze exact native OS patches, source-app/IME/reader versions in each execution record; supply unavailable hosts and human operators. | Platform QA leads | Inventory before P1.4 execution; all advertised scope evidence by P6.6/P8.2 |
 
@@ -61,3 +61,13 @@ Synthetic WordprocessingML/RTF/HTML specimens and headless clipboard tests prote
 the supported model subset. They do not certify any of these applications or
 platform pairs. P5.2 application-export corpus expansion and P5.6 native execution
 remain tracked until those records and rendered comparisons are collected.
+
+## Phase 8 candidate qualification
+
+[Release notes](RELEASE-NOTES.md) advertise managed preview contracts only.
+[Candidate validation](RELEASE.md) retains exact source/package/symbol identity,
+dependency terms, independent consumer results, extended workloads and pending
+native records. The three-OS CI route must execute at the candidate commit before
+publication. Windows-only local evidence does not certify macOS/Linux or mobile.
+The historical Phase 1 identity check above remains a dated observation, not a
+current package-control check or an indication that MIT is still unselected.

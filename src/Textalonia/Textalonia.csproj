@@ -3,6 +3,17 @@
     <IsPackable>true</IsPackable>
     <PackageId>Textalonia</PackageId>
     <Authors>Textalonia contributors</Authors>
+    <Copyright>Copyright (c) 2026 Textalonia contributors</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/kstanki2/Textalonia</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/kstanki2/Textalonia</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>portable</DebugType>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <ApiCompatEnableRuleCannotChangeParameterName>true</ApiCompatEnableRuleCannotChangeParameterName>
+    <ApiCompatEnableRuleAttributesMustMatch>true</ApiCompatEnableRuleAttributesMustMatch>
     <Description>Textalonia provides independent native rich text editing and document serialization for Avalonia 12. Preview release.</Description>
     <PackageTags>avalonia;richtext;editor;document</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -15,6 +26,8 @@
     <PackageReference Include="Avalonia" Version="[$(AvaloniaVersion),13.0.0)" />
     <PackageReference Include="AngleSharp" Version="1.8.2" />
     <None Include="../../docs/*.md" Pack="true" PackagePath="docs/" />
+    <Content Include="Themes/Generic.axaml" Pack="true" PackagePath="sources/Themes/" />
     <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../LICENSE;../../THIRD-PARTY-NOTICES.md;../../CHANGELOG.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 </Project>
