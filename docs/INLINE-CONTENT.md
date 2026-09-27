@@ -54,7 +54,8 @@ history eviction; caller-held snapshots remain valid. Hosts can call
 `PruneUnusedResources` on snapshots directly. A save never requires a resolver or
 visual factory.
 
-Native JSON now writes schema v3. Readers migrate strict v1/v2 data; old readers
+Native JSON writes schema v4, which retains the descriptors introduced in v3.
+Readers migrate strict v1/v2/v3 data; old readers
 reject v3. Encoded bytes are base64 and inline payload kinds are an explicit
 allowlist. Unknown members, invalid payloads and excessive resources are rejected.
 

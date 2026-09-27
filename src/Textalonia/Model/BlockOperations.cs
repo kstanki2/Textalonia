@@ -38,7 +38,8 @@ public static class BlockOperations
                 (Paragraph a, Paragraph b) => a.Style == b.Style && a.DefaultStyle == b.DefaultStyle && a.Runs.Length == b.Runs.Length &&
                     a.Runs.Zip(b.Runs).All(pair => pair.First.Style == pair.Second.Style && pair.First.Text == pair.Second.Text &&
                         (pair.First.Inline is { } inline ? inline with { Id = pair.Second.Inline?.Id ?? Guid.Empty } == pair.Second.Inline : pair.Second.Inline is null)),
-                (Section a, Section b) => a.Background == b.Background && a.BorderColor == b.BorderColor &&
+                (Section a, Section b) => a.Semantic == b.Semantic && a.CodeLanguage == b.CodeLanguage &&
+                    a.Background == b.Background && a.BorderColor == b.BorderColor &&
                     a.Padding == b.Padding && a.PaddingEdges == b.PaddingEdges && a.Borders == b.Borders && ContentEquals(a.Blocks, b.Blocks),
                 (Table a, Table b) => a.ColumnWidths.SequenceEqual(b.ColumnWidths) && a.RowSizing.SequenceEqual(b.RowSizing) &&
                     a.Rows.Length == b.Rows.Length && a.Rows.Zip(b.Rows).All(rows => rows.First.Length == rows.Second.Length &&

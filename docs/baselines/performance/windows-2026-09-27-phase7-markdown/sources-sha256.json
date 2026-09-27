@@ -1,0 +1,301 @@
+{
+    "capturedUtc":  "2026-09-27T12:07:46.9176050Z",
+    "revision":  "81927070361f4d3ab8356ab4e5dd0fe75d0282d3+phase7-working-tree",
+    "sdk":  "10.0.204",
+    "sourceManifestSha256Before":  "8ba8872c208d742bc23936b73ea1c71adbad1f8b44e5ce29e4aec32cbf343fcb",
+    "sourceManifestSha256After":  "8ba8872c208d742bc23936b73ea1c71adbad1f8b44e5ce29e4aec32cbf343fcb",
+    "sourceManifestUnchanged":  true,
+    "reportSha256":  "7e03a80818d5f47948a92718f018f4ba67881d5023917d584dc7bd754579d127",
+    "assemblies":  [
+                       {
+                           "path":  "src/Textalonia/bin/Release/net8.0/Textalonia.dll",
+                           "sha256":  "16efa8a6281a6ae8a90c72f1f1f49a16cdbf6b98dbe1e7a8ccf13e03b80c49f0"
+                       },
+                       {
+                           "path":  "benchmarks/Textalonia.Benchmarks/bin/Release/net8.0/Textalonia.Benchmarks.dll",
+                           "sha256":  "66d524f7f17c88cdcc0395217ef68da0ef2795b978965c37c7320de09fa494f2"
+                       }
+                   ],
+    "sources":  [
+                    {
+                        "path":  "benchmarks/Textalonia.Benchmarks/CoreProbe.cs",
+                        "sha256":  "4b7b24dfe51b5330644b9519cb501c51ea0cc943e8205137f8ac5fc964e2c7c2"
+                    },
+                    {
+                        "path":  "benchmarks/Textalonia.Benchmarks/InteractionProbe.cs",
+                        "sha256":  "af7817269d1ba7500ace83cee256536fc64fa9cd5c874dcd63a5ff6e448b2ebf"
+                    },
+                    {
+                        "path":  "benchmarks/Textalonia.Benchmarks/MarkdownProbe.cs",
+                        "sha256":  "fb18fdfa568bf2f3213fca02314807cbebf2b5333732c54b7c7b96add66b05b4"
+                    },
+                    {
+                        "path":  "benchmarks/Textalonia.Benchmarks/Program.cs",
+                        "sha256":  "5d2401e051e882efacbc74ff8b0cf675eb04f5583e6c4b745ef2f1cfd0c4c624"
+                    },
+                    {
+                        "path":  "benchmarks/Textalonia.Benchmarks/Textalonia.Benchmarks.csproj",
+                        "sha256":  "99e558a1d6933654375ae497e1d20e9b5430295cd1874a0334adc1dc94c804f1"
+                    },
+                    {
+                        "path":  "Directory.Build.props",
+                        "sha256":  "3d3c5d4071deaa4bfec8ff3eceb8fca19da371d4cb7bd94e538912c588f697a4"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/CodeHighlighting.cs",
+                        "sha256":  "aa973db7a7af788af84e862a05a250965bc9a022b7cfbb0c3479b6d8a8e89175"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DefaultCaretComponent.cs",
+                        "sha256":  "7b36f666977f5a8cdc033287c797f22ab38c39e76dc53c7b14ef61573be97729"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DefaultCompositionComponent.cs",
+                        "sha256":  "c0fe3ed4dbe53598571e34a925fb1bc5d7a9d8f2f6addf1b28bade5fe8f10788"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DefaultKeyboardComponent.cs",
+                        "sha256":  "608f543e5237ea11c5b72cba3826a7e0f97626184e29a1aaa529666b63c03a9f"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DefaultPointerComponent.cs",
+                        "sha256":  "eb5a86b3bf9b1eba1c447eb328abd2f69b8ae7efc70ee7daf707f82c6dd665c6"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DocumentAccessibility.cs",
+                        "sha256":  "885bf2c096a64942be7d536f716b2015b616b561295d47c97b6d9cde232f87b5"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DocumentInputComponents.cs",
+                        "sha256":  "4f15cf452a815e3a5fd5b9800250148fe4f293be3ded3908d28d31eb5463d0fb"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DocumentLayout.cs",
+                        "sha256":  "e9203f88655a4e65e57c98b6bed8dc29eb504663d17df9685ded6ea8e4b08b0f"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DocumentLayout.Navigation.cs",
+                        "sha256":  "9d941ea28b373b3df8a4f4ddbc2d85199d534873e1725a63b407ca5b60cfea1a"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DocumentLayout.Tables.cs",
+                        "sha256":  "b3c3d536b87723393536fc479788acdc72a9c7524934a6e73dfb188ad4e2bb90"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DocumentSurface.cs",
+                        "sha256":  "898f7b4fd28aa16fe7908fab1a80be23c50af481ae2f123ffd6d800145cb19ee"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DocumentSurface.DragDrop.cs",
+                        "sha256":  "478c9bd3c1d2df2ad1addcd686101a4b98d2c830a8cd029716092c0a4ad7a53f"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DocumentSurface.Inlines.cs",
+                        "sha256":  "efcfa916c47cfe670dc9a69094d6335aaee16aff8c845c69387fc3fc714493d8"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/DocumentSurface.Navigation.cs",
+                        "sha256":  "8e5de71bc92e38dffdffca9c0bcdb5076130c35b513f1f4524309b9dc10d3d32"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/InlineControlFactory.cs",
+                        "sha256":  "78c7541f13f02dd7ed68a5716eed21bc26d0f3733af43f42918cb91a111bfba4"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/InlineResources.cs",
+                        "sha256":  "e1f50e9be622e88958aecb29bdcc0eed148bde3e60cc8cc3e878dbb30c6190dd"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/InlineTextSource.cs",
+                        "sha256":  "a4147a264c6b263ffcc27da10b4de2e1d0008c240ba1ef4df24a2b41d535df69"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/LayoutHeightIndex.cs",
+                        "sha256":  "3d2a05056e900ef8b97d4599014007aef6c6aa3bf664a3185e717f62b6df784c"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/MarkdownDocumentReconciler.cs",
+                        "sha256":  "4bf170c513df363bec269bef0d08dbd0ab15d1b76ada9593efe4d6b98c554418"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/MarkdownViewer.cs",
+                        "sha256":  "b936d7d668918732f886d0ace6a7f639a1d11ef8c0db246e6d3800799e72d243"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/ParagraphLayout.cs",
+                        "sha256":  "d2c9bf4a0cafcfecf5fafe5042565d9f2ee542624f87d69cb6ae960670d4722a"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/SelectionAutoScroller.cs",
+                        "sha256":  "4f01d4a5c5af07325d9f96ddf884f4d2ccb5327a446ecc2c96dd77930de1cd9b"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/ShapedLayoutCache.cs",
+                        "sha256":  "56708afffb6afae87bde633de7c33ee37bd54fe1d952641a9f298f32bbe0a2dd"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/ShapingLimitExceededException.cs",
+                        "sha256":  "88e91ba079a8d159a3fc878d5e40f4e2cce4c785ff8f94f68e57cea238236fcc"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/TablePointerController.cs",
+                        "sha256":  "a5aef79270fa12f6167fafae07deb404706f505604841352c83cf3e6a0a6003c"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/TextaloniaEditor.Accessibility.cs",
+                        "sha256":  "97074841637290736f45da034c33cf49440b970f571c7cdcd8d76eb2d8d48cd6"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/TextaloniaEditor.cs",
+                        "sha256":  "a240639e1586a772ff65c3bb8fcd9c50678e2a6410baa4b4a9684188faff9ee0"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/TextaloniaEditor.DragDrop.cs",
+                        "sha256":  "b778fa78e7e84e860ba472f37b80ed2e0fe8a30c8063c1866e877e78d9431990"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/TextaloniaEditor.Inlines.cs",
+                        "sha256":  "d77564644059d2aa93ec5b8f9b4bf0cd3d81b0b829ea28a2d0a1984752f2b5e9"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/TextaloniaEditor.Input.cs",
+                        "sha256":  "4ca2196ecdb2cb0cb41748f669c865c32fc5d8f4525a5b03c23013196e03edda"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/TextaloniaEditor.Tables.cs",
+                        "sha256":  "aee8e293165d7358cd4cd208e3bdda58ce2ee3c396abc94f77f6fefca412358d"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/TextaloniaToolbar.cs",
+                        "sha256":  "808f35a85dd0ebdc51d5bf5523992b85eddacb06536bdd3e836e7e9bc85eacc1"
+                    },
+                    {
+                        "path":  "src/Textalonia/Controls/TouchSelectionController.cs",
+                        "sha256":  "37c0a3c2181968818a6f71c0ad9088a3d4da35d62d28bdf53d09f9b7dcdf8ba0"
+                    },
+                    {
+                        "path":  "src/Textalonia/Editing/DocumentFragment.cs",
+                        "sha256":  "270723e926254dec87b565fdaa319dae9180a95baa0580af224e5a819ed6f570"
+                    },
+                    {
+                        "path":  "src/Textalonia/Editing/EditorSession.cs",
+                        "sha256":  "ab8f0be05bfcb957e340560aedaf267c9556f4a9f2b27bb10650f989c8f6bf93"
+                    },
+                    {
+                        "path":  "src/Textalonia/Editing/EditorSession.DragDrop.cs",
+                        "sha256":  "5a8f841612662ecf078d7c3595ebe167442dfe40790722950761db7a69155374"
+                    },
+                    {
+                        "path":  "src/Textalonia/Editing/HistoryMemory.cs",
+                        "sha256":  "6edbbbb9cf8e744e15041e68520de707cebb6965566587f01fe059a05b69347f"
+                    },
+                    {
+                        "path":  "src/Textalonia/Editing/SelectionFormattingState.cs",
+                        "sha256":  "833132dea6088e44834f59aeb1add3847542ea3948f60aa27e05285d93d442bb"
+                    },
+                    {
+                        "path":  "src/Textalonia/Editing/TextSelection.cs",
+                        "sha256":  "90d66286f54839ccd36c168df8c29f31a575ac66ec6da67a48f4c11cf945414d"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/BlockOperations.cs",
+                        "sha256":  "5115271fcbd4995db3c3792ac89b54f9e9e8d69e7aa62b52d7be525101aa94b3"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/Blocks.cs",
+                        "sha256":  "0ddf36a12556eb317a15b3439f4109c23b0c8d01019c83144a34d4eba091829e"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/BlockStyles.cs",
+                        "sha256":  "cebc129ce4794d1cbad500cf34fb4a355812563e109693d49b62cd104ccff5d9"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/DocumentIndex.cs",
+                        "sha256":  "e22a98be3d28e816e35667a369ddf9968207fd6cc647907f0c3507defd304777"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/DocumentTree.cs",
+                        "sha256":  "a5ad7fd755999e50e265eef8806de424f4da24e5b1e71394e687cccba05b4892"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/FlowDocument.cs",
+                        "sha256":  "d96000a4b5f45a56349bdc55a3949f58f0f04354bc0aea71b470bc9ed2feda6e"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/InlineContent.cs",
+                        "sha256":  "27da4428293cc1a07764353389b6362813f7d2157c3bc35a3f7ba8e5f2cff90e"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/ListNumbering.cs",
+                        "sha256":  "507a178cf4ee531dc8f79ef3713e05545d13228b30769a2c3e2fba7074934313"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/Storage.cs",
+                        "sha256":  "39007e559829a2973513d14e3f1e78087f2e36cca1982b528ae4ceab6bcda55b"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/TableOperations.cs",
+                        "sha256":  "4e817c08cf0681d523bf9eb51e77c13696e5d5714866ead16fbba577f7177605"
+                    },
+                    {
+                        "path":  "src/Textalonia/Model/TextStyle.cs",
+                        "sha256":  "0e166a457666915b4707bdbe56c26e19cbcb33fe61263da55b3f07f5431320ea"
+                    },
+                    {
+                        "path":  "src/Textalonia/Properties/AssemblyInfo.cs",
+                        "sha256":  "52ec393510a9388a1bec011f57a83832d15ccc51bd1f237a54047b08de9ba0dc"
+                    },
+                    {
+                        "path":  "src/Textalonia/Serialization/ClipboardInterchange.cs",
+                        "sha256":  "5a3c5dc9035f7ccae89ca095591ff65ac1c2266dcdb6407e3ab86fcbc5d2d857"
+                    },
+                    {
+                        "path":  "src/Textalonia/Serialization/DocumentConversion.cs",
+                        "sha256":  "878eaba43a38168fb5391a9742dd671afb87103ce5eb56259f4b4f58fff62ada"
+                    },
+                    {
+                        "path":  "src/Textalonia/Serialization/DocumentFormats.cs",
+                        "sha256":  "fb66024ea8f03f098d9c350246a65c96dbfe6f7839af4cfca320a729854dd764"
+                    },
+                    {
+                        "path":  "src/Textalonia/Serialization/DocxDocumentFormat.cs",
+                        "sha256":  "a0edb1d646a47743bc4e4f6e1af0da7a66e101ffdda19f6f3cf480033c49c5d6"
+                    },
+                    {
+                        "path":  "src/Textalonia/Serialization/HtmlDocumentFormat.cs",
+                        "sha256":  "92006041ac30bf87154b305bcd9cb2fbbd699e84c94e7ccd0e54713871e2b294"
+                    },
+                    {
+                        "path":  "src/Textalonia/Serialization/MarkdownDocumentFormat.cs",
+                        "sha256":  "bb020f9a96a48da380d7160eb54be6343309d38dd05e6c358f444709ec29c8b4"
+                    },
+                    {
+                        "path":  "src/Textalonia/Serialization/NativeDocumentV1.cs",
+                        "sha256":  "1a6588153d6635013cb63ae4c403b8ded56e9448270cd47aa6e25bc12fd66af2"
+                    },
+                    {
+                        "path":  "src/Textalonia/Serialization/RtfDocumentFormat.cs",
+                        "sha256":  "1893b78680e7c2605af7e6acecab54527e47fca9d60f2b3a25760f756268719f"
+                    },
+                    {
+                        "path":  "src/Textalonia/Serialization/XamlDocumentFormat.cs",
+                        "sha256":  "e5c30bbb72d6cacc13bd895c06c89c183e73632e1edc85657da28ad3e75ba97c"
+                    },
+                    {
+                        "path":  "src/Textalonia/Textalonia.csproj",
+                        "sha256":  "24bbfb104d20e9ce59cf047cd129c9786f5e1533b39a906257cd435879bc3806"
+                    },
+                    {
+                        "path":  "src/Textalonia/Themes/Generic.axaml",
+                        "sha256":  "4d78d33383532e50a9f58c02aefac8f844043b543f3d577fed2d78329bb97307"
+                    },
+                    {
+                        "path":  "tests/Textalonia.Tests/Fixtures/BaselineDocuments.cs",
+                        "sha256":  "9409c6761fde0017135e9455fc0180340e0bb0eecce7b38f9221e42050662d1e"
+                    },
+                    {
+                        "path":  "tests/Textalonia.Tests/Fixtures/PublicApi.cs",
+                        "sha256":  "b6deaad6929c3bdb4ced5cb7e06fb432ed1bd8854b1de329d89c783ceaaf9993"
+                    }
+                ]
+}

@@ -4,6 +4,31 @@ type CompiledAvaloniaXaml.!AvaloniaResources : System.Object
 type CompiledAvaloniaXaml.!XamlLoader : System.Object
   method public static System.Object TryLoad(System.IServiceProvider , System.String )
   method public static System.Object TryLoad(System.String )
+type Textalonia.Controls.CodeHighlightStyle : System.Object sealed
+  interface System.IEquatable<Textalonia.Controls.CodeHighlightStyle>
+  ctor public (System.String Foreground = , System.String Background = , System.Nullable<System.Boolean> Bold = , System.Nullable<System.Boolean> Italic = )
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Controls.CodeHighlightStyle other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Foreground, System.String& Background, System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& Bold, System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& Italic)
+  method public Textalonia.Controls.CodeHighlightStyle <Clone>$()
+  property System.Nullable<System.Boolean> Bold { public get; public set; }
+  property System.Nullable<System.Boolean> Italic { public get; public set; }
+  property System.String Background { public get; public set; }
+  property System.String Foreground { public get; public set; }
+type Textalonia.Controls.CodeHighlightToken : System.Object sealed
+  interface System.IEquatable<Textalonia.Controls.CodeHighlightToken>
+  ctor public (System.Int32 Start, System.Int32 Length, System.String Kind)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Controls.CodeHighlightToken other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Int32& Start, System.Int32& Length, System.String& Kind)
+  method public Textalonia.Controls.CodeHighlightToken <Clone>$()
+  property System.Int32 Length { public get; public set; }
+  property System.Int32 Start { public get; public set; }
+  property System.String Kind { public get; public set; }
 type Textalonia.Controls.ConversionCompletedEventArgs : System.EventArgs sealed
   ctor public (Textalonia.Serialization.ConversionReport report)
   property Textalonia.Serialization.ConversionReport Report { public get; }
@@ -176,6 +201,9 @@ type Textalonia.Controls.ICaretComponent : none abstract
   method public System.Void FocusChanged(System.Boolean focused) virtual
   method public System.Void Render(Avalonia.Media.DrawingContext drawing, Avalonia.Rect bounds, Avalonia.Media.IBrush brush) virtual
   method public System.Void Reset() virtual
+type Textalonia.Controls.ICodeHighlighter : none abstract
+  method public System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Textalonia.Controls.CodeHighlightToken>> TokenizeAsync(System.String language, System.String code, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public Textalonia.Controls.CodeHighlightStyle GetStyle(System.String language, System.String tokenKind) virtual
 type Textalonia.Controls.ICompositionComponent : none abstract
   interface Textalonia.Controls.IDocumentInputComponent
   method public System.Void Activate() virtual
@@ -234,6 +262,50 @@ type Textalonia.Controls.InlineImageOptions : System.Object sealed
   property System.Int32 MaximumDimension { public get; public set; }
   property System.Int32 MaximumEncodedBytes { public get; public set; }
   property System.Int64 MaximumDecodedPixels { public get; public set; }
+type Textalonia.Controls.MarkdownViewer : Textalonia.Controls.TextaloniaViewer
+  interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
+  interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.Visual>
+  interface Avalonia.Controls.IResourceHost
+  interface Avalonia.Controls.IResourceNode
+  interface Avalonia.Controls.ISetInheritanceParent
+  interface Avalonia.Controls.ISetLogicalParent
+  interface Avalonia.Controls.Templates.IDataTemplateHost
+  interface Avalonia.Diagnostics.IAvaloniaObjectDebug
+  interface Avalonia.IDataContextProvider
+  interface Avalonia.INamed
+  interface Avalonia.Input.IInputElement
+  interface Avalonia.LogicalTree.ILogical
+  interface Avalonia.Rendering.IVisualBrushInitialize
+  interface Avalonia.Styling.ISetterValue
+  interface Avalonia.Styling.IStyleHost
+  interface Avalonia.Styling.IThemeVariantHost
+  interface System.ComponentModel.INotifyPropertyChanged
+  interface System.ComponentModel.ISupportInitialize
+  ctor public ()
+  field Avalonia.DirectProperty<Textalonia.Controls.MarkdownViewer,System.Boolean> IsHighlightingProperty static readonly
+  field Avalonia.DirectProperty<Textalonia.Controls.MarkdownViewer,System.Boolean> IsParsingProperty static readonly
+  field Avalonia.DirectProperty<Textalonia.Controls.MarkdownViewer,System.Exception> HighlightErrorProperty static readonly
+  field Avalonia.DirectProperty<Textalonia.Controls.MarkdownViewer,System.Exception> ParseErrorProperty static readonly
+  field Avalonia.DirectProperty<Textalonia.Controls.MarkdownViewer,Textalonia.Serialization.ConversionReport> ParseReportProperty static readonly
+  field Avalonia.StyledProperty<System.String> MarkdownProperty static readonly
+  field Avalonia.StyledProperty<Textalonia.Controls.ICodeHighlighter> CodeHighlighterProperty static readonly
+  field Avalonia.StyledProperty<Textalonia.Serialization.ConversionOptions> ConversionOptionsProperty static readonly
+  method protected System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult> ParseMarkdownAsync(System.String markdown, Textalonia.Serialization.ConversionOptions options, System.Threading.CancellationToken cancellationToken) virtual
+  method protected System.Void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e) virtual
+  method protected System.Void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e) virtual
+  method protected System.Void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) virtual
+  method public System.Threading.Tasks.Task UpdateMarkdownAsync(System.String markdown, System.Threading.CancellationToken cancellationToken = )
+  method public System.Threading.Tasks.Task WaitForHighlightingAsync(System.Threading.CancellationToken cancellationToken = )
+  method public System.Threading.Tasks.Task WaitForParsingAsync(System.Threading.CancellationToken cancellationToken = )
+  method public System.Void AppendMarkdown(System.String markdown)
+  property System.Boolean IsHighlighting { public get; }
+  property System.Boolean IsParsing { public get; }
+  property System.Exception HighlightError { public get; }
+  property System.Exception ParseError { public get; }
+  property System.String Markdown { public get; public set; }
+  property Textalonia.Controls.ICodeHighlighter CodeHighlighter { public get; public set; }
+  property Textalonia.Serialization.ConversionOptions ConversionOptions { public get; public set; }
+  property Textalonia.Serialization.ConversionReport ParseReport { public get; }
 type Textalonia.Controls.ShapingLimitExceededException : System.InvalidOperationException sealed
   interface System.Runtime.Serialization.ISerializable
   ctor public (System.Guid paragraphId, System.Int32 characterLimit, System.Int32 requestedCharacters)
@@ -918,9 +990,20 @@ type Textalonia.Model.Section : Textalonia.Model.Block sealed
   property System.Double Padding { public get; public set; }
   property System.String Background { public get; public set; }
   property System.String BorderColor { public get; public set; }
+  property System.String CodeLanguage { public get; public set; }
   property System.Type EqualityContract { protected get; }
   property Textalonia.Model.BlockBorders Borders { public get; public set; }
   property Textalonia.Model.EdgeInsets PaddingEdges { public get; public set; }
+  property Textalonia.Model.SectionSemantic Semantic { public get; public set; }
+type Textalonia.Model.SectionSemantic : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.SectionSemantic CodeBlock static = 2
+  field Textalonia.Model.SectionSemantic None static = 0
+  field Textalonia.Model.SectionSemantic Quote static = 1
 type Textalonia.Model.Table : Textalonia.Model.Block sealed
   interface System.IEquatable<Textalonia.Model.Block>
   interface System.IEquatable<Textalonia.Model.Table>
@@ -995,6 +1078,7 @@ type Textalonia.Model.TextStyle : System.Object sealed
   method public Textalonia.Model.TextStyle <Clone>$()
   property System.Boolean Bold { public get; public set; }
   property System.Boolean EffectiveBold { public get; }
+  property System.Boolean IsCode { public get; public set; }
   property System.Boolean Italic { public get; public set; }
   property System.Boolean Strikethrough { public get; public set; }
   property System.Boolean Underline { public get; public set; }
@@ -1068,8 +1152,10 @@ type Textalonia.Serialization.DocumentFormats : System.Object sealed abstract
   property Textalonia.Serialization.DocxDocumentFormat Docx { public static get; }
   property Textalonia.Serialization.HtmlDocumentFormat Html { public static get; }
   property Textalonia.Serialization.JsonDocumentFormat Json { public static get; }
+  property Textalonia.Serialization.MarkdownDocumentFormat Markdown { public static get; }
   property Textalonia.Serialization.PlainTextDocumentFormat PlainText { public static get; }
   property Textalonia.Serialization.RtfDocumentFormat Rtf { public static get; }
+  property Textalonia.Serialization.XamlDocumentFormat Xaml { public static get; }
 type Textalonia.Serialization.DocumentLoadResult : System.Object sealed
   interface System.IEquatable<Textalonia.Serialization.DocumentLoadResult>
   ctor public (Textalonia.Model.FlowDocument Document, Textalonia.Serialization.ConversionReport Report)
@@ -1121,6 +1207,15 @@ type Textalonia.Serialization.JsonDocumentFormat : Textalonia.Serialization.Text
   method public Textalonia.Model.FlowDocument Parse(System.String text) virtual
   property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
   property System.String Name { public get; }
+type Textalonia.Serialization.MarkdownDocumentFormat : Textalonia.Serialization.TextDocumentFormat sealed
+  interface Textalonia.Serialization.IDocumentFormat
+  ctor public ()
+  method public System.String Serialize(Textalonia.Model.FlowDocument document) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public Textalonia.Model.FlowDocument Parse(System.String text) virtual
+  method public Textalonia.Model.FlowDocument Parse(System.String text, System.Threading.CancellationToken cancellationToken)
+  property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
+  property System.String Name { public get; }
 type Textalonia.Serialization.PlainTextDocumentFormat : Textalonia.Serialization.TextDocumentFormat sealed
   interface Textalonia.Serialization.IDocumentFormat
   ctor public ()
@@ -1142,6 +1237,16 @@ type Textalonia.Serialization.TextDocumentFormat : System.Object abstract
   method public System.String Serialize(Textalonia.Model.FlowDocument document) virtual
   method public System.Threading.Tasks.Task SaveAsync(Textalonia.Model.FlowDocument document, System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
   method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public Textalonia.Model.FlowDocument Parse(System.String text) virtual
+  property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
+  property System.String Name { public get; }
+type Textalonia.Serialization.XamlDocumentFormat : Textalonia.Serialization.TextDocumentFormat sealed
+  interface Textalonia.Serialization.IDocumentFormat
+  ctor public ()
+  field System.Int32 MaximumCharacters static = 33554432
+  field System.Int32 MaximumDepth static = 256
+  field System.String NamespaceUri static = urn:textalonia:document:1
+  method public System.String Serialize(Textalonia.Model.FlowDocument document) virtual
   method public Textalonia.Model.FlowDocument Parse(System.String text) virtual
   property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
   property System.String Name { public get; }

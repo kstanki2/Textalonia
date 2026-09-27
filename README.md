@@ -253,10 +253,21 @@ the demo includes an alternate keymap and caret. See [input contracts](docs/INPU
 Insert immutable inline image/control descriptors with `Session.InsertInline`,
 resize or update them with `Session.UpdateInline`, resolve external images through
 `InlineResourceResolver`, and register explicit control factories through
-`InlineControlFactories`. Native schema v3 preserves descriptors and encoded
+`InlineControlFactories`. Native schema v4 preserves descriptors and encoded
 resources without creating controls during save/load. See
 [inline content and ownership](docs/INLINE-CONTENT.md).
 
 `editor.Accessibility` exposes a tested text-range contract for host bridges.
 Avalonia 12.1.3 does not expose a public native text-provider contract; full native
 screen-reader text navigation remains [explicitly blocked](docs/PHASE4-ACCESSIBILITY.md).
+
+
+## XAML and Markdown
+
+Use `DocumentFormats.Xaml` for Textalonia's versioned, data-only `.txaml`/`.xaml`
+vocabulary and `DocumentFormats.Markdown` for the documented `.md`/`.markdown`
+dialect. `MarkdownViewer` adds asynchronous source updates and optional host-provided
+code highlighting while reusing selection, themes, links and resource services.
+No new dependencies are required. Native JSON writes schema v4 and still reads
+v1-v3. See [integration boundaries and examples](docs/INTEGRATIONS.md),
+[Markdown dialect](docs/MARKDOWN.md), and [XAML vocabulary](docs/XAML.md).

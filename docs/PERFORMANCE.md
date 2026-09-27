@@ -171,3 +171,13 @@ Single-clock autoscroll and table preview meet their unchanged targets in this r
 The final long-paragraph resize p95 is 103.09 ms against 100 ms; amplified mixed-clock
 stress also has misses. PERF-06 stays open for repeat/profile/native qualification.
 The measured differences between runs do not prove that host noise caused a miss.
+
+
+## Phase 7 Markdown updates
+
+The [dated Markdown probe](baselines/performance/windows-2026-09-27-phase7-markdown/README.md)
+records 40 repeated suffix edits and streamed appends for 100/1,000 body paragraphs,
+rendering and separate UI dispatcher observations. Adopted p95 targets are 100 ms
+source-to-frame and 16 ms queued callback delay, with 1 DIP maximum scroll drift.
+All pass in the recorded managed run; every measured scroll drift is zero.
+These scoped measurements do not close PERF-01/PERF-06 or native latency gates.

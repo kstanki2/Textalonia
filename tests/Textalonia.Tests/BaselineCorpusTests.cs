@@ -41,7 +41,7 @@ public class BaselineCorpusTests
         var json = File.ReadAllText(path).Replace("\r\n", "\n").TrimEnd();
         var loaded = DocumentFormats.Json.Parse(json);
         var migrated = Encode(loaded);
-        Assert.Contains("\"version\": 3", migrated);
+        Assert.Contains("\"version\": 4", migrated);
         Assert.Equal(migrated, Encode(DocumentFormats.Json.Parse(migrated)));
         Assert.Equal(Encode(BaselineDocuments.Structured()), Encode(loaded));
         var section = Assert.IsType<Section>(loaded.Blocks[1]);

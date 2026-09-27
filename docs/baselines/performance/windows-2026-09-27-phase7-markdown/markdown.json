@@ -1,0 +1,2039 @@
+{
+  "capturedUtc": "2026-09-27T12:07:46.6931294+00:00",
+  "revision": "81927070361f4d3ab8356ab4e5dd0fe75d0282d3\u002Bphase7-working-tree",
+  "os": "Microsoft Windows 10.0.26100",
+  "architecture": "X64",
+  "runtime": ".NET 8.0.31",
+  "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+  "logicalProcessors": 24,
+  "avalonia": "12.1.3.0",
+  "backend": "Avalonia.Headless with Skia software frame capture; native compositor, IME and device behavior excluded",
+  "viewport": "800 x 500 DIP; Inter 16; Fluent Light; no toolbar; offset 320 DIP",
+  "methodology": "Release; 3 warmups and 40 consecutive samples per operation and workload. Source-to-frame includes source assignment, debounce, asynchronous parsing/application, dispatcher drain, layout and frame capture. Independent worker posts a UI dispatcher callback every 1 ms while each update runs; queue-to-callback timings exclude the worker delay. p95 uses nearest rank. Allocations are process-wide GC.GetTotalAllocatedBytes deltas including the heartbeat, without forced collection. Small edits replace one suffix paragraph; appends add one Markdown paragraph per chunk. Each update asserts unchanged prefix selection, scroll retention within 1 DIP, and latest revision text. Rapid bursts publish 30 revisions without waiting between assignments.",
+  "budgets": {
+    "sourceToFrameP95Milliseconds": 100,
+    "uiDispatchP95Milliseconds": 16,
+    "maximumScrollDriftDip": 1,
+    "scope": "100 and 1000 initial body paragraphs plus a heading; latency is reported rather than used as a machine-independent test failure"
+  },
+  "results": [
+    {
+      "InitialParagraphs": 100,
+      "Operation": "small-edit",
+      "BudgetMilliseconds": 100,
+      "MedianMilliseconds": 30.73655,
+      "P95Milliseconds": 33.0228,
+      "WithinLatencyBudget": true,
+      "DispatchBudgetMilliseconds": 16,
+      "DispatchP95Milliseconds": 0.0917,
+      "WithinDispatchBudget": true,
+      "DispatchSamples": 119,
+      "P95AllocatedBytes": 1139136,
+      "MaximumScrollDrift": 0,
+      "Samples": [
+        {
+          "Milliseconds": 28.3112,
+          "AllocatedBytes": 1129376,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0279,
+            0.0165,
+            0.0235
+          ]
+        },
+        {
+          "Milliseconds": 30.3099,
+          "AllocatedBytes": 1121200,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0357,
+            0.0169,
+            0.0173
+          ]
+        },
+        {
+          "Milliseconds": 29.8972,
+          "AllocatedBytes": 1138880,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0074,
+            0.0247,
+            0.0566
+          ]
+        },
+        {
+          "Milliseconds": 31.0497,
+          "AllocatedBytes": 1130344,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.035,
+            2.525,
+            0.0331
+          ]
+        },
+        {
+          "Milliseconds": 31.3377,
+          "AllocatedBytes": 1121344,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0494,
+            0.0308,
+            0.0287
+          ]
+        },
+        {
+          "Milliseconds": 31.3282,
+          "AllocatedBytes": 1137408,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.038,
+            0.0102,
+            0.0325
+          ]
+        },
+        {
+          "Milliseconds": 33.3038,
+          "AllocatedBytes": 1120680,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0393,
+            0.0376,
+            0.0466
+          ]
+        },
+        {
+          "Milliseconds": 29.5493,
+          "AllocatedBytes": 1138616,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0428,
+            0.0592,
+            0.0306
+          ]
+        },
+        {
+          "Milliseconds": 39.6936,
+          "AllocatedBytes": 1120944,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0324,
+            0.0378,
+            0.0325
+          ]
+        },
+        {
+          "Milliseconds": 24.2797,
+          "AllocatedBytes": 1136192,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0917,
+            0.0161
+          ]
+        },
+        {
+          "Milliseconds": 30.9346,
+          "AllocatedBytes": 1122480,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0529,
+            0.035,
+            0.024
+          ]
+        },
+        {
+          "Milliseconds": 31.3442,
+          "AllocatedBytes": 1127992,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0419,
+            0.0348,
+            0.0466
+          ]
+        },
+        {
+          "Milliseconds": 30.5794,
+          "AllocatedBytes": 1121896,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            1.0321,
+            0.0334,
+            0.0307
+          ]
+        },
+        {
+          "Milliseconds": 31.1852,
+          "AllocatedBytes": 1136944,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0387,
+            0.0419,
+            0.1707
+          ]
+        },
+        {
+          "Milliseconds": 30.8875,
+          "AllocatedBytes": 1130624,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0416,
+            0.021,
+            0.0148
+          ]
+        },
+        {
+          "Milliseconds": 29.9597,
+          "AllocatedBytes": 1120248,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0334,
+            0.03,
+            0.0735
+          ]
+        },
+        {
+          "Milliseconds": 30.3722,
+          "AllocatedBytes": 1138616,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0257,
+            0.0407,
+            0.059
+          ]
+        },
+        {
+          "Milliseconds": 31.3642,
+          "AllocatedBytes": 1132736,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0383,
+            0.0234,
+            0.019
+          ]
+        },
+        {
+          "Milliseconds": 29.3033,
+          "AllocatedBytes": 1121608,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0339,
+            0.0269,
+            0.0185
+          ]
+        },
+        {
+          "Milliseconds": 32.983,
+          "AllocatedBytes": 1138760,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0352,
+            0.0136,
+            0.0138
+          ]
+        },
+        {
+          "Milliseconds": 29.4018,
+          "AllocatedBytes": 1120680,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.044,
+            0.0157,
+            0.0191
+          ]
+        },
+        {
+          "Milliseconds": 32.6581,
+          "AllocatedBytes": 1137240,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0825,
+            0.0442,
+            0.0352
+          ]
+        },
+        {
+          "Milliseconds": 33.0228,
+          "AllocatedBytes": 1122088,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0369,
+            0.0282,
+            0.022
+          ]
+        },
+        {
+          "Milliseconds": 29.3865,
+          "AllocatedBytes": 1139136,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0373,
+            0.0146,
+            0.0403
+          ]
+        },
+        {
+          "Milliseconds": 30.7175,
+          "AllocatedBytes": 1120944,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0251,
+            0.0272,
+            0.0152
+          ]
+        },
+        {
+          "Milliseconds": 32.8598,
+          "AllocatedBytes": 1127992,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.029,
+            0.0255,
+            0.0508
+          ]
+        },
+        {
+          "Milliseconds": 30.7556,
+          "AllocatedBytes": 1123280,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0396,
+            0.0175,
+            0.0348
+          ]
+        },
+        {
+          "Milliseconds": 29.7705,
+          "AllocatedBytes": 1137232,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0354,
+            0.0212,
+            0.0261
+          ]
+        },
+        {
+          "Milliseconds": 30.7107,
+          "AllocatedBytes": 1129376,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0481,
+            0.0187,
+            0.0329
+          ]
+        },
+        {
+          "Milliseconds": 31.5298,
+          "AllocatedBytes": 1120512,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.032,
+            0.0137,
+            0.1798
+          ]
+        },
+        {
+          "Milliseconds": 30.0208,
+          "AllocatedBytes": 1138616,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0287,
+            0.0158,
+            0.0714
+          ]
+        },
+        {
+          "Milliseconds": 32.292,
+          "AllocatedBytes": 1128280,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0317,
+            0.0256,
+            0.0417
+          ]
+        },
+        {
+          "Milliseconds": 31.0834,
+          "AllocatedBytes": 1121608,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0297,
+            0.022,
+            0.013
+          ]
+        },
+        {
+          "Milliseconds": 29.6215,
+          "AllocatedBytes": 1136696,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0513,
+            0.0146,
+            0.0231
+          ]
+        },
+        {
+          "Milliseconds": 30.4612,
+          "AllocatedBytes": 1121352,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0321,
+            0.0239,
+            0.0131
+          ]
+        },
+        {
+          "Milliseconds": 30.6867,
+          "AllocatedBytes": 1147808,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0416,
+            0.0166,
+            0.1716
+          ]
+        },
+        {
+          "Milliseconds": 30.9402,
+          "AllocatedBytes": 1122064,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0309,
+            0.0192,
+            0.0261
+          ]
+        },
+        {
+          "Milliseconds": 32.0643,
+          "AllocatedBytes": 1145176,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0279,
+            0.0218,
+            0.0335
+          ]
+        },
+        {
+          "Milliseconds": 30.5029,
+          "AllocatedBytes": 1120944,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0349,
+            0.0127,
+            0.0222
+          ]
+        },
+        {
+          "Milliseconds": 30.602,
+          "AllocatedBytes": 1128280,
+          "SourceLength": 10049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0312,
+            0.0135,
+            0.0206
+          ]
+        }
+      ]
+    },
+    {
+      "InitialParagraphs": 100,
+      "Operation": "streamed-append",
+      "BudgetMilliseconds": 100,
+      "MedianMilliseconds": 31.11975,
+      "P95Milliseconds": 41.4505,
+      "WithinLatencyBudget": true,
+      "DispatchBudgetMilliseconds": 16,
+      "DispatchP95Milliseconds": 0.2037,
+      "WithinDispatchBudget": true,
+      "DispatchSamples": 121,
+      "P95AllocatedBytes": 1334032,
+      "MaximumScrollDrift": 0,
+      "Samples": [
+        {
+          "Milliseconds": 28.2098,
+          "AllocatedBytes": 1165272,
+          "SourceLength": 10197,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.03,
+            0.0239,
+            0.0462
+          ]
+        },
+        {
+          "Milliseconds": 30.6873,
+          "AllocatedBytes": 1152392,
+          "SourceLength": 10238,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0394,
+            0.0114,
+            0.0313
+          ]
+        },
+        {
+          "Milliseconds": 32.073,
+          "AllocatedBytes": 1150248,
+          "SourceLength": 10279,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0286,
+            0.0114,
+            0.0363
+          ]
+        },
+        {
+          "Milliseconds": 29.5798,
+          "AllocatedBytes": 1168360,
+          "SourceLength": 10320,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0278,
+            0.033,
+            0.0419
+          ]
+        },
+        {
+          "Milliseconds": 30.1316,
+          "AllocatedBytes": 1156744,
+          "SourceLength": 10361,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0269,
+            0.0204,
+            0.0397
+          ]
+        },
+        {
+          "Milliseconds": 30.1,
+          "AllocatedBytes": 1174088,
+          "SourceLength": 10402,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0321,
+            0.0247,
+            0.0095
+          ]
+        },
+        {
+          "Milliseconds": 30.7629,
+          "AllocatedBytes": 1162904,
+          "SourceLength": 10443,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0387,
+            0.0125,
+            0.0209
+          ]
+        },
+        {
+          "Milliseconds": 31.5465,
+          "AllocatedBytes": 1184376,
+          "SourceLength": 10484,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0347,
+            0.0158,
+            0.0183
+          ]
+        },
+        {
+          "Milliseconds": 30.5221,
+          "AllocatedBytes": 1171984,
+          "SourceLength": 10525,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0303,
+            0.0179,
+            0.0142
+          ]
+        },
+        {
+          "Milliseconds": 32.6928,
+          "AllocatedBytes": 1184520,
+          "SourceLength": 10566,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0367,
+            0.0167,
+            0.0235
+          ]
+        },
+        {
+          "Milliseconds": 28.9212,
+          "AllocatedBytes": 1181584,
+          "SourceLength": 10607,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0075,
+            0.0192,
+            0.0304
+          ]
+        },
+        {
+          "Milliseconds": 31.2861,
+          "AllocatedBytes": 1201784,
+          "SourceLength": 10648,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0262,
+            0.017,
+            0.0135
+          ]
+        },
+        {
+          "Milliseconds": 29.1119,
+          "AllocatedBytes": 1187296,
+          "SourceLength": 10689,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0426,
+            0.0147,
+            0.0349
+          ]
+        },
+        {
+          "Milliseconds": 30.246,
+          "AllocatedBytes": 1207944,
+          "SourceLength": 10730,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0321,
+            0.0274,
+            0.0304
+          ]
+        },
+        {
+          "Milliseconds": 30.9534,
+          "AllocatedBytes": 1217168,
+          "SourceLength": 10771,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0188,
+            0.0199,
+            0.0128
+          ]
+        },
+        {
+          "Milliseconds": 30.8359,
+          "AllocatedBytes": 1198952,
+          "SourceLength": 10812,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0324,
+            0.0206,
+            0.0171
+          ]
+        },
+        {
+          "Milliseconds": 29.6555,
+          "AllocatedBytes": 1220416,
+          "SourceLength": 10853,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0263,
+            0.0259,
+            0.0516
+          ]
+        },
+        {
+          "Milliseconds": 31.3702,
+          "AllocatedBytes": 1224024,
+          "SourceLength": 10894,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0243,
+            0.0252,
+            0.0231
+          ]
+        },
+        {
+          "Milliseconds": 30.3634,
+          "AllocatedBytes": 1211648,
+          "SourceLength": 10935,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0285,
+            0.0335,
+            0.0275
+          ]
+        },
+        {
+          "Milliseconds": 30.9415,
+          "AllocatedBytes": 1233672,
+          "SourceLength": 10976,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0368,
+            0.0191,
+            0.0239
+          ]
+        },
+        {
+          "Milliseconds": 33.8211,
+          "AllocatedBytes": 1222344,
+          "SourceLength": 11017,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0311,
+            0.0137,
+            0.0217
+          ]
+        },
+        {
+          "Milliseconds": 43.6905,
+          "AllocatedBytes": 1232536,
+          "SourceLength": 11058,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0325,
+            0.0243,
+            0.0129,
+            5.3045
+          ]
+        },
+        {
+          "Milliseconds": 31.4892,
+          "AllocatedBytes": 1229256,
+          "SourceLength": 11099,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.1281,
+            0.0188,
+            0.3181
+          ]
+        },
+        {
+          "Milliseconds": 33.3259,
+          "AllocatedBytes": 1241792,
+          "SourceLength": 11140,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.007,
+            0.164,
+            0.023
+          ]
+        },
+        {
+          "Milliseconds": 39.7888,
+          "AllocatedBytes": 1268632,
+          "SourceLength": 11181,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0254,
+            0.0123,
+            0.0247,
+            2.8263
+          ]
+        },
+        {
+          "Milliseconds": 43.2789,
+          "AllocatedBytes": 1291128,
+          "SourceLength": 11222,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0177,
+            0.0252,
+            0.0323
+          ]
+        },
+        {
+          "Milliseconds": 20.6888,
+          "AllocatedBytes": 1282920,
+          "SourceLength": 11263,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.1341,
+            0.02
+          ]
+        },
+        {
+          "Milliseconds": 32.1114,
+          "AllocatedBytes": 1279672,
+          "SourceLength": 11304,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0249,
+            0.0163,
+            0.0272
+          ]
+        },
+        {
+          "Milliseconds": 28.954,
+          "AllocatedBytes": 1298752,
+          "SourceLength": 11345,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.021,
+            0.0236,
+            0.0297
+          ]
+        },
+        {
+          "Milliseconds": 32.0848,
+          "AllocatedBytes": 1287760,
+          "SourceLength": 11386,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0232,
+            0.0183,
+            0.0112
+          ]
+        },
+        {
+          "Milliseconds": 41.4505,
+          "AllocatedBytes": 1308280,
+          "SourceLength": 11427,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0326,
+            0.012,
+            0.0173,
+            0.2915
+          ]
+        },
+        {
+          "Milliseconds": 31.6019,
+          "AllocatedBytes": 1292728,
+          "SourceLength": 11468,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.2037,
+            0.0134,
+            0.9398
+          ]
+        },
+        {
+          "Milliseconds": 21.032,
+          "AllocatedBytes": 1322600,
+          "SourceLength": 11509,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0201,
+            0.0219
+          ]
+        },
+        {
+          "Milliseconds": 31.4615,
+          "AllocatedBytes": 1301688,
+          "SourceLength": 11550,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.132,
+            0.0168,
+            0.0129
+          ]
+        },
+        {
+          "Milliseconds": 34.3701,
+          "AllocatedBytes": 1313832,
+          "SourceLength": 11591,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.187,
+            0.0135,
+            0.0116
+          ]
+        },
+        {
+          "Milliseconds": 25.1779,
+          "AllocatedBytes": 1309728,
+          "SourceLength": 11632,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.1246,
+            0.0135,
+            0.259
+          ]
+        },
+        {
+          "Milliseconds": 31.5246,
+          "AllocatedBytes": 1334032,
+          "SourceLength": 11673,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0283,
+            0.0119,
+            0.0185
+          ]
+        },
+        {
+          "Milliseconds": 30.2883,
+          "AllocatedBytes": 1316424,
+          "SourceLength": 11714,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0197,
+            0.0156,
+            0.0078
+          ]
+        },
+        {
+          "Milliseconds": 31.353,
+          "AllocatedBytes": 1341760,
+          "SourceLength": 11755,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0237,
+            0.0108,
+            0.01
+          ]
+        },
+        {
+          "Milliseconds": 31.6151,
+          "AllocatedBytes": 1352504,
+          "SourceLength": 11796,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0257,
+            0.0164,
+            0.0042
+          ]
+        }
+      ]
+    },
+    {
+      "InitialParagraphs": 1000,
+      "Operation": "small-edit",
+      "BudgetMilliseconds": 100,
+      "MedianMilliseconds": 33.8263,
+      "P95Milliseconds": 51.6204,
+      "WithinLatencyBudget": true,
+      "DispatchBudgetMilliseconds": 16,
+      "DispatchP95Milliseconds": 1.9834,
+      "WithinDispatchBudget": true,
+      "DispatchSamples": 136,
+      "P95AllocatedBytes": 8924928,
+      "MaximumScrollDrift": 0,
+      "Samples": [
+        {
+          "Milliseconds": 79.0369,
+          "AllocatedBytes": 8938824,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0946,
+            0.0473,
+            0.0071,
+            0.0067,
+            0.0237,
+            2.3426
+          ]
+        },
+        {
+          "Milliseconds": 42.8065,
+          "AllocatedBytes": 8901264,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.056,
+            0.0152,
+            0.0032
+          ]
+        },
+        {
+          "Milliseconds": 32.8057,
+          "AllocatedBytes": 8916512,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0796,
+            0.0221,
+            1.9834
+          ]
+        },
+        {
+          "Milliseconds": 41.8963,
+          "AllocatedBytes": 8901000,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0678,
+            0.0148,
+            0.005
+          ]
+        },
+        {
+          "Milliseconds": 30.2158,
+          "AllocatedBytes": 8910280,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.071,
+            0.0138,
+            0.0073
+          ]
+        },
+        {
+          "Milliseconds": 40.3589,
+          "AllocatedBytes": 8902656,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0958,
+            0.0195,
+            0.0096,
+            0.0138
+          ]
+        },
+        {
+          "Milliseconds": 63.6618,
+          "AllocatedBytes": 8910048,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0583,
+            0.0114,
+            0.0173,
+            0.0107,
+            0.0049
+          ]
+        },
+        {
+          "Milliseconds": 31.6095,
+          "AllocatedBytes": 8901528,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0529,
+            0.0134,
+            0.0167
+          ]
+        },
+        {
+          "Milliseconds": 33.4131,
+          "AllocatedBytes": 8908368,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0586,
+            0.009,
+            0.0109
+          ]
+        },
+        {
+          "Milliseconds": 33.3503,
+          "AllocatedBytes": 8902104,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0945,
+            0.0155,
+            0.0079,
+            0.0658
+          ]
+        },
+        {
+          "Milliseconds": 35.1268,
+          "AllocatedBytes": 8916728,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0738,
+            0.0114,
+            3.3244
+          ]
+        },
+        {
+          "Milliseconds": 49.5117,
+          "AllocatedBytes": 8903224,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0626,
+            0.017,
+            0.0141,
+            7.1683
+          ]
+        },
+        {
+          "Milliseconds": 33.9429,
+          "AllocatedBytes": 8898216,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.369,
+            0.0135,
+            0.0151
+          ]
+        },
+        {
+          "Milliseconds": 30.8455,
+          "AllocatedBytes": 8913632,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0812,
+            0.0052,
+            0.0166
+          ]
+        },
+        {
+          "Milliseconds": 32.1315,
+          "AllocatedBytes": 8911608,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.1308,
+            0.0237,
+            0.0256
+          ]
+        },
+        {
+          "Milliseconds": 29.0716,
+          "AllocatedBytes": 8901608,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0625,
+            0.0063,
+            0.0062,
+            0.0048
+          ]
+        },
+        {
+          "Milliseconds": 30.208,
+          "AllocatedBytes": 8924928,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0519,
+            0.0104,
+            0.0208
+          ]
+        },
+        {
+          "Milliseconds": 34.3098,
+          "AllocatedBytes": 8900768,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0535,
+            0.0152,
+            0.0127
+          ]
+        },
+        {
+          "Milliseconds": 27.6575,
+          "AllocatedBytes": 8925184,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.1012,
+            0.0077,
+            0.0072
+          ]
+        },
+        {
+          "Milliseconds": 32.2464,
+          "AllocatedBytes": 8902416,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0594,
+            0.0167,
+            0.052
+          ]
+        },
+        {
+          "Milliseconds": 33.1183,
+          "AllocatedBytes": 8923800,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.096,
+            0.0068,
+            0.0194
+          ]
+        },
+        {
+          "Milliseconds": 32.8022,
+          "AllocatedBytes": 8901080,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0841,
+            0.0191,
+            0.7377
+          ]
+        },
+        {
+          "Milliseconds": 42.3242,
+          "AllocatedBytes": 8916440,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.1119,
+            0.0206,
+            0.0296
+          ]
+        },
+        {
+          "Milliseconds": 33.7097,
+          "AllocatedBytes": 8901872,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0678,
+            0.0071,
+            0.0062,
+            0.4633
+          ]
+        },
+        {
+          "Milliseconds": 25.3632,
+          "AllocatedBytes": 8914784,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0717,
+            0.0209
+          ]
+        },
+        {
+          "Milliseconds": 33.943,
+          "AllocatedBytes": 8910656,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0535,
+            0.0198,
+            0.0496
+          ]
+        },
+        {
+          "Milliseconds": 30.7191,
+          "AllocatedBytes": 8899880,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.082,
+            0.0173,
+            0.0175
+          ]
+        },
+        {
+          "Milliseconds": 43.1899,
+          "AllocatedBytes": 8901176,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0564,
+            0.0134,
+            0.0052,
+            11.1846
+          ]
+        },
+        {
+          "Milliseconds": 34.0375,
+          "AllocatedBytes": 8908920,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.1664,
+            0.013,
+            0.0123,
+            0.3665
+          ]
+        },
+        {
+          "Milliseconds": 44.0843,
+          "AllocatedBytes": 8901480,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.1363,
+            0.0192,
+            0.0059
+          ]
+        },
+        {
+          "Milliseconds": 34.3679,
+          "AllocatedBytes": 8917280,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0716,
+            0.0065,
+            0.0242,
+            1.0402
+          ]
+        },
+        {
+          "Milliseconds": 46.437,
+          "AllocatedBytes": 8903176,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.056,
+            0.1334,
+            0.0182,
+            1.266
+          ]
+        },
+        {
+          "Milliseconds": 51.6204,
+          "AllocatedBytes": 8916224,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0835,
+            0.0182,
+            0.0205,
+            6.0515
+          ]
+        },
+        {
+          "Milliseconds": 39.2789,
+          "AllocatedBytes": 8901000,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.1042,
+            0.0222,
+            0.0028
+          ]
+        },
+        {
+          "Milliseconds": 30.2276,
+          "AllocatedBytes": 8911936,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0793,
+            0.0144,
+            0.0184
+          ]
+        },
+        {
+          "Milliseconds": 29.5029,
+          "AllocatedBytes": 8914264,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0969,
+            0.0096,
+            0.0113,
+            0.0123
+          ]
+        },
+        {
+          "Milliseconds": 32.4859,
+          "AllocatedBytes": 8899600,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0618,
+            0.0074,
+            0.0136
+          ]
+        },
+        {
+          "Milliseconds": 28.9382,
+          "AllocatedBytes": 8912712,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0785,
+            0.0164,
+            0.0196
+          ]
+        },
+        {
+          "Milliseconds": 36.5643,
+          "AllocatedBytes": 8918640,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0559,
+            0.0069,
+            0.0131,
+            2.3552
+          ]
+        },
+        {
+          "Milliseconds": 38.5982,
+          "AllocatedBytes": 8900736,
+          "SourceLength": 100049,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0887,
+            0.0204,
+            0.0208
+          ]
+        }
+      ]
+    },
+    {
+      "InitialParagraphs": 1000,
+      "Operation": "streamed-append",
+      "BudgetMilliseconds": 100,
+      "MedianMilliseconds": 31.63685,
+      "P95Milliseconds": 38.872,
+      "WithinLatencyBudget": true,
+      "DispatchBudgetMilliseconds": 16,
+      "DispatchP95Milliseconds": 0.1071,
+      "WithinDispatchBudget": true,
+      "DispatchSamples": 122,
+      "P95AllocatedBytes": 9304920,
+      "MaximumScrollDrift": 0,
+      "Samples": [
+        {
+          "Milliseconds": 29.3046,
+          "AllocatedBytes": 8933160,
+          "SourceLength": 100197,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0395,
+            0.0108,
+            0.0113
+          ]
+        },
+        {
+          "Milliseconds": 34.0493,
+          "AllocatedBytes": 8922448,
+          "SourceLength": 100238,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0369,
+            0.0162,
+            0.0074
+          ]
+        },
+        {
+          "Milliseconds": 28.232,
+          "AllocatedBytes": 8939936,
+          "SourceLength": 100279,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0349,
+            0.0169,
+            0.0116
+          ]
+        },
+        {
+          "Milliseconds": 31.8243,
+          "AllocatedBytes": 8929672,
+          "SourceLength": 100320,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0487,
+            0.0061,
+            0.0304
+          ]
+        },
+        {
+          "Milliseconds": 32.3825,
+          "AllocatedBytes": 8948608,
+          "SourceLength": 100361,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0659,
+            0.0177,
+            0.019
+          ]
+        },
+        {
+          "Milliseconds": 28.4005,
+          "AllocatedBytes": 8936944,
+          "SourceLength": 100402,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.1071,
+            0.0195
+          ]
+        },
+        {
+          "Milliseconds": 30.3767,
+          "AllocatedBytes": 8964592,
+          "SourceLength": 100443,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0473,
+            0.0122,
+            0.0064
+          ]
+        },
+        {
+          "Milliseconds": 31.6099,
+          "AllocatedBytes": 8945600,
+          "SourceLength": 100484,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0444,
+            0.0154,
+            0.0109
+          ]
+        },
+        {
+          "Milliseconds": 26.8475,
+          "AllocatedBytes": 8966432,
+          "SourceLength": 100525,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0659,
+            0.0089,
+            0.0163
+          ]
+        },
+        {
+          "Milliseconds": 32.0941,
+          "AllocatedBytes": 8962680,
+          "SourceLength": 100566,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0468,
+            0.0171,
+            0.0096
+          ]
+        },
+        {
+          "Milliseconds": 30.5383,
+          "AllocatedBytes": 8956584,
+          "SourceLength": 100607,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0401,
+            0.0065,
+            0.0083
+          ]
+        },
+        {
+          "Milliseconds": 31.4442,
+          "AllocatedBytes": 8961160,
+          "SourceLength": 100648,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0432,
+            0.006,
+            0.006
+          ]
+        },
+        {
+          "Milliseconds": 34.3257,
+          "AllocatedBytes": 8973432,
+          "SourceLength": 100689,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0893,
+            0.0068,
+            0.046
+          ]
+        },
+        {
+          "Milliseconds": 26.9684,
+          "AllocatedBytes": 8970120,
+          "SourceLength": 100730,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0898,
+            0.013,
+            0.0146
+          ]
+        },
+        {
+          "Milliseconds": 33.174,
+          "AllocatedBytes": 8972544,
+          "SourceLength": 100771,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0385,
+            0.0029,
+            0.0299
+          ]
+        },
+        {
+          "Milliseconds": 30.0175,
+          "AllocatedBytes": 8996144,
+          "SourceLength": 100812,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0398,
+            0.0126,
+            0.0148
+          ]
+        },
+        {
+          "Milliseconds": 37.4841,
+          "AllocatedBytes": 8981728,
+          "SourceLength": 100853,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0504,
+            0.0054,
+            0.0301,
+            0.4918
+          ]
+        },
+        {
+          "Milliseconds": 26.2225,
+          "AllocatedBytes": 9000896,
+          "SourceLength": 100894,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0819,
+            0.0151
+          ]
+        },
+        {
+          "Milliseconds": 34.0287,
+          "AllocatedBytes": 8988456,
+          "SourceLength": 100935,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0137,
+            0.0139,
+            0.0144
+          ]
+        },
+        {
+          "Milliseconds": 31.6638,
+          "AllocatedBytes": 9011936,
+          "SourceLength": 100976,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.073,
+            0.0201,
+            0.0202,
+            0.0772
+          ]
+        },
+        {
+          "Milliseconds": 31.7102,
+          "AllocatedBytes": 9210544,
+          "SourceLength": 101017,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0687,
+            0.0404,
+            0.1593
+          ]
+        },
+        {
+          "Milliseconds": 27.2535,
+          "AllocatedBytes": 9264200,
+          "SourceLength": 101058,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0628,
+            0.0182
+          ]
+        },
+        {
+          "Milliseconds": 35.11,
+          "AllocatedBytes": 9253128,
+          "SourceLength": 101099,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0454,
+            0.014,
+            0.0207,
+            0.6064
+          ]
+        },
+        {
+          "Milliseconds": 26.8652,
+          "AllocatedBytes": 9264072,
+          "SourceLength": 101140,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0462,
+            0.0108
+          ]
+        },
+        {
+          "Milliseconds": 34.2779,
+          "AllocatedBytes": 9259560,
+          "SourceLength": 101181,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0555,
+            0.0148,
+            0.0217,
+            1.1564
+          ]
+        },
+        {
+          "Milliseconds": 41.811,
+          "AllocatedBytes": 9264808,
+          "SourceLength": 101222,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0695,
+            0.0218,
+            0.0074
+          ]
+        },
+        {
+          "Milliseconds": 35.6017,
+          "AllocatedBytes": 9251512,
+          "SourceLength": 101263,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0484,
+            0.0029,
+            0.0113,
+            1.2821
+          ]
+        },
+        {
+          "Milliseconds": 38.872,
+          "AllocatedBytes": 9272624,
+          "SourceLength": 101304,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0502,
+            0.0219,
+            0.0236
+          ]
+        },
+        {
+          "Milliseconds": 38.4758,
+          "AllocatedBytes": 9259872,
+          "SourceLength": 101345,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0395,
+            0.0057,
+            0.0142,
+            1.3762
+          ]
+        },
+        {
+          "Milliseconds": 40.4858,
+          "AllocatedBytes": 9282120,
+          "SourceLength": 101386,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0606,
+            0.0207,
+            0.0051
+          ]
+        },
+        {
+          "Milliseconds": 33.5838,
+          "AllocatedBytes": 9266864,
+          "SourceLength": 101427,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0493,
+            0.0066,
+            0.0048
+          ]
+        },
+        {
+          "Milliseconds": 26.8656,
+          "AllocatedBytes": 9296704,
+          "SourceLength": 101468,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0387,
+            0.0177,
+            0.0085
+          ]
+        },
+        {
+          "Milliseconds": 31.7623,
+          "AllocatedBytes": 9274064,
+          "SourceLength": 101509,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0408,
+            0.0058,
+            0.0251
+          ]
+        },
+        {
+          "Milliseconds": 30.3756,
+          "AllocatedBytes": 9300280,
+          "SourceLength": 101550,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0868,
+            0.0099,
+            0.0097
+          ]
+        },
+        {
+          "Milliseconds": 30.1873,
+          "AllocatedBytes": 9282424,
+          "SourceLength": 101591,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0752,
+            0.0062,
+            0.0194
+          ]
+        },
+        {
+          "Milliseconds": 33.0383,
+          "AllocatedBytes": 9297184,
+          "SourceLength": 101632,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0407,
+            0.0179,
+            0.0055
+          ]
+        },
+        {
+          "Milliseconds": 29.2429,
+          "AllocatedBytes": 9323832,
+          "SourceLength": 101673,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0946,
+            0.0136,
+            0.0206
+          ]
+        },
+        {
+          "Milliseconds": 31.301,
+          "AllocatedBytes": 9296576,
+          "SourceLength": 101714,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0428,
+            0.0111,
+            0.0133
+          ]
+        },
+        {
+          "Milliseconds": 29.8269,
+          "AllocatedBytes": 9315760,
+          "SourceLength": 101755,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0312,
+            0.0153,
+            0.0179
+          ]
+        },
+        {
+          "Milliseconds": 31.3686,
+          "AllocatedBytes": 9304920,
+          "SourceLength": 101796,
+          "ScrollDrift": 0,
+          "SelectionPreserved": true,
+          "UiDispatchMilliseconds": [
+            0.0412,
+            0.0054,
+            0.0189
+          ]
+        }
+      ]
+    }
+  ],
+  "bursts": [
+    {
+      "initialParagraphs": 100,
+      "revisions": 30,
+      "finalRevisionDisplayed": true,
+      "selectionPreserved": true,
+      "scrollDrift": 0
+    },
+    {
+      "initialParagraphs": 1000,
+      "revisions": 30,
+      "finalRevisionDisplayed": true,
+      "selectionPreserved": true,
+      "scrollDrift": 0
+    }
+  ]
+}

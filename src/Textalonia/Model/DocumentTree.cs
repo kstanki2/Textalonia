@@ -65,6 +65,7 @@ internal sealed class DocumentNode(object? source, StorageTree<OrderKey, Documen
         {
             if (section.Background is not null) visit(section.Background);
             if (section.BorderColor is not null) visit(section.BorderColor);
+            if (section.CodeLanguage is not null) visit(section.CodeLanguage);
         }
         if (Source is TableCell { Background: { } background }) visit(background);
         if (Source is TableCell styledCell)
@@ -110,6 +111,7 @@ internal sealed class HiddenBlockStorage(Block block) : IRetained
                 foreach (var child in section.Blocks) visit(DocumentNode.HiddenBlock(child));
                 if (section.Background is not null) visit(section.Background);
                 if (section.BorderColor is not null) visit(section.BorderColor);
+                if (section.CodeLanguage is not null) visit(section.CodeLanguage);
                 if (section.Borders is not null) visit(section.Borders);
                 if (section.PaddingEdges is not null) visit(section.PaddingEdges);
                 break;
@@ -140,6 +142,42 @@ internal sealed class DocumentTree : IRetained
     private DocumentTree(DocumentNode root, StorageTree<Guid, DocumentPath>? paths, int updatedNodes)
     { Root = root; Paths = paths; UpdatedNodes = updatedNodes; }
     public static DocumentTree For(FlowDocument document) => Trees.GetValue(document, Build);
+    // Full parser snapshots can still share the index and geometry of immutable blocks.
+    // Only ordinal-key trees are reconciled; editor-generated fractional keys use the normal rebuild.
+    internal static FlowDocument ReuseSnapshot(FlowDocument previous, FlowDocument next, CancellationToken cancellationToken)
+    {
+        var before = For(previous);
+        var after = For(next);
+        var updated = 0;
+        DocumentNode ReuseNode(DocumentNode oldNode, DocumentNode newNode)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (newNode.Source is not null && ReferenceEquals(oldNode.Source, newNode.Source) &&
+                oldNode.Row == newNode.Row && oldNode.Column == newNode.Column && ReferenceEquals(oldNode.Hidden, newNode.Hidden)) return oldNode;
+            updated++;
+            if (oldNode.Source?.GetType() != newNode.Source?.GetType() || oldNode.Children is null || newNode.Children is null)
+                return newNode;
+            var oldItems = oldNode.Children.Items().ToArray();
+            var newItems = newNode.Children.Items().ToArray();
+            if (oldItems.Where((item, i) => item.Key != new OrderKey(i)).Any() ||
+                newItems.Where((item, i) => item.Key != new OrderKey(i)).Any()) return newNode;
+            var children = oldNode.Children;
+            for (var i = 0; i < newItems.Length; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var child = i < oldItems.Length ? ReuseNode(oldItems[i].Value, newItems[i].Value) : newItems[i].Value;
+                if (i < oldItems.Length && ReferenceEquals(child, oldItems[i].Value)) continue;
+                children = StorageTree<OrderKey, DocumentNode>.Set(children, newItems[i].Key, child, child.Length, child.ParagraphCount);
+            }
+            for (var i = newItems.Length; i < oldItems.Length; i++)
+                children = StorageTree<OrderKey, DocumentNode>.Remove(children, oldItems[i].Key);
+            return new(newNode.Source, children, newNode.Row, newNode.Column, newNode.Hidden);
+        }
+        var root = ReuseNode(before.Root, after.Root);
+        var result = next with { };
+        Trees.Add(result, new(root, after.Paths, updated));
+        return result;
+    }
     private static DocumentTree Build(FlowDocument document)
     {
         var paths = new List<(Guid Key, DocumentPath Value, int Length, int Paragraphs)>();

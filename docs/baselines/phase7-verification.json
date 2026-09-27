@@ -1,0 +1,95 @@
+{
+  "capturedUtc": "2026-09-27T12:12:56.759533+00:00",
+  "localDate": "2026-09-27",
+  "revision": "81927070361f4d3ab8356ab4e5dd0fe75d0282d3+phase7-working-tree",
+  "sdk": "10.0.204",
+  "configuration": "Release",
+  "avalonia": "12.1.3",
+  "environment": {
+    "AVALONIA_TELEMETRY_OPTOUT": "1",
+    "restoreAccess": "Normal NuGet user-configuration access approved after sandbox access failure."
+  },
+  "build": {
+    "status": "pass",
+    "warnings": 0,
+    "errors": 0,
+    "command": "dotnet build Textalonia.sln -c Release --no-restore"
+  },
+  "tests": {
+    "status": "pass",
+    "passed": 502,
+    "failed": 0,
+    "skipped": 0,
+    "command": "dotnet test tests/Textalonia.Tests -c Release --no-restore --logger trx --results-directory artifacts/phase7/test-results",
+    "localEvidence": "artifacts/phase7/test-results/JackBauer_DESKTOP-0GDCOSC_2026-09-27_08_06_36.trx",
+    "sha256": "842f9ebe8e770695df6c14be5c077e0cfab571ae88814eaa040372f7c2b652d5"
+  },
+  "publicApi": {
+    "status": "pass",
+    "snapshot": "tests/Textalonia.Tests/Fixtures/public-api.txt",
+    "sha256": "489bf381884abbf721bd496f8a938e2a610429ab7741043aef0388a63b1c8822",
+    "change": "Additive codecs, Markdown viewer/highlighting contracts and schema-v4 semantic metadata."
+  },
+  "package": {
+    "status": "pass",
+    "published": false,
+    "command": "dotnet pack src/Textalonia -c Release --no-build -o artifacts/packages",
+    "dependencies": [
+      {
+        "id": "AngleSharp",
+        "version": "1.8.2",
+        "exclude": "Build,Analyzers"
+      },
+      {
+        "id": "Avalonia",
+        "version": "[12.1.3, 13.0.0)",
+        "exclude": "Build,Analyzers"
+      }
+    ],
+    "artifacts": [
+      {
+        "path": "artifacts/packages/Textalonia.0.1.0-preview.1.nupkg",
+        "sha256": "eaea68205f8f8cfab24426b9c1cf73e26fcc2b6b4dbdb4de21c0b5abed024ef8"
+      },
+      {
+        "path": "artifacts/packages/Textalonia.0.1.0-preview.1.snupkg",
+        "sha256": "aec972e3ba02205f4a5f33b18b6e2da8a5465d2b44554644fc982d8a384e0a10"
+      }
+    ],
+    "integrationDocumentationVerified": true,
+    "assemblySha256": "16efa8a6281a6ae8a90c72f1f1f49a16cdbf6b98dbe1e7a8ccf13e03b80c49f0"
+  },
+  "consumer": {
+    "status": "pass",
+    "freshCache": "artifacts/phase7/consumer-cache",
+    "restoreCommand": "dotnet restore tests/Textalonia.PackageSmoke --configfile tests/Textalonia.PackageSmoke/NuGet.Config --packages artifacts/phase7/consumer-cache --force",
+    "command": "dotnet run --project tests/Textalonia.PackageSmoke -c Release --no-restore",
+    "awaitedCompletion": true,
+    "finalPackageAssemblyMatchesTestedConsumer": true,
+    "coverage": [
+      "compiled Markdown XAML/themes",
+      "XAML and Markdown codecs",
+      "schema v4",
+      "strict/tolerant reports",
+      "optional highlighting and canonical text",
+      "appends/selection/accessibility",
+      "existing editor/table/resource contracts",
+      "rendered frame"
+    ]
+  },
+  "performance": {
+    "status": "pass",
+    "evidence": "performance/windows-2026-09-27-phase7-markdown/markdown.json",
+    "sourceHashes": "performance/windows-2026-09-27-phase7-markdown/sources-sha256.json",
+    "scope": "headless rendered 100/1000 paragraph source updates",
+    "budgets": {
+      "sourceToFrameP95Ms": 100,
+      "uiDispatchP95Ms": 16,
+      "maximumScrollDriftDip": 1
+    },
+    "maximumMeasuredSourceToFrameP95Ms": 51.6204,
+    "maximumMeasuredUiDispatchP95Ms": 1.9834,
+    "maximumMeasuredScrollDriftDip": 0
+  },
+  "nativeQualification": "Existing Phase 4/6 native accessibility, clipboard, IME and mobile gates remain open; no native device claim added."
+}
