@@ -8,3 +8,9 @@ artifacts/
 .tools/
 TestResults/
 
+# Raw benchmark captures and retired milestone receipts stay in artifacts/.
+/docs/baselines/performance/
+/docs/baselines/*verification.json
+/docs/baselines/release-identity.json
+# Curated comparisons retain summaries and provenance, never per-sample dumps.
+/docs/baselines/curated/**/results.json

@@ -108,4 +108,4 @@ are enforced by the session; factories decide whether non-document interactions
 remain enabled in a viewer.
 
 See [input contracts](INPUT-COMPONENTS.md) and the
-[accessibility evidence and bridge limitations](PHASE4-ACCESSIBILITY.md).
+[accessibility evidence and bridge limitations](ACCESSIBILITY.md).

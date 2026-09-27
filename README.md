@@ -186,7 +186,7 @@ requests text degradation. The original API remains compatible. Legacy custom
 codecs report unknown fidelity; implement `IReportingDocumentFormat` to supply
 reports. The demo displays reports and offers a **Conversion report** button for
 clipboard notices. See [the full support and stream contracts](docs/INTERCHANGE.md)
-and [Phase 5 evidence and remaining qualification](docs/PHASE5-REPORT.md).
+and [platform qualification](docs/QUALIFICATION.md).
 Implement `IDocumentFormat` to add a format and pass your instance to `LoadAsync`/`SaveAsync`. The native `.textalonia` format is a versioned JSON schema, **not Avalonia XAML**. The `.json` and legacy `.art` extensions remain supported.
 
 ## Viewer, themes, highlights, and links
@@ -221,7 +221,7 @@ list restart/continuation. See [interaction contracts](docs/INTERACTIONS.md) for
 modifiers, undo ownership and the additive table APIs.
 
 Touch gestures and isolated Android/iOS qualification hosts are implemented.
-[Phase 6 evidence](docs/PHASE6-REPORT.md) keeps native desktop and mobile-device
+[Qualification status](docs/QUALIFICATION.md) keeps native desktop and mobile-device
 qualification explicit; headless tests do not certify those integrations.
 
 ## Repository and release status
@@ -234,7 +234,7 @@ qualification explicit; headless tests do not certify those integrations.
 - `docs/ROADMAP.md`: remaining work toward the reference editor's feature set.
 - `.github/workflows/ci.yml`: build/test/pack and consumer checks; no publishing.
 
-Phase 1 evidence is indexed in [the baseline report](docs/BASELINE-REPORT.md), with
+Retained measurements are indexed in [benchmark baselines](docs/BENCHMARK-BASELINES.md), with
 [qualification targets](docs/QUALIFICATION.md), [compatibility rules](docs/COMPATIBILITY.md),
 [native procedures](docs/NATIVE-BASELINES.md), and [performance budgets](docs/PERFORMANCE.md).
 Run the complete verification route with `pwsh -File scripts/Invoke-Baselines.ps1`.
@@ -244,7 +244,7 @@ longer corpus and performance captures separately. Native pending records remain
 
 Textalonia is [MIT licensed](LICENSE), attributed to Textalonia contributors.
 [Dependency notices](THIRD-PARTY-NOTICES.md) retain upstream terms. The
-[Phase 8 report](docs/PHASE8-REPORT.md), [API contracts](docs/API-CONTRACTS.md),
+[API contracts](docs/API-CONTRACTS.md),
 [preview notes](docs/RELEASE-NOTES.md) and [release procedure](docs/RELEASE.md)
 describe candidate validation and remaining owner/native qualification gates.
 Run PowerShell 7+ with `scripts/Invoke-ReleaseCandidate.ps1 -LongCorpus -Performance`
@@ -267,7 +267,7 @@ resources without creating controls during save/load. See
 
 `editor.Accessibility` exposes a tested text-range contract for host bridges.
 Avalonia 12.1.3 does not expose a public native text-provider contract; full native
-screen-reader text navigation remains [explicitly blocked](docs/PHASE4-ACCESSIBILITY.md).
+screen-reader text navigation remains [explicitly blocked](docs/ACCESSIBILITY.md).
 
 
 ## XAML and Markdown

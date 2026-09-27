@@ -26,6 +26,7 @@
     <PackageReference Include="Avalonia" Version="[$(AvaloniaVersion),13.0.0)" />
     <PackageReference Include="AngleSharp" Version="1.8.2" />
     <None Include="../../docs/*.md" Pack="true" PackagePath="docs/" />
+    <None Include="../../docs/baselines/curated/*" Pack="true" PackagePath="docs/baselines/curated/" />
     <Content Include="Themes/Generic.axaml" Pack="true" PackagePath="sources/Themes/" />
     <None Include="../../README.md" Pack="true" PackagePath="/" />
     <None Include="../../LICENSE;../../THIRD-PARTY-NOTICES.md;../../CHANGELOG.md" Pack="true" PackagePath="/" />

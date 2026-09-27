@@ -8,7 +8,7 @@ Highlighting is an optional host adapter; no language engine is bundled or requi
 - [XAML vocabulary, limits, and security](XAML.md)
 - [Markdown dialect, fixtures, and loss policies](MARKDOWN.md)
 - [Viewer updates, cancellation, resources, and highlighting](MARKDOWN-VIEWER.md)
-- [Implementation evidence and remaining qualification](PHASE7-REPORT.md)
+- [Platform qualification and remaining gates](QUALIFICATION.md)
 
 ## Format selection and diagnostics
 

@@ -29,7 +29,7 @@ The read-only Avalonia properties `IsParsing`, `ParseError`, and `ParseReport` s
 
 The control cancels pending parsing/highlighting and releases its highlighting cache when detached. Changes made while detached are parsed on reattachment. A never-attached control can still parse for headless consumers. The protected `ParseMarkdownAsync` hook runs on a worker thread; overrides must be thread-safe, avoid UI access, honor cancellation, and return a valid `DocumentLoadResult`.
 
-The headless `--markdown-probe` benchmark exercises repeated small edits and streamed appends on 100 and 1,000 paragraphs, includes rendering, observes UI dispatcher latency independently, and verifies selection/viewport retention and superseded updates. Its adopted p95 budgets are 100 ms source-to-frame and 16 ms dispatcher delay; see [the dated benchmark report](baselines/performance/windows-2026-09-27-phase7-markdown/README.md) for the recorded machine-specific measurements. Very large sources still require a full parse and document-index validation; these measurements do not promise the same latency for arbitrary input sizes.
+The headless `--markdown-probe` benchmark exercises repeated small edits and streamed appends on 100 and 1,000 paragraphs, includes rendering, observes UI dispatcher latency independently, and verifies selection/viewport retention and superseded updates. Its adopted p95 budgets are 100 ms source-to-frame and 16 ms dispatcher delay; see [the dated benchmark report](BENCHMARK-BASELINES.md#interaction-and-markdown-probes) for the recorded machine-specific measurements. Very large sources still require a full parse and document-index validation; these measurements do not promise the same latency for arbitrary input sizes.
 
 ## Optional code highlighting
 

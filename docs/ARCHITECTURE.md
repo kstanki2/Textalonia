@@ -149,7 +149,7 @@ not a promise about total managed heap size.
 - Draw offset-based TextHighlights and handle HyperlinkActivated.
 - Use EditorSession without UI, or immutable snapshots without an editing session.
 
-Keyboard, pointer, caret and composition defaults are independently replaceable through owned components. Inline descriptors shape as atomic embedded text runs; view-owned caches resolve images asynchronously and explicit registered factories create only visible controls. See [input contracts](INPUT-COMPONENTS.md) and [inline ownership](INLINE-CONTENT.md). The editor exposes a managed text-range contract, while the native automation peer remains value-only pending an Avalonia text-provider bridge; see [accessibility evidence](PHASE4-ACCESSIBILITY.md).
+Keyboard, pointer, caret and composition defaults are independently replaceable through owned components. Inline descriptors shape as atomic embedded text runs; view-owned caches resolve images asynchronously and explicit registered factories create only visible controls. See [input contracts](INPUT-COMPONENTS.md) and [inline ownership](INLINE-CONTENT.md). The editor exposes a managed text-range contract, while the native automation peer remains value-only pending an Avalonia text-provider bridge; see [accessibility evidence](ACCESSIBILITY.md).
 
 ## Verification
 
@@ -157,8 +157,8 @@ Tests cover formatting-preserving edits, Unicode graphemes, newline semantics, s
 
 Screenshots are generated under artifacts when tests run. CI is configured for Windows, Linux, and macOS; local verification only demonstrates the environment on which it actually ran. Native operating-system clipboard/IME/touch/screen-reader behavior still needs platform testing.
 
-Phase 1 adds a deterministic corpus, a frozen v1 file/public API snapshot, replayable edit sequences,
-and full-control performance measurements. See [the baseline report](BASELINE-REPORT.md),
+The regression suite includes a deterministic corpus, a frozen v1 file/public API snapshot, replayable edit sequences,
+and full-control performance measurements. See [retained benchmark summaries](BENCHMARK-BASELINES.md),
 [compatibility rules](COMPATIBILITY.md), and [performance budgets](PERFORMANCE.md) before changing
 storage, indexing, layout or binding behavior. [Native procedures](NATIVE-BASELINES.md) and their
 pending evidence remain separate from automated passes.

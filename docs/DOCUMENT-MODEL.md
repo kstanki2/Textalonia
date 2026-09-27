@@ -106,4 +106,4 @@ The Phase 2 persistent edit/index paths and viewport shaping remain in use.
 Structural operations and native import/export traverse their affected snapshots.
 `ListNumbering.GetMarker` reuses numbering transitions on unchanged persistent
 subtrees; `Compute` enumerates and caches the full marker map for a snapshot.
-See the [current interchange support matrix](PHASE5-REPORT.md) for supported mappings, loss diagnostics and application qualification gaps.
+See the [current interchange support matrix](INTERCHANGE.md#supported-subset-and-diagnosed-losses) for supported mappings, loss diagnostics and application qualification gaps.

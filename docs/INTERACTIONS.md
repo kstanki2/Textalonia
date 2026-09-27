@@ -88,4 +88,4 @@ Android/iOS qualification harnesses and device scripts are in
 [MOBILE-QUALIFICATION.md](MOBILE-QUALIFICATION.md). Mouse/touch injection into the
 headless backend is regression coverage, not device qualification. Native IME,
 clipboard, drag/drop and screen-reader checks remain governed by the dated evidence
-in [PHASE6-REPORT.md](PHASE6-REPORT.md); mobile support is not yet qualified.
+in [qualification](QUALIFICATION.md); mobile support is not yet qualified.

@@ -1,7 +1,7 @@
 # ADR 002: persistent editing and bounded viewport work
 
-Status: accepted for implementation. Phase acceptance is tracked separately in
-[PLAN-02](PLAN-02-SCALABLE-CORE.md) and [PERFORMANCE](PERFORMANCE.md).
+Status: implemented. Current boundaries and outstanding qualification are tracked in
+[architecture](ARCHITECTURE.md#performance-boundaries) and [performance](PERFORMANCE.md).
 
 ## Evidence and decision
 
@@ -106,4 +106,4 @@ control workloads, bound and unbound, on the same host, and capture scalable mod
 separately. Include generated differential edits, cross-container replacement,
 undo, graphemes across piece boundaries, export during edits, full-reference
 geometry, cache disposal and sustained undo/redo eviction. Raw results and
-operation counters decide acceptance. The [2026-09-26 completion decision](PHASE2-REPORT.md#completion-decision) accepts residual latency qualification as PERF-01, superseding the original requirement that every latency miss keep Phase 2 incomplete. Numeric targets and measured failures remain unchanged.
+operation counters decide acceptance. The [2026-09-26 completion decision](PERFORMANCE.md#perf-01-residual-latency-qualification) accepts residual latency qualification as PERF-01, superseding the original requirement that every latency miss keep Phase 2 incomplete. Numeric targets and measured failures remain unchanged.

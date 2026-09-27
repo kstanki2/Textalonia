@@ -1,0 +1,654 @@
+{
+  "scope": "Historical Windows development captures, not validation of the current checkout. Original revision strings are preserved as provenance, including pre-cleanup commit IDs and dirty working trees.",
+  "rawArchive": {
+    "file": "legacy-docs.zip",
+    "sha256": "b601ccc84da2c5deabe5adeb14ef6641f2d171e706e996f54fee4d5d55f0bfe3",
+    "localPath": "artifacts/history-cleanup-20260927/legacy-docs.zip",
+    "availability": "Maintainer archive outside Git; not included in a clone or package."
+  },
+  "runs": [
+    {
+      "id": "initial-compatibility",
+      "summary": "initial-compatibility.csv",
+      "archivedDirectory": "docs/baselines/performance/windows-2026-09-26",
+      "environment": {
+        "startedUtc": "2026-09-26T15:41:48.2242271+00:00",
+        "revision": "050c7adff2c612acb6de2a9e226ad6020720f7fe + Phase 1 working tree",
+        "os": "Microsoft Windows 10.0.26100",
+        "architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "sdk": "10.0.204",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "logicalProcessors": 24,
+        "availableMemoryBytes": 68625362944,
+        "avalonia": "12.1.3.0",
+        "backend": "Avalonia.Headless + Skia software drawing (not native compositor latency)",
+        "font": "Inter, 16 DIP; OS fallback for missing glyphs",
+        "theme": "Fluent Light",
+        "viewport": "800 x 500 DIP",
+        "dpiScale": 1,
+        "configuration": "Release required",
+        "warmups": 2,
+        "repetitions": 7,
+        "workloads": [
+          "paragraphs-100",
+          "paragraphs-1000",
+          "paragraphs-10000",
+          "long-paragraph",
+          "table-heavy",
+          "run-heavy"
+        ],
+        "percentile": "nearest rank ceil(0.95 * n); median averages central pair",
+        "historyEntries": 100,
+        "allocationMethod": "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
+        "historyMethod": "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
+        "arguments": [
+          "--warmups",
+          "2",
+          "--repetitions",
+          "7",
+          "--output",
+          "artifacts/benchmarks/windows-2026-09-26"
+        ]
+      },
+      "cases": 138,
+      "budgetChecks": 234,
+      "failedChecks": 102,
+      "failuresByMetric": {
+        "p95-managed-allocated-bytes": 27,
+        "p95-ms": 75
+      },
+      "archivedFileSha256": {
+        "summary.csv": "3fe8aa5a60d0382d3dbcd8b9214e750ffa2e94bfa2261f7977f760aba60a95cf",
+        "environment.json": "15a7603ce7a1307da3b7db8580c698d5d41bf91e8b699034c145013764395fd5",
+        "results.json": "2f75dc52bd9b8ec56b447067bf6cc33e068011ebed20f6a46200378b3c755a3c",
+        "budgets.json": "cd62843a538c8bf977c65bc29a85a5bc80d22da4a92e11448bb986818c474b5f"
+      }
+    },
+    {
+      "id": "phase2-reference",
+      "summary": "phase2-reference.csv",
+      "archivedDirectory": "docs/baselines/performance/windows-2026-09-26-phase2-final/reference",
+      "environment": {
+        "startedUtc": "2026-09-26T19:41:09.2514413+00:00",
+        "revision": "ccae784 + setup-isolation and pause-counter harness patch only",
+        "os": "Microsoft Windows 10.0.26100",
+        "architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "sdk": "10.0.204",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "logicalProcessors": 24,
+        "availableMemoryBytes": 68625362944,
+        "avalonia": "12.1.3.0",
+        "backend": "Avalonia.Headless + Skia software drawing (not native compositor latency)",
+        "font": "Inter, 16 DIP; OS fallback for missing glyphs",
+        "theme": "Fluent Light",
+        "viewport": "800 x 500 DIP",
+        "dpiScale": 1,
+        "configuration": "Release required",
+        "isolateSamples": true,
+        "warmups": 2,
+        "repetitions": 7,
+        "workloads": [
+          "paragraphs-100",
+          "paragraphs-1000",
+          "paragraphs-10000",
+          "long-paragraph",
+          "table-heavy",
+          "run-heavy"
+        ],
+        "percentile": "nearest rank ceil(0.95 * n); median averages central pair",
+        "historyEntries": 100,
+        "allocationMethod": "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
+        "historyMethod": "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
+        "arguments": [
+          "--output",
+          "artifacts/phase2-final/isolated-p1",
+          "--isolate-samples",
+          "true",
+          "--warmups",
+          "2",
+          "--repetitions",
+          "7"
+        ]
+      },
+      "cases": 138,
+      "budgetChecks": 234,
+      "failedChecks": 59,
+      "failuresByMetric": {
+        "p95-managed-allocated-bytes": 27,
+        "p95-ms": 32
+      },
+      "archivedFileSha256": {
+        "summary.csv": "de9ae05c7f380839a1cc11a6309da630479c8b59d7b0f0c5f50547e8997edfd8",
+        "environment.json": "b635929d603ee4dc454dd466acac0d9248566d7598701281b5cc4448e8fde2a0",
+        "results.json": "a9c7535aab5bb260ee9868efa4fc423f33bf4c572d08ceb310dc8782e70edbcd",
+        "budgets.json": "546892aacfcde04095a0a289b291710179ed34677d438a8029442676c8d22b1b"
+      }
+    },
+    {
+      "id": "phase2-compatibility",
+      "summary": "phase2-compatibility.csv",
+      "archivedDirectory": "docs/baselines/performance/windows-2026-09-26-phase2-final/compatibility",
+      "environment": {
+        "startedUtc": "2026-09-26T20:30:10.5229655+00:00",
+        "revision": "6ac4f302a4cffbf8e8e928f6be8695df8b91d932 + final Phase 2 working tree including scroll extent fix (see source-hashes.json)",
+        "os": "Microsoft Windows 10.0.26100",
+        "architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "sdk": "10.0.204",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "logicalProcessors": 24,
+        "availableMemoryBytes": 68625362944,
+        "avalonia": "12.1.3.0",
+        "backend": "Avalonia.Headless + Skia software drawing (not native compositor latency)",
+        "font": "Inter, 16 DIP; OS fallback for missing glyphs",
+        "theme": "Fluent Light",
+        "viewport": "800 x 500 DIP",
+        "dpiScale": 1,
+        "configuration": "Release required",
+        "textMode": "compatibility",
+        "maxShapingCharacters": 0,
+        "isolateSamples": true,
+        "warmups": 2,
+        "repetitions": 7,
+        "workloads": [
+          "paragraphs-100",
+          "paragraphs-1000",
+          "paragraphs-10000",
+          "long-paragraph",
+          "table-heavy",
+          "run-heavy"
+        ],
+        "percentile": "nearest rank ceil(0.95 * n); median averages central pair",
+        "historyEntries": 100,
+        "allocationMethod": "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
+        "historyMethod": "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
+        "arguments": [
+          "--output",
+          "docs\\baselines\\performance\\windows-2026-09-26-phase2-final\\compatibility",
+          "--isolate-samples",
+          "true",
+          "--warmups",
+          "2",
+          "--repetitions",
+          "7"
+        ]
+      },
+      "cases": 138,
+      "budgetChecks": 234,
+      "failedChecks": 0,
+      "failuresByMetric": {},
+      "archivedFileSha256": {
+        "summary.csv": "b77d4857a573d6e0816e7ea6489d3897ccef1f3f0fd2c0a6fd99175ce67c6910",
+        "environment.json": "40201b74c6f899425bcd8faebb44eaf2f9bb45e3e26ce99e2e85a5fb54c6aa88",
+        "results.json": "46bd018666c606139d0b790c15d8b293f4ec1a75da40c842be03b05824028224",
+        "budgets.json": "05b4181c00e2778323b3fc69e8120b1f148c16d71497e7f20126b3f3b15a0a74"
+      }
+    },
+    {
+      "id": "phase2-document",
+      "summary": "phase2-document.csv",
+      "archivedDirectory": "docs/baselines/performance/windows-2026-09-26-phase2-final/document",
+      "environment": {
+        "startedUtc": "2026-09-26T20:32:38.8286264+00:00",
+        "revision": "6ac4f302a4cffbf8e8e928f6be8695df8b91d932 + final Phase 2 working tree including scroll extent fix (see source-hashes.json)",
+        "os": "Microsoft Windows 10.0.26100",
+        "architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "sdk": "10.0.204",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "logicalProcessors": 24,
+        "availableMemoryBytes": 68625362944,
+        "avalonia": "12.1.3.0",
+        "backend": "Avalonia.Headless + Skia software drawing (not native compositor latency)",
+        "font": "Inter, 16 DIP; OS fallback for missing glyphs",
+        "theme": "Fluent Light",
+        "viewport": "800 x 500 DIP",
+        "dpiScale": 1,
+        "configuration": "Release required",
+        "textMode": "document",
+        "maxShapingCharacters": 4096,
+        "isolateSamples": true,
+        "warmups": 2,
+        "repetitions": 7,
+        "workloads": [
+          "paragraphs-100",
+          "paragraphs-1000",
+          "paragraphs-10000",
+          "long-paragraph",
+          "table-heavy",
+          "run-heavy"
+        ],
+        "percentile": "nearest rank ceil(0.95 * n); median averages central pair",
+        "historyEntries": 100,
+        "allocationMethod": "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
+        "historyMethod": "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
+        "arguments": [
+          "--output",
+          "docs\\baselines\\performance\\windows-2026-09-26-phase2-final\\document",
+          "--text-mode",
+          "document",
+          "--max-shaping-characters",
+          "4096",
+          "--isolate-samples",
+          "true",
+          "--warmups",
+          "2",
+          "--repetitions",
+          "7"
+        ]
+      },
+      "cases": 90,
+      "budgetChecks": 144,
+      "failedChecks": 0,
+      "failuresByMetric": {},
+      "archivedFileSha256": {
+        "summary.csv": "668f1e69cfed75c4bc415d45f5037b525abda4482509a0a1e5f7b67bb1f1d518",
+        "environment.json": "a9c2f4e96156ba39ca5ecc239429419a3bd03a9907633d4843524a2c8391e88e",
+        "results.json": "15f993f63b0008e5208b8c6ae9c5613c7d000f1b63ad95010887c0f84741e302",
+        "budgets.json": "d445f07e47851732b816380c2fb32d8f8639af16dfb9f6bdade30aac9f8e9dde"
+      }
+    },
+    {
+      "id": "phase2-confirmation",
+      "summary": "phase2-confirmation.csv",
+      "archivedDirectory": "docs/baselines/performance/windows-2026-09-26-phase2-final/confirmation-30/document",
+      "environment": {
+        "startedUtc": "2026-09-26T20:35:01.6236786+00:00",
+        "revision": "6ac4f302a4cffbf8e8e928f6be8695df8b91d932 + final Phase 2 working tree including scroll extent fix (see source-hashes.json)",
+        "os": "Microsoft Windows 10.0.26100",
+        "architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "sdk": "10.0.204",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "logicalProcessors": 24,
+        "availableMemoryBytes": 68625362944,
+        "avalonia": "12.1.3.0",
+        "backend": "Avalonia.Headless + Skia software drawing (not native compositor latency)",
+        "font": "Inter, 16 DIP; OS fallback for missing glyphs",
+        "theme": "Fluent Light",
+        "viewport": "800 x 500 DIP",
+        "dpiScale": 1,
+        "configuration": "Release required",
+        "textMode": "document",
+        "maxShapingCharacters": 4096,
+        "isolateSamples": true,
+        "warmups": 2,
+        "repetitions": 30,
+        "workloads": [
+          "paragraphs-100",
+          "paragraphs-1000",
+          "paragraphs-10000",
+          "long-paragraph",
+          "table-heavy",
+          "run-heavy"
+        ],
+        "percentile": "nearest rank ceil(0.95 * n); median averages central pair",
+        "historyEntries": 100,
+        "allocationMethod": "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
+        "historyMethod": "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
+        "arguments": [
+          "--output",
+          "docs\\baselines\\performance\\windows-2026-09-26-phase2-final\\confirmation-30\\document",
+          "--text-mode",
+          "document",
+          "--max-shaping-characters",
+          "4096",
+          "--isolate-samples",
+          "true",
+          "--warmups",
+          "2",
+          "--repetitions",
+          "30"
+        ]
+      },
+      "cases": 90,
+      "budgetChecks": 144,
+      "failedChecks": 2,
+      "failuresByMetric": {
+        "p95-ms": 2
+      },
+      "archivedFileSha256": {
+        "summary.csv": "891411d1eac1a54f6811485f2b61dbd5d0e48c72f4e37887ca57606adb81c426",
+        "environment.json": "5b9e149572173361de130ce9a323614adeb620ef52ac6e8fc33466768b164b1f",
+        "results.json": "35cd8e2bc286cac86f1bb23f8cc9ac51976bf036919df2dd7dc601324b26af5a",
+        "budgets.json": "6695742f3be16b24b93a90cbb3326a81a4e7abb13e433fa4e889c79c2d716b6d"
+      }
+    },
+    {
+      "id": "phase2-nonisolated",
+      "summary": "phase2-nonisolated.csv",
+      "archivedDirectory": "docs/baselines/performance/windows-2026-09-26-phase2-final/nonisolated-final",
+      "environment": {
+        "startedUtc": "2026-09-26T20:33:51.9415768+00:00",
+        "revision": "6ac4f302a4cffbf8e8e928f6be8695df8b91d932 + final Phase 2 working tree including scroll extent fix (see source-hashes.json)",
+        "os": "Microsoft Windows 10.0.26100",
+        "architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "sdk": "10.0.204",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "logicalProcessors": 24,
+        "availableMemoryBytes": 68625362944,
+        "avalonia": "12.1.3.0",
+        "backend": "Avalonia.Headless + Skia software drawing (not native compositor latency)",
+        "font": "Inter, 16 DIP; OS fallback for missing glyphs",
+        "theme": "Fluent Light",
+        "viewport": "800 x 500 DIP",
+        "dpiScale": 1,
+        "configuration": "Release required",
+        "textMode": "compatibility",
+        "maxShapingCharacters": 0,
+        "isolateSamples": false,
+        "warmups": 2,
+        "repetitions": 7,
+        "workloads": [
+          "paragraphs-100",
+          "paragraphs-1000",
+          "paragraphs-10000",
+          "long-paragraph",
+          "table-heavy",
+          "run-heavy"
+        ],
+        "percentile": "nearest rank ceil(0.95 * n); median averages central pair",
+        "historyEntries": 100,
+        "allocationMethod": "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
+        "historyMethod": "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
+        "arguments": [
+          "--output",
+          "docs\\baselines\\performance\\windows-2026-09-26-phase2-final\\nonisolated-final",
+          "--warmups",
+          "2",
+          "--repetitions",
+          "7"
+        ]
+      },
+      "cases": 138,
+      "budgetChecks": 234,
+      "failedChecks": 23,
+      "failuresByMetric": {
+        "p95-ms": 23
+      },
+      "archivedFileSha256": {
+        "summary.csv": "e91c976698d5292e999aa1bbe3083261f58a6fb9bf581493d639291cb2a27912",
+        "environment.json": "1e77e3467995252babfca9a1c1a4a9d9e9488f3dd3092a49980f5b4099b3f0d6",
+        "results.json": "bf6180470cd3e343f05cdb2673f6bea0f794448dcd2b19001207170d88e0deaf",
+        "budgets.json": "22db07ee4d60a21de03d849bf063e28aa5253d63de9a9b182095a9d13ddbf299"
+      }
+    },
+    {
+      "id": "release-compatibility",
+      "summary": "release-compatibility.csv",
+      "archivedDirectory": "docs/baselines/performance/windows-2026-09-27-phase8-release/compatibility",
+      "environment": {
+        "startedUtc": "2026-09-27T13:21:12.8399688+00:00",
+        "revision": "4eead6b1e60b79c4e03663b0f6c90fbba8f0ef93 (package 0.1.0-preview.1; dirty=True)",
+        "os": "Microsoft Windows 10.0.26100",
+        "architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "sdk": "10.0.204",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "logicalProcessors": 24,
+        "availableMemoryBytes": 68625362944,
+        "avalonia": "12.1.3.0",
+        "backend": "Avalonia.Headless + Skia software drawing (not native compositor latency)",
+        "font": "Inter, 16 DIP; OS fallback for missing glyphs",
+        "theme": "Fluent Light",
+        "viewport": "800 x 500 DIP",
+        "dpiScale": 1,
+        "configuration": "Release required",
+        "textMode": "compatibility",
+        "maxShapingCharacters": 0,
+        "isolateSamples": false,
+        "warmups": 3,
+        "repetitions": 15,
+        "workloads": [
+          "paragraphs-100",
+          "paragraphs-1000",
+          "paragraphs-10000",
+          "long-paragraph",
+          "table-heavy",
+          "run-heavy"
+        ],
+        "percentile": "nearest rank ceil(0.95 * n); median averages central pair",
+        "historyEntries": 100,
+        "allocationMethod": "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
+        "historyMethod": "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
+        "arguments": [
+          "--text-mode",
+          "compatibility",
+          "--warmups",
+          "3",
+          "--repetitions",
+          "15",
+          "--output",
+          "C:\\Users\\JackBauer\\source\\repos\\Textalonia\\artifacts\\phase8-release\\performance\\compatibility"
+        ]
+      },
+      "cases": 138,
+      "budgetChecks": 234,
+      "failedChecks": 43,
+      "failuresByMetric": {
+        "p95-ms": 43
+      },
+      "archivedFileSha256": {
+        "summary.csv": "6fdc18f4056b5956416d11792d39e5a87acd79e0ac44ac012a98253cb0129910",
+        "environment.json": "2bfea4722e9041b8ac01e51e93e4d8ba6ef67ecf67b19ebf97ce368adb4149ec",
+        "results.json": "7569866ff97ce70cc170926d9609d5ea2cce8e10a9b7b223dabca5a1946d99f2",
+        "budgets.json": "2a9864ef4d4f3b098245378b73413d1dc1c09ca41fdddb15c19dff1d72f9d251"
+      }
+    },
+    {
+      "id": "release-document",
+      "summary": "release-document.csv",
+      "archivedDirectory": "docs/baselines/performance/windows-2026-09-27-phase8-release/document",
+      "environment": {
+        "startedUtc": "2026-09-27T13:23:38.7664799+00:00",
+        "revision": "4eead6b1e60b79c4e03663b0f6c90fbba8f0ef93 (package 0.1.0-preview.1; dirty=True)",
+        "os": "Microsoft Windows 10.0.26100",
+        "architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "sdk": "10.0.204",
+        "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+        "logicalProcessors": 24,
+        "availableMemoryBytes": 68625362944,
+        "avalonia": "12.1.3.0",
+        "backend": "Avalonia.Headless + Skia software drawing (not native compositor latency)",
+        "font": "Inter, 16 DIP; OS fallback for missing glyphs",
+        "theme": "Fluent Light",
+        "viewport": "800 x 500 DIP",
+        "dpiScale": 1,
+        "configuration": "Release required",
+        "textMode": "document",
+        "maxShapingCharacters": 0,
+        "isolateSamples": false,
+        "warmups": 3,
+        "repetitions": 15,
+        "workloads": [
+          "paragraphs-100",
+          "paragraphs-1000",
+          "paragraphs-10000",
+          "long-paragraph",
+          "table-heavy",
+          "run-heavy"
+        ],
+        "percentile": "nearest rank ceil(0.95 * n); median averages central pair",
+        "historyEntries": 100,
+        "allocationMethod": "GC.GetTotalAllocatedBytes(true), process-wide delta; setup and cleanup excluded",
+        "historyMethod": "forced-GC live heap with 100 entries minus same session after UndoLimit=0; signed noisy estimate",
+        "arguments": [
+          "--text-mode",
+          "document",
+          "--warmups",
+          "3",
+          "--repetitions",
+          "15",
+          "--output",
+          "C:\\Users\\JackBauer\\source\\repos\\Textalonia\\artifacts\\phase8-release\\performance\\document"
+        ]
+      },
+      "cases": 90,
+      "budgetChecks": 144,
+      "failedChecks": 18,
+      "failuresByMetric": {
+        "p95-ms": 18
+      },
+      "archivedFileSha256": {
+        "summary.csv": "9daf612e39be8dba12d99e9fe34e81ebb46d807f47bfeaf247ee92d6fcc2cb04",
+        "environment.json": "9604fa6abd36ce2b7a607f8a4cc90085c3456c6a9a357eed208a1e6c162aa374",
+        "results.json": "881dddd9e8d50e62d5a26c54113f8902d11e68ac958fa5522f5cd06d91a3780c",
+        "budgets.json": "54769070f6b10f7173cc75a84c7b878da4e188a27287f30372946d04698aa8a8"
+      }
+    }
+  ],
+  "probes": [
+    {
+      "id": "interactions-2026-09-26",
+      "summary": "interactions-2026-09-26.csv",
+      "archivedFile": "docs/baselines/performance/windows-2026-09-26-phase6-interactions/interactions.json",
+      "archivedFileSha256": "756a4fafca99234998ceab62d2ea0cd732c221b940cf7f84a7472a934d7955b3",
+      "capturedUtc": "2026-09-27T00:13:00.2500504+00:00",
+      "os": "Microsoft Windows 10.0.26100",
+      "runtime": ".NET 8.0.31",
+      "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+      "logicalProcessors": 24,
+      "backend": "Avalonia.Headless with Skia software frame capture; native compositor, IME and device behavior excluded",
+      "viewport": "800 x 500 DIP; Inter 16; Fluent Light; default toolbar; eager Text synchronization",
+      "methodology": "3 warmups per operation; 20 resize, 40 caret/viewport/preview or 80 autoscroll consecutive samples; all include dispatcher, layout and frame capture. p95 nearest rank. Allocations are process-wide GC.GetTotalAllocatedBytes deltas. No forced GC between samples. Mixed-clock stress combines explicit Advance with the live dispatcher timer; manual-clock samples use one Advance per frame with the automatic timer disabled. Both use identical production scrolling and selection logic.",
+      "budgets": "Existing 16 ms caret/scroll and 100 ms resize p95 targets; preview uses resize budget. Resident glyph bounds are 256 layouts / 16 MiB. Timer/cache cleanup and history invariants are asserted; this is not a general managed-heap leak proof.",
+      "cleanup": [
+        {
+          "workload": "paragraphs-10000",
+          "glyphCacheReleased": true,
+          "timerStopped": true,
+          "released": true
+        },
+        {
+          "workload": "long-paragraph",
+          "glyphCacheReleased": true,
+          "timerStopped": true,
+          "released": true
+        },
+        {
+          "workload": "table-heavy",
+          "glyphCacheReleased": true,
+          "timerStopped": true,
+          "released": true
+        }
+      ]
+    },
+    {
+      "id": "markdown-2026-09-27",
+      "summary": "markdown-2026-09-27.csv",
+      "archivedFile": "docs/baselines/performance/windows-2026-09-27-phase7-markdown/markdown.json",
+      "archivedFileSha256": "7e03a80818d5f47948a92718f018f4ba67881d5023917d584dc7bd754579d127",
+      "capturedUtc": "2026-09-27T12:07:46.6931294+00:00",
+      "revision": "81927070361f4d3ab8356ab4e5dd0fe75d0282d3+phase7-working-tree",
+      "os": "Microsoft Windows 10.0.26100",
+      "architecture": "X64",
+      "runtime": ".NET 8.0.31",
+      "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+      "logicalProcessors": 24,
+      "avalonia": "12.1.3.0",
+      "backend": "Avalonia.Headless with Skia software frame capture; native compositor, IME and device behavior excluded",
+      "viewport": "800 x 500 DIP; Inter 16; Fluent Light; no toolbar; offset 320 DIP",
+      "methodology": "Release; 3 warmups and 40 consecutive samples per operation and workload. Source-to-frame includes source assignment, debounce, asynchronous parsing/application, dispatcher drain, layout and frame capture. Independent worker posts a UI dispatcher callback every 1 ms while each update runs; queue-to-callback timings exclude the worker delay. p95 uses nearest rank. Allocations are process-wide GC.GetTotalAllocatedBytes deltas including the heartbeat, without forced collection. Small edits replace one suffix paragraph; appends add one Markdown paragraph per chunk. Each update asserts unchanged prefix selection, scroll retention within 1 DIP, and latest revision text. Rapid bursts publish 30 revisions without waiting between assignments.",
+      "budgets": {
+        "sourceToFrameP95Milliseconds": 100,
+        "uiDispatchP95Milliseconds": 16,
+        "maximumScrollDriftDip": 1,
+        "scope": "100 and 1000 initial body paragraphs plus a heading; latency is reported rather than used as a machine-independent test failure"
+      },
+      "bursts": [
+        {
+          "initialParagraphs": 100,
+          "revisions": 30,
+          "finalRevisionDisplayed": true,
+          "selectionPreserved": true,
+          "scrollDrift": 0
+        },
+        {
+          "initialParagraphs": 1000,
+          "revisions": 30,
+          "finalRevisionDisplayed": true,
+          "selectionPreserved": true,
+          "scrollDrift": 0
+        }
+      ]
+    },
+    {
+      "id": "release-interactions",
+      "summary": "release-interactions.csv",
+      "archivedFile": "docs/baselines/performance/windows-2026-09-27-phase8-release/interactions.json",
+      "archivedFileSha256": "5ffd9512ce4cda9beeab3b9d83f4408b8f4625893941080daee6dcf0aa3a73af",
+      "capturedUtc": "2026-09-27T13:25:11.0738293+00:00",
+      "os": "Microsoft Windows 10.0.26100",
+      "runtime": ".NET 8.0.31",
+      "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+      "logicalProcessors": 24,
+      "backend": "Avalonia.Headless with Skia software frame capture; native compositor, IME and device behavior excluded",
+      "viewport": "800 x 500 DIP; Inter 16; Fluent Light; default toolbar; eager Text synchronization",
+      "methodology": "3 warmups per operation; 20 resize, 40 caret/viewport/preview or 80 autoscroll consecutive samples; all include dispatcher, layout and frame capture. p95 nearest rank. Allocations are process-wide GC.GetTotalAllocatedBytes deltas. No forced GC between samples. Mixed-clock stress combines explicit Advance with the live dispatcher timer; manual-clock samples use one Advance per frame with the automatic timer disabled. Both use identical production scrolling and selection logic.",
+      "budgets": "Existing 16 ms caret/scroll and 100 ms resize p95 targets; preview uses resize budget. Resident glyph bounds are 256 layouts / 16 MiB. Timer/cache cleanup and history invariants are asserted; this is not a general managed-heap leak proof.",
+      "cleanup": [
+        {
+          "workload": "paragraphs-10000",
+          "glyphCacheReleased": true,
+          "timerStopped": true,
+          "released": true
+        },
+        {
+          "workload": "long-paragraph",
+          "glyphCacheReleased": true,
+          "timerStopped": true,
+          "released": true
+        },
+        {
+          "workload": "table-heavy",
+          "glyphCacheReleased": true,
+          "timerStopped": true,
+          "released": true
+        }
+      ]
+    },
+    {
+      "id": "release-markdown",
+      "summary": "release-markdown.csv",
+      "archivedFile": "docs/baselines/performance/windows-2026-09-27-phase8-release/markdown.json",
+      "archivedFileSha256": "905b8f674e9ea9d39a9b871874743078b98e442d7605e177bf4f9fceb8bef00e",
+      "capturedUtc": "2026-09-27T13:25:18.5957711+00:00",
+      "revision": "4eead6b1e60b79c4e03663b0f6c90fbba8f0ef93 (package 0.1.0-preview.1; dirty=True)",
+      "os": "Microsoft Windows 10.0.26100",
+      "architecture": "X64",
+      "runtime": ".NET 8.0.31",
+      "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+      "logicalProcessors": 24,
+      "avalonia": "12.1.3.0",
+      "backend": "Avalonia.Headless with Skia software frame capture; native compositor, IME and device behavior excluded",
+      "viewport": "800 x 500 DIP; Inter 16; Fluent Light; no toolbar; offset 320 DIP",
+      "methodology": "Release; 3 warmups and 40 consecutive samples per operation and workload. Source-to-frame includes source assignment, debounce, asynchronous parsing/application, dispatcher drain, layout and frame capture. Independent worker posts a UI dispatcher callback every 1 ms while each update runs; queue-to-callback timings exclude the worker delay. p95 uses nearest rank. Allocations are process-wide GC.GetTotalAllocatedBytes deltas including the heartbeat, without forced collection. Small edits replace one suffix paragraph; appends add one Markdown paragraph per chunk. Each update asserts unchanged prefix selection, scroll retention within 1 DIP, and latest revision text. Rapid bursts publish 30 revisions without waiting between assignments.",
+      "budgets": {
+        "sourceToFrameP95Milliseconds": 100,
+        "uiDispatchP95Milliseconds": 16,
+        "maximumScrollDriftDip": 1,
+        "scope": "100 and 1000 initial body paragraphs plus a heading; latency is reported rather than used as a machine-independent test failure"
+      },
+      "bursts": [
+        {
+          "initialParagraphs": 100,
+          "revisions": 30,
+          "finalRevisionDisplayed": true,
+          "selectionPreserved": true,
+          "scrollDrift": 0
+        },
+        {
+          "initialParagraphs": 1000,
+          "revisions": 30,
+          "finalRevisionDisplayed": true,
+          "selectionPreserved": true,
+          "scrollDrift": 0
+        }
+      ]
+    }
+  ]
+}

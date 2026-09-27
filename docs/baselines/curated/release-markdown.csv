@@ -1,0 +1,5 @@
+InitialParagraphs,Operation,BudgetMilliseconds,MedianMilliseconds,P95Milliseconds,WithinLatencyBudget,DispatchBudgetMilliseconds,DispatchP95Milliseconds,WithinDispatchBudget,DispatchSamples,P95AllocatedBytes,MaximumScrollDrift
+100,small-edit,100,31.0563,32.928,True,16,0.066,True,120,1140120,0
+100,streamed-append,100,30.70825,32.7973,True,16,0.052,True,120,1325672,0
+1000,small-edit,100,32.84085,47.3932,True,16,0.758,True,120,8920512,0
+1000,streamed-append,100,31.675600000000003,37.3766,True,16,0.1105,True,117,9305496,0

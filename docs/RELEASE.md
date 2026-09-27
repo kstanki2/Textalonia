@@ -48,6 +48,10 @@ before their 30-day CI expiry. Matrix execution is a gate, not a promise inferre
 from workflow YAML. Choose one exact bundle for publication; do not rebuild it on
 the publishing machine.
 
+After rewriting source history, create and validate a new candidate from the intended
+clean public commit. Earlier bundles retain their old source identity and checksums;
+do not edit those receipts or use them to approve the rewritten commit.
+
 ## Review qualification and ownership
 
 Use [release notes](RELEASE-NOTES.md) and [API contracts](API-CONTRACTS.md).

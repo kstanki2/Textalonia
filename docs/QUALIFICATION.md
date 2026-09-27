@@ -1,12 +1,12 @@
 # Qualification targets and release decisions
 
-Phase 1 baseline, 2026-09-26. This is a preview support policy, not platform certification. [Native procedures](NATIVE-BASELINES.md), [compatibility rules](COMPATIBILITY.md), and [measured workloads](PERFORMANCE.md) define the routes to evidence. Status is per capability: **supported** means a contract protected by automated regression tests; **experimental** means implemented but awaiting native qualification; **untested** means no execution evidence. Pass/fail/pending are individual test results, independent of these support tiers.
+This is a preview support policy, not platform certification. [Native procedures](NATIVE-BASELINES.md), [compatibility rules](COMPATIBILITY.md), and [measured workloads](PERFORMANCE.md) define the routes to evidence. Status is per capability: **supported** means a contract protected by automated regression tests; **experimental** means implemented but awaiting native qualification; **untested** means no execution evidence. Pass/fail/pending are individual test results, independent of these support tiers.
 
 ## Targets
 
 | Target and pinned engine/backend | Tier | Reproducible test route and execution owner |
 | --- | --- | --- |
-| .NET 8 model, editing and native v1-v4 serialization; Avalonia 12.1.3 | Supported preview contracts | `dotnet test tests/Textalonia.Tests -c Release`; core maintainer. Local Windows execution in [report](BASELINE-REPORT.md). |
+| .NET 8 model, editing and native v1-v4 serialization; Avalonia 12.1.3 | Supported preview contracts | `dotnet test tests/Textalonia.Tests -c Release`; core maintainer. Current execution evidence is retained per [release candidate](RELEASE.md). |
 | Windows 11 24H2, build 26100; Avalonia Win32/Skia 12.1.3 | Experimental native integration | Desktop demo, N01-N07 at 100%/150% DPI; Windows QA maintainer. Headless Skia tests pass locally; native evidence pending. |
 | macOS 14, Cocoa/Skia 12.1.3 (x64/arm64 hosts) | Untested native target | Demo, N01-N07 at standard/Retina scaling; macOS QA maintainer must record exact OS patch and architecture before execution. CI `macos-latest` is a moving automated runner, not this qualification image. |
 | Ubuntu 24.04 LTS, Avalonia X11/Skia 12.1.3 | Untested native target | Demo in an X11 session, N01-N07; Linux QA maintainer records OS point release, X server, desktop, display scale and font packages. Wayland/XWayland is a separate experimental configuration, not covered by an X11 result. |
@@ -33,20 +33,20 @@ Roles identify responsibility, not a claimed assignment to a named person. Maint
 
 | ID | Decision / current disposition | Responsible role | Required by |
 | --- | --- | --- | --- |
-| D01 | Adopt the preview tiers above for baseline work. Preserve current model/API contracts in Phase 2; do not promote native/mobile support based on headless tests. Final advertised support scope remains open. | Product/core maintainer | Baseline policy adopted for P2.1; final scope P8.2 |
-| D02 | Preserve v1 files, UTF-16 offsets, immutable public snapshots and eager `Text` binding during Phase 2; any opt-in alternative needs the [migration process](COMPATIBILITY.md#native-schema-policy). | Core/schema maintainer | Adopted for P2.1; version-2 design before P3 model additions |
-| D03 | Adopt [latency/memory budgets](PERFORMANCE.md#phase-2-budgets) as Phase 2 acceptance targets; current overruns remain visible. The [completion decision](PHASE2-REPORT.md#completion-decision) accepts residual latency qualification as PERF-01 with numeric targets unchanged. | Performance/core maintainer | P2.7 complete; PERF-01 review with P3 tables and P8.2 |
+| D01 | Preserve the preview tiers above; do not promote native/mobile support based on headless tests. Final advertised support scope remains open. | Product/core maintainer | Before expanding support claims; P8.2 |
+| D02 | Preserve v1-v3 files, UTF-16 offsets, immutable public snapshots and eager `Text` compatibility binding. Contract changes follow the [migration process](COMPATIBILITY.md#native-schema-policy). | Core/schema maintainer | Every schema/API change |
+| D03 | Retain the adopted [latency/memory budgets](PERFORMANCE.md#phase-2-budgets); current overruns remain visible. The implementation completion decision defers residual latency qualification as [PERF-01](PERFORMANCE.md#perf-01-residual-latency-qualification) without changing numeric targets. | Performance/core maintainer | Before release performance claims; P8.2 |
 | D04 | MIT selected by the maintainer on 2026-09-27; LICENSE and package metadata added. Contributor attribution retained; copyright authority and named NuGet owner still require confirmation. | Project owner / release maintainer | P8.3, before redistribution/public publication |
 | D05 | Local `origin` is `https://github.com/kstanki2/Textalonia.git`, confirmed public by GitHub API; Repository/project/source-link metadata now use that URL. Maintainers must confirm authority before publication. | Repository owner | P8.3 |
-| D06 | Package ID `Textalonia`, version `0.1.0-preview.1`; public NuGet version endpoint returned 404 on 2026-09-26. Availability/reservation/control remains **unverified**; a missing version listing is not ownership evidence. | Package/release maintainer | P8.3 before reserving/publishing |
-| D07 | Freeze exact native OS patches, source-app/IME/reader versions in each execution record; supply unavailable hosts and human operators. | Platform QA leads | Inventory before P1.4 execution; all advertised scope evidence by P6.6/P8.2 |
+| D06 | Package ID `Textalonia`, version `0.1.0-preview.1`; authenticated package reservation/control remains **unverified**; a public package listing is not ownership evidence. | Package/release maintainer | P8.3 before reserving/publishing |
+| D07 | Freeze exact native OS patches, source-app/IME/reader versions in each execution record; supply unavailable hosts and human operators. | Platform QA leads | Inventory before native execution; all advertised scope evidence by P6.6/P8.2 |
 
-Release identity was checked on 2026-09-26: local project metadata and `git remote -v` were inspected. Read-only requests to the [NuGet version endpoint](https://api.nuget.org/v3-flatcontainer/textalonia/index.json) returned 404; the [GitHub repository API](https://api.github.com/repos/kstanki2/Textalonia) returned 200 with public repository `kstanki2/Textalonia`, default branch `main`, and no detected license. The dated [identity record](baselines/release-identity.json) preserves these results. This does not prove that a package ID is free or determine legal ownership. D05/D06 remain open; the release maintainer must recheck while authenticated as the intended owner. No license was chosen and nothing was published in Phase 1.
+MIT and the repository/package metadata are configured. D05/D06 remain open until the release maintainer confirms repository authority and package control while authenticated as the intended owner. Follow [the release procedure](RELEASE.md); obsolete discovery receipts are not current ownership evidence.
 
-## Phase 5 interchange qualification
+## Interchange qualification
 
 Automated codec and clipboard-adapter evidence is recorded in
-[Phase 5](PHASE5-REPORT.md). The locally authored corpus records null source
+[interchange contracts](INTERCHANGE.md#supported-subset-and-diagnosed-losses). The locally authored corpus records null source
 application versions and is not an application export claim. These pairs remain
 explicitly **unqualified in both directions**, including opening exported DOCX
 without repair and application-rendered visual comparison:
@@ -62,12 +62,12 @@ the supported model subset. They do not certify any of these applications or
 platform pairs. P5.2 application-export corpus expansion and P5.6 native execution
 remain tracked until those records and rendered comparisons are collected.
 
-## Phase 8 candidate qualification
+## Candidate qualification
 
 [Release notes](RELEASE-NOTES.md) advertise managed preview contracts only.
 [Candidate validation](RELEASE.md) retains exact source/package/symbol identity,
 dependency terms, independent consumer results, extended workloads and pending
 native records. The three-OS CI route must execute at the candidate commit before
 publication. Windows-only local evidence does not certify macOS/Linux or mobile.
-The historical Phase 1 identity check above remains a dated observation, not a
-current package-control check or an indication that MIT is still unselected.
+Outstanding performance, native, mobile, accessibility and application-corpus
+gates remain indexed in the [roadmap](ROADMAP.md#open-work).

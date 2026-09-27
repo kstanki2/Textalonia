@@ -34,7 +34,7 @@ AngleSharp's minimum/pinned tested version is 1.8.2.
 | Markdown / XAML | Explicit bounded dialect / data vocabulary; no CommonMark/GFM, executable XAML or arbitrary document fidelity claim. |
 
 Full evidence and deferred cases remain in [qualification](QUALIFICATION.md),
-[performance](PERFORMANCE.md), [roadmap](ROADMAP.md) and the phase reports.
+[performance](PERFORMANCE.md), [roadmap](ROADMAP.md) and [retained benchmark summaries](BENCHMARK-BASELINES.md).
 No unresolved case is converted into a pass by packing the library.
 
 ## Adoption and upgrade

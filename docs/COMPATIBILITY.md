@@ -63,7 +63,7 @@ Mixed emphasis toggles apply a uniform chosen value, preserving unrelated styles
 Merged row/column edits are supported with documented deletion/promotion rules;
 backups retain historical ID scopes while sharing the document depth/element
 budget. See [document semantics](DOCUMENT-MODEL.md) for details and
-[codec gaps](PHASE-03-CODEC-GAPS.md) for losses in external formats.
+[current interchange limits](INTERCHANGE.md#supported-subset-and-diagnosed-losses) for losses in external formats.
 
 
 ## Phase 2 additive API migration
@@ -126,4 +126,4 @@ Custom input components are owned by one attached surface and must release their
 subscriptions in Detach. Registered inline factories release views on recycling;
 store state in descriptors. See [inline ownership](INLINE-CONTENT.md),
 [input replacement](INPUT-COMPONENTS.md), and the
-[explicit native accessibility blocker](PHASE4-ACCESSIBILITY.md).
+[explicit native accessibility blocker](ACCESSIBILITY.md).

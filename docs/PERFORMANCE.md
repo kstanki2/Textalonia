@@ -55,20 +55,20 @@ Adopted in D03 for this corpus, evaluated on the same Windows reference host/con
 | Incremental retained undo for 100 non-coalesced edits | Median at most 64 MiB, with all raw samples disclosed; future configurable byte-budget accounting within 10% of the chosen budget under sustained edits |
 | History eviction/reclamation | P2.6 must add sustained over-budget eviction and redo-retention cases. The Phase 1 paired heap estimate alone cannot prove a resource lifetime or eviction bound. |
 
-Native caches, total working set and mobile device budgets remain unmeasured and cannot be advertised. A Phase 2 budget miss needs either a fix or a recorded maintainer decision identifying a target change or tracked deferral; do not silently widen budgets or drop slow workloads. The [Phase 2 completion decision](PHASE2-REPORT.md#completion-decision) defers residual latency qualification without changing these numeric targets.
+Native caches, total working set and mobile device budgets remain unmeasured and cannot be advertised. A Phase 2 budget miss needs either a fix or a recorded maintainer decision identifying a target change or tracked deferral; do not silently widen budgets or drop slow workloads. The [Phase 2 completion decision](PERFORMANCE.md#perf-01-residual-latency-qualification) defers residual latency qualification without changing these numeric targets.
 
 Run `pwsh -File scripts/Compare-BaselineBudgets.ps1 -Results artifacts/benchmarks/local` to generate `budgets.json` from the raw observations. It assesses both memory and latency against this table. Add `-Enforce` for the Phase 2 acceptance gate; baseline CI deliberately reports current gaps without treating them as new regressions.
 
 ## Initial evidence
 
-See the [baseline report](BASELINE-REPORT.md) and [raw Windows archive](baselines/performance/windows-2026-09-26). Environment: Windows build 26100 x64, .NET runtime 8.0.31, SDK 10.0.204, Avalonia 12.1.3, 24 logical processors. The archive is the authoritative measurement record. Linux/macOS performance is pending execution by their QA/performance maintainers; the Windows result is not a portability claim.
+See the [retained benchmark summaries and archive provenance](BENCHMARK-BASELINES.md). Environment: Windows build 26100 x64, .NET runtime 8.0.31, SDK 10.0.204, Avalonia 12.1.3, 24 logical processors. Full raw captures are retained outside Git. Linux/macOS performance remains pending; the Windows result is not a portability claim.
 
 Compare medians, tails, allocations and retained history using the same input sizes and harness revision. Report source hash changes when evolving the harness, and repeat both old/new engine versions if measurement semantics change. Whole-document index construction, UTF-16 grapheme scans, tree/layout rebuilds and eager text synchronization are the P2.1 candidates; no storage replacement is selected by this phase.
 
 
 ## Phase 2 implementation and qualification
 
-[The Phase 2 report](PHASE2-REPORT.md) compares all six workloads against a
+[The retained Phase 2 summaries](BENCHMARK-BASELINES.md) compares all six workloads against a
 remeasured Phase 1 reference with matching setup isolation. The unchanged budgets
 pass in the standard seven-sample captures using the fixed full-corpus order on the Windows reference host. Phase 2 is complete with longer-run table latency misses tracked in [PERF-01](#perf-01-residual-latency-qualification).
 Original and nonisolated captures, including misses, remain archived.
@@ -131,9 +131,10 @@ interval. No pause is subtracted from elapsed time, and collections triggered by
 the measured operation are still counted and timed.
 
 Isolation changes the heap state, so comparisons must use the same setting.
-The final Phase 2 qualification remeasures Phase 1 from commit `ccae784`, applying
-only the same setup-isolation switch and additive GC observations to its harness.
-Original captures and nonisolated diagnostics are preserved. This controlled
+The historical paired qualification remeasures the initial engine with the same
+setup-isolation switch and additive GC observations in its harness. Original source
+identities, the harness patch, raw captures and nonisolated diagnostics are preserved
+in the external archive described by [benchmark baselines](BENCHMARK-BASELINES.md). This controlled
 comparison uses the original full-corpus order and two warmups per case. Standalone
 workload startup and nonisolated results are disclosed separately; it does not qualify sustained
 native input latency or eliminate the need for application workload measurements.
@@ -145,26 +146,26 @@ operations, budget thresholds or the requirement to disclose all samples.
 
 ## PERF-01: Residual latency qualification
 
-- [ ] **Status: deferred from Phase 2; does not block Phase 3.** Review with P3.5/P3.6 table changes and resolve or explicitly scope performance claims during P8.2 release qualification. Responsible role: performance/core maintainer.
+- [ ] **Status: open; deferred from the initial core implementation.** Recheck after table/layout changes and resolve or explicitly scope performance claims during P8.2 release qualification. Responsible role: performance/core maintainer.
 
 The 30-sample strict-mode capture records table deletion at 19.84 ms p95 and
 caret movement at 16.33 ms against the unchanged 16 ms target. The final
 nonisolated capture has 23 latency misses, and standalone long-paragraph startup
 probes also miss the target. These are unresolved performance gaps; the passing
 focused probe does not establish that host noise caused them. See the
-[full evidence](PHASE2-REPORT.md#budget-outcome-and-scope).
+[full evidence](BENCHMARK-BASELINES.md#full-control-runs).
 
 1. Repeat the full corpus with 30+ samples across multiple processes on a recorded idle host, preserving the paired setup and all raw observations.
 2. Profile reproducible misses and compare subsequent table/layout changes against the existing corpus, including startup and nonisolated application workloads.
 3. Close this follow-up when the targets pass in the documented scope, or record a separate reviewed target/scope decision before making release performance claims. Keep any remaining native platform and working-set qualification explicit.
 
-The [Phase 2 completion decision](PHASE2-REPORT.md#completion-decision) accepts
+The 2026-09-26 implementation completion decision accepts
 this work as a later qualification task. It changes no numeric threshold and
 waives no correctness, data compatibility, allocation or history check.
 
 ## PERF-06: Interaction latency qualification
 
-Phase 6 adds a [reproducible interaction probe and dated raw measurements](baselines/performance/windows-2026-09-26-phase6-interactions/README.md).
+Phase 6 adds a [interaction probe summaries and archive provenance](BENCHMARK-BASELINES.md#interaction-and-markdown-probes).
 It checks repeated caret movement, viewport changes, resize previews and edge-scroll
 ticks with rendered frames, plus selection/history/cache/timer cleanup invariants.
 Single-clock autoscroll and table preview meet their unchanged targets in this run.
@@ -175,7 +176,7 @@ The measured differences between runs do not prove that host noise caused a miss
 
 ## Phase 7 Markdown updates
 
-The [dated Markdown probe](baselines/performance/windows-2026-09-27-phase7-markdown/README.md)
+The [dated Markdown probe](BENCHMARK-BASELINES.md#interaction-and-markdown-probes)
 records 40 repeated suffix edits and streamed appends for 100/1,000 body paragraphs,
 rendering and separate UI dispatcher observations. Adopted p95 targets are 100 ms
 source-to-frame and 16 ms queued callback delay, with 1 DIP maximum scroll drift.

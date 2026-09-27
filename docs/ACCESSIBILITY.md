@@ -1,4 +1,4 @@
-# Phase 4 text accessibility
+# Text accessibility
 
 The managed range contract is implemented. Complete native text accessibility remains blocked by the pinned Avalonia provider/bridge API and unexecuted native screen-reader qualification.
 
