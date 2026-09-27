@@ -15,6 +15,11 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Editor.PdfExporter = new Textalonia.Pdf.Skia.PdfExporter();
+        Editor.OutputRenderOptions = new Textalonia.Rendering.DocumentRenderOptions
+        {
+            UnsupportedContent = Textalonia.Rendering.UnsupportedContentPolicy.Tolerant
+        };
         Editor.KeyboardComponent = new DemoKeyboardComponent();
         Editor.CaretComponent = new DemoCaretComponent();
         SampleInlineControls.Configure(Editor);

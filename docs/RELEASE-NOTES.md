@@ -12,9 +12,10 @@ requires updating these notes before creating the publication candidate.
 Immutable documents and editing sessions; formatting, lists, nested/merged
 tables and undo; editor, selectable viewer and replaceable toolbar/input;
 inline image/control descriptors and host resource services; diagnosed
-text/HTML/RTF/DOCX interchange; native JSON v5 (v4 readable); data XAML;
-bounded Markdown codec/viewer and optional host highlighting. There is one shipped
-package, Textalonia. No optional integration package or desktop host is required.
+text/HTML/RTF/DOCX interchange; native JSON v7 (v4-v7 readable); data XAML v2;
+bounded Markdown codec/viewer and optional host highlighting. The core package is
+Textalonia; PDF export is available through optional Textalonia.Pdf.Skia.
+The core editor does not require that backend or a desktop host.
 
 Minimum framework is .NET 8. Minimum and pinned tested Avalonia version is 12.1.3;
 the declared <13 range is a restore constraint, not certification of every version.
@@ -50,7 +51,7 @@ are included in the same package. Use the independent PackageSmoke program as a
 compiling example for extension services and input replacement.
 
 Read [API contracts](API-CONTRACTS.md) before attaching mutable sessions/services
-to controls. Native JSON writes schema v5 and reads v4/v5; other versions are rejected. Earlier development schemas were never published or used
+to controls. Native JSON writes schema v7 and reads v4/v5/v6/v7; other versions are rejected. Earlier development schemas were never published or used
 and have no migration support. Use strict conversion reports when export loss
 matters.
 
@@ -76,8 +77,24 @@ linked/next styles, sparse direct overrides, themes and embedded-font services.
 Editing, mixed selections, layout and DOCX share effective style resolution.
 Font/paragraph/tabs/style dialogs are available from the toolbar. Advanced run
 shaping, tab stops/leaders, paragraph spacing and decorations share hit-test and
-caret geometry. Page/keep/widow and grid metadata await DX-02 pagination.
+caret geometry. DX-02 subsequently added pagination for page/keep/widow and grid metadata.
 
-Native JSON now writes v5 and reads v4/v5. XAML and clipboard retain the new model;
+DX-01 introduced native v5; the current native schema is v7 as described above.
+XAML and clipboard retain the new model;
 DOCX retains mapped styles/themes/fonts. Other formats report flattened style
 identity and unsupported typography. See [support details](STYLES.md).
+
+## DX-04 output
+
+Added shared exact-page output rendering, print preview and editor output commands,
+optional `Textalonia.Pdf.Skia` PDF export, and host print-service contracts with
+page ranges, copies, collation and capability validation. Output captures the
+complete immutable document, including DX-03 stories/page fields, without changing
+selection or history. Caller-owned streams remain open on every completion path.
+See [OUTPUT.md](OUTPUT.md) for APIs, unsupported-content policy and ownership.
+
+The application supplies a native printer/dialog adapter. Native printer evidence
+and platform font qualification remain pending. Tagged PDF, PDF/A and PDF/UA are
+not exposed; logical structure and external-validator conformance remain future
+DX-04 work. The optional backend adds Avalonia.Skia and its native dependencies;
+see [third-party notices](../THIRD-PARTY-NOTICES.md).

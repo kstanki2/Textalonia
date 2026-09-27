@@ -31,6 +31,7 @@ describe the build mechanisms.
 | Inline control factories | UI thread, explicitly registered type keys only. Return a new unparented control for each Create. Each successful creation is paired with Release on eviction/detach. Release owns view resources; unregister/replacement does not dispose the factory service itself. |
 | MarkdownViewer / ICodeHighlighter | Source updates originate on UI thread; parsing/tokenization may run on workers. Adapters must tolerate cancellation and concurrent calls. Latest revision wins; await WaitForParsingAsync/WaitForHighlightingAsync. Detachment cancels pending work/releases caches; the host retains ownership of its highlighter. Parsing/highlighting errors are reported separately, with canonical document text preserved. |
 | IDocumentFormat / reports | Caller owns input/output streams, including failures/cancellation. Read/write at the current position without rewinding. Synchronous parsing is not interruptible; async cancellation is cooperative. Custom implementations must enforce their own limits/cancellation. Strict reporting stages output before writing; final I/O failure may leave partial bytes. Use a temporary file and rename for atomic saves. |
+| Paged output | Capture and draw exact physical snapshots on the Avalonia UI thread. Dispose caller-created renderers after preview/export/printing completes. Preview and print jobs borrow them. Exporters leave caller streams open at their current position; final writes may fail after partial output. Native print adapters and PDF exporter services are host-owned. See [OUTPUT.md](OUTPUT.md) for strict/tolerant diagnostics and capability validation. |
 | Exceptions | Invalid models/unsupported content use FormatException, JsonException, InvalidDataException or parser-specific exceptions; unsupported schema/extension uses NotSupportedException. Invalid API arguments use argument exceptions. Cancellation propagates OperationCanceledException; I/O errors propagate. Strict loss throws DocumentConversionException with its report. Do not match exception message text. Stable diagnostic codes are documented in INTERCHANGE.md. |
 | Pending loads | Editor load accepts the first completed result whose captured session revision still matches. Edits/load/undo invalidate old results; selection-only changes do not. This differs from MarkdownViewer's latest-source revision policy. |
 
@@ -41,9 +42,9 @@ are covered; native screen-reader text navigation remains unqualified.
 
 ## Current native schema
 
-Native JSON writes **schema v5** and reads **v4 and v5**. The full model includes
+Native JSON writes **schema v7** and reads **v4, v5, v6 and v7**. The full model includes
 named style definitions, sparse overrides, document themes/fonts, nested cells and
-merge backups, inline descriptors and resources, semantic metadata and merge fields.
+merge backups, inline descriptors and resources, semantic metadata, merge fields, physical sections and secondary stories.
 Version 4 concrete formatting remains explicit when loaded. Versions 1-3 remain
 unsupported. See [style contracts](STYLES.md).
 
@@ -55,7 +56,7 @@ versions 1-3 remain unsupported. Establish a compatibility policy for published
 data before making future release commitments.
 
 The `.textalonia`, `.json`, and `.art` extensions all select the current native
-codec. The data XAML vocabulary has its own version (1); it is neither Avalonia
+codec. The data XAML vocabulary writes v2 and reads v1/v2; it is neither Avalonia
 object XAML nor another editor's format.
 
 For nested cell data use cell.Blocks and cell.MergeOriginalBlocks instead of the

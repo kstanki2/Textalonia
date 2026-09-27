@@ -69,6 +69,8 @@ public sealed partial class PageLayoutSnapshot : IDisposable
     public double Width { get; }
     public double Height { get; }
     public bool IsComplete => true;
+    public bool IsDraft { get; internal init; }
+    internal void VerifyAlive() => ObjectDisposedException.ThrowIf(_disposed, this);
     public IReadOnlyList<DocumentFontDiagnostic> FontDiagnostics { get; }
 
     internal PageLayoutSnapshot(FlowDocument document, ImmutableArray<PageLayout> pages,
@@ -108,14 +110,21 @@ public sealed partial class PageLayoutSnapshot : IDisposable
             if (viewport is not { } visible || decoration.Bounds.Intersects(visible)) decoration.Draw(context);
     }
 
-    public void DrawContent(DrawingContext context, Rect? viewport = null)
+    public void DrawContent(DrawingContext context, Rect? viewport = null) => DrawContentForOutput(context, viewport, null);
+
+    internal void DrawContentForOutput(DrawingContext context, Rect? viewport, Rendering.IPageTextRenderer? textRenderer)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         foreach (var fragment in Fragments.Concat(StoryFragments))
         {
             if (viewport is { } visible && !fragment.Bounds.Intersects(visible)) continue;
             using var lease = fragment.Acquire();
-            using (context.PushClip(fragment.Clip)) lease.Layout.TextLines[fragment.Line.Index].Draw(context, fragment.Origin);
+            using (context.PushClip(fragment.Clip))
+            {
+                var line = lease.Layout.TextLines[fragment.Line.Index];
+                if (textRenderer is null) line.Draw(context, fragment.Origin);
+                else textRenderer.DrawLine(context, line, fragment.Origin);
+            }
             if (fragment.Marker is { } marker) DrawLabel(marker, fragment.Origin.X - 24, fragment.Origin.Y, fragment.Measurement.Paragraph.DefaultStyle.FontSize);
             if (fragment.LineNumber is { } number) DrawLabel(number.ToString(CultureInfo.InvariantCulture),
                 fragment.ColumnBounds.Left - fragment.LineNumberDistance, fragment.Origin.Y, 10, true);
@@ -125,9 +134,15 @@ public sealed partial class PageLayoutSnapshot : IDisposable
                 DrawLabel(separator, region.Bounds.Left, region.Bounds.Top - 18, 10);
         void DrawLabel(string text, double x, double y, double size, bool alignRight = false)
         {
-            var label = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
-                new Typeface(_font), size, _foreground);
-            context.DrawText(label, new Point(alignRight ? x - label.Width : x, y));
+            using var label = new TextLayout(text, new Typeface(_font), size, _foreground,
+                flowDirection: FlowDirection.LeftToRight);
+            var origin = new Point(alignRight ? x - label.Width : x, y);
+            foreach (var line in label.TextLines)
+            {
+                if (textRenderer is null) line.Draw(context, origin);
+                else textRenderer.DrawLine(context, line, origin);
+                origin = new Point(origin.X, origin.Y + line.Height);
+            }
         }
     }
 
@@ -223,9 +238,19 @@ public sealed partial class PageLayoutSnapshot : IDisposable
             foreach (var bounds in line.GetTextBounds(line.FirstTextSourceIndex, line.Length))
                 foreach (var run in bounds.TextRunBounds)
                     if (run.TextRun is InlineObjectRun inline)
+                    {
+                        // Avalonia's native line aligns superscript/subscript at the line's top/bottom;
+                        // our typography line additionally includes its measured rise and run offset.
+                        var inlineBounds = line is TypographyLine typography ? typography.GetInlineBounds(inline, fragment.Origin) :
+                            new Rect(new Point(fragment.Origin.X + run.Rectangle.X, fragment.Origin.Y + (inline.Properties.BaselineAlignment switch
+                            {
+                                BaselineAlignment.Superscript => 0,
+                                BaselineAlignment.Subscript => line.Height - inline.Size.Height,
+                                _ => line.Baseline - inline.Baseline
+                            })), inline.Size);
                         yield return new(inline.Descriptor, fragment.SourceStart + run.TextSourceCharacterIndex,
-                            new Rect(fragment.Origin.X + run.Rectangle.X, fragment.Origin.Y + line.Baseline - inline.Baseline,
-                                inline.Size.Width, inline.Size.Height), fragment.Clip) { StoryId = fragment.StoryKey, PageIndex = fragment.PageIndex };
+                            inlineBounds, fragment.Clip) { StoryId = fragment.StoryKey, PageIndex = fragment.PageIndex };
+                    }
         }
     }
     internal IReadOnlyList<TableCellVisual> TableCells() => _cells;
@@ -239,4 +264,3 @@ public sealed partial class PageLayoutSnapshot : IDisposable
         foreach (var measurement in _measurements) measurement.Release();
     }
 }
-

@@ -55,9 +55,11 @@ internal static class PublicApi
         "modreq(" + string.Join(",", parameter.GetRequiredCustomModifiers().Select(Name)) + ") " +
         "modopt(" + string.Join(",", parameter.GetOptionalCustomModifiers().Select(Name)) + ")";
 
+    // Compiler-emitted debugger stepping metadata varies by build configuration, not API contract.
     private static string Attributes(IEnumerable<CustomAttributeData> attributes) => string.Join(" ", attributes
         .Where(a => a.AttributeType.FullName is not ("System.Runtime.CompilerServices.NullableAttribute" or
-            "System.Runtime.CompilerServices.NullableContextAttribute" or "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
+            "System.Runtime.CompilerServices.NullableContextAttribute" or "System.Runtime.CompilerServices.CompilerGeneratedAttribute" or
+            "System.Diagnostics.DebuggerStepThroughAttribute"))
         .Select(a => a.ToString()).Order(StringComparer.Ordinal));
 
     private static string Constraints(Type[] arguments) => string.Join(" ", arguments.Where(a => a.IsGenericParameter).Select(a =>

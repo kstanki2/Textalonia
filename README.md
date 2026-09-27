@@ -1,6 +1,6 @@
 # Textalonia
 
-An independent, native rich text editor for **Avalonia 12** and **.NET 8+**, distributed as one NuGet package.
+An independent, native rich text editor for **Avalonia 12** and **.NET 8+**, with an optional PDF export package.
 
 **Status: 0.1.0-preview.1 candidate; not yet published.** This repository contains a working editor, desktop demo, tests, and local NuGet packaging. The feature target is a selected subset of [DevExpress's WPF Rich Text Editor](https://docs.devexpress.com/WPF/8651/controls-and-libraries/rich-text-editor), implemented independently for Avalonia. ActiveX, VBA, charts, and drawing shapes are excluded. It is not yet feature-complete within that scope and does not provide DevExpress API compatibility. See the [scoped DevExpress implementation plan](docs/DEVEXPRESS-PARITY-PLAN.md) and [current feature matrix and roadmap](docs/ROADMAP.md).
 
@@ -13,7 +13,7 @@ dotnet restore Textalonia.sln --configfile NuGet.Config
 dotnet run --project samples/Textalonia.Demo
 ```
 
-The demo includes editable sample content, light/dark themes, read-only mode, search, tables, page setup and numbering dialogs, document views, zoom, page navigation, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
+The demo includes editable sample content, light/dark themes, read-only mode, search, tables, page setup and numbering dialogs, document views, zoom, page navigation, print preview, PDF export, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
 
 ## Build, test, and pack
 
@@ -21,6 +21,7 @@ The demo includes editable sample content, light/dark themes, read-only mode, se
 dotnet build Textalonia.sln -c Release --no-restore
 dotnet test tests/Textalonia.Tests -c Release --no-build
 dotnet pack src/Textalonia -c Release --no-build -o artifacts/packages
+dotnet pack src/Textalonia.Pdf.Skia -c Release --no-build -o artifacts/packages
 ```
 
 Verify the packed artifact through an independent consumer (after packing):
@@ -30,7 +31,7 @@ dotnet restore tests/Textalonia.PackageSmoke --configfile tests/Textalonia.Packa
 dotnet run --project tests/Textalonia.PackageSmoke -c Release --no-restore
 ```
 
-Output: `artifacts/packages/Textalonia.0.1.0-preview.1.nupkg`, plus a symbols package. Nothing is published automatically. The library's Avalonia dependency is bounded to **[12.1.3, 13.0.0)**. The demo and tests use 12.1.3, configured centrally in `Directory.Build.props`.
+Output: `artifacts/packages/Textalonia.0.1.0-preview.1.nupkg`, its symbols package, and optional `Textalonia.Pdf.Skia.0.1.0-preview.1.nupkg`. Nothing is published automatically. The library's Avalonia dependency is bounded to **[12.1.3, 13.0.0)**. The demo and tests use 12.1.3, configured centrally in `Directory.Build.props`.
 
 ## Use the package in another app
 
@@ -205,6 +206,16 @@ clipboard notices. See [the full support and stream contracts](docs/INTERCHANGE.
 and [platform qualification](docs/QUALIFICATION.md).
 Implement `IDocumentFormat` to add a format and pass your instance to `LoadAsync`/`SaveAsync`. The native `.textalonia` format is a versioned JSON schema, **not Avalonia XAML**. The `.json` and legacy `.art` extensions remain supported.
 
+## Print preview, printing and PDF
+
+The toolbar's **Output** menu provides preview and configured export/print actions.
+Preview, optional `Textalonia.Pdf.Skia` PDF export and host printer adapters use
+the same captured physical page snapshot, including headers, footers and notes.
+Set `editor.PdfExporter` and `editor.PrintService` for your application. The core
+package supplies the print contract; a native printer adapter belongs to the host.
+Tagged PDF, PDF/A and PDF/UA are not currently exposed. See [output usage and
+qualification boundaries](docs/OUTPUT.md).
+
 ## Viewer, themes, highlights, and links
 
 Use `TextaloniaViewer` for an initially read-only, selectable display without a toolbar, or set `IsReadOnly="True"` on an editor.
@@ -245,6 +256,7 @@ qualification explicit; headless tests do not certify those integrations.
 ## Repository and release status
 
 - `src/Textalonia`: packable control, model, editing, serializers, theme.
+- `src/Textalonia.Pdf.Skia`: optional PDF backend package.
 - `samples/Textalonia.Demo`: desktop application.
 - `tests/Textalonia.Tests`: model, serializer, binding, headless input and rendering tests.
 - `tests/Textalonia.PackageSmoke`: separate consumer that references the generated NuGet package.

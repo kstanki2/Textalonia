@@ -2,7 +2,8 @@
 
 DX-02 adds physical page sections, exact main-body pagination and editor page
 views. Simple remains the default. DX-03 builds on this with [headers, footers, notes and page fields](STORIES.md).
-Printing and general fields remain separate workstreams.
+DX-04 adds [print preview, host printing and PDF export](OUTPUT.md) from the same
+exact page snapshots. General fields remain a separate workstream.
 
 ## Authoring in the editor
 
@@ -188,8 +189,9 @@ The probe writes `artifacts/pagination/pagination-probe.json` with timings,
 allocations, page/fragment counts and environment details. It is evidence capture,
 not a numerical latency guarantee. Native IME, multiple monitor DPI, native
 screen-reader bridges, Office-rendered comparisons and a licensed DevExpress
-comparison still require retained qualification. Print/PDF output, headers/footers,
-notes and page-dependent fields remain separate DX-03/04/05 workstreams.
+comparison still require retained qualification. [DX-03](STORIES.md) adds secondary
+stories and page fields; [DX-04](OUTPUT.md) adds output with its own native print
+and PDF conformance qualification boundaries. General fields remain DX-05.
 
 ### Local pagination measurement, 2026-09-27
 

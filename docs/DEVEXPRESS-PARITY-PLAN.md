@@ -2,7 +2,7 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **implementation plan; DX-01, DX-02 and DX-03 implementation and
+candidate. Status: **implementation plan; DX-01 through DX-04 implementation and
 qualification status is recorded below. Other workstreams remain proposed unless explicitly noted.**
 
 The audit tables in sections 2-3 describe the baseline commit above; the DX-01
@@ -10,7 +10,9 @@ implementation entry and [style guide](STYLES.md) supersede those baseline findi
 for delivered style/typography capabilities. The DX-02 implementation entry and
 [pagination guide](PAGINATION.md) supersede baseline findings for physical pages
 and document views. The DX-03 implementation entry and [story guide](STORIES.md)
-supersede baseline findings for headers, footers and notes.
+supersede baseline findings for headers, footers and notes. The DX-04 implementation
+entry and [output guide](OUTPUT.md) supersede baseline findings for print preview,
+host printing and basic PDF export; conformance and native qualification remain open.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -342,6 +344,23 @@ undo; a long footnote that forces repagination; independent note/body selection 
 page-number output. Test fields, tables and images inside secondary stories.
 
 ### DX-04 — Print preview, printing and PDF
+
+**Implementation status (2026-09-27):** shared exact-snapshot rendering, physical
+page preview, output dialogs/commands, caller-owned stream export and host-native
+print-service contracts are implemented. Printing validates ranges, copies,
+collation and printer capabilities before submitting a captured snapshot.
+`Textalonia.Pdf.Skia` is an optional backend using Avalonia.Skia/SkiaSharp for glyph,
+vector and image output, links, metadata and physical page boxes. The core package
+retains no WPF or PDF backend dependency. Registered inline controls require an
+explicit output representation or diagnosed fallback. See [OUTPUT.md](OUTPUT.md)
+for API usage, ownership, extraction limits and dependency/platform boundaries.
+
+**Qualification boundary:** managed tests and PDF inspection provide local evidence;
+native OS/printer qualification remains open. Tagged PDF, logical document
+structure, bookmarks and PDF/A/PDF/UA profiles are not exposed or claimed. Their
+external-validator exit criteria below remain future work, alongside broader
+Unicode/font and native-platform qualification. This status records the basic
+output implementation, not completion of every DX-04 conformance goal.
 
 **Priority: core, then conformance. Size: L/XL. Dependencies: DX-02; integrate DX-03/05.**
 

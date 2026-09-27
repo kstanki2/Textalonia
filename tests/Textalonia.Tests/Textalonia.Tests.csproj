@@ -16,4 +16,7 @@
   <ItemGroup>
     <None Update="Fixtures/**/*.json;Fixtures/**/*.txt;Fixtures/**/*.html;Fixtures/**/*.rtf;Fixtures/**/*.xml;Fixtures/**/*.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Textalonia.Pdf.Skia\Textalonia.Pdf.Skia.csproj" />
+  </ItemGroup>
 </Project>

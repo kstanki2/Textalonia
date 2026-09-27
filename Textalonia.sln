@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Textalonia.ReleaseChecks", "tools\Textalonia.ReleaseChecks\Textalonia.ReleaseChecks.csproj", "{02395A2D-0071-43EF-BD16-82CE1B741317}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Textalonia.Pdf.Skia", "src\Textalonia.Pdf.Skia\Textalonia.Pdf.Skia.csproj", "{2B6C11CA-56E2-42B7-BE64-C085AC928B15}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +95,18 @@ Global
 		{02395A2D-0071-43EF-BD16-82CE1B741317}.Release|x64.Build.0 = Release|Any CPU
 		{02395A2D-0071-43EF-BD16-82CE1B741317}.Release|x86.ActiveCfg = Release|Any CPU
 		{02395A2D-0071-43EF-BD16-82CE1B741317}.Release|x86.Build.0 = Release|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Debug|x64.Build.0 = Debug|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Debug|x86.Build.0 = Debug|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Release|x64.ActiveCfg = Release|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Release|x64.Build.0 = Release|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Release|x86.ActiveCfg = Release|Any CPU
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -103,5 +117,6 @@ Global
 		{532C6602-3782-4928-8959-007EA5B6EF58} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{023952D1-6D02-49CC-B296-1BFE3F50A972} = {66320409-64EC-F7C5-3DEF-65E7510DAAD1}
 		{02395A2D-0071-43EF-BD16-82CE1B741317} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
+		{2B6C11CA-56E2-42B7-BE64-C085AC928B15} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

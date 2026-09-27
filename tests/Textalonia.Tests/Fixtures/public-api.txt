@@ -117,6 +117,34 @@ type Textalonia.Controls.DocumentInputContext : System.Object sealed
   property Textalonia.Controls.DocumentSurface Surface { public get; }
   property Textalonia.Controls.TextaloniaEditor Editor { public get; }
   property Textalonia.Editing.EditorSession Session { public get; }
+type Textalonia.Controls.DocumentPrintPreview : Avalonia.Controls.Control sealed
+  interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
+  interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.Visual>
+  interface Avalonia.Controls.IResourceHost
+  interface Avalonia.Controls.IResourceNode
+  interface Avalonia.Controls.ISetInheritanceParent
+  interface Avalonia.Controls.ISetLogicalParent
+  interface Avalonia.Controls.Templates.IDataTemplateHost
+  interface Avalonia.Diagnostics.IAvaloniaObjectDebug
+  interface Avalonia.IDataContextProvider
+  interface Avalonia.INamed
+  interface Avalonia.Input.IInputElement
+  interface Avalonia.LogicalTree.ILogical
+  interface Avalonia.Rendering.IVisualBrushInitialize
+  interface Avalonia.Styling.ISetterValue
+  interface Avalonia.Styling.IStyleHost
+  interface Avalonia.Styling.IThemeVariantHost
+  interface System.ComponentModel.INotifyPropertyChanged
+  interface System.ComponentModel.ISupportInitialize
+  ctor public ()
+  field Avalonia.StyledProperty<System.Double> ZoomProperty static readonly
+  field Avalonia.StyledProperty<System.Int32> PageIndexProperty static readonly
+  field Avalonia.StyledProperty<Textalonia.Rendering.DocumentRenderer> RendererProperty static readonly
+  method protected Avalonia.Size MeasureOverride(Avalonia.Size availableSize) virtual
+  method public System.Void Render(Avalonia.Media.DrawingContext context) virtual
+  property System.Double Zoom { public get; public set; }
+  property System.Int32 PageIndex { public get; public set; }
+  property Textalonia.Rendering.DocumentRenderer Renderer { public get; public set; }
 type Textalonia.Controls.DocumentSurface : Avalonia.Controls.Control
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.Visual>
@@ -446,14 +474,20 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Threading.Tasks.Task LoadAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task PasteAsync()
   method public System.Threading.Tasks.Task SaveAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, System.Threading.CancellationToken cancellationToken = )
+  method public System.Threading.Tasks.Task<System.Boolean> QuickPrintAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowExportPdfDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowFontDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowHeaderFooterDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowNoteSettingsDialogAsync(Textalonia.Model.DocumentNoteKind kind)
   method public System.Threading.Tasks.Task<System.Boolean> ShowPageNumberingDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowPageSetupDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowParagraphDialogAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowPrintDialogAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowPrintPreviewDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowStylesDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowTabsDialogAsync()
+  method public System.Threading.Tasks.Task<Textalonia.Export.PagedOutputResult> ExportPdfAsync(System.IO.Stream destination, Textalonia.Export.PagedExportOptions options = , System.IProgress<Textalonia.Export.PagedOutputProgress> progress = , System.Threading.CancellationToken cancellationToken = )
+  method public System.Threading.Tasks.Task<Textalonia.Export.PagedOutputResult> PrintAsync(Textalonia.Printing.PrintOptions options = , System.Boolean showDialog = True, System.IProgress<Textalonia.Export.PagedOutputProgress> progress = , System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult> LoadWithReportAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentSaveResult> SaveWithReportAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = )
   method public System.Void ApplyNamedCharacterStyle(System.String id, System.Boolean clearDirectFormatting = True)
@@ -503,6 +537,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Void Undo()
   method public System.Void UpdateInline(System.Guid id, System.Func<Textalonia.Model.InlineDescriptor,Textalonia.Model.InlineDescriptor> change)
   method public System.Void UpdateMergeField(System.Guid id, System.String name, System.String format = , System.String fallbackText = )
+  method public Textalonia.Rendering.DocumentRenderer CreateOutputRenderer()
   property Avalonia.Media.IBrush SelectionBrush { public get; public set; }
   property Avalonia.Thickness DocumentPadding { public get; public set; }
   property System.Boolean AcceptsTab { public get; public set; }
@@ -548,9 +583,12 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property Textalonia.Controls.TableCellSelection CellSelection { public get; }
   property Textalonia.Editing.EditorSession Session { public get; }
   property Textalonia.Editing.SelectionFormattingState FormattingState { public get; }
+  property Textalonia.Export.IPagedDocumentExporter PdfExporter { public get; public set; }
   property Textalonia.Model.FlowDocument Document { public get; public set; }
   property Textalonia.Model.InlineDescriptor CurrentMergeField { public get; }
   property Textalonia.Model.PageSettings CurrentPageSettings { public get; }
+  property Textalonia.Printing.IPrintService PrintService { public get; public set; }
+  property Textalonia.Rendering.DocumentRenderOptions OutputRenderOptions { public get; public set; }
   property Textalonia.Serialization.ConversionReport LastConversionReport { public get; }
 type Textalonia.Controls.TextaloniaToolbar : Avalonia.Controls.WrapPanel
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
@@ -755,6 +793,95 @@ type Textalonia.Editing.TextSelection : System.ValueType sealed
   property System.Int32 End { public get; }
   property System.Int32 Length { public get; }
   property System.Int32 Start { public get; }
+type Textalonia.Export.IPagedDocumentExporter : none abstract
+  method public System.Threading.Tasks.Task<Textalonia.Export.PagedOutputResult> ExportAsync(Textalonia.Rendering.DocumentRenderer renderer, System.IO.Stream destination, Textalonia.Export.PagedExportOptions options = , System.IProgress<Textalonia.Export.PagedOutputProgress> progress = , System.Threading.CancellationToken cancellationToken = ) virtual
+  property Textalonia.Export.PagedExportCapabilities Capabilities { public get; }
+type Textalonia.Export.PageRange : System.Object sealed
+  interface System.IEquatable<Textalonia.Export.PageRange>
+  ctor public (System.Int32 FirstPage, System.Int32 LastPage)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Export.PageRange other) virtual
+  method public System.Collections.Immutable.ImmutableArray<System.Int32> Resolve(System.Int32 pageCount)
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Int32& FirstPage, System.Int32& LastPage)
+  method public Textalonia.Export.PageRange <Clone>$()
+  property System.Int32 FirstPage { public get; public set; }
+  property System.Int32 LastPage { public get; public set; }
+type Textalonia.Export.PagedExportCapabilities : System.Object sealed
+  interface System.IEquatable<Textalonia.Export.PagedExportCapabilities>
+  ctor public (System.Boolean SelectableText, System.Boolean Images, System.Boolean Links, System.Boolean Metadata, System.Boolean TaggedPdf = False, System.Boolean PdfA = False, System.Boolean PdfUa = False)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Export.PagedExportCapabilities other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Boolean& SelectableText, System.Boolean& Images, System.Boolean& Links, System.Boolean& Metadata, System.Boolean& TaggedPdf, System.Boolean& PdfA, System.Boolean& PdfUa)
+  method public Textalonia.Export.PagedExportCapabilities <Clone>$()
+  property System.Boolean Images { public get; public set; }
+  property System.Boolean Links { public get; public set; }
+  property System.Boolean Metadata { public get; public set; }
+  property System.Boolean PdfA { public get; public set; }
+  property System.Boolean PdfUa { public get; public set; }
+  property System.Boolean SelectableText { public get; public set; }
+  property System.Boolean TaggedPdf { public get; public set; }
+type Textalonia.Export.PagedExportOptions : System.Object sealed
+  interface System.IEquatable<Textalonia.Export.PagedExportOptions>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Export.PagedExportOptions other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Export.PagedExportOptions <Clone>$()
+  property Textalonia.Export.PageRange Pages { public get; public set; }
+  property Textalonia.Export.PdfMetadata Metadata { public get; public set; }
+type Textalonia.Export.PagedOutputDiagnostic : System.Object sealed
+  interface System.IEquatable<Textalonia.Export.PagedOutputDiagnostic>
+  ctor public (System.String Code, System.String Message, System.Nullable<System.Int32> PageIndex = )
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Export.PagedOutputDiagnostic other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Code, System.String& Message, System.Nullable`1[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& PageIndex)
+  method public Textalonia.Export.PagedOutputDiagnostic <Clone>$()
+  property System.Nullable<System.Int32> PageIndex { public get; public set; }
+  property System.String Code { public get; public set; }
+  property System.String Message { public get; public set; }
+type Textalonia.Export.PagedOutputProgress : System.Object sealed
+  interface System.IEquatable<Textalonia.Export.PagedOutputProgress>
+  ctor public (System.Int32 CompletedPages, System.Int32 TotalPages, System.Int32 PageIndex)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Export.PagedOutputProgress other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Int32& CompletedPages, System.Int32& TotalPages, System.Int32& PageIndex)
+  method public Textalonia.Export.PagedOutputProgress <Clone>$()
+  property System.Int32 CompletedPages { public get; public set; }
+  property System.Int32 PageIndex { public get; public set; }
+  property System.Int32 TotalPages { public get; public set; }
+type Textalonia.Export.PagedOutputResult : System.Object sealed
+  interface System.IEquatable<Textalonia.Export.PagedOutputResult>
+  ctor public (System.Int32 PageCount, System.Collections.Immutable.ImmutableArray<Textalonia.Export.PagedOutputDiagnostic> Diagnostics)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Export.PagedOutputResult other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Int32& PageCount, System.Collections.Immutable.ImmutableArray`1[[Textalonia.Export.PagedOutputDiagnostic, Textalonia, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null]]& Diagnostics)
+  method public Textalonia.Export.PagedOutputResult <Clone>$()
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Export.PagedOutputDiagnostic> Diagnostics { public get; public set; }
+  property System.Int32 PageCount { public get; public set; }
+type Textalonia.Export.PdfMetadata : System.Object sealed
+  interface System.IEquatable<Textalonia.Export.PdfMetadata>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Export.PdfMetadata other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Export.PdfMetadata <Clone>$()
+  property System.String Author { public get; public set; }
+  property System.String Creator { public get; public set; }
+  property System.String Keywords { public get; public set; }
+  property System.String Subject { public get; public set; }
+  property System.String Title { public get; public set; }
 type Textalonia.Layout.LineFragment : System.Object sealed
   interface System.IEquatable<Textalonia.Layout.LineFragment>
   method public System.Boolean Equals(System.Object obj) virtual
@@ -823,6 +950,7 @@ type Textalonia.Layout.PageLayoutSnapshot : System.Object sealed
   method public System.Void DrawContent(Avalonia.Media.DrawingContext context, System.Nullable<Avalonia.Rect> viewport = )
   method public Textalonia.Layout.StoryHit HitTestStory(Avalonia.Point point)
   property System.Boolean IsComplete { public get; }
+  property System.Boolean IsDraft { public get; }
   property System.Collections.Generic.IReadOnlyList<Textalonia.Controls.DocumentFontDiagnostic> FontDiagnostics { public get; }
   property System.Collections.Immutable.ImmutableArray<System.String> LayoutDiagnostics { public get; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Layout.LineFragment> Fragments { public get; }
@@ -2031,6 +2159,131 @@ type Textalonia.Model.UnderlineKind : System.Enum sealed
   field Textalonia.Model.UnderlineKind Single static = 1
   field Textalonia.Model.UnderlineKind Thick static = 5
   field Textalonia.Model.UnderlineKind Wave static = 6
+type Textalonia.Printing.IPrintService : none abstract
+  method public System.Threading.Tasks.Task PrintAsync(Textalonia.Printing.PrintJob job, System.IProgress<Textalonia.Export.PagedOutputProgress> progress, System.Threading.CancellationToken cancellationToken) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Printing.PrintCapabilities> GetCapabilitiesAsync(System.String printerName, System.Threading.CancellationToken cancellationToken) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Printing.PrintOptions> ShowDialogAsync(Textalonia.Printing.PrintDialogRequest request, System.Threading.CancellationToken cancellationToken) virtual
+type Textalonia.Printing.PrintCapabilities : System.Object sealed
+  interface System.IEquatable<Textalonia.Printing.PrintCapabilities>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Printing.PrintCapabilities other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Printing.PrintCapabilities <Clone>$()
+  property System.Boolean IsAvailable { public get; public set; }
+  property System.Boolean SupportsCollation { public get; public set; }
+  property System.Boolean SupportsCustomPageSizes { public get; public set; }
+  property System.Boolean SupportsMixedPageSizes { public get; public set; }
+  property System.Boolean SupportsPageRanges { public get; public set; }
+  property System.Boolean SupportsPrintDialog { public get; public set; }
+  property System.Boolean SupportsQuickPrint { public get; public set; }
+  property System.Collections.Immutable.ImmutableArray<Avalonia.Size> PaperSizes { public get; public set; }
+  property System.Int32 MaxCopies { public get; public set; }
+  property System.String PrinterName { public get; public set; }
+type Textalonia.Printing.PrintDialogRequest : System.Object sealed
+  interface System.IEquatable<Textalonia.Printing.PrintDialogRequest>
+  ctor public (Textalonia.Layout.PageLayoutSnapshot Snapshot, Textalonia.Printing.PrintOptions InitialOptions, Textalonia.Printing.PrintCapabilities Capabilities)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Printing.PrintDialogRequest other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(Textalonia.Layout.PageLayoutSnapshot& Snapshot, Textalonia.Printing.PrintOptions& InitialOptions, Textalonia.Printing.PrintCapabilities& Capabilities)
+  method public Textalonia.Printing.PrintDialogRequest <Clone>$()
+  property Textalonia.Layout.PageLayoutSnapshot Snapshot { public get; public set; }
+  property Textalonia.Printing.PrintCapabilities Capabilities { public get; public set; }
+  property Textalonia.Printing.PrintOptions InitialOptions { public get; public set; }
+type Textalonia.Printing.PrintJob : System.Object sealed
+  method public System.Collections.Generic.IEnumerable<System.Int32> EnumerateOutputPages()
+  method public System.Void DrawPage(Avalonia.Media.DrawingContext context, System.Int32 pageIndex)
+  property System.Collections.Immutable.ImmutableArray<System.Int32> PageIndices { public get; }
+  property System.Int32 TotalPages { public get; }
+  property Textalonia.Layout.PageLayoutSnapshot Snapshot { public get; }
+  property Textalonia.Printing.PrintCapabilities Capabilities { public get; }
+  property Textalonia.Printing.PrintOptions Options { public get; }
+type Textalonia.Printing.PrintOptions : System.Object sealed
+  interface System.IEquatable<Textalonia.Printing.PrintOptions>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Printing.PrintOptions other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Printing.PrintOptions <Clone>$()
+  property System.Boolean Collate { public get; public set; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Export.PageRange> PageRanges { public get; public set; }
+  property System.Int32 Copies { public get; public set; }
+  property System.String JobName { public get; public set; }
+  property System.String PrinterName { public get; public set; }
+type Textalonia.Printing.PrintServiceExtensions : System.Object sealed abstract
+  method public static System.Threading.Tasks.Task<Textalonia.Export.PagedOutputResult> PrintDocumentAsync(Textalonia.Printing.IPrintService service, Textalonia.Rendering.DocumentRenderer renderer, Textalonia.Printing.PrintOptions options = , System.Boolean showDialog = True, System.IProgress<Textalonia.Export.PagedOutputProgress> progress = , System.Threading.CancellationToken cancellationToken = )
+type Textalonia.Rendering.DocumentRenderOptions : System.Object sealed
+  interface System.IEquatable<Textalonia.Rendering.DocumentRenderOptions>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Rendering.DocumentRenderOptions other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Rendering.DocumentRenderOptions <Clone>$()
+  property Textalonia.Controls.InlineImageOptions ImageLimits { public get; public set; }
+  property Textalonia.Rendering.IInlinePrintProvider InlineProvider { public get; public set; }
+  property Textalonia.Rendering.UnsupportedContentPolicy UnsupportedContent { public get; public set; }
+type Textalonia.Rendering.DocumentRenderer : System.Object sealed
+  interface System.IDisposable
+  ctor public (Textalonia.Layout.PageLayoutSnapshot snapshot, Textalonia.Rendering.DocumentRenderOptions options = , System.Boolean ownsSnapshot = False)
+  method public System.Collections.Immutable.ImmutableArray<Textalonia.Rendering.PageLink> GetLinks(System.Int32 pageIndex)
+  method public System.Collections.Immutable.ImmutableArray<Textalonia.Rendering.PageTextLine> GetTextLines(System.Int32 pageIndex)
+  method public System.Void Dispose() virtual
+  method public System.Void DrawPage(Avalonia.Media.DrawingContext context, System.Int32 pageIndex, Textalonia.Rendering.IPageTextRenderer textRenderer = )
+  method public System.Void Validate()
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Export.PagedOutputDiagnostic> Diagnostics { public get; }
+  property System.Int32 PageCount { public get; }
+  property Textalonia.Layout.PageLayoutSnapshot Snapshot { public get; }
+type Textalonia.Rendering.IInlinePrintProvider : none abstract
+  method public Textalonia.Rendering.IInlinePrintRepresentation TryCreateRepresentation(Textalonia.Model.FlowDocument document, Textalonia.Model.InlineDescriptor descriptor) virtual
+type Textalonia.Rendering.IInlinePrintRepresentation : none abstract
+  interface System.IDisposable
+  method public System.Void Draw(Avalonia.Media.DrawingContext context, Avalonia.Rect bounds) virtual
+type Textalonia.Rendering.IPageTextRenderer : none abstract
+  method public System.Void DrawLine(Avalonia.Media.DrawingContext context, Avalonia.Media.TextFormatting.TextLine line, Avalonia.Point origin) virtual
+type Textalonia.Rendering.PageLink : System.Object sealed
+  interface System.IEquatable<Textalonia.Rendering.PageLink>
+  ctor public (Avalonia.Rect Bounds, System.String Target)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Rendering.PageLink other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(Avalonia.Rect& Bounds, System.String& Target)
+  method public Textalonia.Rendering.PageLink <Clone>$()
+  property Avalonia.Rect Bounds { public get; public set; }
+  property System.String Target { public get; public set; }
+type Textalonia.Rendering.PageTextLine : System.Object sealed
+  interface System.IEquatable<Textalonia.Rendering.PageTextLine>
+  ctor public (System.Guid StoryId, System.Guid ParagraphId, System.Int32 TextStart, System.String Text, Avalonia.Rect Bounds, Avalonia.Rect Clip, System.Double Baseline)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Rendering.PageTextLine other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Guid& StoryId, System.Guid& ParagraphId, System.Int32& TextStart, System.String& Text, Avalonia.Rect& Bounds, Avalonia.Rect& Clip, System.Double& Baseline)
+  method public Textalonia.Rendering.PageTextLine <Clone>$()
+  property Avalonia.Rect Bounds { public get; public set; }
+  property Avalonia.Rect Clip { public get; public set; }
+  property System.Double Baseline { public get; public set; }
+  property System.Guid ParagraphId { public get; public set; }
+  property System.Guid StoryId { public get; public set; }
+  property System.Int32 TextStart { public get; public set; }
+  property System.String Text { public get; public set; }
+type Textalonia.Rendering.PagedOutputException : System.NotSupportedException sealed
+  interface System.Runtime.Serialization.ISerializable
+  ctor public (System.Collections.Immutable.ImmutableArray<Textalonia.Export.PagedOutputDiagnostic> diagnostics)
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Export.PagedOutputDiagnostic> Diagnostics { public get; }
+type Textalonia.Rendering.UnsupportedContentPolicy : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Rendering.UnsupportedContentPolicy Strict static = 0
+  field Textalonia.Rendering.UnsupportedContentPolicy Tolerant static = 1
 type Textalonia.Serialization.ConversionDiagnostic : System.Object sealed
   interface System.IEquatable<Textalonia.Serialization.ConversionDiagnostic>
   ctor public (System.String Code, Textalonia.Serialization.ConversionDiagnosticSeverity Severity, System.String UnsupportedFeature, System.String Fallback, System.Nullable<System.Guid> ModelId = , System.String SourceLocation = )

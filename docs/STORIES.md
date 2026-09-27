@@ -150,5 +150,6 @@ serialization and page-region rendering.
 
 This implementation does not qualify Word/LibreOffice rendering equivalence,
 licensed DevExpress comparisons, native IME/accessibility on every platform,
-printing/PDF, or DX-00's broader durable-anchor/transaction framework. Those
-retain their separate workstreams and qualification gates.
+or DX-00's broader durable-anchor/transaction framework. [DX-04 output](OUTPUT.md)
+uses the same story page geometry and retains its own native print and PDF
+conformance qualification gates.

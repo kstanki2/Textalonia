@@ -93,6 +93,7 @@ public class TextaloniaToolbar : WrapPanel
         DialogButton("Page numbering…", "Page numbering dialog", editor.ShowPageNumberingDialogAsync);
         var viewButton = AddFlyout("View", "Document view, zoom and page navigation", ViewMenu(), editing: false);
         viewButton.Flyout!.Opened += (_, _) => Refresh();
+        AddOutputFlyout();
         AddFlyout("Insert", "Insert link or table", InsertMenu());
         AddFlyout("Stories", "Headers, footers and notes", StoriesMenu(), editing: false);
         AddMergeFieldFlyout();
@@ -142,6 +143,33 @@ public class TextaloniaToolbar : WrapPanel
         Children.Add(button); if (editing) _editingControls.Add(button); return button;
     }
     private static TextBlock Label(string text) => new() { Text = text, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 6) };
+
+    private void AddOutputFlyout()
+    {
+        var panel = new StackPanel { Spacing = 4, Width = 240 };
+        var preview = MakeButton("Print preview…", "Print preview");
+        var export = MakeButton("Export PDF…", "Export PDF");
+        var print = MakeButton("Print…", "Print dialog");
+        var quick = MakeButton("Quick print", "Quick print to the default printer");
+        var status = new TextBlock { TextWrapping = TextWrapping.Wrap, FontSize = 12 };
+        foreach (var control in new Control[] { preview, export, print, quick, status }) panel.Children.Add(control);
+        var button = AddFlyout("Output", "Print preview, print and PDF export", panel, editing: false);
+        button.Flyout!.Opened += (_, _) =>
+        {
+            export.IsEnabled = Editor?.PdfExporter is not null;
+            print.IsEnabled = quick.IsEnabled = Editor?.PrintService is not null;
+            status.Text = string.Join(Environment.NewLine, new[]
+            {
+                export.IsEnabled ? null : "PDF export requires a host PDF exporter.",
+                print.IsEnabled ? null : "Printing requires a host print service."
+            }.Where(value => value is not null));
+        };
+        preview.Click += async (_, _) => { button.Flyout.Hide(); if (Editor is { } editor) await editor.ShowPrintPreviewDialogAsync(); };
+        export.Click += async (_, _) => { button.Flyout.Hide(); if (Editor is { } editor) await editor.ShowExportPdfDialogAsync(); };
+        print.Click += async (_, _) => { button.Flyout.Hide(); if (Editor is { } editor) await editor.ShowPrintDialogAsync(); };
+        quick.Click += async (_, _) => { button.Flyout.Hide(); if (Editor is { } editor) await editor.QuickPrintAsync(); };
+    }
+
     private Button MenuAction(string text, Action action, bool editing = true)
     {
         var button = MakeButton(text, text); button.HorizontalAlignment = HorizontalAlignment.Stretch;

@@ -770,7 +770,7 @@ public sealed partial class PaginationEngine : IDisposable
                 _storyFragments.Select(f => ShiftStoryFragment(f, positions[f.PageIndex])).ToImmutableArray(),
                 _storyRegions.Select(r => r with { Bounds = r.Bounds.Translate(positions[r.PageIndex]) }).ToImmutableArray(),
                 _storyCells.Select(c => (c.StoryId, c.Page, c.Cell with { Bounds = c.Cell.Bounds.Translate(positions[c.Page]), Clip = c.Cell.Clip?.Translate(positions[c.Page]) })).ToImmutableArray(),
-                _layoutDiagnostics.ToImmutableArray());
+                _layoutDiagnostics.ToImmutableArray()) { IsDraft = options.Draft };
         }
         public void Release() { foreach (var measurement in _held) measurement.Release(); _held.Clear(); _prior = null; }
     }
@@ -791,7 +791,3 @@ public sealed partial class PaginationEngine : IDisposable
         return format is PageNumberFormat.LowerLetter or PageNumberFormat.LowerRoman ? result.ToLowerInvariant() : result;
     }
 }
-
-
-
-

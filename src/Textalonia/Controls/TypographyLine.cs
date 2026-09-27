@@ -61,12 +61,7 @@ internal sealed class TypographyLine : TextLine
     {
         foreach (var item in _drawing)
         {
-            var top = origin.Y + (item.Run.Properties?.BaselineAlignment switch
-            {
-                BaselineAlignment.Subscript => _line.Height - item.Run.Size.Height + _rise,
-                BaselineAlignment.Superscript => _rise,
-                _ => Baseline - item.Run.Baseline
-            }) - ((item.Run.Properties as TypographyProperties)?.Style.BaselineOffset ?? 0);
+            var top = origin.Y + GetDrawTop(item.Run);
             using (context.PushTransform(new Matrix(item.Scale, 0, 0, 1, origin.X + item.Bounds.X, top)))
                 item.Run.Draw(context, default);
             if (item.Run.Properties is TypographyProperties { Style.UnderlineKind: UnderlineKind.Wave } properties)
@@ -85,6 +80,20 @@ internal sealed class TypographyLine : TextLine
             }
         }
     }
+    private double GetDrawTop(DrawableTextRun run) => (run.Properties?.BaselineAlignment switch
+    {
+        BaselineAlignment.Subscript => _line.Height - run.Size.Height + _rise,
+        BaselineAlignment.Superscript => _rise,
+        _ => Baseline - run.Baseline
+    }) - ((run.Properties as TypographyProperties)?.Style.BaselineOffset ?? 0);
+
+    // Inline overlays must follow the exact drawing origin, including rise and baseline alignment.
+    internal Rect GetInlineBounds(InlineObjectRun run, Point origin)
+    {
+        var item = _drawing.First(item => ReferenceEquals(item.Run, run));
+        return new(new Point(origin.X + item.Bounds.X, origin.Y + GetDrawTop(run)), run.Size);
+    }
+
     public override TextLine Collapse(params TextCollapsingProperties?[] collapsingProperties) => _line.Collapse(collapsingProperties);
     public override void Justify(JustificationProperties justificationProperties) => _line.Justify(justificationProperties);
     public override CharacterHit GetCharacterHitFromDistance(double distance) => Shift(_line.GetCharacterHitFromDistance(distance), _indexOffset);
@@ -123,6 +132,3 @@ internal sealed class TabTextRun(TextRunProperties properties, double width = 0,
         }
     }
 }
-
-
-

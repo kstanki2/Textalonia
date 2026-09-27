@@ -196,22 +196,27 @@ internal sealed class InlineObjectRun : DrawableTextRun
     {
         var bounds = new Rect(origin, Size);
         using var clip = context.PushClip(bounds);
+        if (Rendering.InlineOutputScope.Current?.Invoke(Descriptor, context, bounds) == true) return;
         if (Descriptor.Payload is NoteInlinePayload or PageFieldInlinePayload)
         {
-            using var storyLabel = FieldLabel(); storyLabel.Draw(context, origin); return;
+            var storyLabel = FieldLabel();
+            using var storyLifetime = Rendering.InlineOutputScope.Retain(storyLabel);
+            storyLabel.Draw(context, origin); return;
         }
         if (Descriptor.Payload is MergeFieldInlinePayload)
         {
             using (context.PushOpacity(.12)) context.DrawRectangle(_properties.ForegroundBrush, null, bounds);
             using (context.PushOpacity(.4)) context.DrawRectangle(null, new Pen(_properties.ForegroundBrush, 1), bounds.Deflate(.5));
-            using var fieldLabel = FieldLabel();
+            var fieldLabel = FieldLabel();
+            using var fieldLifetime = Rendering.InlineOutputScope.Retain(fieldLabel);
             fieldLabel.Draw(context, origin + new Vector(4, 2));
             return;
         }
         context.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Gray, 1), bounds.Deflate(.5));
-        using var label = new TextLayout(string.IsNullOrEmpty(Descriptor.AltText) ? "Object" : Descriptor.AltText,
+        var label = new TextLayout(string.IsNullOrEmpty(Descriptor.AltText) ? "Object" : Descriptor.AltText,
             _properties.Typeface, Math.Min(12, _properties.FontRenderingEmSize), _properties.ForegroundBrush,
             maxWidth: Math.Max(1, Descriptor.Width - 6), maxLines: 1, textTrimming: TextTrimming.CharacterEllipsis);
+        using var labelLifetime = Rendering.InlineOutputScope.Retain(label);
         label.Draw(context, origin + new Vector(3, Math.Max(0, (Descriptor.Height - label.Height) / 2)));
     }
 }
