@@ -1,8 +1,6 @@
 name: extended-baselines
 
 on:
-  schedule:
-    - cron: '17 4 * * 1'
   workflow_dispatch:
     inputs:
       fuzz_steps:

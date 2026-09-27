@@ -232,15 +232,16 @@ qualification explicit; headless tests do not certify those integrations.
 - `tests/Textalonia.PackageSmoke`: separate consumer that references the generated NuGet package.
 - `docs/ARCHITECTURE.md`: design and extension points.
 - `docs/ROADMAP.md`: remaining work toward the reference editor's feature set.
-- `.github/workflows/ci.yml`: build/test/pack and consumer checks; no publishing.
+- `.github/workflows/ci.yml`: manual build/test/pack and consumer checks; no publishing.
 
 Retained measurements are indexed in [benchmark baselines](docs/BENCHMARK-BASELINES.md), with
 [qualification targets](docs/QUALIFICATION.md), [compatibility rules](docs/COMPATIBILITY.md),
 [native procedures](docs/NATIVE-BASELINES.md), and [performance budgets](docs/PERFORMANCE.md).
 Run the complete verification route with `pwsh -File scripts/Invoke-Baselines.ps1`.
 Add `-LongCorpus` for 2,000 operations per seed and `-Performance` for full control benchmarks.
-The bounded suite runs on every change; `.github/workflows/baselines.yml` schedules the
-longer corpus and performance captures separately. Native pending records remain visible in CI artifacts.
+Automatic CI is paused. Both GitHub workflows use manual `workflow_dispatch` triggers;
+`.github/workflows/baselines.yml` retains the longer corpus and performance captures.
+Local verification commands remain available. Manual runs retain native pending records in their artifacts.
 
 Textalonia is [MIT licensed](LICENSE), attributed to Textalonia contributors.
 [Dependency notices](THIRD-PARTY-NOTICES.md) retain upstream terms. The

@@ -1,7 +1,8 @@
 # Release procedure
 
 Phase 8 prepares reviewable artifacts; publishing is a later explicit action.
-Ordinary push/PR CI has no publication credentials or publishing step.
+Automatic CI is paused; validation workflows run only when manually dispatched.
+They have no publication credentials or publishing step.
 The current identity is Textalonia / 0.1.0-preview.1, MIT, attributed to
 Textalonia contributors, with repository/project URL
 https://github.com/kstanki2/Textalonia. MIT was selected by the maintainer on
@@ -42,8 +43,8 @@ the run fail validation. A dirty working tree can generate development evidence
 but cannot be published by the release script.
 
 Run the manual build-test-package workflow with release_workloads=true at the
-same commit/version to collect Windows, macOS and Linux artifacts. Ordinary CI
-uses the same route with bounded workloads. Download and retain the three bundles
+same commit/version to collect Windows, macOS and Linux artifacts. Leaving
+release_workloads=false uses bounded workloads. Download and retain the three bundles
 before their 30-day CI expiry. Matrix execution is a gate, not a promise inferred
 from workflow YAML. Choose one exact bundle for publication; do not rebuild it on
 the publishing machine.
