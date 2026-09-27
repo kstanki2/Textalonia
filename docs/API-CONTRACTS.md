@@ -1,0 +1,85 @@
+# Public API and data contracts
+
+The 0.1 preview contract is the exported API in public-api.txt plus the nullable,
+attribute and modifier baseline in public-api-contracts.txt (both under
+tests/Textalonia.Tests/Fixtures). Phase 8 changes no exported library signatures.
+The model, session, commands, input, resources, diagnostics, editor, viewers,
+toolbar and codecs are all captured. Generated record members and protected
+extension members participate in the checks.
+
+Both snapshots must pass before packing. Review a snapshot diff with its migration
+example and consumer coverage; never replace a baseline just to make a failure
+disappear. The .NET SDK package validator also runs at pack time. After the first
+public package exists, set PackageValidationBaselineVersion to the previous
+published compatible version during restore/build/pack. No previous public binary
+is currently available, so no historical binary comparison is claimed.
+[SDK package validation](https://learn.microsoft.com/en-us/dotnet/fundamentals/apicompat/package-validation/overview)
+and [Source Link](https://github.com/dotnet/sourcelink/blob/main/docs/README.md)
+describe the build mechanisms.
+
+## Threading, ownership and failures
+
+| Surface | Supported behavior |
+| --- | --- |
+| FlowDocument, blocks, styles, resources | Immutable snapshots may be shared between threads. Pure transforms return new values. Validate data before handing it to the editor. No control, stream, bitmap or live host service is persisted. |
+| EditorSession | Mutable single-owner object. Serialize its calls and event handlers on one thread. A session attached to an editor belongs on that editor's UI thread. Events run synchronously on the caller's thread; concurrent mutation and reentrant edits in callbacks are not supported. Sessions/snapshots do not require disposal. |
+| Editor, DocumentSurface, toolbar, viewers, commands | Create, bind, edit and access Avalonia controls on the UI thread. Commands follow read-only/can-execute state. Async command failures set LastError and raise OperationFailed; awaited load/save methods propagate failures to the caller. The host owns link activation. |
+| Text / Document binding | Text is eager by default. SynchronizeText=false stops publishing full text after edits; use Document.Text or Session.Index.ReadText for current content. Assigning Text replaces rich structure and resets history. Bind one authoritative source, avoiding competing Text and Document bindings. Document assignment is a host load, even while read-only. |
+| Selection | Directional UTF-16 Anchor/Active, sorted Start/End, clamped grapheme boundaries; one U+FFFC represents an inline object. PlainText/clipboard substitute its alternative text. Undo restores directional selection. Default key navigation is visual bidi; explicit session offsets remain logical. Highlights are snapshot offsets and need updating after edits. |
+| Input components | UI thread; one attached surface per instance. Replacing a component or detaching the view calls Detach; release captures, timers and subscriptions there. The host owns injected service objects; they are not automatically disposed. |
+| Inline resources | Resolver runs on a worker and must honor cancellation. A returned stream transfers ownership to the image loader, which disposes it. Embedded-only resolution is the default. UI-thread InlineImageCache owns bitmaps; returned bitmaps are borrowed until eviction/reset/disposal. Dispose a cache created directly by the host. |
+| Inline control factories | UI thread, explicitly registered type keys only. Return a new unparented control for each Create. Each successful creation is paired with Release on eviction/detach. Release owns view resources; unregister/replacement does not dispose the factory service itself. |
+| MarkdownViewer / ICodeHighlighter | Source updates originate on UI thread; parsing/tokenization may run on workers. Adapters must tolerate cancellation and concurrent calls. Latest revision wins; await WaitForParsingAsync/WaitForHighlightingAsync. Detachment cancels pending work/releases caches; the host retains ownership of its highlighter. Parsing/highlighting errors are reported separately, with canonical document text preserved. |
+| IDocumentFormat / reports | Caller owns input/output streams, including failures/cancellation. Read/write at the current position without rewinding. Synchronous parsing is not interruptible; async cancellation is cooperative. Custom implementations must enforce their own limits/cancellation. Strict reporting stages output before writing; final I/O failure may leave partial bytes. Use a temporary file and rename for atomic saves. |
+| Exceptions | Invalid models/unsupported content use FormatException, JsonException, InvalidDataException or parser-specific exceptions; unsupported schema/extension uses NotSupportedException. Invalid API arguments use argument exceptions. Cancellation propagates OperationCanceledException; I/O errors propagate. Strict loss throws DocumentConversionException with its report. Do not match exception message text. Stable diagnostic codes are documented in INTERCHANGE.md. |
+| Pending loads | Editor load accepts the first completed result whose captured session revision still matches. Edits/load/undo invalidate old results; selection-only changes do not. This differs from MarkdownViewer's latest-source revision policy. |
+
+See [input](INPUT-COMPONENTS.md), [resources](INLINE-CONTENT.md),
+[viewer lifecycle](MARKDOWN-VIEWER.md), and [interchange](INTERCHANGE.md)
+for the detailed extension contracts. Headless managed accessibility text ranges
+are covered; native screen-reader text navigation remains unqualified.
+
+## Native schemas and preview migrations
+
+| File schema | Release reader | Defaults / migration |
+| --- | --- | --- |
+| v1 | Supported, frozen strict DTO reader | Legacy cell paragraph collections migrate to blocks; later list/style/resource/semantic fields take documented defaults. |
+| v2 | Supported, strict version metadata | Rich lists, nested tables and merge backups retained; resources and inline/semantic additions default absent. |
+| v3 | Supported, strict version metadata | Inline descriptors and immutable resources retained; quote/code annotations default absent. |
+| v4 | Current writer and reader | Quote/code/language and inline-code metadata retained. |
+
+The 0.1 release line retains v1-v4 readers. Persisted additions require an explicit
+new writer version and tested reader migration. Unknown members and unsupported
+versions are rejected, never silently guessed. A reader's support window must be
+documented before a release; removing an old reader requires a future major
+release and an available migration route. The data XAML vocabulary has its own
+version (1); it is neither Avalonia object XAML nor another editor's format.
+
+The deliberate preview incompatibility is **newer wire formats requiring a newer
+reader**, not removed public methods. Preserve original files when upgrading:
+load an older file, validate, save to a new file, then reopen with this version
+before replacing the original. Do not relabel a v4 envelope as v1-v3.
+
+~~~csharp
+await using var input = File.OpenRead("original.art"); // legacy extension accepted
+var result = await DocumentFormats.Json.LoadWithReportAsync(input);
+await using var output = File.Create("migrated.textalonia");
+await DocumentFormats.Json.SaveWithReportAsync(result.Document, output);
+~~~
+
+For nested cell data use cell.Blocks and cell.MergeOriginalBlocks instead of the
+legacy Paragraphs/MergeOriginal projections. Keep projection-based code only
+where cells intentionally contain paragraphs alone. Native migration tests use
+frozen v1/v2 fixtures and the checked-in v3 inline resource fixture, then verify
+v4 round trips, resources, undo and reverse selection. Existing phase tests also
+cover hidden merge restoration and rejected later-version members.
+
+For scalable document binding, replace a Text binding with a Document binding,
+set SynchronizeText=false, and explicitly read ranges when needed. For conversion
+adoption, legacy IDocumentFormat still compiles; implement IReportingDocumentFormat
+to report fidelity. Strict conversion rejects a legacy custom format's unknown
+fidelity rather than silently promising losslessness.
+
+The executable examples in tests/Textalonia.PackageSmoke cover these APIs against
+a freshly restored NuGet package, including custom codecs, replacement keyboard,
+host resource streams, control factories, editor/viewer and optional highlighting.

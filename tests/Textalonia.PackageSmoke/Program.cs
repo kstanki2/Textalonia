@@ -201,7 +201,8 @@ internal static class Program
                 window.UpdateLayout();
                 using var frame = window.CaptureRenderedFrame()
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
-                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, schema v4, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, and rendering.");
+                await ExtensionExamples.VerifyAsync(window);
+                Console.WriteLine("Package consumer passed: custom codecs/resources/input/viewer lifecycle, compiled XAML, themes, input, formatting, schema v4, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, and rendering.");
             }
             finally { window.Close(); }
             return true;

@@ -2,7 +2,7 @@
 
 An independent, native rich text editor for **Avalonia 12** and **.NET 8+**, distributed as one NuGet package.
 
-**Status: 0.1.0-preview.1.** This repository contains a working editor, desktop demo, tests, and local NuGet packaging. It is not a feature-complete or API-compatible replacement for Avalonia's commercial editor. See [the feature matrix and roadmap](docs/ROADMAP.md) before adopting it.
+**Status: 0.1.0-preview.1 candidate; not yet published.** This repository contains a working editor, desktop demo, tests, and local NuGet packaging. It is not a feature-complete or API-compatible replacement for Avalonia's commercial editor. See [the feature matrix and roadmap](docs/ROADMAP.md) before adopting it.
 
 ## Run the demo
 
@@ -242,7 +242,15 @@ Add `-LongCorpus` for 2,000 operations per seed and `-Performance` for full cont
 The bounded suite runs on every change; `.github/workflows/baselines.yml` schedules the
 longer corpus and performance captures separately. Native pending records remain visible in CI artifacts.
 
-Before public release, finalize ownership metadata, the repository URL, and a project license, and confirm availability of the Textalonia package ID on nuget.org. Dependency licenses remain their respective owners' terms. No project redistribution license has been selected here.
+Textalonia is [MIT licensed](LICENSE), attributed to Textalonia contributors.
+[Dependency notices](THIRD-PARTY-NOTICES.md) retain upstream terms. The
+[Phase 8 report](docs/PHASE8-REPORT.md), [API contracts](docs/API-CONTRACTS.md),
+[preview notes](docs/RELEASE-NOTES.md) and [release procedure](docs/RELEASE.md)
+describe candidate validation and remaining owner/native qualification gates.
+Run PowerShell 7+ with `scripts/Invoke-ReleaseCandidate.ps1 -LongCorpus -Performance`
+to retain exact packages, source/symbol checks, clean consumer logs and workload
+evidence. Authenticated NuGet package control, completed OS-matrix evidence and an
+explicit publication action are still required; nothing is automatically published.
 
 ### Extensible input and inline content
 

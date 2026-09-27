@@ -1,0 +1,1598 @@
+[
+  {
+    "path": ".editorconfig",
+    "sha256": "27f62533391efa8a88bdf0a4f7bae60e3e79f830cc2602f8ae87d86672efcca8"
+  },
+  {
+    "path": ".gitattributes",
+    "sha256": "cf7751970607fd581c23ed874a4bd2204ad8693b2e7b262e41ea98c17b8d973f"
+  },
+  {
+    "path": ".github/workflows/baselines.yml",
+    "sha256": "c39519107ab38f9a70a9cb6b1d0fc986acc1d18bb715d9b69f004082e52a98a1"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "sha256": "0c0a114bebcbafcb6c93b46efce683344efa4f2bb7bfcde61e8567d29ee01b2b"
+  },
+  {
+    "path": ".gitignore",
+    "sha256": "b451a28f4629f6c4d782b3fbff21f8e841bfa290e780d3e6a364e4fa86df25dc"
+  },
+  {
+    "path": "benchmarks/Textalonia.Benchmarks/CoreProbe.cs",
+    "sha256": "4b7b24dfe51b5330644b9519cb501c51ea0cc943e8205137f8ac5fc964e2c7c2"
+  },
+  {
+    "path": "benchmarks/Textalonia.Benchmarks/InteractionProbe.cs",
+    "sha256": "c240cf99ea0fcb6a5362c7f7418ad1923c2c452b42910055212b6c67d6e0494a"
+  },
+  {
+    "path": "benchmarks/Textalonia.Benchmarks/MarkdownProbe.cs",
+    "sha256": "fb18fdfa568bf2f3213fca02314807cbebf2b5333732c54b7c7b96add66b05b4"
+  },
+  {
+    "path": "benchmarks/Textalonia.Benchmarks/Program.cs",
+    "sha256": "3e7d7b6fa7729de41165b3cd490a225a039d6f3cbd90886a8616a1b685f96adf"
+  },
+  {
+    "path": "benchmarks/Textalonia.Benchmarks/Textalonia.Benchmarks.csproj",
+    "sha256": "99e558a1d6933654375ae497e1d20e9b5430295cd1874a0334adc1dc94c804f1"
+  },
+  {
+    "path": "CHANGELOG.md",
+    "sha256": "33af2ed24bc9b9ab903225fc4d81c4db296cabb777ce05eafc098d4d70adf5dc"
+  },
+  {
+    "path": "Directory.Build.props",
+    "sha256": "3d3c5d4071deaa4bfec8ff3eceb8fca19da371d4cb7bd94e538912c588f697a4"
+  },
+  {
+    "path": "docs/ADR-002-SCALABLE-CORE.md",
+    "sha256": "89d5a0acd9bf096132f251103beebefeae3503dd4f61c35e89df6fe55cc28663"
+  },
+  {
+    "path": "docs/API-CONTRACTS.md",
+    "sha256": "5fdfe035beb9ab7c60dbff95885f9ce77cc11abecb9874aa92d9a2368f65aa1f"
+  },
+  {
+    "path": "docs/ARCHITECTURE.md",
+    "sha256": "49016237c041dd1a127bb0b2d1ba00b75f43ee44e6609a8aea5edacf53498dcc"
+  },
+  {
+    "path": "docs/BASELINE-REPORT.md",
+    "sha256": "95b9e4fe371f02da2238d64fe183187b47d4d2ba9b1858baa24720659b46e9f0"
+  },
+  {
+    "path": "docs/baselines/clipboard-source.html",
+    "sha256": "713e723b80b0e599f2c9dd74d73f3fa1405b2866f61a0ee3e35d3dfa806b3bfb"
+  },
+  {
+    "path": "docs/baselines/native/linux-20260926-154511-782.json",
+    "sha256": "3e19cfb3619847c7a3a9f82a394b59b0e76fa1cd8ff8534a0987b09706bf2397"
+  },
+  {
+    "path": "docs/baselines/native/macos-20260926-154511-135.json",
+    "sha256": "16fd45de1eaa7e5994e7ad74721bae842378c51a5092934df08889ba57f5f283"
+  },
+  {
+    "path": "docs/baselines/native/phase6/android-20260927-000703-578.json",
+    "sha256": "f3c2c28b99de77ae1fe34b2fcac7db6772d8f9c8017cc1b2f92f2fd0d46d023d"
+  },
+  {
+    "path": "docs/baselines/native/phase6/ios-20260927-000704-180.json",
+    "sha256": "70e9e12cb9c4fc31d952de8d4439ad3091c0731b5f3246b94ad899381adb6ace"
+  },
+  {
+    "path": "docs/baselines/native/phase6/linux-20260927-000702-960.json",
+    "sha256": "0c092724a32949dd1819973acd7bb65c6f5d0635e632dc0245b3252d8a6e1196"
+  },
+  {
+    "path": "docs/baselines/native/phase6/macos-20260927-000702-321.json",
+    "sha256": "43d5d6383977e651e8573904f516978a7a0e154f44e49c79a503f14f7a7f8bcb"
+  },
+  {
+    "path": "docs/baselines/native/phase6/windows-20260927-000701-668.json",
+    "sha256": "e0daf616ef0b37d4f86a42b81f4e0683e2134f8d9537a45f21ff1c4008c4dac8"
+  },
+  {
+    "path": "docs/baselines/native/windows-20260926-154510-501.json",
+    "sha256": "e9bec1e976795d6b2dd2ce8eb682bc42eb9bf83a99cfc31ab45e225077bb1a08"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/comparison.json",
+    "sha256": "95b1f6ee398fb30a9e7e4d6300c763c3b9d0b63941385572f4d7499e70004d7a"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/compatibility/budgets.json",
+    "sha256": "f3ee206eae79b8c479e48fab9d634da0757074adeadfd2b7c5b7510bfe5f67d0"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/compatibility/environment.json",
+    "sha256": "b3e11208347f65444e3d735a2acf3c6007bf935d960ff5b990617fc1243f3f39"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/compatibility/results.json",
+    "sha256": "fb7bab51a76a7dbe2cf46052b17b335fdb10cfd8dd43bebc05850cace564dce4"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/compatibility/status.json",
+    "sha256": "9eb72c2331270582f38a5e454f0747c736889bd194fe8595ce792e261910fdbd"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/compatibility/summary.csv",
+    "sha256": "36fd7c36cb4636e2782a4eea9c003eff68c9f0b03954bc5e10bcb83300f762d9"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/benchmark-assembly-hashes.json",
+    "sha256": "cf7c97fd1b5a975fe7bab4efe001097a7610f2ed3525c9e38067c6409a201d12"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/benchmark-source-hashes.json",
+    "sha256": "e0f06edd03750d334dab9f297e5c5d9d0f467ab083c8e96b27883baee161bf4d"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/compatibility/budgets.json",
+    "sha256": "49ada048200dbfd36d3d45f3a6cdcf7ffd4ec22c67433426968bee556ce5da4a"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/compatibility/environment.json",
+    "sha256": "ad5189377f0b500c00680c62a75e8cd4177ff6344a8bd6fd447e6217b00e384e"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/compatibility/results.json",
+    "sha256": "faaf3c76828e5f76a8a83777f63d56fd26e5a9130b26bd958a4ba8839e065f5c"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/compatibility/status.json",
+    "sha256": "70753ca982ea604b367c1db4abac83b910f30240bab835cd16223e28439776a7"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/compatibility/summary.csv",
+    "sha256": "50f45d554fcb390a8101f7e3dce3293c19986e3217921402237907b40343a434"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/document/budgets.json",
+    "sha256": "5951f0870971a659c41ad7a4c63c6ed8be1813b2e065343f1962744cde1d6f4e"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/document/environment.json",
+    "sha256": "df9611f9fc7c9e1e144f25a583b3d1bf9c19bc5bfc288e08c53c2780afaca22f"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/document/results.json",
+    "sha256": "34cbb5a68a1ecd650c92805eb4a13fb9d3551bf9bf0065b68907dba6951e9986"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/document/status.json",
+    "sha256": "5109ef8541c82fe952e91623301104ec82acc50772821f0cf0f76dc8596993db"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/document/summary.csv",
+    "sha256": "13e4f369df2ee5b48f6f85af8a0b8df6ebc24c3f3a9cfb348c8862f10e63df2a"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/diagnostic-30/host-load.json",
+    "sha256": "9e5cb03051b77a2af4be33b94191cc5884381bfbc0268e78579e3ae2c5ee4b37"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/document/budgets.json",
+    "sha256": "c3f89692b5dbefe4b280b067805a2cae2174015ff9d8f30aea95bd6325660ef5"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/document/environment.json",
+    "sha256": "2cde04bd20053585406eb3018d76623b3c301f2a4da621e74f77cfe0e1f423d5"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/document/results.json",
+    "sha256": "c9ea096dafaa114e9cb2613792f65d58a2c5e6c44860b12b9b905f0638e0bfe9"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/document/status.json",
+    "sha256": "c1d962c8210cb51df3b1ce32744e66da32102cef0b49135288f5de7168b315bb"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/document/summary.csv",
+    "sha256": "19275f6acbbdcd12f7f14699bc8eff8eb82b3792897c60445f8a5e2457f6e662"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/dotnet-info.txt",
+    "sha256": "1e71d5b4779f737eafaf9805c95770f438b8dffa41c0caf7474aacbb71246eb5"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/host-notes.txt",
+    "sha256": "a7b631fc3d1eb4effb78b69470bee03a7bb968d9ac5df05b36a2ba98126a92bd"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/source-hashes.json",
+    "sha256": "f8302df1b54e8d289dffe2b978c5032786341d1ece853cbd67ef330ab726bd02"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-cache/verification.json",
+    "sha256": "95b5383592e2cfad7c2941988abaa8279d6edac3ed5f13473afbaa8744737f42"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/comparison.json",
+    "sha256": "90c1da64dc2f83220f488b446fe4d42232ff75c0d5061dc999cfadf660d93937"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/compatibility/budgets.json",
+    "sha256": "05b4181c00e2778323b3fc69e8120b1f148c16d71497e7f20126b3f3b15a0a74"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/compatibility/environment.json",
+    "sha256": "40201b74c6f899425bcd8faebb44eaf2f9bb45e3e26ce99e2e85a5fb54c6aa88"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/compatibility/results.json",
+    "sha256": "46bd018666c606139d0b790c15d8b293f4ec1a75da40c842be03b05824028224"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/compatibility/status.json",
+    "sha256": "c9a80ce61266e07502c83646d996f652a238d046b2e57b4dbaf88fe864970f59"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/compatibility/summary.csv",
+    "sha256": "b77d4857a573d6e0816e7ea6489d3897ccef1f3f0fd2c0a6fd99175ce67c6910"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/confirmation-30/document/budgets.json",
+    "sha256": "6695742f3be16b24b93a90cbb3326a81a4e7abb13e433fa4e889c79c2d716b6d"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/confirmation-30/document/environment.json",
+    "sha256": "5b9e149572173361de130ce9a323614adeb620ef52ac6e8fc33466768b164b1f"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/confirmation-30/document/results.json",
+    "sha256": "35cd8e2bc286cac86f1bb23f8cc9ac51976bf036919df2dd7dc601324b26af5a"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/confirmation-30/document/status.json",
+    "sha256": "9a86b69cef45cc5d7fd1ea85041a9193799bb3780b014c9aec916de374932ebd"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/confirmation-30/document/summary.csv",
+    "sha256": "891411d1eac1a54f6811485f2b61dbd5d0e48c72f4e37887ca57606adb81c426"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/allocation-pass/budgets.json",
+    "sha256": "aaf08329d196abf6025a3dd411323ff2b0d94d176b628189d88f12ced29efdd9"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/allocation-pass/environment.json",
+    "sha256": "2c18287f1b1c8ef71919df9b865e3085aa44e58b387a45f89eee83ff03117548"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/allocation-pass/results.json",
+    "sha256": "e490930ee4afd97de42841a6d4797564b9d3ec9b5a54d6107bbe01f5061a57c6"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/allocation-pass/status.json",
+    "sha256": "8814a47c31443e66f2736f07fa91f0fb0eee7e14673232d2253d172c7012bb44"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/allocation-pass/summary.csv",
+    "sha256": "7f0838de69352dd31b069b018a3d340624cac08d497de9c70fe3cbae3aa4def6"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/before/budgets.json",
+    "sha256": "1ad9c51bec8ded3c6681e60462f48acf61c40050260dd463e328084f7a84b11a"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/before/environment.json",
+    "sha256": "f91ba942396a5bc6d8f41e321e6e2239cc2daaf68d0acf74c455749f1ca24b87"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/before/results.json",
+    "sha256": "e92b692c5462c475624cbc2b1757b219c53ffa58aa278b13f93856e692057986"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/before/status.json",
+    "sha256": "d4703595d1843d6db27783c85603290bba607009373ad90079b23b565a2b7691"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/before/summary.csv",
+    "sha256": "7f2f9149574cb969a224a0ec0a6396ee986ebbf77b175a68a0fe5f31f6b04b84"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/cpu-probe/CpuProbe.csproj",
+    "sha256": "a05e750957891e0ea11ccd8137a595a920c72712a892ee6a3c4967e598650fda"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/cpu-probe/Program.cs",
+    "sha256": "dcff608bdbee293973597a2e9bf6a5c2ec599426cb6fa2ec977ea21c4387c273"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/cpu-probe/README.md",
+    "sha256": "2344866cc573d9ba0cec8bbed5cfece8abdd438bfa170e74aee859a2a2fbcd6d"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/cpu-probe/results.json",
+    "sha256": "87267b8d781c396a00b20276cec5dfb8535ffa6bef1c1a10d78c1e5545d41f24"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/diagnostic/budgets.json",
+    "sha256": "aa3cf18c0b0ec8dfbac559e7904db071e4ec61d0f409be328098c142a508d5f2"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/diagnostic/environment.json",
+    "sha256": "9562fa070ef3f1b0ba2a0d3e5e3271b9b1e6ba89eb037ffe60914b3a1092728b"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/diagnostic/results.json",
+    "sha256": "d6b4b67628f07152b3c04235649a2827a4c659d74668e2a92cb29702369afa67"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/diagnostic/status.json",
+    "sha256": "f31cfb8fdc245d2abffad4005a0cf5439f2dfe42e3f30f5c4bd76661dbffe00d"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/diagnostic/summary.csv",
+    "sha256": "13dd9d1ff9aa4921b13ea2ddd7622d883d1623a332ceb20150ad8b6795b0073f"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/assembly-hashes.json",
+    "sha256": "a581dc44b54c4729d08713b799199bbe6cbc8040ba1a5d49337d62f94c5366e0"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/comparison.json",
+    "sha256": "4c6899f7dd355f1fec2e90a2dcceb36c476b532c0fcb17082a12b0b8dcc01f4d"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/compatibility/budgets.json",
+    "sha256": "7b45db5539ed8aac457b18174e2c06c7c0cfa95b8aba8bafbce579a9789480ae"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/compatibility/environment.json",
+    "sha256": "c08a8cacf5a4cd6931af3f1b259de685d7e14c7ce19582d63beb27cdf6547d9b"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/compatibility/results.json",
+    "sha256": "9acae4bd4ae77a427b3f1826e040131bf37321e050e601d4e0de6819703ca055"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/compatibility/status.json",
+    "sha256": "24fdcb63bbf27aa5f28a910f88f1722f6625926ba4fd06d88b9997687bed7252"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/compatibility/summary.csv",
+    "sha256": "08a378de290966fac3872e10bfcebf798ca337f0de446959b404af32b22fc66d"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/confirmation-30/compatibility/budgets.json",
+    "sha256": "1838f94efa4f2df91e3dd6e5ade4c0b1111a18ccf3d181bf3cafb80e45ab273e"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/confirmation-30/compatibility/environment.json",
+    "sha256": "afd25fff4611dc31688e0f095a07d85d72ccee2a55bd5a24f5587001afb0c12f"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/confirmation-30/compatibility/results.json",
+    "sha256": "214ee91c6cfa90035bd90e69ee4f8ad48ca7f8fc772dfcaa8137c35f1e451846"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/confirmation-30/compatibility/status.json",
+    "sha256": "691ad86cceff6fad93568552be70d14af88c87069594750ff45b94fd0af5a285"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/confirmation-30/compatibility/summary.csv",
+    "sha256": "c1c3b299573062d090e800c11de3a57993d7f22d4eb6aa5d36f9844f8b7ab3d2"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/confirmation-30/document/environment.json",
+    "sha256": "ec2de5136c0cca35860c7e1044ce6a8e834b1fcd58156af25e8189c76a02cd28"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/confirmation-30/document/results.json",
+    "sha256": "2e7f56be2ba2e44de31687b247e2b4666f194ba342baa721fac454b76833d791"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/confirmation-30/document/status.json",
+    "sha256": "6bb521635ab5eddefc985fb96f19208168cdcff6d4c21571178f0d011e7b4eeb"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/confirmation-30/document/summary.csv",
+    "sha256": "1b16e4703ac1cc5e0502b7462edfc6135d5c7e7c308e263ddac345d8578b2551"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/document/budgets.json",
+    "sha256": "f1ece548ebddc7f7adffeeeb3c80aac7010652d770b87142bf5256c81643c4b5"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/document/environment.json",
+    "sha256": "6a44fdf587dcdf2840fb8f3fe59dc7b9909a5e392eae1df73257673511b3f57b"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/document/results.json",
+    "sha256": "adf3b880808c3c09578ff434099aa00803656590ccaebc2855e42a44f6e2640c"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/document/status.json",
+    "sha256": "fb83d98d622c30dc9bef5336266fb05f484e65bde9fe0b7c0c82330b9f533f55"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/document/summary.csv",
+    "sha256": "003afc7b34728f1a3baf7df1469c8bc02bcd0362fc81008298df01a77235e739"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/scroll-regression-before.trx",
+    "sha256": "9b80f613808c0fba7c69ced76ae47c61307b12bd7c5304ac8987df6040204847"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/first-candidate/source-hashes.json",
+    "sha256": "a4dd893cc5ab0ee26910388c2bec80728a9345da403897a184c2ddc83b02c7c9"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/README.md",
+    "sha256": "f07e364e1d11f1d41eedd44820b7a5dec6d5e361305b1d6b0e59ca6e09ee08fe"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/README.txt",
+    "sha256": "1747a2aa43e1a15611ad8130de26cb37f5be5c73205fdac9948e5e11ee27a60d"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph/compatibility/budgets.json",
+    "sha256": "04955bc3bdc274878c9b2e58207ebb231e04fe33d05d017ddb04ac57aade4df4"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph/compatibility/environment.json",
+    "sha256": "1218c4b320e3f19212f98e44d63593967b4c32946a3d88ae35c0fa5775893ac6"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph/compatibility/results.json",
+    "sha256": "7a0b03856d20a4614e4c1a909056d5f9d69d01688e46fdc7d73edc1036947a70"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph/compatibility/status.json",
+    "sha256": "60a9202280fabb363b22105827153999602c5c45f56a0ea0345f31f5bb4773fc"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph/compatibility/summary.csv",
+    "sha256": "a53eb3e6f5fafd858261ee79463b331aaa106152bfc9e88bb36996b80bfe562e"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph/document/budgets.json",
+    "sha256": "26973d4c34013da3ada5e475dce30c6bde76a28584b566883c038600d57568e8"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph/document/environment.json",
+    "sha256": "e2b5c19c149fbf222ec7007a5bd3a3b5a380c75c3fbfaa89c7099eef900488d5"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph/document/results.json",
+    "sha256": "2090e8ad9911a6e4fffd24e1dcef1d02e8d29f135c6816bf56b3ad597e0338fc"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph/document/status.json",
+    "sha256": "f654ee41717bbc7d087e02aaa34b0499df3875994496d1e8b9ff5d27c7a85386"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/diagnostics/standalone-long-paragraph/document/summary.csv",
+    "sha256": "d2834c30daf32c39901d2a09f7e3f7c3f1f2c5ffe24ee8238a6a1f2ca9bbc3f5"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/document/budgets.json",
+    "sha256": "d445f07e47851732b816380c2fb32d8f8639af16dfb9f6bdade30aac9f8e9dde"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/document/environment.json",
+    "sha256": "a9c2f4e96156ba39ca5ecc239429419a3bd03a9907633d4843524a2c8391e88e"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/document/results.json",
+    "sha256": "15f993f63b0008e5208b8c6ae9c5613c7d000f1b63ad95010887c0f84741e302"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/document/status.json",
+    "sha256": "ff14417d774cd31f97d5d407479ff38c0e963d16ab81fbe182236d6f2f458000"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/document/summary.csv",
+    "sha256": "668f1e69cfed75c4bc415d45f5037b525abda4482509a0a1e5f7b67bb1f1d518"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/dotnet-info.txt",
+    "sha256": "5107767e9383d1a857021af6989d084db37d4fc55e54915d383c6d636dcfe5b3"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/host-notes.txt",
+    "sha256": "3317533eb26fcf41c0fff457234cd3aac05b76fabe6e0fb43ea2805bb1c2f855"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/nonisolated-final/budgets.json",
+    "sha256": "22db07ee4d60a21de03d849bf063e28aa5253d63de9a9b182095a9d13ddbf299"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/nonisolated-final/environment.json",
+    "sha256": "1e77e3467995252babfca9a1c1a4a9d9e9488f3dd3092a49980f5b4099b3f0d6"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/nonisolated-final/results.json",
+    "sha256": "bf6180470cd3e343f05cdb2673f6bea0f794448dcd2b19001207170d88e0deaf"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/nonisolated-final/status.json",
+    "sha256": "f40216e065fdfee499c59c0fbe7bbd364686e02bcde1b908842f89ea47ccf4a5"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/nonisolated-final/summary.csv",
+    "sha256": "e91c976698d5292e999aa1bbe3083261f58a6fb9bf581493d639291cb2a27912"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/p1-harness.patch",
+    "sha256": "517b80503445ca41bd7f4cfee3108aee6fd4c219ad39c4001f5c77c71da3db4f"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/package-consumer.log",
+    "sha256": "d7195e335bfae67e11827036fe4a559675c4c18b47f05f801379d20e046666c3"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/README.md",
+    "sha256": "6f7ff8f18c447886eb8abfe528b7dc990c0d6bd8cfa72d8d52102ed41321e6d6"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/reference-hashes.json",
+    "sha256": "2758d21cfc6c76e7054ac295d2c5657d658410c82d3b6364aee065cd76770750"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/reference/budgets.json",
+    "sha256": "546892aacfcde04095a0a289b291710179ed34677d438a8029442676c8d22b1b"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/reference/environment.json",
+    "sha256": "b635929d603ee4dc454dd466acac0d9248566d7598701281b5cc4448e8fde2a0"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/reference/results.json",
+    "sha256": "a9c7535aab5bb260ee9868efa4fc423f33bf4c572d08ceb310dc8782e70edbcd"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/reference/status.json",
+    "sha256": "b32957452257bf71596f05285999113df5a2304d52ade42978a4ed18eae688c6"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/reference/summary.csv",
+    "sha256": "de9ae05c7f380839a1cc11a6309da630479c8b59d7b0f0c5f50547e8997edfd8"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/source-hashes.json",
+    "sha256": "3cbb86435ed703dfdd3254398898ae68e4876cbda4dcc2124a35b32c99e84f81"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-final/verification.json",
+    "sha256": "00a58b8764e464ee7c09fdebe38466f85de21d8f3eda8b3b494d5ee0ddde49e6"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/comparison.json",
+    "sha256": "c3a3e167a7901e3fa7d5a98a4bab63245c5eceb18158dc48f0d44c0e37091727"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/compatibility/budgets.json",
+    "sha256": "44d9f2f67e95249bc9b0db73518a1629922a708e166129836d0be29eaf1f43f9"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/compatibility/environment.json",
+    "sha256": "296975bae8dfcc8f9b69688b0d042f95670bf351773c66e25aa349e579660449"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/compatibility/results.json",
+    "sha256": "28c1ba3377bc18deb51f1dc2ed03052189e2ff110bfd0ce18fc6bba9709e0fef"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/compatibility/status.json",
+    "sha256": "bc0db5ab81de421a4d13579f7786bfb20b63762d826f6e8a709fc32de2a48050"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/compatibility/summary.csv",
+    "sha256": "6b4569c12c264d653f7ba8f2f6b6022ef7a19fb94d4308d054191e99f32c661e"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/document/budgets.json",
+    "sha256": "6b1b9626a4dae0f79edeb461dd42e2d586b3a62603b34208bf00b560253c677e"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/document/environment.json",
+    "sha256": "aa1bd2cfa2abcb6df5bdf36af5f37910c1b93ea38add4a7fe06fb403a6b52d2f"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/document/results.json",
+    "sha256": "cc8015dd9aae4d7df5b27b10af9a3d9f6ce997d5215bd147afb2a41466a312cb"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/document/status.json",
+    "sha256": "cd48abc9cf76e78cc9d15c54be493472caa6da5f506e406b42427489416f257e"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/document/summary.csv",
+    "sha256": "c2783f88fd6f7b4e81e263f05191fa2686b4c9a731ee2ebacf4010c1656bd150"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/dotnet-info.txt",
+    "sha256": "5107767e9383d1a857021af6989d084db37d4fc55e54915d383c6d636dcfe5b3"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/host-notes.txt",
+    "sha256": "5a992f50b1fa82359bed95edf6090dea674e33e19bf1a243e2b71ee3b9ffde2e"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/source-hashes.json",
+    "sha256": "b223a6ad1debf5ed6d6fa0949499891e758f80febbea31c890912b2549ea34bc"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2-windows/verification.json",
+    "sha256": "4257505c06a37eb4309e42f84488a135436700c95948eb2caa8d8d0f78d775b2"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/comparison.json",
+    "sha256": "c10dd3897d5a125b414792ca90e717ce053fbe70abd623b5a381eac61dd91828"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/compatibility/budgets.json",
+    "sha256": "1eeed8fa8a229f797c028a27153a91905a20bb8fdcca4dd8925e3850126a9b6b"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/compatibility/environment.json",
+    "sha256": "5e91ee76b062e3f442078465ffe003ea4b786a2e5703e897562574eef3475f3f"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/compatibility/results.json",
+    "sha256": "17a35cfd22f8b1939467a0d6a8edca08d6f070a466aecc5affe4328e85a02521"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/compatibility/status.json",
+    "sha256": "4b1f1b90b30e466f638545ac304ed0d05835c3bdab20ad2188327c5f299ee0ac"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/compatibility/summary.csv",
+    "sha256": "c857bdb29368d149805cfda2ea7a5b5685fb440c201ebdda3d826bb00248c8a7"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/core-probe.json",
+    "sha256": "df04b5fc2f18970443f523ebbaf00754b7540684b5b7c35e93476c332556e7e6"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/document/budgets.json",
+    "sha256": "6447675e6788bc7c6ab92502524da52f02a20772c68051777e752ec6e42567fb"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/document/environment.json",
+    "sha256": "dff8644d51d297a73afe46eb03d6d92d8680e335773cad23c69066a6d2d90a3e"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/document/results.json",
+    "sha256": "04fbb7cd49eac79577c4afca3c4f5057aa6ed2bf29f4fff81677b9af384876c4"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/document/status.json",
+    "sha256": "1e9e14fa629231be1fbc7691a2cfc59b8c63a496151b8bb0b601b604a6983982"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/document/summary.csv",
+    "sha256": "88a7cf58d70a0b11122eec366e0cc20ac1fd468bf811e0d6d75d6e7b2caf5fba"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/dotnet-info.txt",
+    "sha256": "1e71d5b4779f737eafaf9805c95770f438b8dffa41c0caf7474aacbb71246eb5"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/host-notes.txt",
+    "sha256": "e8c24c1d232adedb9593dfe51e0a878d27190bed4780d48db249f86a4862b6e1"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/source-hashes.json",
+    "sha256": "db188bc04570adc66aba58d194fc52ecea41895c81d442daa731c49940148add"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase2/verification.json",
+    "sha256": "0239e211bb4ce265e86897194863d8b3f0a80849ff7b2958d77c3380ebb27d95"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase6-interactions/interaction-preview.png",
+    "sha256": "c1edda25a23243c0cbf678f2740b5857f252b4c82f5d0b6a517aebbbb6e887a2"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase6-interactions/interactions-initial-mixed-clock.json",
+    "sha256": "04806a41c011cbd8fbc4db8c126f608a53e41a16a95ebe90c1888a305231a409"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase6-interactions/interactions.json",
+    "sha256": "756a4fafca99234998ceab62d2ea0cd732c221b940cf7f84a7472a934d7955b3"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26-phase6-interactions/README.md",
+    "sha256": "f5157b5912c05911c0129cc42a1b2b507547168f293d2502d3c5accc94a10341"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26/budgets.json",
+    "sha256": "cd62843a538c8bf977c65bc29a85a5bc80d22da4a92e11448bb986818c474b5f"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26/dotnet-info.txt",
+    "sha256": "5107767e9383d1a857021af6989d084db37d4fc55e54915d383c6d636dcfe5b3"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26/environment.json",
+    "sha256": "15a7603ce7a1307da3b7db8580c698d5d41bf91e8b699034c145013764395fd5"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26/host-notes.txt",
+    "sha256": "8f7475ab114ecdc102528d88daa318e9245139f9e3509b19d51d017ac72db35d"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26/results.json",
+    "sha256": "2f75dc52bd9b8ec56b447067bf6cc33e068011ebed20f6a46200378b3c755a3c"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26/source-hashes.json",
+    "sha256": "9f6dfd3b8cd23e1d082beeb0dcb969a63dc93810017f29969514878d551cbe0a"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26/status.json",
+    "sha256": "b7ed6ddd364720c23822ba54809674e12204e4ead6a063122f7e857c24b0c39b"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-26/summary.csv",
+    "sha256": "3fe8aa5a60d0382d3dbcd8b9214e750ffa2e94bfa2261f7977f760aba60a95cf"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-27-phase7-markdown/integration-demo.png",
+    "sha256": "bcd3ab1f63cbbe5f1e4676443d2a0ff23f3728552d85f0b5438a7d17f7d41fae"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-27-phase7-markdown/markdown.json",
+    "sha256": "7e03a80818d5f47948a92718f018f4ba67881d5023917d584dc7bd754579d127"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-27-phase7-markdown/README.md",
+    "sha256": "e6b6ad5b9818284f85a7dea295f0c7f05b0159a9ad35c33eb81821ab177127ea"
+  },
+  {
+    "path": "docs/baselines/performance/windows-2026-09-27-phase7-markdown/sources-sha256.json",
+    "sha256": "0a3c1b5d2732c53a6ceebde67224e4aea5a5030a85b573501798016b2cfd3cdb"
+  },
+  {
+    "path": "docs/baselines/phase6-verification.json",
+    "sha256": "1397c3a5bd1c2901e6819483bca4ecca2e28095bde9cc05413882639b6f7a366"
+  },
+  {
+    "path": "docs/baselines/phase7-verification.json",
+    "sha256": "607f40a11c41449c8ff02ed44054402c04c1bb588fd752f704df17af1c7abb3c"
+  },
+  {
+    "path": "docs/baselines/release-identity.json",
+    "sha256": "e0a48761855faffaa90b6b6ba075fd735f24eb125cf99c192dbed956ac764910"
+  },
+  {
+    "path": "docs/baselines/verification.json",
+    "sha256": "98a736af2d10a9b9f3e184852c232b3ddf02790c3895aae3f72095860bb42bbd"
+  },
+  {
+    "path": "docs/COMPATIBILITY.md",
+    "sha256": "54d19384d70c6f76d7ea0f3e62c1f4d038d89096d34b54be6a098cd72aec1a85"
+  },
+  {
+    "path": "docs/DOCUMENT-MODEL.md",
+    "sha256": "2f25d75c5a466f22e2c7c88bbba62f93a75d9f9ec6c4ab7913f98b4a72505d9d"
+  },
+  {
+    "path": "docs/INLINE-CONTENT.md",
+    "sha256": "5a1c599296a82f24b112834893b60e78985ded7a9e76480e1d50e1509321f29b"
+  },
+  {
+    "path": "docs/INPUT-COMPONENTS.md",
+    "sha256": "d63b8bf92deddb514e044f1c306c2a528deec614aed52f0e7700cfda601959df"
+  },
+  {
+    "path": "docs/INTEGRATIONS.md",
+    "sha256": "f932251b0cc52b8cda6ddd071f5b243d21f30bd110c1ccb73eff7a8f9a22d451"
+  },
+  {
+    "path": "docs/INTERACTIONS.md",
+    "sha256": "35bd9b0ecdf30cb3382a1a6e53ac5d070c37ea7cd4f591acbf171eb1ebe328b1"
+  },
+  {
+    "path": "docs/INTERCHANGE.md",
+    "sha256": "7e96bf4e6a830f9dde85f51df2422cd7ad1676c2f9a18e50392822db16b64470"
+  },
+  {
+    "path": "docs/MARKDOWN-VIEWER.md",
+    "sha256": "f7c1968e4f7cf737f11e5de17f04426ee097ec27ede30924f151eb4c3227f7ce"
+  },
+  {
+    "path": "docs/MARKDOWN.md",
+    "sha256": "9f92f61c5ee2827e74eee912887345119c6be3a9a7ed5808aca89b9af4b2481b"
+  },
+  {
+    "path": "docs/MOBILE-QUALIFICATION.md",
+    "sha256": "fe377465be1567a3eb86df96abd02ae58cb2ac09f97d20cd2f988f23eb447cd3"
+  },
+  {
+    "path": "docs/NATIVE-BASELINES.md",
+    "sha256": "6d8c4b565de587ead216bb44c8410b973991b0a5fb6a0644189fad3c020d16da"
+  },
+  {
+    "path": "docs/PERFORMANCE.md",
+    "sha256": "934337aee07a4e3d28642b3cb1b0e8faf4fd7cb41a33fa6a6ba0ca887c792577"
+  },
+  {
+    "path": "docs/PHASE-03-CODEC-GAPS.md",
+    "sha256": "41e37851cbc89578e3850b50d57d4bf21cff2702f91ac25ab757c64fae61d0e1"
+  },
+  {
+    "path": "docs/PHASE2-REPORT.md",
+    "sha256": "a52401b6b08da4de87484469fe7bc2c48fe0f53ea49bfd853324c5ec237f89e8"
+  },
+  {
+    "path": "docs/PHASE3-REPORT.md",
+    "sha256": "eecc0ebe7eb5a9fe6b490f4c58267da136d2e81ea955bcae7f7a8e25d561e7e4"
+  },
+  {
+    "path": "docs/PHASE4-ACCESSIBILITY.md",
+    "sha256": "322e8a754a088aea69a74b088e4ece7c53ec21aed08e0e42ae312dab04616b26"
+  },
+  {
+    "path": "docs/PHASE4-REPORT.md",
+    "sha256": "1ecb17d70d592ae20c0f34fc6bde86cdba94a15e6d096c03311b3f16746f363c"
+  },
+  {
+    "path": "docs/PHASE5-REPORT.md",
+    "sha256": "cdc0167a6fbd40771e39b7565f37625bb392262fbdde00a968e2fd84c67189fe"
+  },
+  {
+    "path": "docs/PHASE6-REPORT.md",
+    "sha256": "6ee0f93376d07be63647a43530b807a256fe832d9a6eff859b3c531bafe69a49"
+  },
+  {
+    "path": "docs/PHASE7-REPORT.md",
+    "sha256": "ac07b5578b5f289d401e4d5ec7b2e287bc9908b988fa6ebe4d8620295275e640"
+  },
+  {
+    "path": "docs/PHASE8-REPORT.md",
+    "sha256": "d6b3008f5f134f4b69d44ebcec4b90d005e39cd55111be9bb1e49d81dd1e1cb0"
+  },
+  {
+    "path": "docs/PLAN-01-BASELINES.md",
+    "sha256": "edebbf966875d4ca6f3b17629c9c6f5f132a67904720fba5096a2258c4da986b"
+  },
+  {
+    "path": "docs/PLAN-02-SCALABLE-CORE.md",
+    "sha256": "d03fa26d2764a3d10b13fda1a01b2fe6b78fb59390e24dbbe351bd25fec042ed"
+  },
+  {
+    "path": "docs/PLAN-03-DOCUMENT-MODEL.md",
+    "sha256": "e30a09d1571ec14bd4a509be148e7bce9b3ecb5283a503d09351cd9ab37bbff2"
+  },
+  {
+    "path": "docs/PLAN-04-EXTENSIBILITY.md",
+    "sha256": "453df389cdd402248d0d34473917b2aef1f38732b3163a1e51a3c0e264f61457"
+  },
+  {
+    "path": "docs/PLAN-05-INTERCHANGE.md",
+    "sha256": "6bc1fa26f3b61f4a119db9fc1060a0950c6db20863eef0e56ae0658b7310e83e"
+  },
+  {
+    "path": "docs/PLAN-06-INTERACTIONS.md",
+    "sha256": "390d6d5d5b3c0cc6aeaa85c5cd10d7e8fc8341e520ab44ef177ddd14252a82fc"
+  },
+  {
+    "path": "docs/PLAN-07-INTEGRATIONS.md",
+    "sha256": "f8d93fb640748ef38c57c18df1a93bed08334e0aa5c6e2045e01811183ed2444"
+  },
+  {
+    "path": "docs/PLAN-08-RELEASE.md",
+    "sha256": "b7d6a620fa95743c6480d46579153b05e7c93870eb255a31ecae074f49af9271"
+  },
+  {
+    "path": "docs/QUALIFICATION.md",
+    "sha256": "d7c87d9e21f5498d9037a8148cd2e74f51dbc6c6f0526414439a9efcf74815d7"
+  },
+  {
+    "path": "docs/RELEASE-NOTES.md",
+    "sha256": "4acbbaf2ab395c988723af45387b9a7036f9dacc1ee557de461b84545eafe89b"
+  },
+  {
+    "path": "docs/RELEASE.md",
+    "sha256": "4adc1c75ebbe41122a1bd141b65184a4f782b64b32430ce5c8ec68bf5dec3cac"
+  },
+  {
+    "path": "docs/ROADMAP.md",
+    "sha256": "86330ba3d3c12dc8b301798122201174deb62c18a8fecc1f08ad384d77b5af8f"
+  },
+  {
+    "path": "docs/XAML.md",
+    "sha256": "c30657cf4cc085b1c4b54754209528f7a5b24dce80542bb0604b482e81e52df8"
+  },
+  {
+    "path": "LICENSE",
+    "sha256": "63c9de1ba7d3e98b8b5977333f8e0d8294221d487883c0322187d67d329066db"
+  },
+  {
+    "path": "NuGet.Config",
+    "sha256": "aec93b5637ab6d62470979a008990a4a336a287ab83a3f2541849ae735674055"
+  },
+  {
+    "path": "README.md",
+    "sha256": "68bdda4e185edb3e1c1a4a815cafe0ea62043e17f7f2fdfe7e0571aab498c843"
+  },
+  {
+    "path": "samples/Textalonia.Demo/App.axaml",
+    "sha256": "1bcfe5c39872e8960502490de057f3af018ea0fcf1e3dc3df8f3dc3689acf6d6"
+  },
+  {
+    "path": "samples/Textalonia.Demo/App.axaml.cs",
+    "sha256": "6ac527a9554e40dab30b87e3f5db200b733d7a30379e03b92dee47d9cd6821e1"
+  },
+  {
+    "path": "samples/Textalonia.Demo/app.manifest",
+    "sha256": "34b0d29bc581500e1bb6d2662aa8f189a9b8ccedad95907d7a59d36286ade241"
+  },
+  {
+    "path": "samples/Textalonia.Demo/DemoInputComponents.cs",
+    "sha256": "95886681b4db9a3661194c481db5c742f27399f4c593919cf2716aecdd2bd3b1"
+  },
+  {
+    "path": "samples/Textalonia.Demo/IntegrationWindow.cs",
+    "sha256": "97763d5b1082dda39d8750b85dc939a3676d013a91b7297f9bc676e9d6b8ab87"
+  },
+  {
+    "path": "samples/Textalonia.Demo/MainWindow.axaml",
+    "sha256": "833bf094f79e2e7886f10bd66deb8ffcb6b62f626550b4ce9d96e0a7ad26c44f"
+  },
+  {
+    "path": "samples/Textalonia.Demo/MainWindow.axaml.cs",
+    "sha256": "a8c5e12ee09caa6f5fc594e335ed2ecf0e0f7806f5c0623d8abecb5434b90086"
+  },
+  {
+    "path": "samples/Textalonia.Demo/Program.cs",
+    "sha256": "5da1ef491468c8ec916c3df775cff2f77197b5a26f125e5f5bcd5273f4b3ae42"
+  },
+  {
+    "path": "samples/Textalonia.Demo/SampleDocument.cs",
+    "sha256": "75e17a3ec2ef9803456cec8a51c973a7d5b04d27fb75b31476fcfc546daf319f"
+  },
+  {
+    "path": "samples/Textalonia.Demo/SampleInlineControls.cs",
+    "sha256": "2d2bbbe41100d0021fb99ce7899f31ec9f6f3927e094ae68c89a3b7284363dbe"
+  },
+  {
+    "path": "samples/Textalonia.Demo/Textalonia.Demo.csproj",
+    "sha256": "d302d51b467373dc972f52f1caf1b9676c789b58853c1ded5cfc51347a5dda07"
+  },
+  {
+    "path": "samples/Textalonia.MobileHarness.Android/MainActivity.cs",
+    "sha256": "15ecdce757f59abaa91647bbaf8ffecef7a868a7dee735b18872541ac16da13a"
+  },
+  {
+    "path": "samples/Textalonia.MobileHarness.Android/Properties/AndroidManifest.xml",
+    "sha256": "ee0690cb5e9d92f6846601c88b015f62eb924bc1ba9c2b245b9711a04cfb5bd3"
+  },
+  {
+    "path": "samples/Textalonia.MobileHarness.Android/Resources/values/styles.xml",
+    "sha256": "cb2b5e00a5d161a644cc3853dc3cb2304a78d062f20845eafce02ec20e4e3497"
+  },
+  {
+    "path": "samples/Textalonia.MobileHarness.Android/Textalonia.MobileHarness.Android.csproj",
+    "sha256": "71b729f2bac5fc2ce8fcd85bc633e5e9ba80473995475f2d7b0df9f541f85302"
+  },
+  {
+    "path": "samples/Textalonia.MobileHarness.iOS/AppDelegate.cs",
+    "sha256": "5677a4a7f6794df74e4a2c4535aa8a5b6aa23181105e98cbfac7cf53d085d19a"
+  },
+  {
+    "path": "samples/Textalonia.MobileHarness.iOS/Info.plist",
+    "sha256": "0100d48b1a6ec00661adb1e96a89b30b1a67496dc2c49ac8287d163bf778e83c"
+  },
+  {
+    "path": "samples/Textalonia.MobileHarness.iOS/Textalonia.MobileHarness.iOS.csproj",
+    "sha256": "bb0719cc886a5fbc228eed50c7a63e4784258c7583f5b4ae7f80911439b7f13c"
+  },
+  {
+    "path": "samples/Textalonia.MobileHarness/App.cs",
+    "sha256": "d1010c2b4d64a4c1cd373a3de75744cece09e14dd238d6f48126ad4331c6506a"
+  },
+  {
+    "path": "samples/Textalonia.MobileHarness/QualificationView.cs",
+    "sha256": "f2eebd3336a439915ae77cdef0827971a78623f6b066ba019124fd9ecc7c8d90"
+  },
+  {
+    "path": "samples/Textalonia.MobileHarness/Textalonia.MobileHarness.csproj",
+    "sha256": "8a4ba6a45f4db11afd9c7091bf10cc790a99c5e2f7cc401cb64549390e70d416"
+  },
+  {
+    "path": "scripts/Compare-BaselineBudgets.ps1",
+    "sha256": "71ad1fafc777a7532862e94e5566bd0bcbd7051cc82a63aeff24b4550e62e675"
+  },
+  {
+    "path": "scripts/Invoke-Baselines.ps1",
+    "sha256": "553260e6b2455951e77547e8313c9117d55051dda86c3c26ec8a7b09b1332a50"
+  },
+  {
+    "path": "scripts/Invoke-ReleaseCandidate.ps1",
+    "sha256": "63a0c3fc38b5254e6d8937bf7c8024680c0cdd12828cce48aed569d0a6409b1c"
+  },
+  {
+    "path": "scripts/New-InteractionRun.ps1",
+    "sha256": "92b75ecf87019f37d67902e40884e83d3823f05809d1968b153f1d7dbd014241"
+  },
+  {
+    "path": "scripts/New-NativeRun.ps1",
+    "sha256": "506c085df4013111f4c1cc073cf4694e49049978eabea481fcf6588630a034c4"
+  },
+  {
+    "path": "scripts/Publish-Release.ps1",
+    "sha256": "50bd8918031c0028b3c0496a4b9fabb4af73f63c1e0726fbf974b21611fe7721"
+  },
+  {
+    "path": "scripts/Release.Common.ps1",
+    "sha256": "949829a16864c41b9e5493ac18f593e1d2f69e7fcbb689d54ee6098529fc2130"
+  },
+  {
+    "path": "scripts/Test-PackageConsumer.ps1",
+    "sha256": "c0dd5b23b28c0ad107675cfc5d796b2ec8081675d718d444da32f0ea4fb39900"
+  },
+  {
+    "path": "scripts/Test-PublishedRelease.ps1",
+    "sha256": "2a347a544dccebbd2f38809f4bd100b8abbca12adeb8217b6f49ddc5dd32a64c"
+  },
+  {
+    "path": "scripts/Test-ReleaseCandidate.ps1",
+    "sha256": "5e47e7c41bd5a5e6f2d43fa8c9243c60c02b6fd98ca84d883842beb3a5599473"
+  },
+  {
+    "path": "scripts/Test-ReleaseTooling.ps1",
+    "sha256": "849dc0322687de7ed4cb48b38fe826b6b215d1062bac61e87fbfe5874943065c"
+  },
+  {
+    "path": "src/Textalonia/Controls/CodeHighlighting.cs",
+    "sha256": "91b4401b9ff7df77d7cc57e3faed0ecb3020277b33e0d6253a55661796c623e8"
+  },
+  {
+    "path": "src/Textalonia/Controls/DefaultCaretComponent.cs",
+    "sha256": "7b36f666977f5a8cdc033287c797f22ab38c39e76dc53c7b14ef61573be97729"
+  },
+  {
+    "path": "src/Textalonia/Controls/DefaultCompositionComponent.cs",
+    "sha256": "d5eca692a28a74849b6a45500610a5f84b1e242e24cd543cdd1e416d283ba457"
+  },
+  {
+    "path": "src/Textalonia/Controls/DefaultKeyboardComponent.cs",
+    "sha256": "bb67c095362899c7bf63028a226485b028e27b6c651e1374d3d226543a4d949e"
+  },
+  {
+    "path": "src/Textalonia/Controls/DefaultPointerComponent.cs",
+    "sha256": "cb6a7262f353daae8d87e52099a9867ca3d584ff90c79ed58be66e5ec159a27d"
+  },
+  {
+    "path": "src/Textalonia/Controls/DocumentAccessibility.cs",
+    "sha256": "885bf2c096a64942be7d536f716b2015b616b561295d47c97b6d9cde232f87b5"
+  },
+  {
+    "path": "src/Textalonia/Controls/DocumentInputComponents.cs",
+    "sha256": "4f15cf452a815e3a5fd5b9800250148fe4f293be3ded3908d28d31eb5463d0fb"
+  },
+  {
+    "path": "src/Textalonia/Controls/DocumentLayout.cs",
+    "sha256": "0397414cc79b7eb7f67234468347055b9ed5bcde3af53766606a71ea020c13cf"
+  },
+  {
+    "path": "src/Textalonia/Controls/DocumentLayout.Navigation.cs",
+    "sha256": "b281f3bdc6f7ea8a7deb1ace9fe183f73c906c6e0decada67540682006c05d7f"
+  },
+  {
+    "path": "src/Textalonia/Controls/DocumentLayout.Tables.cs",
+    "sha256": "6212f2e2b4bda5d7cb5bf078a9ee15778f6bbccef96050a54b6515d1e1f8b9e6"
+  },
+  {
+    "path": "src/Textalonia/Controls/DocumentSurface.cs",
+    "sha256": "19df4ad1edcb01f73b45ab0ecac93d89f743767d82341c3c373c5f48fe07a24d"
+  },
+  {
+    "path": "src/Textalonia/Controls/DocumentSurface.DragDrop.cs",
+    "sha256": "c5d3678f26be12a8bd1e6e84a6d7a64aa1124e4446ed1f96e636d5c0e2d67085"
+  },
+  {
+    "path": "src/Textalonia/Controls/DocumentSurface.Inlines.cs",
+    "sha256": "510c3f301ccffa6f4f5e656165cd3661cac7dc51cd1d5ac01f4baa3ee6a427b0"
+  },
+  {
+    "path": "src/Textalonia/Controls/DocumentSurface.Navigation.cs",
+    "sha256": "61bfd1c18fbe66d888d4a1c251670fb1d85eeef42903a2b5b39d2c0a231f89cb"
+  },
+  {
+    "path": "src/Textalonia/Controls/InlineControlFactory.cs",
+    "sha256": "78c7541f13f02dd7ed68a5716eed21bc26d0f3733af43f42918cb91a111bfba4"
+  },
+  {
+    "path": "src/Textalonia/Controls/InlineResources.cs",
+    "sha256": "e1f50e9be622e88958aecb29bdcc0eed148bde3e60cc8cc3e878dbb30c6190dd"
+  },
+  {
+    "path": "src/Textalonia/Controls/InlineTextSource.cs",
+    "sha256": "a4147a264c6b263ffcc27da10b4de2e1d0008c240ba1ef4df24a2b41d535df69"
+  },
+  {
+    "path": "src/Textalonia/Controls/LayoutHeightIndex.cs",
+    "sha256": "fc62cc60c7f44230d72ae171884485a058508f3ec6fd1044172143f0ea6d5f4e"
+  },
+  {
+    "path": "src/Textalonia/Controls/MarkdownDocumentReconciler.cs",
+    "sha256": "5b76ffcafd3bdcbb6c186fdbb698e295f3375ae9e6b2d9f6a602d73e3ffbc377"
+  },
+  {
+    "path": "src/Textalonia/Controls/MarkdownViewer.cs",
+    "sha256": "730d64a3e194cb8b21bd58dac1e9dd997e0f6f4f72972344cc13ae98d2de3fad"
+  },
+  {
+    "path": "src/Textalonia/Controls/ParagraphLayout.cs",
+    "sha256": "ef5e7853457b27cab6516feaff4880e536988a511b1740b72b11fd14653604c6"
+  },
+  {
+    "path": "src/Textalonia/Controls/SelectionAutoScroller.cs",
+    "sha256": "4ff8fbaa713ef56d0c9efc28ad2f2fe75eda55c0362ab92903368f56e7335020"
+  },
+  {
+    "path": "src/Textalonia/Controls/ShapedLayoutCache.cs",
+    "sha256": "63b312336068a1307554cd1f0d0876c8768316021a48c40632301879693ba627"
+  },
+  {
+    "path": "src/Textalonia/Controls/ShapingLimitExceededException.cs",
+    "sha256": "88e91ba079a8d159a3fc878d5e40f4e2cce4c785ff8f94f68e57cea238236fcc"
+  },
+  {
+    "path": "src/Textalonia/Controls/TablePointerController.cs",
+    "sha256": "c8fa2cd951b0ea0dbdececa1a2c1cc5c0cf93fcd8734f2400bab015fca5997b0"
+  },
+  {
+    "path": "src/Textalonia/Controls/TextaloniaEditor.Accessibility.cs",
+    "sha256": "f0b12efd3a3a4410b973be3cd28ef14aaa23a45792320b92c597edda753dd13f"
+  },
+  {
+    "path": "src/Textalonia/Controls/TextaloniaEditor.cs",
+    "sha256": "d877e9161ca6b50581b6f53b4cdfc83fb12c54cf6d806dc24cb7ccc8cd001d5b"
+  },
+  {
+    "path": "src/Textalonia/Controls/TextaloniaEditor.DragDrop.cs",
+    "sha256": "7dceeff7038a16f879005e6bbbbbeb344262241f813a69ec17cba6a098f9ce19"
+  },
+  {
+    "path": "src/Textalonia/Controls/TextaloniaEditor.Inlines.cs",
+    "sha256": "831c94a33c19edb2048afdc69d8e6d0017dfa8c06ae51ff81aea6d8221fb51bc"
+  },
+  {
+    "path": "src/Textalonia/Controls/TextaloniaEditor.Input.cs",
+    "sha256": "4ca2196ecdb2cb0cb41748f669c865c32fc5d8f4525a5b03c23013196e03edda"
+  },
+  {
+    "path": "src/Textalonia/Controls/TextaloniaEditor.Tables.cs",
+    "sha256": "03ce050353c39a3597c57d08fe905944472a747aeafee0af3b3be671a3b37b71"
+  },
+  {
+    "path": "src/Textalonia/Controls/TextaloniaToolbar.cs",
+    "sha256": "4b010625bc0a2409ba2cbd4a665514016337a4d07a0a96d26784767712306f8f"
+  },
+  {
+    "path": "src/Textalonia/Controls/TouchSelectionController.cs",
+    "sha256": "37c0a3c2181968818a6f71c0ad9088a3d4da35d62d28bdf53d09f9b7dcdf8ba0"
+  },
+  {
+    "path": "src/Textalonia/Editing/DocumentFragment.cs",
+    "sha256": "270723e926254dec87b565fdaa319dae9180a95baa0580af224e5a819ed6f570"
+  },
+  {
+    "path": "src/Textalonia/Editing/EditorSession.cs",
+    "sha256": "f799afcd75667915fd97bc9f4f1375f3d19eca9d9da54b6e0cd5278276598620"
+  },
+  {
+    "path": "src/Textalonia/Editing/EditorSession.DragDrop.cs",
+    "sha256": "ba10e1dd9cddac6325791003d79f5355b160c8d8948762eaa38e24d1eb3cf6f6"
+  },
+  {
+    "path": "src/Textalonia/Editing/HistoryMemory.cs",
+    "sha256": "bca860051391af4939b0b124848120c8318983dd90707461a0c698653deb2509"
+  },
+  {
+    "path": "src/Textalonia/Editing/SelectionFormattingState.cs",
+    "sha256": "b1a994726e05bec0b1c809213c34410379ca3db942b236ed529fb90d95e0fdc2"
+  },
+  {
+    "path": "src/Textalonia/Editing/TextSelection.cs",
+    "sha256": "6aa5b7efa564f483d61636644df08a6fe1e242e5ed9b861f39cb56fed592fa7f"
+  },
+  {
+    "path": "src/Textalonia/Model/BlockOperations.cs",
+    "sha256": "d80c76a8d7c7c26d3542d9039a2b13a4f59aa8dd168b2b639857cee281e3adf5"
+  },
+  {
+    "path": "src/Textalonia/Model/Blocks.cs",
+    "sha256": "46f391ff871483b11e09ed0f345c292201bdec28253469d04a086f5c8fee3bf6"
+  },
+  {
+    "path": "src/Textalonia/Model/BlockStyles.cs",
+    "sha256": "cebc129ce4794d1cbad500cf34fb4a355812563e109693d49b62cd104ccff5d9"
+  },
+  {
+    "path": "src/Textalonia/Model/DocumentIndex.cs",
+    "sha256": "da731ad45a87bf86ae0c5d0f967ae6484d968190a4be02cedb916262741cacf5"
+  },
+  {
+    "path": "src/Textalonia/Model/DocumentTree.cs",
+    "sha256": "5169362cb16c857610dc9621b3ca37dce3ffae883542da5965a61eadacd740e9"
+  },
+  {
+    "path": "src/Textalonia/Model/FlowDocument.cs",
+    "sha256": "9348afdfffb3192812cbd669e7ca8ded222e53f76b0da8850a522715baff5af2"
+  },
+  {
+    "path": "src/Textalonia/Model/InlineContent.cs",
+    "sha256": "e8b39f1e5df94f45f540208dc8afe6c138ff9b389da62b1c8499a00e8b07ecc9"
+  },
+  {
+    "path": "src/Textalonia/Model/ListNumbering.cs",
+    "sha256": "478859a40ddeb36860ea71cb48bedfc3d3fc72eec5f646a93a3b9226a990b1ff"
+  },
+  {
+    "path": "src/Textalonia/Model/Storage.cs",
+    "sha256": "42e88cea02a86f2f3bf93bd094023b5a5286a2190edcbcb2826375ac7521d06e"
+  },
+  {
+    "path": "src/Textalonia/Model/TableOperations.cs",
+    "sha256": "86ca85a3cbac02ec3c7a5c42eb2dd21c7c91107007fa9981913b304febf4d69d"
+  },
+  {
+    "path": "src/Textalonia/Model/TextStyle.cs",
+    "sha256": "0d6fe6f4ae07be7312bcae411b44d5688fdf56a8da01dbbda46765aa622d233a"
+  },
+  {
+    "path": "src/Textalonia/Properties/AssemblyInfo.cs",
+    "sha256": "52ec393510a9388a1bec011f57a83832d15ccc51bd1f237a54047b08de9ba0dc"
+  },
+  {
+    "path": "src/Textalonia/Serialization/ClipboardInterchange.cs",
+    "sha256": "5a3c5dc9035f7ccae89ca095591ff65ac1c2266dcdb6407e3ab86fcbc5d2d857"
+  },
+  {
+    "path": "src/Textalonia/Serialization/DocumentConversion.cs",
+    "sha256": "5ea24513698a89186dcf83a9986289cebf78abc545a7f65be7eda612877b46f5"
+  },
+  {
+    "path": "src/Textalonia/Serialization/DocumentFormats.cs",
+    "sha256": "e5ea506b78a9c95727a5113ca0cc493439ee66fbe57364aa0cf6d7c87c96321a"
+  },
+  {
+    "path": "src/Textalonia/Serialization/DocxDocumentFormat.cs",
+    "sha256": "a0edb1d646a47743bc4e4f6e1af0da7a66e101ffdda19f6f3cf480033c49c5d6"
+  },
+  {
+    "path": "src/Textalonia/Serialization/HtmlDocumentFormat.cs",
+    "sha256": "92006041ac30bf87154b305bcd9cb2fbbd699e84c94e7ccd0e54713871e2b294"
+  },
+  {
+    "path": "src/Textalonia/Serialization/MarkdownDocumentFormat.cs",
+    "sha256": "9b8b47080cd979d72a4d2b1271eb81ed693b50e7cab107e0a6a96d49f0ecd7e2"
+  },
+  {
+    "path": "src/Textalonia/Serialization/NativeDocumentV1.cs",
+    "sha256": "1a6588153d6635013cb63ae4c403b8ded56e9448270cd47aa6e25bc12fd66af2"
+  },
+  {
+    "path": "src/Textalonia/Serialization/RtfDocumentFormat.cs",
+    "sha256": "1893b78680e7c2605af7e6acecab54527e47fca9d60f2b3a25760f756268719f"
+  },
+  {
+    "path": "src/Textalonia/Serialization/XamlDocumentFormat.cs",
+    "sha256": "e5c30bbb72d6cacc13bd895c06c89c183e73632e1edc85657da28ad3e75ba97c"
+  },
+  {
+    "path": "src/Textalonia/Textalonia.csproj",
+    "sha256": "34937360fc8068d83327857946ba9ce09b2b94223b6f7ad35bf3c6ea04b20e66"
+  },
+  {
+    "path": "src/Textalonia/Themes/Generic.axaml",
+    "sha256": "240e3f8483089ccc1ec96d3774b9ec2a1ed79efe5d30670bb2674f8b1c2228c2"
+  },
+  {
+    "path": "tests/Textalonia.PackageSmoke/ExtensionExamples.cs",
+    "sha256": "dc2741b87e6af091222e49e5f5182926ef527589f19981a11c2257b66f5a758e"
+  },
+  {
+    "path": "tests/Textalonia.PackageSmoke/NuGet.Config",
+    "sha256": "3d8181ae5c88bb4c0def521ff7077ebdc061098f3c6f7b491e431864a3a18ac6"
+  },
+  {
+    "path": "tests/Textalonia.PackageSmoke/Program.cs",
+    "sha256": "719ca7fe5f5ff102e7ace94db683eccaf9f415b03e63f1a175b5db7049837790"
+  },
+  {
+    "path": "tests/Textalonia.PackageSmoke/SmokeWindow.axaml",
+    "sha256": "3a31c95f54f48dbb64211f92e6568f21382c7fbdaaf7307b8684bf53a4a3523e"
+  },
+  {
+    "path": "tests/Textalonia.PackageSmoke/Textalonia.PackageSmoke.csproj",
+    "sha256": "ec1a885f713e98eaa64f1a72cbef8b58027c4ce58fce04b91754645eb2f333d1"
+  },
+  {
+    "path": "tests/Textalonia.Tests/AccessibilityTests.cs",
+    "sha256": "de4e5d09a8418758eb1733c9df62992264f45b46f128201615c867da53be7cbb"
+  },
+  {
+    "path": "tests/Textalonia.Tests/BaselineCorpusTests.cs",
+    "sha256": "2e942ebb8a0b0e635828a71e9716b00019ef83840053acb83727e733ef8868eb"
+  },
+  {
+    "path": "tests/Textalonia.Tests/BidiNavigationTests.cs",
+    "sha256": "8f04cefd606c6097e04376cf49d1f43043af838107a784cf3b3ef4c94fc36bf8"
+  },
+  {
+    "path": "tests/Textalonia.Tests/ClipboardFragmentTests.cs",
+    "sha256": "f47b29885584010b6cfa2f622dd058b9cffc0dea3de652b5d6507c891a966d2f"
+  },
+  {
+    "path": "tests/Textalonia.Tests/CodeHighlightingTests.cs",
+    "sha256": "22c0a2b1e872b6f4bd202f6470fb9efa99b34727e7dafa907be5f66d019c4c86"
+  },
+  {
+    "path": "tests/Textalonia.Tests/CompatibilityBaselineTests.cs",
+    "sha256": "d9ced9a6816395613ee49af0d9f8a99e6574cad62b4d3212608809f6be01d608"
+  },
+  {
+    "path": "tests/Textalonia.Tests/ContentDragTests.cs",
+    "sha256": "42b3c920bd2af45bdbea9e87da5daa2d0b9c9bdd88f17081599f8f6354aaaf24"
+  },
+  {
+    "path": "tests/Textalonia.Tests/ControlTests.cs",
+    "sha256": "821b030d68c3dc1b77a3606ff4b071cb34baa6c9ffda78b084f928a17f6715ab"
+  },
+  {
+    "path": "tests/Textalonia.Tests/ConversionDiagnosticsTests.cs",
+    "sha256": "da06bc28eab8fccd34f613290f8eae71f760e3a0dde948bc8dbd05d2203fc576"
+  },
+  {
+    "path": "tests/Textalonia.Tests/DocxInterchangeTests.cs",
+    "sha256": "4d32b06600fd15f51b1acf29ac1f6ffa4a590a5e32be6fa95e048f32c1296f02"
+  },
+  {
+    "path": "tests/Textalonia.Tests/EditingTests.cs",
+    "sha256": "c32b90a21f5270b03b5cc7bd8067d443b6c3d785649c8858bd102d81486c8bd2"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/BaselineDocuments.cs",
+    "sha256": "9409c6761fde0017135e9455fc0180340e0bb0eecce7b38f9221e42050662d1e"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/browser-flow.html",
+    "sha256": "0196acf6559d80ea5059bdb122fafbb634fe1788eec44ee6b4a65ec1bdbd7053"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/browser-loss.html",
+    "sha256": "4d4e0b436a2e17a830a9c517944c6dac31d7e063cacb0fdf8dc7a5f023c37ac8"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/manifest.json",
+    "sha256": "ad8c45a274fd96609c5a7acaa8f8fc427f9641bd1646858924b43a49215ac05b"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/native-inline.json",
+    "sha256": "95019ab67585ab0bcc375237c388c45e5e4c4d5bf0064d6993b20304394f7605"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/native-malformed.json",
+    "sha256": "d3ed315c6012848508abeef99f71b0f2c455cb61ec3ed8b8bfd310f79050e63a"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/provenance.json",
+    "sha256": "5883a416f3772f428cc1f878059c486b3fa9dc5afaf14a16fde2d06f6205cf83"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/word-flow.xml",
+    "sha256": "0e5e220b4532f3004ead1691b0509e18623e4bd6cc9438bca76409fe276681da"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/word-malformed.xml",
+    "sha256": "231b3e94f93af61d0d2515d3a46a9c5b884bbd03e2c6c086d73e40e09a2d6158"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/word-revision.xml",
+    "sha256": "1c46d3778720fcb3a6812b45fce735f98f161f9ebcfec752c40120f945fc01ab"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/writer-flow.rtf",
+    "sha256": "dc13fde0df2e068fc885be44b7a3f6ceb5b13b66025ec96d451ca58b408a0bf3"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/writer-loss.rtf",
+    "sha256": "698ade643f1de84575ff9fc7e1cbf12ec8ced3509e7ea799f084dd3850ddde93"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Interchange/writer-malformed.rtf",
+    "sha256": "d8d3fec19e983ddf7b4021cdb3c534180299f33f62a18c953dce19a1ae65c057"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/Markdown/dialect.md",
+    "sha256": "de8ff60d381b54933b7585a2a6b13c821d35546389a6c1563613647ddc7f9254"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/native-v1.json",
+    "sha256": "c4aba5f01389f66c8fe1f8ed33dd733d2d28dbe10011cc6557619a6b75a7fb36"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/native-v2.json",
+    "sha256": "c534e31ce938ba8da7015854d86a4ac04ff6925c7f325ded0a45f89cffad452d"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/public-api-contracts.txt",
+    "sha256": "47d1ad507e052895858a824d70e0fa9c1bb736407aa778a5648eebbb9f125809"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/public-api.txt",
+    "sha256": "489bf381884abbf721bd496f8a938e2a610429ab7741043aef0388a63b1c8822"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/PublicApi.cs",
+    "sha256": "a50b1ddcd01af190662f772c1c1867052bea9cf95f1d8571efed744845e5d461"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/README.md",
+    "sha256": "b6840edb777e032a91a4bebfdc7a019f5d654b0d81b8c494a945f10929fb06e5"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Fixtures/ReferenceDocumentLayout.cs",
+    "sha256": "f39c00902316958f83b96b1d46142bb18d3701c72f08d15ce8704408a59481a3"
+  },
+  {
+    "path": "tests/Textalonia.Tests/HtmlInterchangeTests.cs",
+    "sha256": "e2df2a2c6cd6d4726a6fc66bcb6811070efc457ec6605a149c6d7962c71041bc"
+  },
+  {
+    "path": "tests/Textalonia.Tests/InlineImageViewTests.cs",
+    "sha256": "a570ef86beb0c99d9cae1465c490c435bce6607df688ecec608bf09fcd182275"
+  },
+  {
+    "path": "tests/Textalonia.Tests/InlineLayoutTests.cs",
+    "sha256": "991811b0640bb5c0d00817fd1bc407c2d4bf9714c0eacc252a9c9018f264f33c"
+  },
+  {
+    "path": "tests/Textalonia.Tests/InlineModelTests.cs",
+    "sha256": "53e107d1a9d9cd7fabda2a53edd0bf4ef20e869d8ee979f122dc5e0411e1c704"
+  },
+  {
+    "path": "tests/Textalonia.Tests/InlineResourceTests.cs",
+    "sha256": "2d2078c6db60f2988426fc5a5ebb7bc689e842cc86890129d9fd795fd11be559"
+  },
+  {
+    "path": "tests/Textalonia.Tests/InlineReviewTests.cs",
+    "sha256": "78a91531e36815447d407432ef1319faafedd1370c7909340690b9e211e30042"
+  },
+  {
+    "path": "tests/Textalonia.Tests/InlineViewLifecycleTests.cs",
+    "sha256": "9d00ce6b741cdf1c16d41ed73c9dae7b3ea1db6262b1a6af87b26a7edb86d5f4"
+  },
+  {
+    "path": "tests/Textalonia.Tests/InputComponentTests.cs",
+    "sha256": "beb98fe57bf1af74776438fc007b675ee7d431357cc363b487ceb1d8bf2451e1"
+  },
+  {
+    "path": "tests/Textalonia.Tests/IntegrationContractTests.cs",
+    "sha256": "f30b6b557eec36f4aac5bfec123a39d1ea0f2c522b861ac8941537a3be1c07b1"
+  },
+  {
+    "path": "tests/Textalonia.Tests/IntegrationDemoTests.cs",
+    "sha256": "c0856ed101a09a8706ec83072b45bf9d0ad7c754f1f9094d215d5aba68880b1b"
+  },
+  {
+    "path": "tests/Textalonia.Tests/InteractionGeometryTests.cs",
+    "sha256": "d432b7984dc7bebc625ab8a15c79e6829973a4c072774eee7e3a1f70905004c6"
+  },
+  {
+    "path": "tests/Textalonia.Tests/InterchangeCorpusTests.cs",
+    "sha256": "2654540ec04dc21f7eacf4a2155e818b776ef4795074aaa7f1e1f08929bdaa16"
+  },
+  {
+    "path": "tests/Textalonia.Tests/LoadBaselineTests.cs",
+    "sha256": "b19d698f61d0805f91c6b8b524c5ffdc50e705b7cb8b6c35fbc0058a7fa71b30"
+  },
+  {
+    "path": "tests/Textalonia.Tests/MarkdownCodecTests.cs",
+    "sha256": "cba0af4f8c85ec30b7d21bd0e17888602c1586ea63f5d4bda3a08bf297ae6818"
+  },
+  {
+    "path": "tests/Textalonia.Tests/MarkdownCodeFontTests.cs",
+    "sha256": "61e4e3b44949c252368ab8ad16728b187a899c194a0fe075db3e1c84153e71e5"
+  },
+  {
+    "path": "tests/Textalonia.Tests/MarkdownViewerTests.cs",
+    "sha256": "8f4222d904ffa19c65cde19a5f89d66b7867ec0685ebc3214659ab723ea3d376"
+  },
+  {
+    "path": "tests/Textalonia.Tests/PublicApiBaselineTests.cs",
+    "sha256": "429dac81c022381479abda67774f62a36402486b94c4fd1eacac34f9cb31ae2b"
+  },
+  {
+    "path": "tests/Textalonia.Tests/ReleaseContractTests.cs",
+    "sha256": "424e3456adf27a8c0c21eb2a29128fd50bc3bbb7779a2546dd29179b3d83245e"
+  },
+  {
+    "path": "tests/Textalonia.Tests/RichFormattingLayoutTests.cs",
+    "sha256": "95f4a089be3ee542c7e5f94c4a7bbac4b4de1a8e36369c1bd2e3af4f819d23a6"
+  },
+  {
+    "path": "tests/Textalonia.Tests/RichFormattingValidationTests.cs",
+    "sha256": "5588e6eff144dbd3b71c793059bf84c9fc99aa1c2fce332fbf24661e21776c27"
+  },
+  {
+    "path": "tests/Textalonia.Tests/RtfInterchangeTests.cs",
+    "sha256": "a27421d69f67d5687e70d519657e7e1a1d55ced2b91ec634dd9e073690db8bd7"
+  },
+  {
+    "path": "tests/Textalonia.Tests/ScalableCoreTests.cs",
+    "sha256": "bfbb506c45e3463cd05dd9bb69971fee85eac19a2017685e36d5dfdc47e3104a"
+  },
+  {
+    "path": "tests/Textalonia.Tests/ScalableLayoutTests.cs",
+    "sha256": "66a49cbf973cc30c6a1eb145981c43694b71e49e32fb87721d211360783218e0"
+  },
+  {
+    "path": "tests/Textalonia.Tests/SchemaEvolutionTests.cs",
+    "sha256": "011d56b4de21d0f809450d127a90d3a92f508efba41c2e29495c470884f54c4a"
+  },
+  {
+    "path": "tests/Textalonia.Tests/SelectionAndListTests.cs",
+    "sha256": "31dd3c7cd7e1bbff5d72b5af51f3afdf95dad2ee193e6d2c19af46f66ca7eb05"
+  },
+  {
+    "path": "tests/Textalonia.Tests/SelectionAutoscrollTests.cs",
+    "sha256": "c572bfedf80201ffc9d402a87821f31b39c6c4897c98b3e11c5b83a4ea266966"
+  },
+  {
+    "path": "tests/Textalonia.Tests/SelectionToolbarTests.cs",
+    "sha256": "344377addacbcd0dd8b130f09a3439a57a9e1a4070fd32e1cf3f42267d146755"
+  },
+  {
+    "path": "tests/Textalonia.Tests/SerializationTests.cs",
+    "sha256": "4c0906103073e6326cbaf49ccf09b03d5781e0c61ccdf6c200fc3a9830b4d9b6"
+  },
+  {
+    "path": "tests/Textalonia.Tests/ShapingLimitTests.cs",
+    "sha256": "e676677b1404eb9f97d9b1142c1f388c12f6eb9baeca102dea39ede05aebabcb"
+  },
+  {
+    "path": "tests/Textalonia.Tests/TableClipboardInteractionTests.cs",
+    "sha256": "8f61a82d93662f6deec69d24bbe22dc01eb98bad8e029565a26b994282e2eea0"
+  },
+  {
+    "path": "tests/Textalonia.Tests/TableInteractionTests.cs",
+    "sha256": "34ca57abe755512bcdd34e897f70ce73710ff8943833b2d31a2b7b810d932d73"
+  },
+  {
+    "path": "tests/Textalonia.Tests/TableModelTests.cs",
+    "sha256": "7cf9e6eff2e59739409730df201800b19b77c28ef6fc982d2a03d41f1e47a5a7"
+  },
+  {
+    "path": "tests/Textalonia.Tests/Textalonia.Tests.csproj",
+    "sha256": "70fd84dc5a3662886318b26458c28aeda408b73bb422beb67e380c5203db2caa"
+  },
+  {
+    "path": "tests/Textalonia.Tests/TouchSelectionTests.cs",
+    "sha256": "474589e29be9c7b3a7b5ae9a06cacafbc554bd151b3f2055d6938fda21e63133"
+  },
+  {
+    "path": "tests/Textalonia.Tests/XamlSerializationTests.cs",
+    "sha256": "fe87e14a6db58d1381586d68e3e721645590703f807a157ee7f6dcb579cd4800"
+  },
+  {
+    "path": "Textalonia.sln",
+    "sha256": "7a0bcf37964b9fa989693ef98e389ce2a30dad787b011986ec19718e7e912a8d"
+  },
+  {
+    "path": "THIRD-PARTY-NOTICES.md",
+    "sha256": "60f76f8106ddff3d401e381b1ed7760b5b5e2605a7c995372b6d8e9211e9c1ab"
+  },
+  {
+    "path": "tools/Textalonia.ReleaseChecks/Program.cs",
+    "sha256": "3af657e280d5c1d88111638f392c373fe83000c9781d82099b49e6d38902c498"
+  },
+  {
+    "path": "tools/Textalonia.ReleaseChecks/Textalonia.ReleaseChecks.csproj",
+    "sha256": "558c2724050e93200b0a57a44caf2a2be0b9c1e23a21f6e5aeabf83c7aaf8a79"
+  }
+]

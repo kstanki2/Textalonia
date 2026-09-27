@@ -1,0 +1,12 @@
+{
+  "tests": [
+    "unreviewed manifest",
+    "changed release notes",
+    "dirty publication candidate",
+    "artifact traversal",
+    "missing inspection evidence"
+  ],
+  "count": 5,
+  "candidateManifestSha256": "2295a1219fde86afc5ccec7f39932089c258de8d4c63d4b83da5e29d426b8a20",
+  "status": "pass"
+}

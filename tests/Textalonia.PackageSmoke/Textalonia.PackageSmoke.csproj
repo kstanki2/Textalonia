@@ -1,10 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <!-- Self-contained defaults: the release runner copies this outside the source projects. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <AvaloniaVersion Condition="'$(AvaloniaVersion)' == ''">12.1.3</AvaloniaVersion>
+    <TextaloniaPackageVersion Condition="'$(TextaloniaPackageVersion)' == '' and '$(Version)' != ''">$(Version)</TextaloniaPackageVersion>
+    <TextaloniaPackageVersion Condition="'$(TextaloniaPackageVersion)' == ''">0.1.0-preview.1</TextaloniaPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <!-- This intentionally has NO ProjectReference to the library. Run after packing. -->
-    <PackageReference Include="Textalonia" Version="$(Version)" />
+    <PackageReference Include="Textalonia" Version="[$(TextaloniaPackageVersion)]" />
     <PackageReference Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />

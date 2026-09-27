@@ -1,0 +1,27 @@
+[
+  {
+    "package": "AngleSharp/1.8.2",
+    "license": "MIT",
+    "nuspecSha256": "972afdb2ad810d31ec60bfddf167ba4de8e2f59c4d2f8f02900777333fb09e8e"
+  },
+  {
+    "package": "Avalonia.BuildServices/11.3.2",
+    "license": "MIT",
+    "nuspecSha256": "a8846537f7d074b8f9ed753c03678128c36bd046939ee245fad8c575a7cd3e9b"
+  },
+  {
+    "package": "Avalonia.Remote.Protocol/12.1.3",
+    "license": "MIT",
+    "nuspecSha256": "4c0cd5ec137d2a376bab20e62bb2cbbdc9b71ffcb044acf41adeaf25cf5025b1"
+  },
+  {
+    "package": "Avalonia/12.1.3",
+    "license": "MIT",
+    "nuspecSha256": "8fd64a84c229548a71e61390f4a310219f50529af0ee53162ffd39e7874ff4dc"
+  },
+  {
+    "package": "MicroCom.Runtime/0.11.6",
+    "license": "MIT",
+    "nuspecSha256": "c7aeab4b73acdba3bb8e66865c2bbe67566b8593d972be2089181344adef345f"
+  }
+]

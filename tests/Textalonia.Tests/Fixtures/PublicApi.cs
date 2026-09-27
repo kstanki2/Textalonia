@@ -6,6 +6,63 @@ namespace Textalonia.Baselines;
 
 internal static class PublicApi
 {
+    // Supplement the original signature baseline with source-contract metadata that reflection
+    // signatures alone omit: nested nullability, init/ref/out, attributes and generic constraints.
+    public static string CaptureContracts()
+    {
+        const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+        var nullability = new NullabilityInfoContext();
+        var lines = new List<string>();
+        foreach (var type in typeof(FlowDocument).Assembly.GetExportedTypes().OrderBy(t => t.FullName, StringComparer.Ordinal))
+        {
+            lines.Add($"type {Name(type)} {Attributes(type.CustomAttributes)} {Constraints(type.GetGenericArguments())}");
+            var members = new List<string>();
+            foreach (var member in type.GetMembers(flags))
+            {
+                switch (member)
+                {
+                    case MethodBase method when Visible(method):
+                        var result = method is MethodInfo info
+                            ? $"return {Nullability(nullability.Create(info.ReturnParameter))} {Modifiers(info.ReturnParameter)} {Attributes(info.ReturnParameter.CustomAttributes)}"
+                            : "";
+                        var parameters = string.Join(", ", method.GetParameters().Select(p =>
+                            $"{p.Name}: {Nullability(nullability.Create(p))} in={p.IsIn} out={p.IsOut} {Modifiers(p)} {Attributes(p.CustomAttributes)}"));
+                        members.Add($"{method.Name}({parameters}) {result} abstract={method.IsAbstract} virtual={method.IsVirtual} final={method.IsFinal} {Attributes(method.CustomAttributes)} " +
+                            (method.IsGenericMethod ? Constraints(method.GetGenericArguments()) : ""));
+                        break;
+                    case PropertyInfo property when property.GetAccessors(true).Any(Visible):
+                        members.Add($"property {property.Name} {Nullability(nullability.Create(property))} {Attributes(property.CustomAttributes)}");
+                        break;
+                    case FieldInfo field when field.IsPublic || field.IsFamily || field.IsFamilyOrAssembly:
+                        members.Add($"field {field.Name} {Nullability(nullability.Create(field))} {Attributes(field.CustomAttributes)}");
+                        break;
+                    case EventInfo ev when ev.AddMethod is { } add && Visible(add):
+                        members.Add($"event {ev.Name} {Nullability(nullability.Create(ev))} {Attributes(ev.CustomAttributes)}");
+                        break;
+                }
+            }
+            lines.AddRange(members.Order(StringComparer.Ordinal).Select(m => "  " + m.TrimEnd()));
+        }
+        return string.Join("\n", lines.Select(l => l.TrimEnd())) + "\n";
+    }
+
+    private static string Nullability(NullabilityInfo info) =>
+        $"{Name(info.Type)}[{info.ReadState}/{info.WriteState}]" +
+        (info.ElementType is { } element ? $" element({Nullability(element)})" : "") +
+        (info.GenericTypeArguments.Length > 0 ? " args(" + string.Join(",", info.GenericTypeArguments.Select(Nullability)) + ")" : "");
+
+    private static string Modifiers(ParameterInfo parameter) =>
+        "modreq(" + string.Join(",", parameter.GetRequiredCustomModifiers().Select(Name)) + ") " +
+        "modopt(" + string.Join(",", parameter.GetOptionalCustomModifiers().Select(Name)) + ")";
+
+    private static string Attributes(IEnumerable<CustomAttributeData> attributes) => string.Join(" ", attributes
+        .Where(a => a.AttributeType.FullName is not ("System.Runtime.CompilerServices.NullableAttribute" or
+            "System.Runtime.CompilerServices.NullableContextAttribute" or "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
+        .Select(a => a.ToString()).Order(StringComparer.Ordinal));
+
+    private static string Constraints(Type[] arguments) => string.Join(" ", arguments.Where(a => a.IsGenericParameter).Select(a =>
+        $"where {a.Name}: {a.GenericParameterAttributes} {string.Join(",", a.GetGenericParameterConstraints().Select(Name))} {Attributes(a.CustomAttributes)}"));
+
     public static string Capture()
     {
         const BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;

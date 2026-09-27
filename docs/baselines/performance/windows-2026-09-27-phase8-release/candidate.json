@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "status": "validated",
+  "createdUtc": "2026-09-27T13:25:19.2606696+00:00",
+  "packageId": "Textalonia",
+  "version": "0.1.0-preview.1",
+  "commit": "4eead6b1e60b79c4e03663b0f6c90fbba8f0ef93",
+  "workingTreeDirty": true,
+  "platform": "windows",
+  "os": "Microsoft Windows 10.0.26100",
+  "sdk": "10.0.204",
+  "fuzzStepsPerSeed": 2000,
+  "performanceExecuted": true,
+  "supportScope": "managed-preview",
+  "nativeQualification": "pending",
+  "packageControl": "unverified",
+  "published": false,
+  "files": [
+    {
+      "path": "API-CONTRACTS.md",
+      "sha256": "5fdfe035beb9ab7c60dbff95885f9ce77cc11abecb9874aa92d9a2368f65aa1f"
+    },
+    {
+      "path": "consumer.json",
+      "sha256": "fd584bfa8692163ddc253258c5b134cb9282e070c5c70f9e1990e9993d580e65"
+    },
+    {
+      "path": "dependency-inventory.json",
+      "sha256": "b58ea99896f08a7e8754b4aa85016354e9806c1f006dcde54f80b062d9a4cf2b"
+    },
+    {
+      "path": "dotnet-info.txt",
+      "sha256": "1e71d5b4779f737eafaf9805c95770f438b8dffa41c0caf7474aacbb71246eb5"
+    },
+    {
+      "path": "examples/ExtensionExamples.cs",
+      "sha256": "dc2741b87e6af091222e49e5f5182926ef527589f19981a11c2257b66f5a758e"
+    },
+    {
+      "path": "examples/Program.cs",
+      "sha256": "719ca7fe5f5ff102e7ace94db683eccaf9f415b03e63f1a175b5db7049837790"
+    },
+    {
+      "path": "examples/SmokeWindow.axaml",
+      "sha256": "3a31c95f54f48dbb64211f92e6568f21382c7fbdaaf7307b8684bf53a4a3523e"
+    },
+    {
+      "path": "examples/Textalonia.PackageSmoke.csproj",
+      "sha256": "ec1a885f713e98eaa64f1a72cbef8b58027c4ce58fce04b91754645eb2f333d1"
+    },
+    {
+      "path": "fixture-failures/phase7-demo.png",
+      "sha256": "bcd3ab1f63cbbe5f1e4676443d2a0ff23f3728552d85f0b5438a7d17f7d41fae"
+    },
+    {
+      "path": "fixture-failures/public-api-contracts.actual.txt",
+      "sha256": "47d1ad507e052895858a824d70e0fa9c1bb736407aa778a5648eebbb9f125809"
+    },
+    {
+      "path": "logs/budgets-compatibility.log",
+      "sha256": "be9645d3cf36d7fc290841e2e1e9f55752bf99585b03ab86425680e61e99253a"
+    },
+    {
+      "path": "logs/budgets-document.log",
+      "sha256": "843513cafb3593535c42a2969292378e5c1d52ef858cfcc3567e33b417363047"
+    },
+    {
+      "path": "logs/build.log",
+      "sha256": "a8adff4d7542a192e877299ef0a10caf054aa8dc5fbafe3e90c384e8731d1062"
+    },
+    {
+      "path": "logs/consumer-restore.log",
+      "sha256": "1b999802c80f0cea1c613caabb55063a4d745708e776c3f55878740b194fc336"
+    },
+    {
+      "path": "logs/consumer.log",
+      "sha256": "3fd33dd199b4f8281091472913706b4b6aece529b44a6ad90a64567899e99c49"
+    },
+    {
+      "path": "logs/inspection.log",
+      "sha256": "e1db90036c734dfa213cdf85358c86ddbe9ea90f6e839e85d8a749b20887f8b4"
+    },
+    {
+      "path": "logs/interaction.log",
+      "sha256": "c3b17f441e98fd202310093ff8f4b6597696181a39bf1dfa2cf0d8fa8a02b0c3"
+    },
+    {
+      "path": "logs/markdown.log",
+      "sha256": "c8c507de242efc438870aed92e0740706444e82017c1dda13f7132d6bef7d2bb"
+    },
+    {
+      "path": "logs/pack.log",
+      "sha256": "a9a64be8b6cc0062eb20b5ecd8c7835252f438a6ae9b69b2124c7a1d153d057a"
+    },
+    {
+      "path": "logs/performance-compatibility.log",
+      "sha256": "991fadccde49c6e14e2df9fe7c8af61e70e049725af8369992c3b0398eca91a1"
+    },
+    {
+      "path": "logs/performance-document.log",
+      "sha256": "db16822bd4d934dfca535cef47e6dc043339ee70fbfd48852f43e83271f30a40"
+    },
+    {
+      "path": "logs/restore.log",
+      "sha256": "2ad9967f2280d0195ad457a92fe6a353a8492625846632386df6dfc446efe4bc"
+    },
+    {
+      "path": "logs/tests.log",
+      "sha256": "46e7fbb1c6a655217f48c8e0d9c91eb975504408b760158ea6330dd164883a4b"
+    },
+    {
+      "path": "package-inspection.json",
+      "sha256": "382013f49c058f5b2738ca72b38684cce0abc231c2f7ab491d1a6db5aeaf5710"
+    },
+    {
+      "path": "packages/Textalonia.0.1.0-preview.1.nupkg",
+      "sha256": "7aa7b1ae899030ed0cceba2292245dd6d7c794c5024fbf42b5030c057aa81005"
+    },
+    {
+      "path": "packages/Textalonia.0.1.0-preview.1.snupkg",
+      "sha256": "70705c4bc2bb8467cce687e025dd09a08ce1a25c32d7cadc1ff95c39b7b7bed3"
+    },
+    {
+      "path": "PERFORMANCE.md",
+      "sha256": "934337aee07a4e3d28642b3cb1b0e8faf4fd7cb41a33fa6a6ba0ca887c792577"
+    },
+    {
+      "path": "performance/compatibility/budgets.json",
+      "sha256": "2a9864ef4d4f3b098245378b73413d1dc1c09ca41fdddb15c19dff1d72f9d251"
+    },
+    {
+      "path": "performance/compatibility/environment.json",
+      "sha256": "2bfea4722e9041b8ac01e51e93e4d8ba6ef67ecf67b19ebf97ce368adb4149ec"
+    },
+    {
+      "path": "performance/compatibility/results.json",
+      "sha256": "7569866ff97ce70cc170926d9609d5ea2cce8e10a9b7b223dabca5a1946d99f2"
+    },
+    {
+      "path": "performance/compatibility/status.json",
+      "sha256": "b1a7a85ad7a8975eb9ba65868f927884ccfde37c1c01fb790c8e1853b3832510"
+    },
+    {
+      "path": "performance/compatibility/summary.csv",
+      "sha256": "6fdc18f4056b5956416d11792d39e5a87acd79e0ac44ac012a98253cb0129910"
+    },
+    {
+      "path": "performance/document/budgets.json",
+      "sha256": "54769070f6b10f7173cc75a84c7b878da4e188a27287f30372946d04698aa8a8"
+    },
+    {
+      "path": "performance/document/environment.json",
+      "sha256": "9604fa6abd36ce2b7a607f8a4cc90085c3456c6a9a357eed208a1e6c162aa374"
+    },
+    {
+      "path": "performance/document/results.json",
+      "sha256": "881dddd9e8d50e62d5a26c54113f8902d11e68ac958fa5522f5cd06d91a3780c"
+    },
+    {
+      "path": "performance/document/status.json",
+      "sha256": "075a13d758b371cc9b2f0499150010deabe457f9b54894b39d11c85db0c8530b"
+    },
+    {
+      "path": "performance/document/summary.csv",
+      "sha256": "9daf612e39be8dba12d99e9fe34e81ebb46d807f47bfeaf247ee92d6fcc2cb04"
+    },
+    {
+      "path": "performance/interaction/interaction-preview.png",
+      "sha256": "c1edda25a23243c0cbf678f2740b5857f252b4c82f5d0b6a517aebbbb6e887a2"
+    },
+    {
+      "path": "performance/interaction/interactions.json",
+      "sha256": "5ffd9512ce4cda9beeab3b9d83f4408b8f4625893941080daee6dcf0aa3a73af"
+    },
+    {
+      "path": "performance/markdown/markdown.json",
+      "sha256": "905b8f674e9ea9d39a9b871874743078b98e442d7605e177bf4f9fceb8bef00e"
+    },
+    {
+      "path": "public-api-contracts.txt",
+      "sha256": "47d1ad507e052895858a824d70e0fa9c1bb736407aa778a5648eebbb9f125809"
+    },
+    {
+      "path": "public-api.txt",
+      "sha256": "489bf381884abbf721bd496f8a938e2a610429ab7741043aef0388a63b1c8822"
+    },
+    {
+      "path": "QUALIFICATION.md",
+      "sha256": "d7c87d9e21f5498d9037a8148cd2e74f51dbc6c6f0526414439a9efcf74815d7"
+    },
+    {
+      "path": "qualification/fixtures/document-semantics.textalonia",
+      "sha256": "12960d50431f5a2b0db3b5356e9238ba42f2c70c4d49cef4873dd01a67c7e82b"
+    },
+    {
+      "path": "qualification/fixtures/emoji.textalonia",
+      "sha256": "4abfaff093e6f3355c39d1f21dd56ae6f5f9f70322a9a140b4aeddf4b356c670"
+    },
+    {
+      "path": "qualification/fixtures/long-paragraph.textalonia",
+      "sha256": "6c4817b0a880977fe2f6a8e66a0f7b6ea196a94f0bfa70ba158492e4ddbe92f4"
+    },
+    {
+      "path": "qualification/fixtures/mixed-scripts.textalonia",
+      "sha256": "782e22119031cb21ee63c7a4c399c950d7b7720a41b3b5d5ff97fbd0df1f7ee5"
+    },
+    {
+      "path": "qualification/fixtures/scroll.textalonia",
+      "sha256": "22b9b245f2f9720e584a768c74dfcc057cef5bc0b547234b27db64ba67a12dc5"
+    },
+    {
+      "path": "qualification/fixtures/structured.textalonia",
+      "sha256": "5842df005d03afcb8321f6d7d42051a3b1046a41cf114274a929704bd885022b"
+    },
+    {
+      "path": "qualification/native/linux-20260926-154511-782.json",
+      "sha256": "3e19cfb3619847c7a3a9f82a394b59b0e76fa1cd8ff8534a0987b09706bf2397"
+    },
+    {
+      "path": "qualification/native/macos-20260926-154511-135.json",
+      "sha256": "16fd45de1eaa7e5994e7ad74721bae842378c51a5092934df08889ba57f5f283"
+    },
+    {
+      "path": "qualification/native/phase6/android-20260927-000703-578.json",
+      "sha256": "f3c2c28b99de77ae1fe34b2fcac7db6772d8f9c8017cc1b2f92f2fd0d46d023d"
+    },
+    {
+      "path": "qualification/native/phase6/ios-20260927-000704-180.json",
+      "sha256": "70e9e12cb9c4fc31d952de8d4439ad3091c0731b5f3246b94ad899381adb6ace"
+    },
+    {
+      "path": "qualification/native/phase6/linux-20260927-000702-960.json",
+      "sha256": "0c092724a32949dd1819973acd7bb65c6f5d0635e632dc0245b3252d8a6e1196"
+    },
+    {
+      "path": "qualification/native/phase6/macos-20260927-000702-321.json",
+      "sha256": "43d5d6383977e651e8573904f516978a7a0e154f44e49c79a503f14f7a7f8bcb"
+    },
+    {
+      "path": "qualification/native/phase6/windows-20260927-000701-668.json",
+      "sha256": "e0daf616ef0b37d4f86a42b81f4e0683e2134f8d9537a45f21ff1c4008c4dac8"
+    },
+    {
+      "path": "qualification/native/windows-20260926-154510-501.json",
+      "sha256": "e9bec1e976795d6b2dd2ce8eb682bc42eb9bf83a99cfc31ab45e225077bb1a08"
+    },
+    {
+      "path": "qualification/release-status.json",
+      "sha256": "a4ec64d3b98933c52ca0a22212c2b0e8276426b6aa55e460904bb8462e9a1788"
+    },
+    {
+      "path": "RELEASE-NOTES.md",
+      "sha256": "4acbbaf2ab395c988723af45387b9a7036f9dacc1ee557de461b84545eafe89b"
+    },
+    {
+      "path": "RELEASE.md",
+      "sha256": "4adc1c75ebbe41122a1bd141b65184a4f782b64b32430ce5c8ec68bf5dec3cac"
+    },
+    {
+      "path": "sources.json",
+      "sha256": "4d486cada91af079594e6a4e08242b2d59bf65d4f9beb67049eda7c7ee75002d"
+    },
+    {
+      "path": "test-results/JackBauer_DESKTOP-0GDCOSC_2026-09-27_09_20_15.trx",
+      "sha256": "01e9233e932c0283bbc46443e28d1e2bf707cae89b9cde0dea9d4084d3264f63"
+    },
+    {
+      "path": "tools/Textalonia.ReleaseChecks.deps.json",
+      "sha256": "c090154293ab2ffbe28075d3f6de63e38748ea52802020aceb033c49f573de78"
+    },
+    {
+      "path": "tools/Textalonia.ReleaseChecks.dll",
+      "sha256": "44c3aeb9be634e9fa63dbfa288b621d4478c218ae12e1090a1b9c30809e5e7f6"
+    },
+    {
+      "path": "tools/Textalonia.ReleaseChecks.runtimeconfig.json",
+      "sha256": "28329cf08f6505e73806b17558b187c02f0c1c516fe47ebfb7a013d082aaa306"
+    }
+  ]
+}

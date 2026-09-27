@@ -26,3 +26,13 @@
 - Native schema v4 preserves quote/code semantics and code language while keeping
   strict v1-v3 readers. See `docs/INTEGRATIONS.md` for migration and dialect limits.
 - Added integration demo, independent package-consumer coverage, and update probe.
+
+### Phase 8 release preparation
+
+- Added MIT licensing, repository/source/symbol metadata and dependency notices.
+- Preserved public signatures and added nullable/attribute/modifier baselines,
+  schema migration and stream-failure coverage, and executable extension examples.
+- Added isolated consumer/package inspection, checksum-bound candidate receipts,
+  retained OS-matrix CI artifacts and explicit publication/public verification tools.
+- Published preview API/support/schema policies and upgrade/correction procedures.
+  Native qualification, authenticated package ownership and public release remain open.
