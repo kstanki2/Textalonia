@@ -66,7 +66,7 @@ internal sealed record BlockDecoration(Rect Bounds, IBrush? Fill, IBrush? Border
 }
 
 /// <summary>Viewport shaping over incremental prefix heights, with a bounded reusable layout cache.</summary>
-internal sealed class DocumentLayout : IDisposable
+internal sealed partial class DocumentLayout : IDisposable
 {
     private sealed record Cached(double Width, ParagraphLayout Layout);
     private readonly Dictionary<Guid, Cached> _cache = [];
@@ -414,24 +414,19 @@ internal sealed class DocumentLayout : IDisposable
         RestoreViewportAnchor(anchor);
         Evict(); return existing;
     }
-    public Rect Caret(int position)
-    {
-        var visual = At(position);
-        if (visual is null) return new Rect(0, 0, 1.5, 20);
-        using var lease = visual.Acquire();
-        var rect = lease.Layout.HitTestTextPosition(Math.Clamp(position - visual.TextStart, 0, visual.Page.End - visual.Page.Start));
-        return new Rect(visual.Origin.X + rect.X, visual.Origin.Y + rect.Y, 1.5, Math.Max(rect.Height, visual.Position.Paragraph.Style.LineHeight ?? visual.Position.Paragraph.DefaultStyle.FontSize * 1.1));
-    }
+    public Rect Caret(int position) => Caret(VisualCaret.Logical(position));
 
-    public int HitTest(Point point)
+    public int HitTest(Point point) => HitTestCaret(point).Position;
+
+    internal VisualCaret HitTestCaret(Point point)
     {
-        if (_index is null) return 0;
+        if (_index is null) return VisualCaret.Logical(0);
         var anchor = ViewAnchor();
         PruneTargets();
         Collect(_heights.Root, _padding.Left, _padding.Top, point.Y - 20, point.Y + 20);
         Reposition();
         point += new Vector(0, RestoreViewportAnchor(anchor));
-        if (Paragraphs.Count == 0) return 0;
+        if (Paragraphs.Count == 0) return VisualCaret.Logical(0);
         var visual = Paragraphs.Where(p => p.Bounds.Height > 0 && p.Bounds.Width > 0).MinBy(p =>
         {
             var r = p.Bounds;
@@ -439,12 +434,10 @@ internal sealed class DocumentLayout : IDisposable
             var dy = Math.Max(Math.Max(r.Top - point.Y, 0), point.Y - r.Bottom);
             return dy * dy * 16 + dx * dx;
         });
-        if (visual is null) return 0;
-        var local = point - visual.Origin;
-        using var lease = visual.Acquire();
-        var hit = lease.Layout.HitTestPoint(new Point(local.X, local.Y));
+        if (visual is null) return VisualCaret.Logical(0);
+        var hit = HitTestLine(visual, point);
         Evict();
-        return visual.TextStart + Math.Clamp(hit.TextPosition, 0, visual.Page.End - visual.Page.Start);
+        return hit;
     }
 
     private void PruneTargets()

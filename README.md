@@ -211,6 +211,19 @@ Merging retains original cells. Splitting an unedited merge restores them exactl
 
 Cross-cell text replacement preserves table structure; selecting and replacing the entire document clears its structure. Versioned rich clipboard fragments preserve sections, nested/merged tables and inline resources. Repeated paste remaps object/list identities and colliding resource keys; partial table selections clip unselected content. See [conversion and clipboard contracts](docs/INTERCHANGE.md) for boundary and destination merging rules.
 
+## Editing gestures
+
+The default components provide visual bidi navigation, stationary-pointer edge
+scrolling, structured content drag/drop, table resize previews and rectangular cell
+selection. Alt-drag or Alt+Shift+Arrow selects table cells; release commits a resize
+once and Escape cancels. The toolbar exposes typography, table borders/padding and
+list restart/continuation. See [interaction contracts](docs/INTERACTIONS.md) for
+modifiers, undo ownership and the additive table APIs.
+
+Touch gestures and isolated Android/iOS qualification hosts are implemented.
+[Phase 6 evidence](docs/PHASE6-REPORT.md) keeps native desktop and mobile-device
+qualification explicit; headless tests do not certify those integrations.
+
 ## Repository and release status
 
 - `src/Textalonia`: packable control, model, editing, serializers, theme.

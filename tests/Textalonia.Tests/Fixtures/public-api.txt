@@ -41,6 +41,7 @@ type Textalonia.Controls.DefaultPointerComponent : Textalonia.Controls.DocumentI
   interface Textalonia.Controls.IDocumentInputComponent
   interface Textalonia.Controls.IPointerComponent
   ctor public ()
+  method protected System.Void OnAttached() virtual
   method protected System.Void OnDetached() virtual
   method public System.Void PointerCaptureLost(Avalonia.Input.PointerCaptureLostEventArgs e) virtual
   method public System.Void PointerMoved(Avalonia.Input.PointerEventArgs e) virtual
@@ -239,6 +240,33 @@ type Textalonia.Controls.ShapingLimitExceededException : System.InvalidOperation
   property System.Guid ParagraphId { public get; }
   property System.Int32 CharacterLimit { public get; }
   property System.Int32 RequestedCharacters { public get; }
+type Textalonia.Controls.TableCellSelection : System.Object sealed
+  interface System.IEquatable<Textalonia.Controls.TableCellSelection>
+  ctor public (System.Guid TableId, System.Int32 AnchorRow, System.Int32 AnchorColumn, System.Int32 ActiveRow, System.Int32 ActiveColumn, System.Int32 Row, System.Int32 Column, System.Int32 RowCount, System.Int32 ColumnCount)
+  method public System.Boolean Contains(System.Int32 row, System.Int32 column)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Controls.TableCellSelection other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Guid& TableId, System.Int32& AnchorRow, System.Int32& AnchorColumn, System.Int32& ActiveRow, System.Int32& ActiveColumn, System.Int32& Row, System.Int32& Column, System.Int32& RowCount, System.Int32& ColumnCount)
+  method public Textalonia.Controls.TableCellSelection <Clone>$()
+  property System.Guid TableId { public get; public set; }
+  property System.Int32 ActiveColumn { public get; public set; }
+  property System.Int32 ActiveRow { public get; public set; }
+  property System.Int32 AnchorColumn { public get; public set; }
+  property System.Int32 AnchorRow { public get; public set; }
+  property System.Int32 Column { public get; public set; }
+  property System.Int32 ColumnCount { public get; public set; }
+  property System.Int32 Row { public get; public set; }
+  property System.Int32 RowCount { public get; public set; }
+type Textalonia.Controls.TableResizeAxis : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Controls.TableResizeAxis Column static = 0
+  field Textalonia.Controls.TableResizeAxis Row static = 1
 type Textalonia.Controls.TextHighlight : System.Object sealed
   interface System.IEquatable<Textalonia.Controls.TextHighlight>
   ctor public (System.Int32 Start, System.Int32 Length, Avalonia.Media.IBrush Brush)
@@ -299,7 +327,10 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   field Avalonia.StyledProperty<Textalonia.Model.FlowDocument> DocumentProperty static readonly
   method protected System.Void OnApplyTemplate(Avalonia.Controls.Primitives.TemplateAppliedEventArgs e) virtual
   method protected System.Void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) virtual
+  method public System.Boolean BeginTableResize(System.Guid tableId, Textalonia.Controls.TableResizeAxis axis, System.Int32 index, System.Double initialSize)
+  method public System.Boolean CommitTableResize()
   method public System.Boolean FindNext(System.String text, System.Boolean matchCase = False)
+  method public System.Boolean ResizeCurrentTableTrack(Textalonia.Controls.TableResizeAxis axis, System.Double delta)
   method public System.Int32 ReplaceAll(System.String find, System.String replace, System.Boolean matchCase = False)
   method public System.Threading.Tasks.Task CopyAsync()
   method public System.Threading.Tasks.Task CutAsync()
@@ -308,19 +339,41 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Threading.Tasks.Task SaveAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult> LoadWithReportAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentSaveResult> SaveWithReportAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = )
+  method public System.Void ApplyParagraphStyle(System.Func<Textalonia.Model.ParagraphStyle,Textalonia.Model.ParagraphStyle> change)
   method public System.Void ApplyStyle(System.Func<Textalonia.Model.TextStyle,Textalonia.Model.TextStyle> change)
+  method public System.Void CancelTableResize()
+  method public System.Void ClearSelectedTableCellContents()
+  method public System.Void ClearTableCellSelection()
+  method public System.Void ContinuePreviousList()
+  method public System.Void DeleteSelectedTable()
+  method public System.Void DeleteTableColumns()
+  method public System.Void DeleteTableRows()
+  method public System.Void ExtendTableCellSelection(System.Int32 rows, System.Int32 columns)
   method public System.Void FocusDocument()
   method public System.Void InsertInline(Textalonia.Model.InlineDescriptor descriptor, Textalonia.Model.DocumentResource resource = )
   method public System.Void InsertTable(System.Int32 rows = 2, System.Int32 columns = 3)
+  method public System.Void InsertTableColumn(System.Boolean after = True)
+  method public System.Void InsertTableRow(System.Boolean after = True)
   method public System.Void InsertText(System.String text)
+  method public System.Void MergeSelectedTableCells()
+  method public System.Void PreviewTableResize(System.Double size)
   method public System.Void Redo()
   method public System.Void SelectAll()
+  method public System.Void SelectCurrentTableCell()
+  method public System.Void SelectTableCells(System.Guid tableId, System.Int32 anchorRow, System.Int32 anchorColumn, System.Int32 activeRow, System.Int32 activeColumn)
+  method public System.Void SetTableCellBackground(System.String background)
+  method public System.Void SetTableCellBorders(Textalonia.Model.BlockBorders borders)
+  method public System.Void SetTableCellPadding(Textalonia.Model.EdgeInsets padding)
+  method public System.Void SetTableColumnWidth(System.Double width)
+  method public System.Void SetTableRowHeight(System.Double height, Textalonia.Model.TableRowHeightMode mode = AtLeast)
+  method public System.Void SplitSelectedTableCells()
   method public System.Void Undo()
   method public System.Void UpdateInline(System.Guid id, System.Func<Textalonia.Model.InlineDescriptor,Textalonia.Model.InlineDescriptor> change)
   property Avalonia.Media.IBrush SelectionBrush { public get; public set; }
   property Avalonia.Thickness DocumentPadding { public get; public set; }
   property System.Boolean AcceptsTab { public get; public set; }
   property System.Boolean IsReadOnly { public get; public set; }
+  property System.Boolean IsResizingTable { public get; }
   property System.Boolean ShowToolbar { public get; public set; }
   property System.Boolean SynchronizeText { public get; public set; }
   property System.Collections.ObjectModel.ObservableCollection<Textalonia.Controls.TextHighlight> Highlights { public get; }
@@ -350,7 +403,9 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property Textalonia.Controls.InlineControlFactoryRegistry InlineControlFactories { public get; public set; }
   property Textalonia.Controls.InlineImageOptions InlineImageOptions { public get; public set; }
   property Textalonia.Controls.ShapingLimitExceededException LayoutError { public get; }
+  property Textalonia.Controls.TableCellSelection CellSelection { public get; }
   property Textalonia.Editing.EditorSession Session { public get; }
+  property Textalonia.Editing.SelectionFormattingState FormattingState { public get; }
   property Textalonia.Model.FlowDocument Document { public get; public set; }
   property Textalonia.Serialization.ConversionReport LastConversionReport { public get; }
 type Textalonia.Controls.TextaloniaToolbar : Avalonia.Controls.WrapPanel

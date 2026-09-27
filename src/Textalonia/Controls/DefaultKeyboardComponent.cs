@@ -18,7 +18,17 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
         void Move(int position)
         {
             Context.CancelComposition();
-            session.Select(shift ? session.Selection.Anchor : position, position);
+            Context.Surface.SelectVisualCaret(VisualCaret.Logical(position), shift);
+        }
+        if (shift && e.KeyModifiers.HasFlag(KeyModifiers.Alt) && session.CurrentCell() is not null &&
+            e.Key is Key.Left or Key.Right or Key.Up or Key.Down)
+        {
+            Context.CancelComposition();
+            Context.Editor.ExtendTableCellSelection(e.Key == Key.Up ? -1 : e.Key == Key.Down ? 1 : 0,
+                e.Key == Key.Left ? -1 : e.Key == Key.Right ? 1 : 0);
+            Context.PreferredCaretX = null;
+            e.Handled = true;
+            return;
         }
         if (command)
         {
@@ -38,12 +48,12 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
             switch (e.Key)
             {
                 case Key.Left:
-                    Move(!shift && !session.Selection.IsEmpty ? session.Selection.Start :
-                        word ? session.PreviousWord(session.Selection.Active) : session.PreviousCaret(session.Selection.Active));
+                    Context.CancelComposition();
+                    Context.Surface.MoveVisualCaret(false, shift, word);
                     Context.PreferredCaretX = null; break;
                 case Key.Right:
-                    Move(!shift && !session.Selection.IsEmpty ? session.Selection.End :
-                        word ? session.NextWord(session.Selection.Active) : session.NextCaret(session.Selection.Active));
+                    Context.CancelComposition();
+                    Context.Surface.MoveVisualCaret(true, shift, word);
                     Context.PreferredCaretX = null; break;
                 case Key.Up:
                 case Key.Down:
@@ -54,7 +64,8 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
                     Context.PreferredCaretX ??= caret.X;
                     var direction = e.Key is Key.Up or Key.PageUp ? -1 : 1;
                     var distance = e.Key is Key.PageUp or Key.PageDown ? Math.Max(40, Context.ViewportHeight) : caret.Height;
-                    if (Context.TryHitTest(new Point(Context.PreferredCaretX.Value, caret.Y + caret.Height / 2 + direction * distance), out var hitTarget)) Move(hitTarget);
+                    Context.CancelComposition();
+                    Context.Surface.MoveVisualCaretToPoint(new Point(Context.PreferredCaretX.Value, caret.Y + caret.Height / 2 + direction * distance), shift);
                     break;
                 case Key.Home:
                 case Key.End:
@@ -62,11 +73,12 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
                     else
                     {
                         if (Context.Editor.LayoutError is not null) return;
-                        if (Context.GetLineBoundary(session.Selection.Active, e.Key == Key.End) is { } boundary) Move(boundary);
+                        Context.CancelComposition();
+                        Context.Surface.MoveVisualLineBoundary(e.Key == Key.End, shift);
                     }
                     Context.PreferredCaretX = null; break;
-                case Key.Back: Context.CancelComposition(); session.DeleteBackward(word); Context.PreferredCaretX = null; break;
-                case Key.Delete: Context.CancelComposition(); session.DeleteForward(word); Context.PreferredCaretX = null; break;
+                case Key.Back: Context.CancelComposition(); if (Context.Editor.CellSelection is not null) Context.Editor.ClearSelectedTableCellContents(); else session.DeleteBackward(word); Context.PreferredCaretX = null; break;
+                case Key.Delete: Context.CancelComposition(); if (Context.Editor.CellSelection is not null) Context.Editor.ClearSelectedTableCellContents(); else session.DeleteForward(word); Context.PreferredCaretX = null; break;
                 case Key.Enter: Context.CancelComposition(); if (shift) session.InsertText("\u2028"); else session.InsertParagraph(); Context.PreferredCaretX = null; break;
                 case Key.Tab:
                     if (session.CurrentCell() is { } cell)
@@ -93,6 +105,7 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
                     else return;
                     break;
                 case Key.Escape:
+                    Context.Editor.CancelTableResize(); Context.Editor.ClearTableCellSelection();
                     if (Context.IsComposing) Context.CancelComposition();
                     else session.Select(session.Selection.Active, session.Selection.Active);
                     break;

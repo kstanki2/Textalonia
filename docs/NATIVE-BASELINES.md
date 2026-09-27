@@ -34,7 +34,7 @@ Use US-International acute + `e` (ABC Extended equivalent on macOS) to produce `
 
 ## N05 — Mixed RTL/LTR navigation
 
-Open `mixed-scripts.textalonia`, select its Arabic/Hebrew paragraph, and repeat in a table cell after copying that paragraph. Move with Left/Right, Shift+Left/Right, Home/End and Up/Down through Latin, Arabic/Hebrew, numbers and punctuation at both widths. Record the UTF-16 anchor/active direction by saving a selection note and the visual caret sequence in a screen capture. Desired behavior: visual arrows follow adjacent shaped caret stops; reverse selections preserve their fixed anchor; deletion removes a complete logical grapheme; vertical movement preserves the visual column. **Current known gap:** arrows use logical positions, not shaped visual bidi stops; any mismatch is a P6.1 failure, not a baseline pass or certification. Cross-platform actual results remain pending until executed.
+Open `mixed-scripts.textalonia`, select its Arabic/Hebrew paragraph, and repeat in a table cell after copying that paragraph. Move with Left/Right, Shift+Left/Right, Home/End and Up/Down through Latin, Arabic/Hebrew, numbers and punctuation at both widths. Record the UTF-16 anchor/active direction by saving a selection note and the visual caret sequence in a screen capture. Desired behavior: visual arrows follow adjacent shaped caret stops; reverse selections preserve their fixed anchor; deletion removes a complete logical grapheme; vertical movement preserves the visual column. **Implemented in Phase 6:** arrows use shaped visual caret stops and retain affinity at ambiguous bidi and wrap boundaries. Headless keyboard/pointer coverage is recorded in [Phase 6](PHASE6-REPORT.md); a native mismatch remains a P6.1 failure. Cross-platform actual results remain pending until executed.
 
 ## N06 — Native rich clipboard
 
@@ -64,8 +64,52 @@ Start the target screen reader, focus the editor and use its current-value/read 
 | N02 | `Replacing_document_or_entering_readonly_cancels_preedit` | Pending / pending / pending | P4.2/P6.6 |
 | N03 | IME rectangle nonzero in headless test only | Pending / pending / pending | P2.4/P6.6 |
 | N04 | Grapheme model and real-control input tests | Pending / pending / pending | P6.6 |
-| N05 | Logical grapheme selection; visual bidi missing | Pending / pending / pending | P6.1 |
+| N05 | Shaped visual bidi keyboard/pointer and logical grapheme deletion tests | Pending / pending / pending | P6.1 |
 | N06 | Headless in-process rich clipboard round trip | Pending / pending / pending | P5.5/P5.6 |
 | N07 | Managed text-range contract tested; native text-provider bridge missing | Pending / pending / pending | P4.6 |
 
 CI uploads the checked-in pending records along with tests and generated fixtures; it does not overwrite them with headless passes. A platform owner may append dated evidence files and update this table after an actual native run. The absence of native input tools in this session is an execution limitation, not evidence of a product failure.
+
+## Phase 6 integration rerun
+
+Generate a new record with `scripts/New-InteractionRun.ps1`, which includes N01-N10
+and the mobile M cases when applicable. Repeat N01-N07 after gesture integration.
+For N01, use the IME's documented reconversion command on committed selected text
+where the backend supports it. Record the command, selected range, candidate window,
+commit/cancel result and undo. If the backend exposes no reconversion route, record
+that exact limitation and affected support scope; do not substitute ordinary preedit.
+
+### N08 - Table controls and shared geometry
+
+Use a merged table containing a nested table and an inline object. Resize internal
+column edges and row bottoms, including an Exact-height row. Verify live wrapping,
+clipping, caret, selection/object bounds, IME candidate geometry and accessibility
+ranges after scrolling and resizing. Escape, capture/focus loss and readonly changes
+must cancel; release commits once and Undo restores the exact document. Compare the
+same size delta using the labeled toolbar controls. Alt-drag and Alt+Shift+Arrows
+must select the same merged-cell rectangle; apply mixed text formatting, borders,
+padding, copy/cut, insert/delete, merge and split. Confirm the nested target and
+unchanged unselected cells. Record 1x and scaled display results.
+
+### N09 - Native content drag/drop
+
+Drag a reverse text selection within one editor, with the default move and copy
+modifier; test both source boundaries and an interior no-op. Transfer a whole nested
+section/table with an embedded resource into another editor, then use Shift for a
+cross-editor move. Verify destination insertion precedes source removal, same-editor
+Undo restores in one step, and cross-editor histories are independent. Transfer
+rendered HTML and plain text from named external applications. Test Escape/native
+cancellation, a readonly target, and a source/target edit while dragging. Record the
+insertion preview, modifiers and reported effect; no failed operation may lose source
+content. Outside-process drag effects never authorize Textalonia source deletion.
+
+### N10 - Stationary edge scrolling and lifecycle stress
+
+On a 10,000-paragraph fixture and a large table, drag beyond each viewport edge and
+hold the mouse still for several seconds. Distance must change scrolling speed;
+selection must retain its original anchor through measured/virtualized content and
+reverse drags. Release, move focus, lose capture, replace the input component and
+close/reopen the view. Repeat 100 drags/resizes/viewport transitions, recording frame
+latency, cache/view counts and memory after settling. No clock/capture may survive
+cancellation or detach. Compare with the performance budgets and record any residual
+miss explicitly. Headless timing does not certify native compositor latency.
