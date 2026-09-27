@@ -161,3 +161,13 @@ focused probe does not establish that host noise caused them. See the
 The [Phase 2 completion decision](PHASE2-REPORT.md#completion-decision) accepts
 this work as a later qualification task. It changes no numeric threshold and
 waives no correctness, data compatibility, allocation or history check.
+
+## PERF-06: Interaction latency qualification
+
+Phase 6 adds a [reproducible interaction probe and dated raw measurements](baselines/performance/windows-2026-09-26-phase6-interactions/README.md).
+It checks repeated caret movement, viewport changes, resize previews and edge-scroll
+ticks with rendered frames, plus selection/history/cache/timer cleanup invariants.
+Single-clock autoscroll and table preview meet their unchanged targets in this run.
+The final long-paragraph resize p95 is 103.09 ms against 100 ms; amplified mixed-clock
+stress also has misses. PERF-06 stays open for repeat/profile/native qualification.
+The measured differences between runs do not prove that host noise caused a miss.

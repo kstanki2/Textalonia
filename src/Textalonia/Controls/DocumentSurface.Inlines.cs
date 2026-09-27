@@ -31,6 +31,7 @@ public partial class DocumentSurface
     private IInlineResourceResolver? _inlineResolver;
     private InlineImageOptions? _inlineOptions;
     private FlowDocument? _inlineDocument;
+    private bool _inlineUpdatePosted;
 
     internal void ResetInlineViews()
     {
@@ -79,6 +80,24 @@ public partial class DocumentSurface
 
     private void UpdateInlineViews()
     {
+        if (_rendering)
+        {
+            // Child attachment/arrangement cannot invalidate the visual tree in
+            // a compositor callback. Synchronize against the latest layout next turn.
+            if (!_inlineUpdatePosted)
+            {
+                _inlineUpdatePosted = true;
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _inlineUpdatePosted = false;
+                    if (!_isAttached || Editor is null) return;
+                    EnsureLayout(Bounds.Width);
+                    UpdateInlineViews();
+                    InvalidateVisual();
+                }, DispatcherPriority.Loaded);
+            }
+            return;
+        }
         if (Editor is null || TopLevel.GetTopLevel(this) is null) return;
         if (!ReferenceEquals(_inlineFactories, Editor.InlineControlFactories) ||
             !ReferenceEquals(_inlineResolver, Editor.InlineResourceResolver) || _inlineOptions != Editor.InlineImageOptions)

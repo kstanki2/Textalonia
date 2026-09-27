@@ -22,6 +22,7 @@ public class TextaloniaToolbar : WrapPanel
     private Button? _findButton;
     private TextBox? _query;
     private bool _updating;
+    private readonly List<(NumericUpDown Control, Func<SelectionFormattingState, FormattingValue<double?>> Read)> _numericFormatting = [];
     public TextaloniaEditor? Editor { get => GetValue(EditorProperty); set => SetValue(EditorProperty, value); }
 
     public TextaloniaToolbar()
@@ -34,18 +35,18 @@ public class TextaloniaToolbar : WrapPanel
     {
         base.OnPropertyChanged(change);
         if (change.Property != EditorProperty) return;
-        if (change.OldValue is TextaloniaEditor old) old.Session.Changed -= SessionChanged;
-        if (change.NewValue is TextaloniaEditor editor) editor.Session.Changed += SessionChanged;
+        if (change.OldValue is TextaloniaEditor old) { old.Session.Changed -= SessionChanged; old.TableCellSelectionChanged -= SessionChanged; }
+        if (change.NewValue is TextaloniaEditor editor) { editor.Session.Changed += SessionChanged; editor.TableCellSelectionChanged += SessionChanged; }
         Build(); Refresh();
     }
     private void SessionChanged(object? sender, EventArgs e) => Refresh();
 
     private void Build()
     {
-        Children.Clear(); _toggles.Clear(); _editingControls.Clear();
+        Children.Clear(); _toggles.Clear(); _editingControls.Clear(); _numericFormatting.Clear();
         if (Editor is not { } editor) return;
-        _heading = Choice(["Body", "Heading 1", "Heading 2", "Heading 3"], 128, "Paragraph style");
-        _heading.SelectionChanged += (_, _) => { if (!_updating) editor.Run(() => editor.Session.SetHeading(_heading.SelectedIndex)); };
+        _heading = Choice(["Body", "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6"], 128, "Paragraph style");
+        _heading.SelectionChanged += (_, _) => { if (!_updating) editor.Run(() => editor.SetSelectedHeading(_heading.SelectedIndex)); };
         _font = Choice(["Default", "Arial", "Georgia", "Times New Roman", "Consolas"], 114, "Font family");
         _font.SelectionChanged += (_, _) =>
         {
@@ -64,9 +65,10 @@ public class TextaloniaToolbar : WrapPanel
         Toggle("S", "Strikethrough", editor.StrikethroughCommand, state => Indicator(state.Strikethrough));
         AddFlyout("Color", "Text color", Palette(false));
         AddFlyout("Highlight", "Text highlight", Palette(true));
+        AddFlyout("Typography", "Typography and spacing", TypographyMenu());
         AddFlyout("Paragraph", "Paragraph formatting", ParagraphMenu());
         AddFlyout("Insert", "Insert link or table", InsertMenu());
-        ActionButton("Clear", "Clear character formatting", () => editor.Session.ClearFormatting());
+        ActionButton("Clear", "Clear character formatting", () => editor.ApplyStyle(_ => TextStyle.Default));
         CommandButton("Undo", "Undo", editor.UndoCommand);
         CommandButton("Redo", "Redo", editor.RedoCommand);
         _findButton = AddFlyout("Find", "Find and replace", FindPanel(), editing: false);
@@ -135,17 +137,52 @@ public class TextaloniaToolbar : WrapPanel
     {
         var panel = new StackPanel { Spacing = 2, MinWidth = 180 };
         foreach (var alignment in Enum.GetValues<ParagraphAlignment>())
-            panel.Children.Add(MenuAction("Align " + alignment.ToString().ToLowerInvariant(), () => Editor!.Session.ApplyParagraphStyle(s => s with { Alignment = alignment })));
+            panel.Children.Add(MenuAction("Align " + alignment.ToString().ToLowerInvariant(), () => Editor!.ApplyParagraphStyle(s => s with { Alignment = alignment })));
         panel.Children.Add(new Separator());
-        panel.Children.Add(MenuAction("Bulleted list", () => Editor!.Session.ToggleList(ListKind.Bullet)));
-        panel.Children.Add(MenuAction("Numbered list", () => Editor!.Session.ToggleList(ListKind.Numbered)));
-        panel.Children.Add(MenuAction("Increase indent", () => Editor!.Session.ApplyParagraphStyle(s => s.List == ListKind.None ? s with { Indent = Math.Min(1000, s.Indent + 24) } : s with { ListLevel = Math.Min(8, s.ListLevel + 1), ListStart = null, ListRestart = false })));
-        panel.Children.Add(MenuAction("Decrease indent", () => Editor!.Session.ApplyParagraphStyle(s => s.List == ListKind.None ? s with { Indent = Math.Max(0, s.Indent - 24) } : s with { ListLevel = Math.Max(0, s.ListLevel - 1), ListStart = null, ListRestart = false })));
+        panel.Children.Add(MenuAction("Bulleted list", () => Editor!.ToggleSelectedList(ListKind.Bullet)));
+        panel.Children.Add(MenuAction("Numbered list", () => Editor!.ToggleSelectedList(ListKind.Numbered)));
+        panel.Children.Add(MenuAction("Restart numbering at 1", () => Editor!.RestartSelectedList()));
+        panel.Children.Add(MenuAction("Continue previous list", () => Editor!.ContinuePreviousList()));
+        panel.Children.Add(MenuAction("Increase indent", () => Editor!.ApplyParagraphStyle(s => s.List == ListKind.None ? s with { Indent = Math.Min(1000, s.Indent + 24) } : s with { ListLevel = Math.Min(8, s.ListLevel + 1), ListStart = null, ListRestart = false })));
+        panel.Children.Add(MenuAction("Decrease indent", () => Editor!.ApplyParagraphStyle(s => s.List == ListKind.None ? s with { Indent = Math.Max(0, s.Indent - 24) } : s with { ListLevel = Math.Max(0, s.ListLevel - 1), ListStart = null, ListRestart = false })));
         panel.Children.Add(MenuAction("Toggle right-to-left", ToggleRightToLeft));
         panel.Children.Add(MenuAction("Subscript", () => ToggleBaseline(Baseline.Subscript)));
         panel.Children.Add(MenuAction("Superscript", () => ToggleBaseline(Baseline.Superscript)));
         return panel;
     }
+
+    private static NumericUpDown Number(string name, decimal value, decimal minimum, decimal maximum)
+    {
+        var control = new NumericUpDown { Value = value, Minimum = minimum, Maximum = maximum, Increment = 1, FormatString = "0.###", PlaceholderText = name };
+        AutomationProperties.SetName(control, name); ToolTip.SetTip(control, name); return control;
+    }
+
+    private Control TypographyMenu()
+    {
+        var panel = new StackPanel { Width = 220, Spacing = 4 };
+        Add("Font weight", 1, 1000, state => AsNullable(state.FontWeight), value => Editor!.ApplyStyle(s => s with { FontWeight = (int)value }));
+        Add("Font stretch", 1, 9, state => AsNullable(state.FontStretch), value => Editor!.ApplyStyle(s => s with { FontStretch = (int)value }));
+        Add("Letter spacing", -100, 100, state => AsNullable(state.LetterSpacing), value => Editor!.ApplyParagraphStyle(s => s with { LetterSpacing = value }));
+        Add("Line height", 1, 1000, state => state.Paragraph(s => s.LineHeight), value => Editor!.ApplyParagraphStyle(s => s with { LineHeight = value }));
+        panel.Children.Add(MenuAction("Automatic line height", () => Editor!.ApplyParagraphStyle(s => s with { LineHeight = null })));
+        Add("Space before", 0, 1000, state => AsNullable(state.Paragraph(s => s.SpaceBefore)), value => Editor!.ApplyParagraphStyle(s => s with { SpaceBefore = value }));
+        Add("Space after", 0, 1000, state => AsNullable(state.Paragraph(s => s.SpaceAfter)), value => Editor!.ApplyParagraphStyle(s => s with { SpaceAfter = value }));
+        Add("Left indent", 0, 1000, state => AsNullable(state.Paragraph(s => s.Indent)), value => Editor!.ApplyParagraphStyle(s => s with { Indent = value }));
+        Add("Right indent", 0, 1000, state => AsNullable(state.Paragraph(s => s.RightIndent)), value => Editor!.ApplyParagraphStyle(s => s with { RightIndent = value }));
+        Add("First line indent", -1000, 1000, state => AsNullable(state.Paragraph(s => s.FirstLineIndent)), value => Editor!.ApplyParagraphStyle(s => s with { FirstLineIndent = value }));
+        return new ScrollViewer { Content = panel, MaxHeight = 520 };
+
+        void Add(string name, decimal minimum, decimal maximum, Func<SelectionFormattingState, FormattingValue<double?>> read, Action<double> apply)
+        {
+            panel.Children.Add(Label(name));
+            var control = Number(name, minimum, minimum, maximum);
+            control.ValueChanged += (_, _) => { if (!_updating && control.Value is { } value) Editor?.Run(() => apply((double)value), focusDocument: false); };
+            control.LostFocus += (_, _) => Refresh();
+            _numericFormatting.Add((control, read)); _editingControls.Add(control); panel.Children.Add(control);
+        }
+    }
+    private static FormattingValue<double?> AsNullable(FormattingValue<double> value) => new(value.Value, value.IsMixed);
+    private static FormattingValue<double?> AsNullable(FormattingValue<int> value) => new(value.Value, value.IsMixed);
 
     private Control InsertMenu()
     {
@@ -173,15 +210,51 @@ public class TextaloniaToolbar : WrapPanel
         AutomationProperties.SetName(rows, "Table rows"); AutomationProperties.SetName(columns, "Table columns");
         dimensions.Children.Add(rows); dimensions.Children.Add(columns); panel.Children.Add(dimensions);
         panel.Children.Add(MenuAction("Insert table", () => Editor!.InsertTable((int)(rows.Value ?? 3), (int)(columns.Value ?? 3))));
-        panel.Children.Add(MenuAction("Add row below", () => Editor!.Session.UpdateCurrentTable((t, r, _) => t.InsertRow(r + 1))));
-        panel.Children.Add(MenuAction("Add column after", () => Editor!.Session.UpdateCurrentTable((t, _, c) => t.InsertColumn(c + 1))));
+        panel.Children.Add(MenuAction("Add row below", () => Editor!.InsertTableRow()));
+        panel.Children.Add(MenuAction("Add column after", () => Editor!.InsertTableColumn()));
+        panel.Children.Add(MenuAction("Select current cell", () => Editor!.SelectCurrentTableCell()));
+        panel.Children.Add(MenuAction("Extend selection right", () => Editor!.ExtendTableCellSelection(0, 1)));
+        panel.Children.Add(MenuAction("Extend selection down", () => Editor!.ExtendTableCellSelection(1, 0)));
+        panel.Children.Add(MenuAction("Merge selected cells", () => Editor!.MergeSelectedTableCells()));
         panel.Children.Add(MenuAction("Merge with cell on right", () => Editor!.Session.UpdateCurrentTable((t, r, c) => t.MergeCells(r, c, 1, 2))));
         panel.Children.Add(MenuAction("Merge with cell below", () => Editor!.Session.UpdateCurrentTable((t, r, c) => t.MergeCells(r, c, 2, 1))));
-        panel.Children.Add(MenuAction("Split cell", () => Editor!.Session.UpdateCurrentTable((t, r, c) => t.SplitCell(r, c))));
-        panel.Children.Add(MenuAction("Shade cell", () => Editor!.Session.UpdateCurrentTable((t, r, c) => t.SetCell(r, c, t.Rows[r][c] with { Background = "#D9E9FA" }))));
-        panel.Children.Add(MenuAction("Delete row", () => Editor!.Session.UpdateCurrentTable((t, r, _) => t.RemoveRow(r))));
-        panel.Children.Add(MenuAction("Delete column", () => Editor!.Session.UpdateCurrentTable((t, _, c) => t.RemoveColumn(c))));
-        panel.Children.Add(MenuAction("Delete table", () => Editor!.Session.DeleteCurrentTable()));
+        panel.Children.Add(MenuAction("Split cell", () => Editor!.SplitSelectedTableCells()));
+        panel.Children.Add(MenuAction("Shade cell", () => Editor!.SetTableCellBackground("#D9E9FA")));
+        panel.Children.Add(MenuAction("Delete row", () => Editor!.DeleteTableRows()));
+        panel.Children.Add(MenuAction("Delete column", () => Editor!.DeleteTableColumns()));
+        panel.Children.Add(MenuAction("Delete table", () => Editor!.DeleteSelectedTable()));
+        panel.Children.Add(new Separator());
+        panel.Children.Add(Label("Cell borders and padding"));
+        var padding = Number("Cell padding", 8, 0, 1000);
+        panel.Children.Add(padding);
+        panel.Children.Add(MenuAction("Apply cell padding", () =>
+        {
+            var value = (double)(padding.Value ?? 8); Editor!.SetTableCellPadding(new(value, value, value, value));
+        }));
+        var borderWidth = Number("Cell border width", 1, 0, 1000);
+        panel.Children.Add(borderWidth);
+        var borderColor = new TextBox { Text = "#808080", PlaceholderText = "Border color" };
+        AutomationProperties.SetName(borderColor, "Cell border color"); panel.Children.Add(borderColor);
+        panel.Children.Add(MenuAction("Apply cell borders", () =>
+        {
+            var side = new BorderSide((double)(borderWidth.Value ?? 1), borderColor.Text);
+            Editor!.SetTableCellBorders(new(side, side, side, side));
+        }));
+        panel.Children.Add(MenuAction("Remove cell borders", () => Editor!.SetTableCellBorders(new())));
+        panel.Children.Add(Label("Table sizing"));
+        panel.Children.Add(MenuAction("Narrow column", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Column, -8)));
+        panel.Children.Add(MenuAction("Widen column", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Column, 8)));
+        panel.Children.Add(MenuAction("Shorten row", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Row, -8)));
+        panel.Children.Add(MenuAction("Taller row", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Row, 8)));
+        var columnWidth = Number("Relative column width", 1, .001m, 100000);
+        panel.Children.Add(columnWidth);
+        panel.Children.Add(MenuAction("Apply column width", () => Editor!.SetTableColumnWidth((double)(columnWidth.Value ?? 1))));
+        var rowHeight = Number("Row height", 36, 1, 100000);
+        panel.Children.Add(rowHeight);
+        var rowMode = new ComboBox { ItemsSource = Enum.GetValues<TableRowHeightMode>(), SelectedItem = TableRowHeightMode.AtLeast };
+        AutomationProperties.SetName(rowMode, "Row height policy"); panel.Children.Add(rowMode);
+        panel.Children.Add(MenuAction("Apply row height", () => Editor!.SetTableRowHeight((double)(rowHeight.Value ?? 36), (TableRowHeightMode)rowMode.SelectedItem!)));
+        panel.Children.Add(new TextBlock { Text = "Alt+drag: select cells. Alt+Shift+arrows: extend selection. Drag cell edges to resize. Escape: cancel.", TextWrapping = TextWrapping.Wrap });
         return new ScrollViewer { Content = panel, MaxHeight = 520 };
     }
 
@@ -225,13 +298,13 @@ public class TextaloniaToolbar : WrapPanel
 
     private void ToggleRightToLeft()
     {
-        var value = Editor!.Session.FormattingState.Paragraph(s => s.RightToLeft);
+        var value = Editor!.FormattingState.Paragraph(s => s.RightToLeft);
         var enabled = value.IsMixed || !value.Value;
-        Editor.Session.ApplyParagraphStyle(s => s with { RightToLeft = enabled });
+        Editor.ApplyParagraphStyle(s => s with { RightToLeft = enabled });
     }
     private void ToggleBaseline(Baseline baseline)
     {
-        var value = Editor!.Session.FormattingState.Text(s => s.Baseline);
+        var value = Editor!.FormattingState.Text(s => s.Baseline);
         var selected = !value.IsMixed && value.Value == baseline ? Baseline.Normal : baseline;
         Editor.ApplyStyle(s => s with { Baseline = selected });
     }
@@ -244,10 +317,16 @@ public class TextaloniaToolbar : WrapPanel
         _updating = true;
         try
         {
-            var state = editor.Session.FormattingState;
+            var state = editor.FormattingState;
             foreach (var (button, read) in _toggles) button.IsChecked = read(state);
             foreach (var control in _editingControls) control.IsEnabled = !editor.IsReadOnly;
-            if (_heading is not null) _heading.SelectedIndex = state.HeadingLevel.IsMixed ? -1 : Math.Min(3, state.HeadingLevel.Value);
+            foreach (var (control, read) in _numericFormatting)
+            {
+                if (control.IsKeyboardFocusWithin) continue;
+                var value = read(state); control.Value = value.IsMixed || value.Value is null ? null : (decimal)value.Value;
+                control.PlaceholderText = value.IsMixed ? "Mixed" : "Automatic";
+            }
+            if (_heading is not null) _heading.SelectedIndex = state.HeadingLevel.IsMixed ? -1 : Math.Min(6, state.HeadingLevel.Value);
             if (_font is not null) _font.SelectedItem = state.FontFamily.IsMixed ? null : state.FontFamily.Value ?? "Default";
             if (_size is not null) _size.SelectedItem = state.FontSize.IsMixed ? null : state.FontSize.Value.ToString("0", System.Globalization.CultureInfo.InvariantCulture);
         }

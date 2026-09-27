@@ -6,7 +6,7 @@ using Textalonia.Model;
 namespace Textalonia.Editing;
 
 /// <summary>UI-independent editing, selection, formatting, search, and bounded undo/redo.</summary>
-public sealed class EditorSession
+public sealed partial class EditorSession
 {
     private sealed record State(FlowDocument Document, DocumentIndex Index, TextSelection Selection, TextStyle TypingStyle) : IRetained
     {
@@ -193,26 +193,32 @@ public sealed class EditorSession
     {
         ArgumentNullException.ThrowIfNull(fragment);
         if (IsReadOnly) return;
+        var (document, caret) = BuildFragmentInsertion(Document, Selection, fragment);
+        Commit(document, new(caret, caret), editedRange: Selection);
+    }
+
+    private static (FlowDocument Document, int Caret) BuildFragmentInsertion(FlowDocument destination, TextSelection selection, DocumentFragment fragment)
+    {
         fragment.Validate();
-        var prepared = DocumentFragments.Prepare(fragment.Document, Document);
+        var prepared = DocumentFragments.Prepare(fragment.Document, destination);
+        var index = new DocumentIndex(destination);
         FlowDocument document; int caret;
-        if (Selection.Start == 0 && Selection.End == Index.Length &&
-            (!Selection.IsEmpty || Document.Blocks is [Paragraph { Length: 0 }]))
+        if (selection.Start == 0 && selection.End == index.Length &&
+            (!selection.IsEmpty || destination.Blocks is [Paragraph { Length: 0 }]))
         {
             document = prepared.PruneUnusedResources();
             caret = new DocumentIndex(document).Length;
         }
         else
         {
-            var destination = Document;
-            var offset = Selection.Start;
-            if (!Selection.IsEmpty)
-                (destination, offset) = ReplaceRange(destination, Selection, [new Paragraph()]);
+            var offset = selection.Start;
+            if (!selection.IsEmpty)
+                (destination, offset) = ReplaceRange(destination, selection, [new Paragraph()]);
             (document, caret) = DocumentFragments.Insert(destination, offset, prepared, fragment.StartsInsideParagraph, fragment.EndsInsideParagraph);
             document = document.PruneUnusedResources();
         }
         document.Validate();
-        Commit(document, new(caret, caret), editedRange: Selection);
+        return (document, caret);
     }
 
     /// <summary>Copies the selected text, retaining enclosing sections and intersected table geometry.</summary>

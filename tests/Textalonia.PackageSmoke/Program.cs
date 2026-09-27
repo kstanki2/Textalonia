@@ -124,6 +124,24 @@ internal static class Program
                 if (DocumentFormats.Json.Serialize(editor.Document) != original ||
                     DocumentFormats.Json.Serialize(DocumentFormats.Json.Parse(original)) != original)
                     throw new InvalidOperationException("Packaged schema v3 and nested undo round trip failed.");
+                var resizeOriginal = editor.Document;
+                if (!editor.BeginTableResize(outer.Id, Textalonia.Controls.TableResizeAxis.Column, 0, 200))
+                    throw new InvalidOperationException("Packaged table resize did not start.");
+                editor.PreviewTableResize(240);
+                if (!ReferenceEquals(resizeOriginal, editor.Document) || !editor.IsResizingTable)
+                    throw new InvalidOperationException("Packaged table preview changed committed content.");
+                if (!editor.CommitTableResize()) throw new InvalidOperationException("Packaged table resize did not commit.");
+                editor.Undo();
+                if (!ReferenceEquals(resizeOriginal, editor.Document)) throw new InvalidOperationException("Packaged table resize undo failed.");
+                editor.SelectTableCells(outer.Id, 0, 0, 0, 1);
+                if (editor.CellSelection is not { RowCount: 3, ColumnCount: 2 })
+                    throw new InvalidOperationException("Packaged rectangular merged-cell selection failed.");
+                editor.SetTableCellPadding(new EdgeInsets(12, 12, 12, 12));
+                editor.Undo(); editor.ClearTableCellSelection();
+                editor.Document = new FlowDocument([new Paragraph("\u05d0\u05d1\u05d2") { Style = new() { RightToLeft = true } }]);
+                window.UpdateLayout(); editor.Session.Select(2, 2); editor.FocusDocument();
+                window.KeyPress(Key.Right, RawInputModifiers.None, PhysicalKey.None, null);
+                if (editor.Session.Selection.Active != 1) throw new InvalidOperationException("Packaged visual bidi navigation failed.");
                 editor.KeyboardComponent = new Textalonia.Controls.DefaultKeyboardComponent();
                 editor.CaretComponent = new Textalonia.Controls.DefaultCaretComponent();
                 editor.Document = new FlowDocument();
@@ -140,7 +158,7 @@ internal static class Program
                 window.UpdateLayout();
                 using var frame = window.CaptureRenderedFrame()
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
-                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, schema v3, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, and rendering.");
+                Console.WriteLine("Package consumer passed: compiled XAML, themes, input, formatting, schema v3, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, and rendering.");
             }
             finally { window.Close(); }
         }, CancellationToken.None).GetAwaiter().GetResult();

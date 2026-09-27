@@ -64,14 +64,14 @@ public partial class TextaloniaEditor : TemplatedControl
     {
         Session.Changed += OnSessionChanged;
         Highlights.CollectionChanged += (_, _) => _surface?.InvalidateVisual();
-        BoldCommand = Command(Session.ToggleBold);
-        ItalicCommand = Command(Session.ToggleItalic);
-        UnderlineCommand = Command(Session.ToggleUnderline);
-        StrikethroughCommand = Command(Session.ToggleStrikethrough);
+        BoldCommand = Command(ToggleSelectedBold);
+        ItalicCommand = Command(ToggleSelectedItalic);
+        UnderlineCommand = Command(ToggleSelectedUnderline);
+        StrikethroughCommand = Command(ToggleSelectedStrikethrough);
         UndoCommand = Command(Session.Undo, () => Session.CanUndo);
         RedoCommand = Command(Session.Redo, () => Session.CanRedo);
-        CutCommand = AsyncCommand(CutAsync, () => !IsReadOnly && !Session.Selection.IsEmpty);
-        CopyCommand = AsyncCommand(CopyAsync, () => !Session.Selection.IsEmpty);
+        CutCommand = AsyncCommand(CutAsync, () => !IsReadOnly && (!Session.Selection.IsEmpty || CellSelection is not null));
+        CopyCommand = AsyncCommand(CopyAsync, () => !Session.Selection.IsEmpty || CellSelection is not null);
         PasteCommand = AsyncCommand(PasteAsync, () => !IsReadOnly);
         SelectAllCommand = Command(Session.SelectAll, () => true);
         SetCurrentValue(DocumentProperty, Session.Document);
@@ -179,7 +179,11 @@ public partial class TextaloniaEditor : TemplatedControl
     public void Redo() => Session.Redo();
     public void InsertText(string text) => Session.InsertText(text);
     public void InsertTable(int rows = 2, int columns = 3) => Session.InsertTable(rows, columns);
-    public void ApplyStyle(Func<TextStyle, TextStyle> change) => Session.ApplyStyle(change);
+    public void ApplyStyle(Func<TextStyle, TextStyle> change)
+    {
+        ArgumentNullException.ThrowIfNull(change);
+        if (CellSelection is null) Session.ApplyStyle(change); else ApplySelectedTextStyle(change);
+    }
     public bool FindNext(string text, bool matchCase = false) => Session.FindNext(text, matchCase);
     public int ReplaceAll(string find, string replace, bool matchCase = false) => Session.ReplaceAll(find, replace, matchCase);
 
@@ -226,12 +230,13 @@ public partial class TextaloniaEditor : TemplatedControl
     public async Task CopyAsync() => await CopyCoreAsync();
     private async Task<bool> CopyCoreAsync()
     {
-        if (Session.Selection.IsEmpty || Clipboard is not { } clipboard) return false;
+        var cells = CellSelection;
+        if (Session.Selection.IsEmpty && cells is null || Clipboard is not { } clipboard) return false;
         using var diagnostics = ConversionDiagnostics.Begin();
-        var fragment = Session.CopyFragment();
+        var fragment = cells is null ? Session.CopyFragment() : Session.CopyCells(cells.TableId, cells.Row, cells.Column, cells.RowCount, cells.ColumnCount);
         var data = new DataTransfer();
         var item = new DataTransferItem();
-        item.SetText(Session.SelectedText);
+        item.SetText(cells is null ? Session.SelectedText : fragment.Document.Text);
         item.Set(FragmentClipboardFormat, ClipboardInterchange.Serialize(fragment));
         // Keep the older native document flavor available to older Textalonia builds.
         item.Set(NativeClipboardFormat, DocumentFormats.Json.Serialize(fragment.Document));
@@ -258,8 +263,12 @@ public partial class TextaloniaEditor : TemplatedControl
         if (IsReadOnly) return;
         var revision = Session.Revision;
         var selection = Session.Selection;
-        if (await CopyCoreAsync() && !IsReadOnly && Session.Revision == revision && Session.Selection == selection)
-            Session.InsertText("");
+        var cells = CellSelection;
+        if (await CopyCoreAsync() && !IsReadOnly && Session.Revision == revision && Session.Selection == selection && CellSelection == cells)
+        {
+            if (cells is not null) ClearSelectedTableCellContents();
+            else Session.InsertText("");
+        }
     }
 
     public async Task PasteAsync()
@@ -323,9 +332,9 @@ public partial class TextaloniaEditor : TemplatedControl
         if (error is not null) ReportError(error);
         else if (ReferenceEquals(LastError, previous)) LastError = null;
     }
-    internal void Run(Action action)
+    internal void Run(Action action, bool focusDocument = true)
     {
-        try { LastError = null; action(); FocusDocument(); }
+        try { LastError = null; action(); if (focusDocument) FocusDocument(); }
         catch (Exception ex) { ReportError(ex); }
     }
     private EditorCommand Command(Action execute, Func<bool>? canExecute = null) =>

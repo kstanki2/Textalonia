@@ -1,0 +1,5949 @@
+{
+  "capturedUtc": "2026-09-27T00:13:00.2500504+00:00",
+  "os": "Microsoft Windows 10.0.26100",
+  "runtime": ".NET 8.0.31",
+  "cpu": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+  "logicalProcessors": 24,
+  "backend": "Avalonia.Headless with Skia software frame capture; native compositor, IME and device behavior excluded",
+  "viewport": "800 x 500 DIP; Inter 16; Fluent Light; default toolbar; eager Text synchronization",
+  "methodology": "3 warmups per operation; 20 resize, 40 caret/viewport/preview or 80 autoscroll consecutive samples; all include dispatcher, layout and frame capture. p95 nearest rank. Allocations are process-wide GC.GetTotalAllocatedBytes deltas. No forced GC between samples. Mixed-clock stress combines explicit Advance with the live dispatcher timer; manual-clock samples use one Advance per frame with the automatic timer disabled. Both use identical production scrolling and selection logic.",
+  "budgets": "Existing 16 ms caret/scroll and 100 ms resize p95 targets; preview uses resize budget. Resident glyph bounds are 256 layouts / 16 MiB. Timer/cache cleanup and history invariants are asserted; this is not a general managed-heap leak proof.",
+  "results": [
+    {
+      "Workload": "paragraphs-10000",
+      "Operation": "caret",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 4.0306,
+      "P95Milliseconds": 5.2371,
+      "P95AllocatedBytes": 71904,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 3.6045,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7111,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7931,
+          "AllocatedBytes": 67232,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6796,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6283,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7433,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2943,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.0082,
+          "AllocatedBytes": 77280,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8345,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2047,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7742,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7525,
+          "AllocatedBytes": 67232,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8853,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0306,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8704,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2347,
+          "AllocatedBytes": 67232,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9016,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.3118,
+          "AllocatedBytes": 77624,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3994,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2201,
+          "AllocatedBytes": 67232,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.3547,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.9971,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4962,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.5474,
+          "AllocatedBytes": 67208,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.6051,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3542,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4409,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7727,
+          "AllocatedBytes": 67232,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7001,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8092,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.052,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0567,
+          "AllocatedBytes": 67232,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0635,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9195,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.01,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.2371,
+          "AllocatedBytes": 71904,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0014,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8875,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0563,
+          "AllocatedBytes": 66944,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7671,
+          "AllocatedBytes": 67232,
+          "CachedLayouts": 21,
+          "CachedLayoutBytes": 70112,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "paragraphs-10000",
+      "Operation": "viewport-transition",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 3.7476,
+      "P95Milliseconds": 5.0624,
+      "P95AllocatedBytes": 48648,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 10.2118,
+          "AllocatedBytes": 1567352,
+          "CachedLayouts": 54,
+          "CachedLayoutBytes": 179936,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 12.3184,
+          "AllocatedBytes": 1570264,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.8583,
+          "AllocatedBytes": 39696,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.6022,
+          "AllocatedBytes": 38112,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.199,
+          "AllocatedBytes": 37136,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7476,
+          "AllocatedBytes": 36832,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7601,
+          "AllocatedBytes": 39312,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0426,
+          "AllocatedBytes": 34432,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.5154,
+          "AllocatedBytes": 37952,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.445,
+          "AllocatedBytes": 37136,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3492,
+          "AllocatedBytes": 37120,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4265,
+          "AllocatedBytes": 39024,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2795,
+          "AllocatedBytes": 34432,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.261,
+          "AllocatedBytes": 44736,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3207,
+          "AllocatedBytes": 37296,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1135,
+          "AllocatedBytes": 37096,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.248,
+          "AllocatedBytes": 39024,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3357,
+          "AllocatedBytes": 34432,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2408,
+          "AllocatedBytes": 37952,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2311,
+          "AllocatedBytes": 37136,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8956,
+          "AllocatedBytes": 37120,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7941,
+          "AllocatedBytes": 39024,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3398,
+          "AllocatedBytes": 34432,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7923,
+          "AllocatedBytes": 37952,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.0624,
+          "AllocatedBytes": 45008,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4459,
+          "AllocatedBytes": 36992,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2839,
+          "AllocatedBytes": 39024,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0271,
+          "AllocatedBytes": 34432,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4956,
+          "AllocatedBytes": 37952,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0182,
+          "AllocatedBytes": 37424,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4185,
+          "AllocatedBytes": 36832,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2337,
+          "AllocatedBytes": 39024,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3785,
+          "AllocatedBytes": 34432,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2531,
+          "AllocatedBytes": 37952,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2261,
+          "AllocatedBytes": 37424,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7075,
+          "AllocatedBytes": 36832,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.7256,
+          "AllocatedBytes": 48648,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3867,
+          "AllocatedBytes": 34592,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5546,
+          "AllocatedBytes": 37952,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8387,
+          "AllocatedBytes": 37400,
+          "CachedLayouts": 66,
+          "CachedLayoutBytes": 219872,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "paragraphs-10000",
+      "Operation": "width-resize",
+      "BudgetMilliseconds": 100,
+      "MedianMilliseconds": 66.3144,
+      "P95Milliseconds": 84.422,
+      "P95AllocatedBytes": 9929536,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 65.8227,
+          "AllocatedBytes": 9798392,
+          "CachedLayouts": 31,
+          "CachedLayoutBytes": 103168,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 64.7913,
+          "AllocatedBytes": 8513368,
+          "CachedLayouts": 18,
+          "CachedLayoutBytes": 59904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 65.343,
+          "AllocatedBytes": 9929536,
+          "CachedLayouts": 31,
+          "CachedLayoutBytes": 103168,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 63.6127,
+          "AllocatedBytes": 8539760,
+          "CachedLayouts": 18,
+          "CachedLayoutBytes": 59904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 79.5544,
+          "AllocatedBytes": 9677024,
+          "CachedLayouts": 30,
+          "CachedLayoutBytes": 99840,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 58.8658,
+          "AllocatedBytes": 8538792,
+          "CachedLayouts": 18,
+          "CachedLayoutBytes": 59904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 84.422,
+          "AllocatedBytes": 9794440,
+          "CachedLayouts": 31,
+          "CachedLayoutBytes": 103168,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 67.4918,
+          "AllocatedBytes": 8509920,
+          "CachedLayouts": 18,
+          "CachedLayoutBytes": 59904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 93.7073,
+          "AllocatedBytes": 9807424,
+          "CachedLayouts": 31,
+          "CachedLayoutBytes": 103168,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 75.5729,
+          "AllocatedBytes": 8549288,
+          "CachedLayouts": 18,
+          "CachedLayoutBytes": 59904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 76.7488,
+          "AllocatedBytes": 9823072,
+          "CachedLayouts": 31,
+          "CachedLayoutBytes": 103168,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 66.3144,
+          "AllocatedBytes": 8550200,
+          "CachedLayouts": 18,
+          "CachedLayoutBytes": 59904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 71.9753,
+          "AllocatedBytes": 9699096,
+          "CachedLayouts": 30,
+          "CachedLayoutBytes": 99840,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 73.2548,
+          "AllocatedBytes": 8714168,
+          "CachedLayouts": 18,
+          "CachedLayoutBytes": 59904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 83.6973,
+          "AllocatedBytes": 9951704,
+          "CachedLayouts": 31,
+          "CachedLayoutBytes": 103168,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 54.2282,
+          "AllocatedBytes": 6207032,
+          "CachedLayouts": 18,
+          "CachedLayoutBytes": 59904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 35.7837,
+          "AllocatedBytes": 2606872,
+          "CachedLayouts": 31,
+          "CachedLayoutBytes": 103168,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 29.5999,
+          "AllocatedBytes": 923040,
+          "CachedLayouts": 18,
+          "CachedLayoutBytes": 59904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 31.2687,
+          "AllocatedBytes": 1032648,
+          "CachedLayouts": 31,
+          "CachedLayoutBytes": 103168,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 31.6279,
+          "AllocatedBytes": 914528,
+          "CachedLayouts": 18,
+          "CachedLayoutBytes": 59904,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "paragraphs-10000",
+      "Operation": "stationary-edge-autoscroll-mixed-clock-stress",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 5.1284,
+      "P95Milliseconds": 25.7358,
+      "P95AllocatedBytes": 182152,
+      "WithinLatencyBudget": false,
+      "Samples": [
+        {
+          "Milliseconds": 4.8093,
+          "AllocatedBytes": 60408,
+          "CachedLayouts": 32,
+          "CachedLayoutBytes": 106720,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 9.383,
+          "AllocatedBytes": 139592,
+          "CachedLayouts": 33,
+          "CachedLayoutBytes": 110048,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.5383,
+          "AllocatedBytes": 63152,
+          "CachedLayouts": 33,
+          "CachedLayoutBytes": 110048,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.9431,
+          "AllocatedBytes": 87608,
+          "CachedLayouts": 34,
+          "CachedLayoutBytes": 113376,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.0235,
+          "AllocatedBytes": 135600,
+          "CachedLayouts": 35,
+          "CachedLayoutBytes": 116704,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5946,
+          "AllocatedBytes": 65280,
+          "CachedLayouts": 35,
+          "CachedLayoutBytes": 116704,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0616,
+          "AllocatedBytes": 63720,
+          "CachedLayouts": 35,
+          "CachedLayoutBytes": 116704,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.6205,
+          "AllocatedBytes": 149824,
+          "CachedLayouts": 36,
+          "CachedLayoutBytes": 120032,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1548,
+          "AllocatedBytes": 72648,
+          "CachedLayouts": 37,
+          "CachedLayoutBytes": 123360,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.1284,
+          "AllocatedBytes": 78792,
+          "CachedLayouts": 37,
+          "CachedLayoutBytes": 123360,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.9463,
+          "AllocatedBytes": 153344,
+          "CachedLayouts": 38,
+          "CachedLayoutBytes": 126688,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3606,
+          "AllocatedBytes": 66856,
+          "CachedLayouts": 38,
+          "CachedLayoutBytes": 126688,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.6292,
+          "AllocatedBytes": 76104,
+          "CachedLayouts": 39,
+          "CachedLayoutBytes": 130016,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.7915,
+          "AllocatedBytes": 152136,
+          "CachedLayouts": 40,
+          "CachedLayoutBytes": 133344,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1957,
+          "AllocatedBytes": 67376,
+          "CachedLayouts": 40,
+          "CachedLayoutBytes": 133344,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.5741,
+          "AllocatedBytes": 67120,
+          "CachedLayouts": 40,
+          "CachedLayoutBytes": 133344,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.7738,
+          "AllocatedBytes": 144256,
+          "CachedLayouts": 41,
+          "CachedLayoutBytes": 136672,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6218,
+          "AllocatedBytes": 88104,
+          "CachedLayouts": 42,
+          "CachedLayoutBytes": 140000,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.178,
+          "AllocatedBytes": 69136,
+          "CachedLayouts": 42,
+          "CachedLayoutBytes": 140000,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.4845,
+          "AllocatedBytes": 151872,
+          "CachedLayouts": 43,
+          "CachedLayoutBytes": 143328,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9204,
+          "AllocatedBytes": 54928,
+          "CachedLayouts": 43,
+          "CachedLayoutBytes": 143328,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5488,
+          "AllocatedBytes": 87840,
+          "CachedLayouts": 44,
+          "CachedLayoutBytes": 146656,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9821,
+          "AllocatedBytes": 69520,
+          "CachedLayouts": 44,
+          "CachedLayoutBytes": 146656,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 19.9975,
+          "AllocatedBytes": 208032,
+          "CachedLayouts": 45,
+          "CachedLayoutBytes": 149984,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4074,
+          "AllocatedBytes": 54472,
+          "CachedLayouts": 45,
+          "CachedLayoutBytes": 149984,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3151,
+          "AllocatedBytes": 85936,
+          "CachedLayouts": 46,
+          "CachedLayoutBytes": 153312,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.1076,
+          "AllocatedBytes": 157024,
+          "CachedLayouts": 47,
+          "CachedLayoutBytes": 156640,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4588,
+          "AllocatedBytes": 70696,
+          "CachedLayouts": 47,
+          "CachedLayoutBytes": 156640,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4448,
+          "AllocatedBytes": 70152,
+          "CachedLayouts": 47,
+          "CachedLayoutBytes": 156640,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 23.8521,
+          "AllocatedBytes": 182152,
+          "CachedLayouts": 49,
+          "CachedLayoutBytes": 163296,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1821,
+          "AllocatedBytes": 70536,
+          "CachedLayouts": 49,
+          "CachedLayoutBytes": 163296,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2911,
+          "AllocatedBytes": 68712,
+          "CachedLayouts": 49,
+          "CachedLayoutBytes": 163296,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.8293,
+          "AllocatedBytes": 142936,
+          "CachedLayouts": 50,
+          "CachedLayoutBytes": 166624,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 9.2932,
+          "AllocatedBytes": 92968,
+          "CachedLayouts": 51,
+          "CachedLayoutBytes": 169952,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 9.6159,
+          "AllocatedBytes": 139944,
+          "CachedLayouts": 51,
+          "CachedLayoutBytes": 169952,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.4297,
+          "AllocatedBytes": 93592,
+          "CachedLayouts": 52,
+          "CachedLayoutBytes": 173280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.8393,
+          "AllocatedBytes": 71832,
+          "CachedLayouts": 52,
+          "CachedLayoutBytes": 173280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 9.4767,
+          "AllocatedBytes": 144288,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.5758,
+          "AllocatedBytes": 71112,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2936,
+          "AllocatedBytes": 73288,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.4899,
+          "AllocatedBytes": 142376,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.6991,
+          "AllocatedBytes": 54928,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3162,
+          "AllocatedBytes": 72376,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 9.0167,
+          "AllocatedBytes": 151288,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.533,
+          "AllocatedBytes": 74432,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6242,
+          "AllocatedBytes": 54208,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.6089,
+          "AllocatedBytes": 73016,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 28.9614,
+          "AllocatedBytes": 147560,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 26.0833,
+          "AllocatedBytes": 142088,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 24.6055,
+          "AllocatedBytes": 128696,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 20.6368,
+          "AllocatedBytes": 130256,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.8595,
+          "AllocatedBytes": 76720,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 28.9975,
+          "AllocatedBytes": 212896,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 24.9541,
+          "AllocatedBytes": 151336,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3984,
+          "AllocatedBytes": 76824,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 30.4672,
+          "AllocatedBytes": 135416,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 24.1875,
+          "AllocatedBytes": 153456,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 25.7358,
+          "AllocatedBytes": 153400,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 22.4558,
+          "AllocatedBytes": 153400,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.6508,
+          "AllocatedBytes": 77264,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.3643,
+          "AllocatedBytes": 161304,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6353,
+          "AllocatedBytes": 74624,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1924,
+          "AllocatedBytes": 54496,
+          "CachedLayouts": 53,
+          "CachedLayoutBytes": 176608,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 9.469,
+          "AllocatedBytes": 178952,
+          "CachedLayouts": 54,
+          "CachedLayoutBytes": 179936,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2111,
+          "AllocatedBytes": 80040,
+          "CachedLayouts": 54,
+          "CachedLayoutBytes": 179936,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3087,
+          "AllocatedBytes": 97504,
+          "CachedLayouts": 55,
+          "CachedLayoutBytes": 183264,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.8601,
+          "AllocatedBytes": 155320,
+          "CachedLayouts": 56,
+          "CachedLayoutBytes": 186592,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2601,
+          "AllocatedBytes": 80008,
+          "CachedLayouts": 56,
+          "CachedLayoutBytes": 186592,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.2312,
+          "AllocatedBytes": 90336,
+          "CachedLayouts": 56,
+          "CachedLayoutBytes": 186592,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.6331,
+          "AllocatedBytes": 155792,
+          "CachedLayouts": 57,
+          "CachedLayoutBytes": 189920,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8802,
+          "AllocatedBytes": 97432,
+          "CachedLayouts": 58,
+          "CachedLayoutBytes": 193248,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.229,
+          "AllocatedBytes": 80272,
+          "CachedLayouts": 58,
+          "CachedLayoutBytes": 193248,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7822,
+          "AllocatedBytes": 78712,
+          "CachedLayouts": 58,
+          "CachedLayoutBytes": 193248,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.2604,
+          "AllocatedBytes": 180752,
+          "CachedLayouts": 59,
+          "CachedLayoutBytes": 196576,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9785,
+          "AllocatedBytes": 72544,
+          "CachedLayouts": 60,
+          "CachedLayoutBytes": 199904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3506,
+          "AllocatedBytes": 81216,
+          "CachedLayouts": 60,
+          "CachedLayoutBytes": 199904,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 12.0787,
+          "AllocatedBytes": 219064,
+          "CachedLayouts": 61,
+          "CachedLayoutBytes": 203232,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4127,
+          "AllocatedBytes": 54304,
+          "CachedLayouts": 61,
+          "CachedLayoutBytes": 203232,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.999,
+          "AllocatedBytes": 190592,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4523,
+          "AllocatedBytes": 79656,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "paragraphs-10000",
+      "Operation": "stationary-edge-autoscroll-manual-clock",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 3.9629,
+      "P95Milliseconds": 4.6049,
+      "P95AllocatedBytes": 77792,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 3.9096,
+          "AllocatedBytes": 56496,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.8987,
+          "AllocatedBytes": 48848,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3764,
+          "AllocatedBytes": 59416,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.6366,
+          "AllocatedBytes": 67160,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3705,
+          "AllocatedBytes": 62600,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9438,
+          "AllocatedBytes": 62376,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6773,
+          "AllocatedBytes": 53664,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3452,
+          "AllocatedBytes": 64624,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0269,
+          "AllocatedBytes": 63568,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.897,
+          "AllocatedBytes": 64824,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8192,
+          "AllocatedBytes": 54064,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8718,
+          "AllocatedBytes": 63888,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0629,
+          "AllocatedBytes": 65176,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.217,
+          "AllocatedBytes": 63544,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.9036,
+          "AllocatedBytes": 78616,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8506,
+          "AllocatedBytes": 54368,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.919,
+          "AllocatedBytes": 64832,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1905,
+          "AllocatedBytes": 66656,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8146,
+          "AllocatedBytes": 66616,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9855,
+          "AllocatedBytes": 66456,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6116,
+          "AllocatedBytes": 54208,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1341,
+          "AllocatedBytes": 65520,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1618,
+          "AllocatedBytes": 66656,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2105,
+          "AllocatedBytes": 67144,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0265,
+          "AllocatedBytes": 63312,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3092,
+          "AllocatedBytes": 54208,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4272,
+          "AllocatedBytes": 66088,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.9944,
+          "AllocatedBytes": 78752,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.539,
+          "AllocatedBytes": 68800,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1134,
+          "AllocatedBytes": 65072,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3042,
+          "AllocatedBytes": 54208,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5086,
+          "AllocatedBytes": 67848,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.538,
+          "AllocatedBytes": 69088,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2288,
+          "AllocatedBytes": 68768,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7504,
+          "AllocatedBytes": 53664,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3251,
+          "AllocatedBytes": 68480,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.194,
+          "AllocatedBytes": 67400,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.472,
+          "AllocatedBytes": 69096,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.492,
+          "AllocatedBytes": 69032,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0155,
+          "AllocatedBytes": 53664,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2049,
+          "AllocatedBytes": 82048,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2794,
+          "AllocatedBytes": 68792,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2138,
+          "AllocatedBytes": 69752,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3121,
+          "AllocatedBytes": 54064,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.044,
+          "AllocatedBytes": 68816,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1591,
+          "AllocatedBytes": 70104,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2574,
+          "AllocatedBytes": 68472,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2522,
+          "AllocatedBytes": 70016,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1163,
+          "AllocatedBytes": 54208,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.6049,
+          "AllocatedBytes": 69368,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1096,
+          "AllocatedBytes": 70080,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.5163,
+          "AllocatedBytes": 77792,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4067,
+          "AllocatedBytes": 71528,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0519,
+          "AllocatedBytes": 54496,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.034,
+          "AllocatedBytes": 70432,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0943,
+          "AllocatedBytes": 71432,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0285,
+          "AllocatedBytes": 71656,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9629,
+          "AllocatedBytes": 69448,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0005,
+          "AllocatedBytes": 54208,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2825,
+          "AllocatedBytes": 71632,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1819,
+          "AllocatedBytes": 72768,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2244,
+          "AllocatedBytes": 78280,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2243,
+          "AllocatedBytes": 69584,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0799,
+          "AllocatedBytes": 54208,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8715,
+          "AllocatedBytes": 72200,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0191,
+          "AllocatedBytes": 73712,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0608,
+          "AllocatedBytes": 74200,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8857,
+          "AllocatedBytes": 50784,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9955,
+          "AllocatedBytes": 75656,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4495,
+          "AllocatedBytes": 73144,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2669,
+          "AllocatedBytes": 73840,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.5103,
+          "AllocatedBytes": 76144,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4989,
+          "AllocatedBytes": 58816,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2148,
+          "AllocatedBytes": 73776,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8137,
+          "AllocatedBytes": 72696,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.08,
+          "AllocatedBytes": 74392,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2254,
+          "AllocatedBytes": 74328,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8248,
+          "AllocatedBytes": 53664,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0744,
+          "AllocatedBytes": 75944,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8845,
+          "AllocatedBytes": 75152,
+          "CachedLayouts": 62,
+          "CachedLayoutBytes": 206560,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "long-paragraph",
+      "Operation": "caret",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 3.8529,
+      "P95Milliseconds": 6.0783,
+      "P95AllocatedBytes": 108248,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 3.7975,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.476,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1124,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6082,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8529,
+          "AllocatedBytes": 102280,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.5435,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8144,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.821,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6559,
+          "AllocatedBytes": 102304,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4671,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.0783,
+          "AllocatedBytes": 108248,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2779,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0665,
+          "AllocatedBytes": 102280,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.685,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7597,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9388,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5351,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.678,
+          "AllocatedBytes": 102280,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.393,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1107,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3064,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5286,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3777,
+          "AllocatedBytes": 102280,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4176,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.527,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.3517,
+          "AllocatedBytes": 108576,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.8175,
+          "AllocatedBytes": 102280,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.9004,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8101,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9633,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3686,
+          "AllocatedBytes": 102304,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6911,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2673,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4128,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8716,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.9072,
+          "AllocatedBytes": 102304,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.7967,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 13.4669,
+          "AllocatedBytes": 115000,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.9399,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.0182,
+          "AllocatedBytes": 102016,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "long-paragraph",
+      "Operation": "viewport-transition",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 3.9601,
+      "P95Milliseconds": 6.0181,
+      "P95AllocatedBytes": 81552,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 8.5109,
+          "AllocatedBytes": 862088,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5686,
+          "AllocatedBytes": 115768,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6733,
+          "AllocatedBytes": 66024,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0474,
+          "AllocatedBytes": 69760,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8587,
+          "AllocatedBytes": 69272,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0502,
+          "AllocatedBytes": 69272,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7988,
+          "AllocatedBytes": 68968,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.77,
+          "AllocatedBytes": 66024,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0385,
+          "AllocatedBytes": 69496,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.942,
+          "AllocatedBytes": 69536,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9931,
+          "AllocatedBytes": 69272,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7665,
+          "AllocatedBytes": 68968,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8758,
+          "AllocatedBytes": 66024,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5395,
+          "AllocatedBytes": 69496,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6057,
+          "AllocatedBytes": 69560,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1769,
+          "AllocatedBytes": 69272,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.1929,
+          "AllocatedBytes": 81552,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4079,
+          "AllocatedBytes": 66184,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.4532,
+          "AllocatedBytes": 69784,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.204,
+          "AllocatedBytes": 69272,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0275,
+          "AllocatedBytes": 69224,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0195,
+          "AllocatedBytes": 68848,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.269,
+          "AllocatedBytes": 66168,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9601,
+          "AllocatedBytes": 69376,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9008,
+          "AllocatedBytes": 69152,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8806,
+          "AllocatedBytes": 69152,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9714,
+          "AllocatedBytes": 68848,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0283,
+          "AllocatedBytes": 66168,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8895,
+          "AllocatedBytes": 69376,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9714,
+          "AllocatedBytes": 69152,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.0181,
+          "AllocatedBytes": 74880,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2798,
+          "AllocatedBytes": 69272,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.883,
+          "AllocatedBytes": 65904,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1933,
+          "AllocatedBytes": 69376,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9529,
+          "AllocatedBytes": 69152,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0231,
+          "AllocatedBytes": 69416,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0973,
+          "AllocatedBytes": 68848,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.995,
+          "AllocatedBytes": 65904,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8486,
+          "AllocatedBytes": 69376,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9812,
+          "AllocatedBytes": 69416,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "long-paragraph",
+      "Operation": "width-resize",
+      "BudgetMilliseconds": 100,
+      "MedianMilliseconds": 35.3849,
+      "P95Milliseconds": 103.0921,
+      "P95AllocatedBytes": 4967936,
+      "WithinLatencyBudget": false,
+      "Samples": [
+        {
+          "Milliseconds": 30.1952,
+          "AllocatedBytes": 4957072,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 34.7087,
+          "AllocatedBytes": 4967936,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 46.4387,
+          "AllocatedBytes": 4963464,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 45.1727,
+          "AllocatedBytes": 4969288,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 21.1578,
+          "AllocatedBytes": 3434192,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 31.814,
+          "AllocatedBytes": 3440944,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 24.4683,
+          "AllocatedBytes": 3434440,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 25.2621,
+          "AllocatedBytes": 3446672,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 25.7035,
+          "AllocatedBytes": 3434928,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 26.0322,
+          "AllocatedBytes": 3435192,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 49.0061,
+          "AllocatedBytes": 3442744,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 34.747,
+          "AllocatedBytes": 3435776,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 32.8076,
+          "AllocatedBytes": 3434344,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 35.3849,
+          "AllocatedBytes": 3444920,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 40.9767,
+          "AllocatedBytes": 3437384,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 106.9703,
+          "AllocatedBytes": 3505920,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 103.0921,
+          "AllocatedBytes": 3427240,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 93.4979,
+          "AllocatedBytes": 3439584,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 72.2189,
+          "AllocatedBytes": 3422360,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 65.5031,
+          "AllocatedBytes": 3434560,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "long-paragraph",
+      "Operation": "stationary-edge-autoscroll-mixed-clock-stress",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 3.6053,
+      "P95Milliseconds": 8.301,
+      "P95AllocatedBytes": 347144,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 2.7564,
+          "AllocatedBytes": 112488,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0054,
+          "AllocatedBytes": 116600,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.1353,
+          "AllocatedBytes": 236144,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1965,
+          "AllocatedBytes": 114864,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2415,
+          "AllocatedBytes": 118976,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.2874,
+          "AllocatedBytes": 249328,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9145,
+          "AllocatedBytes": 126736,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9896,
+          "AllocatedBytes": 128640,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8199,
+          "AllocatedBytes": 124424,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3362,
+          "AllocatedBytes": 128792,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.301,
+          "AllocatedBytes": 279504,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2354,
+          "AllocatedBytes": 136264,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.158,
+          "AllocatedBytes": 137920,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.4426,
+          "AllocatedBytes": 271960,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1416,
+          "AllocatedBytes": 140248,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5558,
+          "AllocatedBytes": 145848,
+          "CachedLayouts": 2,
+          "CachedLayoutBytes": 131520,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.132,
+          "AllocatedBytes": 805448,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1969,
+          "AllocatedBytes": 143928,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 23.2717,
+          "AllocatedBytes": 312368,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2537,
+          "AllocatedBytes": 147728,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3618,
+          "AllocatedBytes": 153776,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 9.8676,
+          "AllocatedBytes": 318928,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3816,
+          "AllocatedBytes": 162128,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.6407,
+          "AllocatedBytes": 173216,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 10.9484,
+          "AllocatedBytes": 347144,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.843,
+          "AllocatedBytes": 126728,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8363,
+          "AllocatedBytes": 126704,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.2389,
+          "AllocatedBytes": 260760,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9982,
+          "AllocatedBytes": 132440,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8493,
+          "AllocatedBytes": 128224,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.0096,
+          "AllocatedBytes": 132336,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.9173,
+          "AllocatedBytes": 276312,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9927,
+          "AllocatedBytes": 151736,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0916,
+          "AllocatedBytes": 141904,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.5652,
+          "AllocatedBytes": 137784,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.4561,
+          "AllocatedBytes": 142152,
+          "CachedLayouts": 3,
+          "CachedLayoutBytes": 197280,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.1132,
+          "AllocatedBytes": 846912,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8152,
+          "AllocatedBytes": 150056,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.4767,
+          "AllocatedBytes": 151712,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.877,
+          "AllocatedBytes": 155816,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7928,
+          "AllocatedBytes": 147728,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.8014,
+          "AllocatedBytes": 313616,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.5336,
+          "AllocatedBytes": 160688,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8363,
+          "AllocatedBytes": 162128,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7762,
+          "AllocatedBytes": 158168,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.4464,
+          "AllocatedBytes": 119208,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.9896,
+          "AllocatedBytes": 249288,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4164,
+          "AllocatedBytes": 126704,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.6289,
+          "AllocatedBytes": 136624,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1523,
+          "AllocatedBytes": 122368,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.5297,
+          "AllocatedBytes": 263080,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6562,
+          "AllocatedBytes": 134096,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.4796,
+          "AllocatedBytes": 136264,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9377,
+          "AllocatedBytes": 140112,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.5099,
+          "AllocatedBytes": 131768,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.1758,
+          "AllocatedBytes": 282200,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6568,
+          "AllocatedBytes": 143656,
+          "CachedLayouts": 4,
+          "CachedLayoutBytes": 263040,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.286,
+          "AllocatedBytes": 895304,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8318,
+          "AllocatedBytes": 146848,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.9715,
+          "AllocatedBytes": 291288,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7928,
+          "AllocatedBytes": 153904,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5173,
+          "AllocatedBytes": 153624,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6053,
+          "AllocatedBytes": 155792,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.8336,
+          "AllocatedBytes": 318920,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8698,
+          "AllocatedBytes": 158928,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1579,
+          "AllocatedBytes": 164320,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2357,
+          "AllocatedBytes": 164040,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.6709,
+          "AllocatedBytes": 241480,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8146,
+          "AllocatedBytes": 122776,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0666,
+          "AllocatedBytes": 126704,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4728,
+          "AllocatedBytes": 130552,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0535,
+          "AllocatedBytes": 130272,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.5891,
+          "AllocatedBytes": 260600,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2977,
+          "AllocatedBytes": 132592,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5256,
+          "AllocatedBytes": 136008,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.511,
+          "AllocatedBytes": 140112,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.794,
+          "AllocatedBytes": 281768,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9483,
+          "AllocatedBytes": 137784,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.8274,
+          "AllocatedBytes": 148496,
+          "CachedLayouts": 5,
+          "CachedLayoutBytes": 328800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 10.2439,
+          "AllocatedBytes": 1045136,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "long-paragraph",
+      "Operation": "stationary-edge-autoscroll-manual-clock",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 3.2006,
+      "P95Milliseconds": 4.3869,
+      "P95AllocatedBytes": 159008,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 3.5987,
+          "AllocatedBytes": 105416,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3896,
+          "AllocatedBytes": 109344,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2006,
+          "AllocatedBytes": 113456,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2015,
+          "AllocatedBytes": 113984,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6655,
+          "AllocatedBytes": 116200,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8862,
+          "AllocatedBytes": 114840,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6561,
+          "AllocatedBytes": 115832,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2757,
+          "AllocatedBytes": 119760,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7223,
+          "AllocatedBytes": 123608,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7398,
+          "AllocatedBytes": 123592,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9121,
+          "AllocatedBytes": 120552,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1294,
+          "AllocatedBytes": 125672,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.8241,
+          "AllocatedBytes": 133960,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4219,
+          "AllocatedBytes": 129744,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4058,
+          "AllocatedBytes": 133168,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3,
+          "AllocatedBytes": 132888,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9613,
+          "AllocatedBytes": 130112,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6216,
+          "AllocatedBytes": 135232,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8466,
+          "AllocatedBytes": 136712,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1009,
+          "AllocatedBytes": 139144,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6735,
+          "AllocatedBytes": 142728,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0001,
+          "AllocatedBytes": 137504,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8562,
+          "AllocatedBytes": 141352,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0048,
+          "AllocatedBytes": 146960,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.712,
+          "AllocatedBytes": 146680,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7432,
+          "AllocatedBytes": 149112,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0041,
+          "AllocatedBytes": 152696,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 10.4816,
+          "AllocatedBytes": 147808,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1148,
+          "AllocatedBytes": 151336,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9073,
+          "AllocatedBytes": 156784,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8878,
+          "AllocatedBytes": 157312,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7233,
+          "AllocatedBytes": 159264,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2203,
+          "AllocatedBytes": 159880,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1836,
+          "AllocatedBytes": 124896,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9707,
+          "AllocatedBytes": 118160,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9412,
+          "AllocatedBytes": 123608,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2653,
+          "AllocatedBytes": 123584,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.948,
+          "AllocatedBytes": 125240,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2915,
+          "AllocatedBytes": 124664,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1861,
+          "AllocatedBytes": 125648,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2957,
+          "AllocatedBytes": 129064,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9217,
+          "AllocatedBytes": 133168,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1293,
+          "AllocatedBytes": 133144,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6771,
+          "AllocatedBytes": 131616,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6547,
+          "AllocatedBytes": 135496,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0429,
+          "AllocatedBytes": 135208,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7833,
+          "AllocatedBytes": 138624,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2642,
+          "AllocatedBytes": 142728,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.794,
+          "AllocatedBytes": 142704,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1454,
+          "AllocatedBytes": 141584,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1936,
+          "AllocatedBytes": 145464,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.8272,
+          "AllocatedBytes": 146936,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6886,
+          "AllocatedBytes": 148592,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3385,
+          "AllocatedBytes": 152696,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.4007,
+          "AllocatedBytes": 162416,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5207,
+          "AllocatedBytes": 149544,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7329,
+          "AllocatedBytes": 155024,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2463,
+          "AllocatedBytes": 157568,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4184,
+          "AllocatedBytes": 159008,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7227,
+          "AllocatedBytes": 163376,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5209,
+          "AllocatedBytes": 116576,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5955,
+          "AllocatedBytes": 117744,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7181,
+          "AllocatedBytes": 123608,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6736,
+          "AllocatedBytes": 123584,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9296,
+          "AllocatedBytes": 125504,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9516,
+          "AllocatedBytes": 129344,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6014,
+          "AllocatedBytes": 124376,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6457,
+          "AllocatedBytes": 127304,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9046,
+          "AllocatedBytes": 133168,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.6078,
+          "AllocatedBytes": 133144,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1382,
+          "AllocatedBytes": 135064,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7614,
+          "AllocatedBytes": 138904,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.4616,
+          "AllocatedBytes": 133936,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5492,
+          "AllocatedBytes": 136864,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1598,
+          "AllocatedBytes": 142728,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.4258,
+          "AllocatedBytes": 153200,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.3869,
+          "AllocatedBytes": 147120,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.865,
+          "AllocatedBytes": 141736,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3445,
+          "AllocatedBytes": 145176,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6021,
+          "AllocatedBytes": 151048,
+          "CachedLayouts": 6,
+          "CachedLayoutBytes": 394560,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "table-heavy",
+      "Operation": "caret",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 3.8471,
+      "P95Milliseconds": 11.7944,
+      "P95AllocatedBytes": 145808,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 3.7503,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.1313,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6625,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7921,
+          "AllocatedBytes": 136456,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7974,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9164,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.942,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8471,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 19.2405,
+          "AllocatedBytes": 136744,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6902,
+          "AllocatedBytes": 141160,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.9567,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1663,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.5716,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 10.1909,
+          "AllocatedBytes": 136456,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.6272,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 10.2379,
+          "AllocatedBytes": 136456,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 11.6375,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.6194,
+          "AllocatedBytes": 136456,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.5283,
+          "AllocatedBytes": 148616,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.5,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8437,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7015,
+          "AllocatedBytes": 136456,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.7334,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4485,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4486,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6458,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8229,
+          "AllocatedBytes": 136456,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.814,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6995,
+          "AllocatedBytes": 146304,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3046,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3708,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7946,
+          "AllocatedBytes": 136456,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4556,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.353,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.9716,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 11.7944,
+          "AllocatedBytes": 141544,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 11.9779,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 9.5619,
+          "AllocatedBytes": 136456,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.9047,
+          "AllocatedBytes": 145808,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2588,
+          "AllocatedBytes": 136192,
+          "CachedLayouts": 70,
+          "CachedLayoutBytes": 60480,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "table-heavy",
+      "Operation": "viewport-transition",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 3.7485,
+      "P95Milliseconds": 7.2645,
+      "P95AllocatedBytes": 279896,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 7.1909,
+          "AllocatedBytes": 720136,
+          "CachedLayouts": 160,
+          "CachedLayoutBytes": 138240,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.2645,
+          "AllocatedBytes": 865488,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.3019,
+          "AllocatedBytes": 231024,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7024,
+          "AllocatedBytes": 264984,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8449,
+          "AllocatedBytes": 267528,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4264,
+          "AllocatedBytes": 265088,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6631,
+          "AllocatedBytes": 274560,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0825,
+          "AllocatedBytes": 216944,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6437,
+          "AllocatedBytes": 264824,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4359,
+          "AllocatedBytes": 267528,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.5824,
+          "AllocatedBytes": 265088,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2658,
+          "AllocatedBytes": 274560,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3798,
+          "AllocatedBytes": 216944,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.0275,
+          "AllocatedBytes": 264824,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.6911,
+          "AllocatedBytes": 267528,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.0687,
+          "AllocatedBytes": 265088,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.7516,
+          "AllocatedBytes": 274560,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.0811,
+          "AllocatedBytes": 224320,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.9094,
+          "AllocatedBytes": 265248,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.571,
+          "AllocatedBytes": 267528,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.7485,
+          "AllocatedBytes": 264824,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.201,
+          "AllocatedBytes": 274560,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1541,
+          "AllocatedBytes": 217208,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2123,
+          "AllocatedBytes": 264824,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4942,
+          "AllocatedBytes": 267528,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.2151,
+          "AllocatedBytes": 264824,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.4404,
+          "AllocatedBytes": 274560,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.9742,
+          "AllocatedBytes": 217208,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.1803,
+          "AllocatedBytes": 264824,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 2.999,
+          "AllocatedBytes": 267528,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.3593,
+          "AllocatedBytes": 264824,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 3.8553,
+          "AllocatedBytes": 274560,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 19.0695,
+          "AllocatedBytes": 222264,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.7417,
+          "AllocatedBytes": 264984,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.7383,
+          "AllocatedBytes": 267528,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2792,
+          "AllocatedBytes": 264824,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 25.4999,
+          "AllocatedBytes": 279896,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.5247,
+          "AllocatedBytes": 217104,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2042,
+          "AllocatedBytes": 264824,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.5413,
+          "AllocatedBytes": 275160,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "table-heavy",
+      "Operation": "width-resize",
+      "BudgetMilliseconds": 100,
+      "MedianMilliseconds": 43.344,
+      "P95Milliseconds": 89.0141,
+      "P95AllocatedBytes": 6585952,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 68.7141,
+          "AllocatedBytes": 6570968,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 72.9952,
+          "AllocatedBytes": 6585952,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 38.8219,
+          "AllocatedBytes": 6567792,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 46.6386,
+          "AllocatedBytes": 6569512,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 56.9634,
+          "AllocatedBytes": 6580960,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 22.8692,
+          "AllocatedBytes": 6569512,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 54.6228,
+          "AllocatedBytes": 6726432,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 31.9734,
+          "AllocatedBytes": 6579920,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 34.2607,
+          "AllocatedBytes": 6565112,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 48.3243,
+          "AllocatedBytes": 6572192,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 32.475,
+          "AllocatedBytes": 6578424,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 33.4217,
+          "AllocatedBytes": 6572192,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 38.7079,
+          "AllocatedBytes": 6567792,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 43.344,
+          "AllocatedBytes": 6577872,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 38.8742,
+          "AllocatedBytes": 6567792,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 23.8821,
+          "AllocatedBytes": 6569512,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 54.4478,
+          "AllocatedBytes": 6575152,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 98.8153,
+          "AllocatedBytes": 6572192,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 42.0315,
+          "AllocatedBytes": 6565112,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 89.0141,
+          "AllocatedBytes": 6580392,
+          "CachedLayouts": 80,
+          "CachedLayoutBytes": 69120,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "table-heavy",
+      "Operation": "table-resize-preview",
+      "BudgetMilliseconds": 100,
+      "MedianMilliseconds": 7.2339,
+      "P95Milliseconds": 59.6409,
+      "P95AllocatedBytes": 2815192,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 18.8276,
+          "AllocatedBytes": 2656736,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 15.5659,
+          "AllocatedBytes": 2812672,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 43.3918,
+          "AllocatedBytes": 2492680,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 59.6409,
+          "AllocatedBytes": 2487408,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 14.8166,
+          "AllocatedBytes": 2648832,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 14.2311,
+          "AllocatedBytes": 2812936,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 18.8966,
+          "AllocatedBytes": 2484888,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 17.7483,
+          "AllocatedBytes": 2484888,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 12.4451,
+          "AllocatedBytes": 2778216,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 42.5637,
+          "AllocatedBytes": 1262008,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 63.4015,
+          "AllocatedBytes": 2660584,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.1405,
+          "AllocatedBytes": 2657432,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.1808,
+          "AllocatedBytes": 2656208,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.43,
+          "AllocatedBytes": 2812672,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.6922,
+          "AllocatedBytes": 2484624,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.2339,
+          "AllocatedBytes": 2484624,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 79.3782,
+          "AllocatedBytes": 2813096,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 44.4938,
+          "AllocatedBytes": 2965856,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.2326,
+          "AllocatedBytes": 2484624,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.1527,
+          "AllocatedBytes": 2484624,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.2577,
+          "AllocatedBytes": 2450272,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.2524,
+          "AllocatedBytes": 1255976,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.3751,
+          "AllocatedBytes": 2657536,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 49.7215,
+          "AllocatedBytes": 2657960,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.284,
+          "AllocatedBytes": 2577072,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.6507,
+          "AllocatedBytes": 2812512,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.0699,
+          "AllocatedBytes": 2812672,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.6251,
+          "AllocatedBytes": 2484624,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 4.8113,
+          "AllocatedBytes": 2484624,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 5.634,
+          "AllocatedBytes": 2812832,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 59.1961,
+          "AllocatedBytes": 3142872,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 34.7078,
+          "AllocatedBytes": 2492832,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.0241,
+          "AllocatedBytes": 2450008,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.0568,
+          "AllocatedBytes": 1255976,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.3362,
+          "AllocatedBytes": 2657800,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.7858,
+          "AllocatedBytes": 2657432,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 6.6189,
+          "AllocatedBytes": 2656208,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 55.5633,
+          "AllocatedBytes": 2815192,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 7.5726,
+          "AllocatedBytes": 2485048,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        },
+        {
+          "Milliseconds": 8.3307,
+          "AllocatedBytes": 2484888,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 0
+        }
+      ]
+    },
+    {
+      "Workload": "table-heavy",
+      "Operation": "stationary-edge-autoscroll-mixed-clock-stress",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 4.6181,
+      "P95Milliseconds": 32.839,
+      "P95AllocatedBytes": 1433160,
+      "WithinLatencyBudget": false,
+      "Samples": [
+        {
+          "Milliseconds": 4.6467,
+          "AllocatedBytes": 422152,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 8.6372,
+          "AllocatedBytes": 846088,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.7688,
+          "AllocatedBytes": 447560,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.4849,
+          "AllocatedBytes": 583072,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 9.0281,
+          "AllocatedBytes": 907472,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.0614,
+          "AllocatedBytes": 501064,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.9389,
+          "AllocatedBytes": 496040,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 90.3023,
+          "AllocatedBytes": 2012760,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 23.0536,
+          "AllocatedBytes": 1000880,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.5858,
+          "AllocatedBytes": 510512,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.3472,
+          "AllocatedBytes": 621448,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 9.7175,
+          "AllocatedBytes": 922904,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.167,
+          "AllocatedBytes": 519536,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.3907,
+          "AllocatedBytes": 517560,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 10.778,
+          "AllocatedBytes": 1153600,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.0124,
+          "AllocatedBytes": 435232,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.3133,
+          "AllocatedBytes": 525488,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 9.4009,
+          "AllocatedBytes": 1157120,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6544,
+          "AllocatedBytes": 496880,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.2985,
+          "AllocatedBytes": 433968,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.2023,
+          "AllocatedBytes": 533064,
+          "CachedLayouts": 130,
+          "CachedLayoutBytes": 112320,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 7.0902,
+          "AllocatedBytes": 1272384,
+          "CachedLayouts": 140,
+          "CachedLayoutBytes": 120960,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.548,
+          "AllocatedBytes": 507784,
+          "CachedLayouts": 140,
+          "CachedLayoutBytes": 120960,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.4887,
+          "AllocatedBytes": 435264,
+          "CachedLayouts": 140,
+          "CachedLayoutBytes": 120960,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.3446,
+          "AllocatedBytes": 542008,
+          "CachedLayouts": 140,
+          "CachedLayoutBytes": 120960,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 8.5247,
+          "AllocatedBytes": 1316952,
+          "CachedLayouts": 150,
+          "CachedLayoutBytes": 129600,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 41.4027,
+          "AllocatedBytes": 1538192,
+          "CachedLayouts": 150,
+          "CachedLayoutBytes": 129600,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.0708,
+          "AllocatedBytes": 554752,
+          "CachedLayouts": 150,
+          "CachedLayoutBytes": 129600,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 16.1855,
+          "AllocatedBytes": 1284920,
+          "CachedLayouts": 160,
+          "CachedLayoutBytes": 138240,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6562,
+          "AllocatedBytes": 568432,
+          "CachedLayouts": 160,
+          "CachedLayoutBytes": 138240,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.3895,
+          "AllocatedBytes": 453408,
+          "CachedLayouts": 160,
+          "CachedLayoutBytes": 138240,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6702,
+          "AllocatedBytes": 560016,
+          "CachedLayouts": 160,
+          "CachedLayoutBytes": 138240,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 7.1046,
+          "AllocatedBytes": 1289464,
+          "CachedLayouts": 170,
+          "CachedLayoutBytes": 146880,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.5583,
+          "AllocatedBytes": 575048,
+          "CachedLayouts": 170,
+          "CachedLayoutBytes": 146880,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.729,
+          "AllocatedBytes": 451344,
+          "CachedLayouts": 170,
+          "CachedLayoutBytes": 146880,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.8834,
+          "AllocatedBytes": 558032,
+          "CachedLayouts": 170,
+          "CachedLayoutBytes": 146880,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 6.9081,
+          "AllocatedBytes": 1304864,
+          "CachedLayouts": 180,
+          "CachedLayoutBytes": 155520,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.312,
+          "AllocatedBytes": 563880,
+          "CachedLayouts": 180,
+          "CachedLayoutBytes": 155520,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.2251,
+          "AllocatedBytes": 454112,
+          "CachedLayouts": 180,
+          "CachedLayoutBytes": 155520,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.4989,
+          "AllocatedBytes": 564240,
+          "CachedLayouts": 180,
+          "CachedLayoutBytes": 155520,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 7.5288,
+          "AllocatedBytes": 1314960,
+          "CachedLayouts": 190,
+          "CachedLayoutBytes": 164160,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.8941,
+          "AllocatedBytes": 433840,
+          "CachedLayouts": 190,
+          "CachedLayoutBytes": 164160,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.5447,
+          "AllocatedBytes": 573136,
+          "CachedLayouts": 190,
+          "CachedLayoutBytes": 164160,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.4926,
+          "AllocatedBytes": 569272,
+          "CachedLayouts": 190,
+          "CachedLayoutBytes": 164160,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 41.8375,
+          "AllocatedBytes": 1408472,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.4729,
+          "AllocatedBytes": 573568,
+          "CachedLayouts": 200,
+          "CachedLayoutBytes": 172800,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.659,
+          "AllocatedBytes": 788608,
+          "CachedLayouts": 210,
+          "CachedLayoutBytes": 181440,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 6.752,
+          "AllocatedBytes": 991480,
+          "CachedLayouts": 210,
+          "CachedLayoutBytes": 181440,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.7616,
+          "AllocatedBytes": 583960,
+          "CachedLayouts": 210,
+          "CachedLayoutBytes": 181440,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.4135,
+          "AllocatedBytes": 584048,
+          "CachedLayouts": 210,
+          "CachedLayoutBytes": 181440,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.1328,
+          "AllocatedBytes": 827880,
+          "CachedLayouts": 220,
+          "CachedLayoutBytes": 190080,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 14.5737,
+          "AllocatedBytes": 1166712,
+          "CachedLayouts": 220,
+          "CachedLayoutBytes": 190080,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.444,
+          "AllocatedBytes": 452224,
+          "CachedLayouts": 220,
+          "CachedLayoutBytes": 190080,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.4582,
+          "AllocatedBytes": 588424,
+          "CachedLayouts": 220,
+          "CachedLayoutBytes": 190080,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.3829,
+          "AllocatedBytes": 801608,
+          "CachedLayouts": 230,
+          "CachedLayoutBytes": 198720,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 8.9624,
+          "AllocatedBytes": 1159912,
+          "CachedLayouts": 230,
+          "CachedLayoutBytes": 198720,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.6181,
+          "AllocatedBytes": 454240,
+          "CachedLayouts": 230,
+          "CachedLayoutBytes": 198720,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.9822,
+          "AllocatedBytes": 593968,
+          "CachedLayouts": 230,
+          "CachedLayoutBytes": 198720,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 49.8398,
+          "AllocatedBytes": 2005704,
+          "CachedLayouts": 240,
+          "CachedLayoutBytes": 207360,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6144,
+          "AllocatedBytes": 453408,
+          "CachedLayouts": 240,
+          "CachedLayoutBytes": 207360,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.3471,
+          "AllocatedBytes": 610952,
+          "CachedLayouts": 240,
+          "CachedLayoutBytes": 207360,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 9.4708,
+          "AllocatedBytes": 1433160,
+          "CachedLayouts": 250,
+          "CachedLayoutBytes": 216000,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.2617,
+          "AllocatedBytes": 453280,
+          "CachedLayouts": 250,
+          "CachedLayoutBytes": 216000,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.4329,
+          "AllocatedBytes": 616344,
+          "CachedLayouts": 250,
+          "CachedLayoutBytes": 216000,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.2232,
+          "AllocatedBytes": 814840,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 6.5936,
+          "AllocatedBytes": 1213568,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.2481,
+          "AllocatedBytes": 454288,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.5455,
+          "AllocatedBytes": 610048,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.8928,
+          "AllocatedBytes": 823176,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 6.0507,
+          "AllocatedBytes": 1023784,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.7092,
+          "AllocatedBytes": 621256,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 15.3448,
+          "AllocatedBytes": 1453824,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.7567,
+          "AllocatedBytes": 598600,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.3675,
+          "AllocatedBytes": 435392,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 6.582,
+          "AllocatedBytes": 1271296,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.3615,
+          "AllocatedBytes": 877248,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.8755,
+          "AllocatedBytes": 614120,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 32.839,
+          "AllocatedBytes": 1386224,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.5066,
+          "AllocatedBytes": 851464,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.3724,
+          "AllocatedBytes": 620200,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        }
+      ]
+    },
+    {
+      "Workload": "table-heavy",
+      "Operation": "stationary-edge-autoscroll-manual-clock",
+      "BudgetMilliseconds": 16,
+      "MedianMilliseconds": 3.8471,
+      "P95Milliseconds": 12.8811,
+      "P95AllocatedBytes": 648296,
+      "WithinLatencyBudget": true,
+      "Samples": [
+        {
+          "Milliseconds": 3.6337,
+          "AllocatedBytes": 520248,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.5826,
+          "AllocatedBytes": 424296,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.0652,
+          "AllocatedBytes": 393464,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.478,
+          "AllocatedBytes": 450856,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.4258,
+          "AllocatedBytes": 448560,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.8988,
+          "AllocatedBytes": 572160,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.3045,
+          "AllocatedBytes": 472400,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.3596,
+          "AllocatedBytes": 428776,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6371,
+          "AllocatedBytes": 513096,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.4609,
+          "AllocatedBytes": 453792,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.4528,
+          "AllocatedBytes": 507824,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.9125,
+          "AllocatedBytes": 584616,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.5819,
+          "AllocatedBytes": 476240,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.9813,
+          "AllocatedBytes": 521552,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 12.8811,
+          "AllocatedBytes": 453920,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.8484,
+          "AllocatedBytes": 505224,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 28.9461,
+          "AllocatedBytes": 609472,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.8008,
+          "AllocatedBytes": 484920,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.4138,
+          "AllocatedBytes": 432712,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.3098,
+          "AllocatedBytes": 513744,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.5438,
+          "AllocatedBytes": 512360,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.7041,
+          "AllocatedBytes": 607736,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6669,
+          "AllocatedBytes": 491120,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.1897,
+          "AllocatedBytes": 436328,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.3877,
+          "AllocatedBytes": 519688,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.2798,
+          "AllocatedBytes": 519712,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.4066,
+          "AllocatedBytes": 532376,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.9728,
+          "AllocatedBytes": 532328,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.5908,
+          "AllocatedBytes": 494712,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.7928,
+          "AllocatedBytes": 537496,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.6304,
+          "AllocatedBytes": 454312,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.5503,
+          "AllocatedBytes": 534648,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.1538,
+          "AllocatedBytes": 613752,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.4744,
+          "AllocatedBytes": 498984,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.1482,
+          "AllocatedBytes": 544728,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.2462,
+          "AllocatedBytes": 453536,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.3249,
+          "AllocatedBytes": 527576,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 25.2767,
+          "AllocatedBytes": 630128,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.9517,
+          "AllocatedBytes": 507520,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.8753,
+          "AllocatedBytes": 435016,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6743,
+          "AllocatedBytes": 534592,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.9253,
+          "AllocatedBytes": 536544,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.7808,
+          "AllocatedBytes": 660048,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6566,
+          "AllocatedBytes": 515504,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.7403,
+          "AllocatedBytes": 433000,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.5346,
+          "AllocatedBytes": 547104,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 13.8116,
+          "AllocatedBytes": 454248,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.3987,
+          "AllocatedBytes": 559592,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.5943,
+          "AllocatedBytes": 632856,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.8537,
+          "AllocatedBytes": 524680,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.7568,
+          "AllocatedBytes": 566840,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6307,
+          "AllocatedBytes": 450720,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.8471,
+          "AllocatedBytes": 551296,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.5107,
+          "AllocatedBytes": 643792,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.7478,
+          "AllocatedBytes": 529456,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.2865,
+          "AllocatedBytes": 431576,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.0348,
+          "AllocatedBytes": 556280,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6421,
+          "AllocatedBytes": 557784,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.3607,
+          "AllocatedBytes": 648296,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6799,
+          "AllocatedBytes": 538696,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.3915,
+          "AllocatedBytes": 434888,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.5576,
+          "AllocatedBytes": 565208,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.0167,
+          "AllocatedBytes": 563224,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.8284,
+          "AllocatedBytes": 579704,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.0273,
+          "AllocatedBytes": 642408,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.7522,
+          "AllocatedBytes": 429656,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.6242,
+          "AllocatedBytes": 582800,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 20.6113,
+          "AllocatedBytes": 466096,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 10.6764,
+          "AllocatedBytes": 580056,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 5.164,
+          "AllocatedBytes": 659312,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.3748,
+          "AllocatedBytes": 548312,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6021,
+          "AllocatedBytes": 590632,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6113,
+          "AllocatedBytes": 453664,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6811,
+          "AllocatedBytes": 573192,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.799,
+          "AllocatedBytes": 668096,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.5176,
+          "AllocatedBytes": 552976,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 11.1207,
+          "AllocatedBytes": 431576,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.8741,
+          "AllocatedBytes": 584008,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 3.6454,
+          "AllocatedBytes": 583672,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        },
+        {
+          "Milliseconds": 4.1416,
+          "AllocatedBytes": 707696,
+          "CachedLayouts": 256,
+          "CachedLayoutBytes": 221184,
+          "RetainedHistoryBytes": 1108860
+        }
+      ]
+    }
+  ],
+  "cleanup": [
+    {
+      "workload": "paragraphs-10000",
+      "glyphCacheReleased": true,
+      "timerStopped": true,
+      "released": true
+    },
+    {
+      "workload": "long-paragraph",
+      "glyphCacheReleased": true,
+      "timerStopped": true,
+      "released": true
+    },
+    {
+      "workload": "table-heavy",
+      "glyphCacheReleased": true,
+      "timerStopped": true,
+      "released": true
+    }
+  ]
+}

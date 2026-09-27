@@ -9,3 +9,7 @@ Avalonia tunnel/handled input takes precedence. The surface forwards only unhand
 An instance belongs to one attached surface at a time. `DocumentInputComponent` enforces that rule and offers `OnAttached`/`OnDetached` overrides. Do not retain the context after detachment. Release external subscriptions, timers and pointer capture in `OnDetached`; the defaults do this. Replacing a component detaches the old one before attaching its replacement. Replacing the template or removing the editor from the visual tree detaches every component; reattachment creates a fresh context. The native composition component also invalidates previous IME clients, preventing late platform callbacks from updating a new surface. The surface does not dispose host component instances, which can be reused after detachment.
 
 Default keyboard commands retain session read-only checks, undo grouping, platform primary modifiers, word movement, table navigation and selection behavior. Cancel composition before a custom command changes selection or document content. Session changes also invalidate a composition preview when its base document or selection changes.
+
+## Default interaction contracts
+
+[Editing interactions](INTERACTIONS.md) describes visual bidi affinity, rectangular table selection, transactional sizing, timer-driven autoscroll, structured content drag/drop, and touch selection. Default pointer detach/focus/capture cancellation releases all gesture clocks and captures. Native and device qualification is tracked separately from headless component tests.

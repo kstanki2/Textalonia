@@ -1,0 +1,65 @@
+{
+  "capturedUtc": "2026-09-27T00:17:42.017697+00:00",
+  "localDate": "2026-09-26",
+  "revision": "1c37f40993ee8ec50f4d51a2e83d8f5f3fe14021 + Phase 6 working tree",
+  "sdk": "10.0.204",
+  "configuration": "Release",
+  "avalonia": "12.1.3",
+  "build": {
+    "status": "pass",
+    "warnings": 0,
+    "errors": 0,
+    "command": "dotnet build Textalonia.sln -c Release --no-restore --artifacts-path artifacts/phase6-build -p:UsedAvaloniaProducts="
+  },
+  "tests": {
+    "status": "pass",
+    "passed": 438,
+    "failed": 0,
+    "skipped": 0,
+    "command": "dotnet test tests/Textalonia.Tests -c Release --no-build --no-restore --artifacts-path artifacts/phase6-build -p:UsedAvaloniaProducts= --logger trx --results-directory artifacts/phase6/final-tests",
+    "localEvidence": "artifacts/phase6/final-tests/JackBauer_DESKTOP-0GDCOSC_2026-09-26_20_15_57.trx"
+  },
+  "publicApi": {
+    "status": "pass",
+    "change": "Additive table interaction/editor formatting APIs and default pointer attachment override; existing public members retained."
+  },
+  "package": {
+    "status": "pass",
+    "artifacts": [
+      "artifacts/packages/Textalonia.0.1.0-preview.1.nupkg",
+      "artifacts/packages/Textalonia.0.1.0-preview.1.snupkg"
+    ],
+    "published": false
+  },
+  "consumer": {
+    "status": "pass",
+    "freshCache": "artifacts/phase6-consumer-cache",
+    "command": "dotnet run --project tests/Textalonia.PackageSmoke -c Release --no-restore -p:UsedAvaloniaProducts=",
+    "coverage": [
+      "compiled XAML/themes",
+      "visual bidi",
+      "table resize/undo/rectangle APIs",
+      "codecs/resources",
+      "rendering"
+    ]
+  },
+  "nativeRecordGenerator": {
+    "status": "pass",
+    "desktopCases": 10,
+    "mobileCases": 17,
+    "allNativeResults": "pending"
+  },
+  "mobile": {
+    "sharedRelease": "pass",
+    "androidCompile": "pass",
+    "androidPackage": "blocked: XABAA7000 temporary ZIP rename permission error",
+    "iosBuild": "not executed: macOS/Xcode unavailable",
+    "deviceQualification": "pending"
+  },
+  "performance": {
+    "evidence": "performance/windows-2026-09-26-phase6-interactions/interactions.json",
+    "scope": "headless rendered frames",
+    "gate": "PERF-06 open: long paragraph resize p95 103.09 ms / 100 ms; amplified mixed-clock stress misses disclosed"
+  },
+  "nativeQualification": "NATIVE-06 and MOB-01 remain open; headless checks do not certify desktop/mobile native behavior"
+}

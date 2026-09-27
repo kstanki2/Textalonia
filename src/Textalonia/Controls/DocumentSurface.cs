@@ -33,11 +33,19 @@ public partial class DocumentSurface : Control
     private double _measuredLayoutHeight;
     private bool _dirty = true;
     private Rect _viewport;
+    private bool _rendering;
+    private bool _anchorAdjustmentPosted;
+    private double _pendingAnchorAdjustment;
     internal DocumentLayout Layout => _layout;
+    internal bool IsSelectingWithPointer { get; set; }
+    internal Rect InteractionViewport => _viewport.Width > 0 && _viewport.Height > 0
+        ? _viewport.Intersect(new Rect(Bounds.Size))
+        : new Rect(0, Editor?.Scroller?.Offset.Y ?? 0, Bounds.Width, Editor?.Scroller?.Viewport.Height ?? Bounds.Height);
 
     public DocumentSurface()
     {
         Focusable = true;
+        InitializeDragDrop();
         Cursor = new Cursor(StandardCursorType.Ibeam);
         ClipToBounds = true;
         _keyboard = _defaultKeyboard; _pointer = _defaultPointer; _caret = _defaultCaret; _composition = _defaultComposition;
@@ -61,6 +69,7 @@ public partial class DocumentSurface : Control
         {
             if (ReferenceEquals(_editor, value)) return;
             DetachInputComponents();
+            _pendingAnchorAdjustment = 0;
             ResetInlineViews();
             _editor = value;
             UpdateInputComponents();
@@ -89,10 +98,10 @@ public partial class DocumentSurface : Control
         _dirty |= invalidateLayout || !ReferenceEquals(previousPreview, _composition.PreviewDocument);
         if (_inputContext is not null) _caret.Reset();
         InvalidateMeasure(); InvalidateVisual();
-        if (bringCaret && IsFocused && Editor is not null)
+        if (bringCaret && IsFocused && Editor is not null && !IsSelectingWithPointer)
             Dispatcher.UIThread.Post(() =>
             {
-                if (Editor is not null && TopLevel.GetTopLevel(this) is not null)
+                if (Editor is not null && !IsSelectingWithPointer && TopLevel.GetTopLevel(this) is not null)
                 {
                     EnsureLayout(Bounds.Width);
                     var caret = CaretRectangle;
@@ -118,7 +127,7 @@ public partial class DocumentSurface : Control
             if (Editor?.LayoutError is not null) return default;
             var height = _layout.Height;
             Rect caret;
-            try { caret = _layout.Caret(DisplayCaret); }
+            try { caret = _layout.Caret(CurrentVisualCaret); }
             catch (ShapingLimitExceededException error) { RejectLayout(error); return default; }
             if (Math.Abs(height - _layout.Height) > .1)
                 Dispatcher.UIThread.Post(InvalidateMeasure, DispatcherPriority.Loaded);
@@ -131,7 +140,7 @@ public partial class DocumentSurface : Control
     {
         if (Editor is null) return;
         width = double.IsFinite(width) && width > 48 ? width : 800;
-        var document = _composition.PreviewDocument ?? Editor.Document;
+        var document = _composition.PreviewDocument ?? Editor.TablePreviewDocument ?? Editor.Document;
         if (!_dirty && ReferenceEquals(_layoutDocument, document) && Math.Abs(_layoutWidth - width) < .1) return;
         _layoutDocument = document; _layoutWidth = width; _dirty = false;
         try
@@ -158,11 +167,30 @@ public partial class DocumentSurface : Control
     {
         position = 0;
         if (Editor?.LayoutError is not null) return false;
-        try { position = _layout.HitTest(point); return true; }
+        try { var caret = _layout.HitTestCaret(point); RememberPointerCaret(caret); position = caret.Position; return true; }
         catch (ShapingLimitExceededException error) { RejectLayout(error); return false; }
     }
     private void ApplyAnchorAdjustment(double adjustment)
     {
+        if (Math.Abs(adjustment) <= .1) return;
+        if (_rendering)
+        {
+            // Shaping can refine the virtualized anchor while painting. Publish
+            // its scroll correction after the compositor finishes this pass.
+            _pendingAnchorAdjustment += adjustment;
+            if (!_anchorAdjustmentPosted)
+            {
+                _anchorAdjustmentPosted = true;
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _anchorAdjustmentPosted = false;
+                    var pending = _pendingAnchorAdjustment;
+                    _pendingAnchorAdjustment = 0;
+                    if (_isAttached) ApplyAnchorAdjustment(pending);
+                }, DispatcherPriority.Loaded);
+            }
+            return;
+        }
         if (Math.Abs(adjustment) > .1 && Editor?.Scroller is { } scroller)
             scroller.Offset = new Vector(scroller.Offset.X, Math.Max(0, scroller.Offset.Y + adjustment));
     }
@@ -175,6 +203,13 @@ public partial class DocumentSurface : Control
     }
 
     public override void Render(DrawingContext context)
+    {
+        _rendering = true;
+        try { RenderDocument(context); }
+        finally { _rendering = false; }
+    }
+
+    private void RenderDocument(DrawingContext context)
     {
         base.Render(context);
         if (Editor is null) return;
@@ -219,6 +254,8 @@ public partial class DocumentSurface : Control
             }
         }
         DrawInlineImages(context, viewport);
+        RenderDropPreview(context);
+        if (_pointer is DefaultPointerComponent standardPointer) standardPointer.RenderInteractionAdorners(context);
         if (Editor.Session.Index.Length == 0 && !HasComposition && Editor.Document.Blocks is [{ } block] && block is Paragraph)
         {
             using var placeholder = new TextLayout(Editor.PlaceholderText, new Typeface(Editor.FontFamily), 16,
@@ -313,12 +350,8 @@ public partial class DocumentSurface : Control
         if (Editor?.LayoutError is not null) return null;
         try
         {
-            var paragraph = _layout.At(position);
-            if (paragraph is null) return null;
-            using var lease = paragraph.Acquire();
-            var index = lease.Layout.GetLineIndexFromCharacterIndex(position - paragraph.TextStart, false);
-            var line = lease.Layout.TextLines[Math.Clamp(index, 0, paragraph.Page.LineCount - 1)];
-            return paragraph.TextStart + line.FirstTextSourceIndex + (end ? line.Length - line.NewLineLength : 0);
+            var caret = position == DisplayCaret ? CurrentVisualCaret : VisualCaret.Logical(position);
+            return _layout.LineBoundary(caret, end).Position;
         }
         catch (ShapingLimitExceededException error) { RejectLayout(error); return null; }
     }
@@ -333,6 +366,7 @@ public partial class DocumentSurface : Control
         base.OnLostFocus(e);
         if (_inputContext is not null) _caret.FocusChanged(false);
         CancelComposition();
+        ClearDropPreview();
         Editor?.Session.BreakUndoGroup();
     }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
@@ -344,6 +378,8 @@ public partial class DocumentSurface : Control
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _isAttached = false;
+        _pendingAnchorAdjustment = 0;
+        ClearDropPreview();
         DetachInputComponents(); ResetInlineViews();
         _layout.Clear(); _dirty = true;
         base.OnDetachedFromVisualTree(e);
@@ -356,6 +392,7 @@ public partial class DocumentSurface : Control
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
+        if (e.Key == Key.Escape && ReferenceEquals(e.Source, this) && _pointer is DefaultPointerComponent pointer) pointer.CancelInteractions();
         if (!e.Handled && ReferenceEquals(e.Source, this) && _inputContext is not null) _keyboard.KeyDown(e);
     }
     protected override void OnPointerPressed(PointerPressedEventArgs e)

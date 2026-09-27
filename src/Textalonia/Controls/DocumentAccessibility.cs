@@ -172,9 +172,17 @@ public sealed class DocumentTextProvider
         {
             if (range.Start == range.End)
             {
-                var caret = surface.Layout.Caret(range.Start);
-                var clip = surface.Layout.At(range.Start)?.Clip;
-                Add(clip?.Intersect(caret) ?? caret);
+                if (range.Start == Session.Selection.Active)
+                {
+                    if (surface.SelectionEndpointCaret(false) is { } activeCaret) Add(activeCaret);
+                    if (_editor.LayoutError is { } error) throw error;
+                }
+                else
+                {
+                    var caret = surface.Layout.Caret(range.Start);
+                    var clip = surface.Layout.At(range.Start)?.Clip;
+                    Add(clip?.Intersect(caret) ?? caret);
+                }
                 return result;
             }
             var position = range.Start;

@@ -12,6 +12,11 @@ public sealed class SelectionFormattingState
     private readonly IReadOnlyList<ParagraphStyle> _paragraphs;
     public bool IsCollapsed { get; }
 
+    internal SelectionFormattingState(IReadOnlyList<TextStyle> text, IReadOnlyList<ParagraphStyle> paragraphs)
+    {
+        _text = text; _paragraphs = paragraphs; IsCollapsed = false;
+    }
+
     internal SelectionFormattingState(DocumentIndex index, TextSelection selection, TextStyle typingStyle)
     {
         IsCollapsed = selection.IsEmpty;

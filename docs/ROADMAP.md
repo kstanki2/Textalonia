@@ -4,10 +4,10 @@ The target is the feature set described by [Avalonia's editor announcement](http
 
 | Area | Current preview | Remaining work |
 | --- | --- | --- |
-| Character formatting | Fonts, weight/stretch, size, emphasis, colors, baseline, links, paragraph tracking/line height, mixed-selection indicators | Richer toolbar controls, per-run tracking and advanced font features |
+| Character formatting | Fonts, weight/stretch, size, emphasis, colors, baseline, links, paragraph tracking/line height, mixed-selection indicators | Per-run tracking and advanced font features |
 | Document structure | Paragraphs, headings, identified multilevel lists with restart/continuation, independently styled sections, tables | Inline resources and richer interaction controls |
-| Tables | Nested cell blocks, merge-aware structural edits, split restoration, column widths, row sizing, independent cell borders/padding | Interactive resizing and border/padding UI |
-| Editing | Native text layout, keyboard, pointer selection, grapheme deletion, readonly, bounded history, find/replace | Visual bidi navigation, drag autoscroll refinement, drag/drop content, touch selection handles |
+| Tables | Nested cell blocks, merge-aware structural edits, split restoration, column widths, row sizing, interactive resize, rectangular selection, borders/padding UI | Native interaction qualification |
+| Editing | Visual bidi navigation, timer-driven selection scrolling, structured drag/drop, touch gesture implementation, grapheme deletion, readonly, bounded history, find/replace | Native desktop and device touch qualification |
 | IME | Composition client, transient preedit and committed text | Native Windows/macOS/Linux and mobile keyboard qualification |
 | Clipboard | Versioned section/table/resource fragments, platform HTML adapter, plain text | Native cross-application qualification on every platform |
 | Formats | Native JSON, text, expanded HTML/RTF/DOCX subsets with strict/tolerant diagnostics | Arbitrary RTF/DOCX fidelity, application-export corpus and native qualification; native XAML codec |
@@ -19,7 +19,7 @@ The target is the feature set described by [Avalonia's editor announcement](http
 
 ## Implementation phases
 
-The plans below turn the remaining work into ordered deliverables. Phase 1 baseline tooling, fixtures and local automated measurements are implemented; [its report](BASELINE-REPORT.md) records passing checks, budget gaps and pending native evidence. Phase 2 is **complete**, with [residual latency qualification accepted as a follow-up](PHASE2-REPORT.md#completion-decision). Phase 3 is **complete**, with [schema, semantics and verification evidence](PHASE3-REPORT.md); Phase 4 has [implemented input and inline content](PHASE4-REPORT.md), with its native text-accessibility bridge still blocked; Phase 5 has [implemented conversion and fragment contracts](PHASE5-REPORT.md), with application-export corpus and native interoperability qualification still open; phases 6-8 remain **planned**. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
+The plans below turn the remaining work into ordered deliverables. Phase 1 baseline tooling, fixtures and local automated measurements are implemented; [its report](BASELINE-REPORT.md) records passing checks, budget gaps and pending native evidence. Phase 2 is **complete**, with [residual latency qualification accepted as a follow-up](PHASE2-REPORT.md#completion-decision). Phase 3 is **complete**, with [schema, semantics and verification evidence](PHASE3-REPORT.md); Phase 4 has [implemented input and inline content](PHASE4-REPORT.md), with its native text-accessibility bridge still blocked; Phase 5 has [implemented conversion and fragment contracts](PHASE5-REPORT.md), with application-export corpus and native interoperability qualification still open; Phase 6 has [implemented interaction controls and mobile harnesses](PHASE6-REPORT.md), with device and native qualification still open; phases 7-8 remain **planned**. Task IDs are stable references for future issues and implementation requests; a task may need several focused pull requests. There are no delivery-date commitments until the baseline measurements and design decisions are complete.
 
 | Phase | Outcome and detailed plan | Prerequisites |
 | --- | --- | --- |
@@ -65,7 +65,7 @@ Each implementation task needs observable behavior, focused regression coverage,
 
 Model and schema changes must include native round trips and old-version fixtures in the same change. Resource-bearing changes must cover history retention and disposal. Interactive changes must exercise the actual control and shared layout/hit-test geometry. Run the existing build/test/package-consumer checks for code changes; add native evidence and measured performance comparisons where the task requires them. Do not substitute a headless pass for a native check.
 
-Initial qualification targets are Windows, macOS, and Linux, reflecting the current demo and CI. Android/iOS hosts, keyboards, and touch checks remain explicit work in Phases 6 and 8. P1.1 records the intended support tiers; a platform or feature that is deferred must stay visible as an uncompleted roadmap item.
+Initial qualification targets are Windows, macOS, and Linux, reflecting the current demo and CI. Android/iOS qualification harnesses are present; device keyboards and touch checks remain explicit unfinished work in Phases 6 and 8. P1.1 records the intended support tiers; a platform or feature that is deferred must stay visible as an uncompleted roadmap item.
 
 ## First implementation batch
 
