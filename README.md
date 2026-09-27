@@ -2,7 +2,7 @@
 
 An independent, native rich text editor for **Avalonia 12** and **.NET 8+**, distributed as one NuGet package.
 
-**Status: 0.1.0-preview.1 candidate; not yet published.** This repository contains a working editor, desktop demo, tests, and local NuGet packaging. It is not a feature-complete or API-compatible replacement for Avalonia's commercial editor. See [the feature matrix and roadmap](docs/ROADMAP.md) before adopting it.
+**Status: 0.1.0-preview.1 candidate; not yet published.** This repository contains a working editor, desktop demo, tests, and local NuGet packaging. The feature target is a selected subset of [DevExpress's WPF Rich Text Editor](https://docs.devexpress.com/WPF/8651/controls-and-libraries/rich-text-editor), implemented independently for Avalonia. ActiveX, VBA, charts, and drawing shapes are excluded. It is not yet feature-complete within that scope and does not provide DevExpress API compatibility. See the [scoped DevExpress implementation plan](docs/DEVEXPRESS-PARITY-PLAN.md) and [current feature matrix and roadmap](docs/ROADMAP.md).
 
 ## Run the demo
 

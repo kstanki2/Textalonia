@@ -1,6 +1,8 @@
 # Feature matrix and path to parity
 
-The target is the feature set described by [Avalonia's editor announcement](https://avaloniaui.net/blog/rich-text-editor). This is an independently implemented preview with its own API, data format, and theme. The commercial editor is not a dependency.
+The feature target is a selected subset of [DevExpress's WPF Rich Text Editor](https://docs.devexpress.com/WPF/8651/controls-and-libraries/rich-text-editor), implemented independently for Avalonia with Textalonia's own API, data format, and theme. ActiveX, VBA, charts, and drawing shapes are excluded from the target. Images, watermarks, and OLE previews remain in scope. DevExpress is not a dependency.
+
+The [scoped DevExpress implementation plan](DEVEXPRESS-PARITY-PLAN.md) supersedes the previous Avalonia commercial-editor target and defines the additional feature work and exclusions. The matrix below describes the existing preview subset; it is not the complete backlog for the selected target. Existing qualification and release tasks remain open.
 
 | Area | Current preview | Remaining work |
 | --- | --- | --- |
@@ -20,9 +22,10 @@ The target is the feature set described by [Avalonia's editor announcement](http
 
 ## Open work
 
-The implementation plans and milestone reports have been retired. Current behavior
-is documented in the feature guides above; these remaining tasks retain their
-original IDs so unfinished qualification is not mistaken for completion.
+Earlier implementation plans and milestone reports have been retired. Current
+behavior is documented in the feature guides above. The new DevExpress plan uses
+DX-prefixed workstream IDs; the remaining tasks below retain their original IDs
+so unfinished qualification is not mistaken for completion.
 
 | ID / original tasks | Remaining work and completion evidence | Responsible role |
 | --- | --- | --- |
@@ -39,7 +42,8 @@ original IDs so unfinished qualification is not mistaken for completion.
 
 Per-run letter spacing/advanced font features, broader Markdown dialects, external
 image interchange and arbitrary Office fidelity remain outside the documented
-preview subset. Expand them only with explicit contracts and regression coverage.
+preview subset. The DevExpress plan schedules the relevant extensions with explicit
+contracts and regression coverage; planned work does not expand current support claims.
 
 ## Completion and release policy
 
