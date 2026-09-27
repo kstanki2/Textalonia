@@ -7,6 +7,6 @@
   { "id": "word-flow", "profile": "Microsoft Word WordprocessingML", "format": "docx-xml", "file": "word-flow.xml", "text": "Word-shaped α\nouter\ninner", "lossCodes": [], "semantics": ["bold", "nested-table"] },
   { "id": "word-revision", "profile": "Microsoft Word WordprocessingML", "format": "docx-xml", "file": "word-revision.xml", "text": "kept", "lossCodes": ["docx.revision"], "semantics": [] },
   { "id": "word-malformed", "profile": "Microsoft Word WordprocessingML", "format": "docx-xml", "file": "word-malformed.xml", "error": true },
-  { "id": "native-inline", "profile": "Textalonia native schema 3", "format": "json", "file": "native-inline.json", "text": "one pixel", "lossCodes": [], "semantics": ["image"] },
-  { "id": "native-malformed", "profile": "Textalonia native schema 3", "format": "json", "file": "native-malformed.json", "error": true }
+  { "id": "native-inline", "profile": "Textalonia native schema 4", "format": "json", "file": "native-inline.json", "text": "one pixel", "lossCodes": [], "semantics": ["image"] },
+  { "id": "native-malformed", "profile": "Textalonia native schema 4", "format": "json", "file": "native-malformed.json", "error": true }
 ]

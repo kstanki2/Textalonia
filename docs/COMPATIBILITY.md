@@ -11,7 +11,7 @@ This records the preview contract preserved by the Phase 2 engine and extended b
 | Coordinates | `DocumentIndex.Text`, selection, search, highlights and editing use UTF-16 code units. CRLF/CR normalize to LF; one LF separates visible paragraphs, including cells; U+2028 stays inside a paragraph. Hidden cells are excluded from visible coordinates. `Coordinates_are_UTF16_with_LF_and_soft_breaks_and_reverse_selection`, fixture round trips and cross-cell editing tests. `InsertText` strips NUL; `FromText` does not. |
 | Directional selection | Anchor is the fixed endpoint; Active is the caret. `Start/End` are sorted views, not a loss of direction. `Select` clamps and snaps backward to a .NET grapheme boundary. Undo/redo must restore the original direction, content, and typing style. Baseline corpus checks every committed operation, including reversed selections. |
 | Graphemes and bidi | Caret/deletion use .NET text elements (including combining sequences and emoji). `Grapheme_navigation_and_deletion_keep_emoji_and_combining_marks_intact` and the independent string oracle in the corpus. Default arrow navigation uses visual bidi stops (P6.1); session coordinates remain logical, and native N05 remains pending. Explicit edits may form a new cluster across the insertion boundary; Phase 2 must preserve text and not split surrogate pairs. |
-| Merge restoration | Physical hidden cells remain. Unedited split restores original paragraphs/IDs; edited split keeps edited anchor paragraphs and restores other cells. `Merging_and_splitting_cells_is_lossless_and_keeps_edited_merged_text`, `Frozen_v1_fixture_preserves_all_fields_and_merge_restoration`, generated merge/split/round trips. Phase 3 supports merge-aware structural edits; `TableModelTests` covers every insertion/deletion boundary and exact history restoration. |
+| Merge restoration | Physical hidden cells remain. Unedited split restores original paragraphs/IDs; edited split keeps edited anchor paragraphs and restores other cells. `Merging_and_splitting_cells_is_lossless_and_keeps_edited_merged_text`, current-schema fixture coverage, generated merge/split/round trips. Phase 3 supports merge-aware structural edits; `TableModelTests` covers every insertion/deletion boundary and exact history restoration. |
 | Undo grouping | Adjacent `InsertText(..., true)` calls coalesce for less than 800 ms until navigation, formatting, explicit `BreakUndoGroup`, or another operation. New edits clear redo. Phase 2 retains the default 100-entry limit and adds a 64 MiB estimate budget across undo/redo; shared storage is counted once, excluding the current snapshot. Existing typing, history-limit and replace-all tests plus corpus undo/redo. Phase 2 adds an injectable internal timestamp and a deterministic test of the 799/800 ms boundary, navigation breaks and coalescing under a byte limit. |
 | Read-only | User/session edits and undo/redo are blocked; selection/copy are allowed. Host `Load`, `Document` and `Text` assignment still replace content and reset history, even in read-only mode. Existing read-only tests plus `Host_load_is_allowed_in_readonly_and_resets_history_and_selection`. Native clipboard/read-only interaction still needs N06. |
 | Streams | Caller owns streams on success, cancellation and error. Codecs read from current position, never rewind/close the caller stream. `Formats_round_trip_text_and_leave_streams_open` and `Cancelled_codecs_leave_caller_streams_open`. Phase 8 ReleaseContractTests inject partial destination failures into every codec, including reporting and legacy paths. |
@@ -29,34 +29,35 @@ Phase 8 adds public-api-contracts.txt for nested nullability, attributes, access
 
 ## Native schema policy
 
-The writer emits envelope `{ "version": 4, "document": ... }`. The reader dispatches
-on the version before decoding the document: frozen strict v1 DTOs migrate old
-documents, version-specific v2/v3 metadata excludes later additions, and v4 reads
-the current model. All versions reject unknown members. Missing or unsupported
-versions throw `NotSupportedException` before interpreting document fields.
-See [schema tests](../tests/Textalonia.Tests/SchemaEvolutionTests.cs) and
-[Phase 7 migration](INTEGRATIONS.md#native-schema-migration).
+The writer emits envelope `{ "version": 4, "document": ... }`, and the reader
+accepts only this current prerelease schema. It checks the version before decoding
+the document and rejects unknown members. Missing or unsupported versions throw
+`NotSupportedException` before interpreting document fields. The project has not
+been published or used; v1-v3 were unused development schemas and have no migration
+support. The marker remains 4 to identify the current format.
+See [schema tests](../tests/Textalonia.Tests/NativeSchemaTests.cs) and
+[current native semantics](INTEGRATIONS.md#current-native-schema).
 
-Before extending the schema:
+When changing the prerelease schema:
 
-1. Keep the frozen [`native-v1.json`](../tests/Textalonia.Tests/Fixtures/native-v1.json) unchanged and add fixtures for every new shape, including merge backups. Do not regenerate old fixtures to make a new reader pass.
-2. Read and validate the envelope version first. Dispatch to an explicit version-specific DTO reader; keep strict validation within each version. Reject unsupported newer schemas with `NotSupportedException` before interpreting document members.
-3. Migrate each older DTO to the current in-memory model with documented defaults. Preserve text, IDs, direction, runs, lists, sections, spans and merge restoration. Test old read -> migration -> new write -> new read, plus undo/redo. Identity migration suffices while the current model remains v1-compatible.
-4. Bump writer version when a new persisted member/meaning cannot be read by v1. Do not silently write extra fields into version 1: its reader rejects them. Any down-export must be explicit about lost features.
-5. Run the frozen corpus, API check, all serializers, control tests and independent package consumer. Document the version/support window and publish migration notes before changing the writer default. Migration never overwrites the caller's source file automatically.
+1. Keep strict envelope and model validation, including rejection of unsupported versions and unknown members.
+2. Update current-schema fixtures and round-trip tests to cover every persisted shape, including nested content, inline resources and merge backups. Verify text, IDs, formatting and undo/redo restoration.
+3. Run the corpus, API check, serializers, control tests and independent package consumer. Document the current format and any deliberate changes.
 
-Phase 2 retained schema v1. Phase 3 introduces v2 and continues reading v1. License/package ownership decisions do not block this compatibility policy.
+There is no obligation to retain readers or migration fixtures for unused
+development schemas. Establish a published-data compatibility policy before
+making commitments for future releases.
 
-## Phase 3 additive API migration
+## Document model APIs
 
 The public surface adds selection formatting aggregation, list definitions and
 model numbering, richer styles, table sizing, recursive cloning and cell block
 collections. Existing public members remain available. `TableCell.Paragraphs` and
 `MergeOriginal` are init-capable paragraph projections over authoritative `Blocks`
 and `MergeOriginalBlocks`; use the block properties to preserve nested content.
-The v2 wire format rejects legacy paragraph collection names rather than accepting
-competing representations. The package consumer exercises nested editing,
-merge-aware insertion, schema v2 round trips and exact undo restoration.
+The native wire format rejects paragraph projection property names rather than
+accepting competing representations. The package consumer exercises nested editing,
+merge-aware insertion, current-schema round trips and exact undo restoration.
 
 Collapsed caret formatting now creates an undoable typing-style operation.
 Mixed emphasis toggles apply a uniform chosen value, preserving unrelated styles.
@@ -66,16 +67,16 @@ budget. See [document semantics](DOCUMENT-MODEL.md) for details and
 [current interchange limits](INTERCHANGE.md#supported-subset-and-diagnosed-losses) for losses in external formats.
 
 
-## Phase 2 additive API migration
+## Scalable editing APIs
 
 The API snapshot adds `SynchronizeText`, `HistoryByteLimit`,
 `RetainedHistoryBytes`, `DocumentPosition`, `CreatePosition`, `TryResolvePosition`,
 index `ReadText`, `CharAt`, `ParagraphCount`, and the optional shaping policy below.
 No P1 public member was removed.
-The independent package consumer exercises these contracts. Existing native-v1
-fixtures remain unchanged. Public model arrays and init/with expressions remain
-available; internal edits materialize compatibility arrays on demand. RichRun
-retains its string constructor, init-capable Text, deconstruction and value equality.
+The independent package consumer exercises these contracts. Public model arrays
+and init/with expressions remain available; internal edits materialize compatibility
+arrays on demand. RichRun retains its string constructor, init-capable Text,
+deconstruction and value equality.
 See [ADR 002](ADR-002-SCALABLE-CORE.md) for linear compatibility operations and
 [architecture](ARCHITECTURE.md#performance-boundaries) for budget semantics.
 
@@ -111,13 +112,12 @@ The bound covers shaping inputs and the documented engine memory estimate,
 not native font-library allocations, total process memory or total time spent
 finding a distant line. See [performance boundaries](ARCHITECTURE.md#performance-boundaries).
 
-## Phase 4 additive API and native schema migration
+## Inline content and input APIs
 
-Native writers now emit schema **v3** for inline descriptors and resource tables.
-The strict readers still accept v1 and v2; older preview readers reject v3. Existing
-text-only documents and default editing behavior remain supported. The public API
-baseline adds input component contracts, inline model/session/view APIs, resource
-resolver/cache/factory APIs, and a managed text-range contract.
+The current native schema preserves inline descriptors and resource tables.
+Text-only documents and default editing behavior remain supported. The public API
+baseline includes input component contracts, inline model/session/view APIs,
+resource resolver/cache/factory APIs, and a managed text-range contract.
 
 Objects occupy one U+FFFC position in `Text` and the index. Use `PlainText` or
 `ReadPlainText` for alt-text export, and never feed their offsets back into indexed

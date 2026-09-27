@@ -237,7 +237,7 @@ public sealed record FlowDocument
 
     public static void ValidateColor(string? color)
     {
-        if (color is not null && !Regex.IsMatch(color, "^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$", RegexOptions.CultureInvariant))
+        if (color is not null && !Regex.IsMatch(color, "^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\\z", RegexOptions.CultureInvariant))
             throw new FormatException("Colors must be #RRGGBB or #AARRGGBB.");
     }
 }

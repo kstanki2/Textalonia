@@ -147,18 +147,17 @@ public class InlineModelTests
     }
 
     [Fact]
-    public void Version_two_migration_keeps_the_old_vocabulary_frozen()
+    public void Native_text_only_documents_allow_absent_optional_inline_fields()
     {
-        var fixture = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "native-v2.json"));
-        var loaded = DocumentFormats.Json.Parse(fixture);
-        Assert.Empty(loaded.Resources);
+        var fixture = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "native-rich.json"));
+        var original = DocumentFormats.Json.Parse(fixture);
         var json = JsonNode.Parse(fixture)!;
-        json["document"]!["resources"] = new JsonObject();
-        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.ToJsonString()));
-        json = JsonNode.Parse(fixture)!;
-        json["document"]!["blocks"]![0]!["runs"]![0]!["inline"] = null;
-        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.ToJsonString()));
-        Assert.Equal(loaded.Text, DocumentFormats.Json.Parse(DocumentFormats.Json.Serialize(loaded)).Text);
+        json["document"]!.AsObject().Remove("resources");
+        json["document"]!["blocks"]![0]!["runs"]![0]!.AsObject().Remove("inline");
+        var loaded = DocumentFormats.Json.Parse(json.ToJsonString());
+        Assert.Empty(loaded.Resources);
+        Assert.Null(Assert.IsType<Paragraph>(loaded.Blocks[0]).Runs[0].Inline);
+        Assert.Equal(DocumentFormats.Json.Serialize(original), DocumentFormats.Json.Serialize(loaded));
     }
 
     [Fact]

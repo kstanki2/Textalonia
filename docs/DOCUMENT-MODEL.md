@@ -1,19 +1,19 @@
 # Document semantics and schema v4
 
-The document model is independent of Avalonia controls. Native JSON writes schema
-version 4 and reads versions 1, 2, 3 and 4. See [integration semantics](INTEGRATIONS.md)
-for quote/code metadata and migration. See [inline content](INLINE-CONTENT.md)
-for descriptors, resources and the v3 coordinate/export contract. The version is checked before interpreting
-the document; unsupported versions fail with `NotSupportedException`. All readers
-reject unknown members. The v1 reader uses frozen DTOs and explicitly migrates
-paragraph-only cells and merge backups to block collections. It preserves IDs,
+The document model is independent of Avalonia controls. Native JSON reads and
+writes only the current prerelease schema, version 4. Earlier versions were unused
+development formats and have no migration support. See [integration semantics](INTEGRATIONS.md)
+for quote/code metadata and [inline content](INLINE-CONTENT.md) for descriptors,
+resources and the coordinate/export contract. The version is checked before
+interpreting the document; missing or unsupported versions fail with
+`NotSupportedException`. The reader rejects unknown members and preserves IDs,
 text, formatting, spans and hidden cells. Loading never rewrites the source file.
 
-New properties have compatibility defaults: null explicit weight uses legacy
+Model defaults include: null explicit weight uses
 `Bold`, normal stretch is 5, paragraph tracking and extra indents are zero, line
 height is automatic, list identity/definitions/start are absent, restart is false,
 column widths are equal, and rows size automatically. Null container padding and
-borders retain the old geometry. Frozen v1 and v2 fixtures exercise these contracts.
+borders use the default geometry. Current-schema fixtures exercise these contracts.
 
 ## Selection formatting
 

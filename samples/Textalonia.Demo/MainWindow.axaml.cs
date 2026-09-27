@@ -57,12 +57,12 @@ public partial class MainWindow : Window
         try
         {
             if (!await ConfirmDiscardAsync()) return;
+            var revision = Editor.Session.Revision;
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             { Title = "Open a document", AllowMultiple = false, FileTypeFilter = FileTypes });
             if (files.Count == 0) return;
             using var file = files[0];
             await using var stream = await file.OpenReadAsync();
-            var revision = Editor.Session.Revision;
             var result = await DocumentFormats.ForPath(file.Name).LoadWithReportAsync(stream);
             if (revision != Editor.Session.Revision) throw new InvalidOperationException("The document changed while loading. Open the file again to replace it.");
             ReplaceDocument(result.Document);
@@ -82,11 +82,10 @@ public partial class MainWindow : Window
             });
             if (file is null) return;
             var snapshot = Editor.Document;
-            await using var stream = await file.OpenWriteAsync();
-            stream.SetLength(0);
-            var result = await DocumentFormats.ForPath(file.Name).SaveWithReportAsync(snapshot, stream);
-            if (ReferenceEquals(snapshot, Editor.Document) && DocumentFormats.ForPath(file.Name) == DocumentFormats.Json) _dirty = false;
-            Status.Text = "Saved " + file.Name + (DocumentFormats.ForPath(file.Name) == DocumentFormats.Json ? "" : " · Use Textalonia format to preserve all editor features.");
+            var format = DocumentFormats.ForPath(file.Name);
+            var result = await DocumentFileStorage.SaveAsync(snapshot, format, file.OpenWriteAsync);
+            if (ReferenceEquals(snapshot, Editor.Document) && format == DocumentFormats.Json) _dirty = false;
+            Status.Text = "Saved " + file.Name + (format == DocumentFormats.Json ? "" : " · Use Textalonia format to preserve all editor features.");
             await ShowConversionReportAsync(result.Report);
         }
         catch (Exception ex) { Status.Text = ex.Message; }

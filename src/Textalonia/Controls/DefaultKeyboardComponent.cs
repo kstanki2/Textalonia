@@ -83,26 +83,34 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
                 case Key.Tab:
                     if (session.CurrentCell() is { } cell)
                     {
-                        var cellIds = cell.Table.Rows.SelectMany(r => r).Select(c => c.Id).ToHashSet();
-                        var cells = session.Index.Paragraphs.Where(p => cellIds.Contains(p.ContainerId)).GroupBy(p => p.ContainerId).ToArray();
-                        var current = Array.FindIndex(cells, g => g.Key == cell.Table.Rows[cell.Row][cell.Column].Id);
+                        // A cell's first paragraph can belong to a nested section or table.
+                        // Navigate the visible cells themselves rather than immediate paragraph containers.
+                        var cells = cell.Table.Rows.SelectMany((row, rowIndex) => row.Where((_, columnIndex) =>
+                            !cell.Table.IsCovered(rowIndex, columnIndex))).ToArray();
+                        var current = Array.FindIndex(cells, c => c.Id == cell.Table.Rows[cell.Row][cell.Column].Id);
                         var next = current + (shift ? -1 : 1);
-                        if (next >= 0 && next < cells.Length) Move(cells[next].First().Start);
-                        else if (!shift && !Context.Editor.IsReadOnly && cell.Table.Rows.SelectMany(r => r).All(c => c.RowSpan == 1 && c.ColumnSpan == 1))
+                        if (next >= 0 && next < cells.Length)
+                        {
+                            Context.CancelComposition();
+                            Context.Surface.SelectVisualCaret(VisualCaret.Logical(session.Index.Tree.Locate(cells[next].Id).Start), false);
+                        }
+                        else if (!shift && !Context.Editor.IsReadOnly && cell.Table.Rows.Length < 1000 &&
+                            cell.Table.Rows.SelectMany(r => r).All(c => c.RowSpan == 1 && c.ColumnSpan == 1))
                         {
                             var rowIndex = cell.Table.Rows.Length;
                             session.UpdateCurrentTable((table, _, _) => table.InsertRow(rowIndex));
                             var table = session.CurrentCell()?.Table;
                             if (table is not null)
                             {
-                                var target = session.Index.Paragraphs.First(p => p.ContainerId == table.Rows[rowIndex][0].Id);
-                                session.Select(target.Start, target.Start);
+                                var target = session.Index.Tree.Locate(table.Rows[rowIndex][0].Id).Start;
+                                Context.Surface.SelectVisualCaret(VisualCaret.Logical(target), false);
                             }
                         }
                         else return;
                     }
                     else if (Context.Editor.AcceptsTab) session.InsertText("\t");
                     else return;
+                    Context.PreferredCaretX = null;
                     break;
                 case Key.Escape:
                     Context.Editor.CancelTableResize(); Context.Editor.ClearTableCellSelection();

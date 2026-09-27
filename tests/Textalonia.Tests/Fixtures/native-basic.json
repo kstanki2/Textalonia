@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 4,
   "document": {
     "blocks": [
       {
@@ -11,31 +11,46 @@
               "fontFamily": null,
               "fontSize": 16,
               "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
               "italic": false,
+              "isCode": false,
               "underline": false,
               "strikethrough": false,
               "foreground": null,
               "background": null,
               "hyperlink": null,
               "baseline": "Normal"
-            }
+            },
+            "inline": null
           }
         ],
         "style": {
           "alignment": "Left",
           "list": "None",
           "listLevel": 0,
+          "listId": null,
+          "listDefinition": null,
+          "listStart": null,
+          "listRestart": false,
           "headingLevel": 1,
           "spaceBefore": 0,
           "spaceAfter": 8,
           "indent": 0,
+          "rightIndent": 0,
+          "firstLineIndent": 0,
+          "lineHeight": null,
+          "letterSpacing": 0,
           "rightToLeft": false
         },
         "defaultStyle": {
           "fontFamily": null,
           "fontSize": 16,
           "bold": false,
+          "fontWeight": null,
+          "fontStretch": 5,
           "italic": false,
+          "isCode": false,
           "underline": false,
           "strikethrough": false,
           "foreground": null,
@@ -47,6 +62,8 @@
       },
       {
         "kind": "section",
+        "semantic": "None",
+        "codeLanguage": null,
         "blocks": [
           {
             "kind": "paragraph",
@@ -57,14 +74,18 @@
                   "fontFamily": null,
                   "fontSize": 16,
                   "bold": true,
+                  "fontWeight": null,
+                  "fontStretch": 5,
                   "italic": false,
+                  "isCode": false,
                   "underline": false,
                   "strikethrough": false,
                   "foreground": null,
                   "background": null,
                   "hyperlink": null,
                   "baseline": "Normal"
-                }
+                },
+                "inline": null
               },
               {
                 "text": "italic link",
@@ -72,14 +93,18 @@
                   "fontFamily": null,
                   "fontSize": 16,
                   "bold": false,
+                  "fontWeight": null,
+                  "fontStretch": 5,
                   "italic": true,
+                  "isCode": false,
                   "underline": true,
                   "strikethrough": false,
                   "foreground": "#123ABC",
                   "background": null,
                   "hyperlink": "https://example.com",
                   "baseline": "Normal"
-                }
+                },
+                "inline": null
               },
               {
                 "text": " \u4E2D\u6587 \uD83D\uDC69\u200D\uD83D\uDCBB\u2028soft",
@@ -87,31 +112,46 @@
                   "fontFamily": null,
                   "fontSize": 16,
                   "bold": false,
+                  "fontWeight": null,
+                  "fontStretch": 5,
                   "italic": false,
+                  "isCode": false,
                   "underline": false,
                   "strikethrough": false,
                   "foreground": null,
                   "background": "#FFEEDD",
                   "hyperlink": null,
                   "baseline": "Superscript"
-                }
+                },
+                "inline": null
               }
             ],
             "style": {
               "alignment": "Left",
               "list": "None",
               "listLevel": 0,
+              "listId": null,
+              "listDefinition": null,
+              "listStart": null,
+              "listRestart": false,
               "headingLevel": 0,
               "spaceBefore": 0,
               "spaceAfter": 8,
               "indent": 0,
+              "rightIndent": 0,
+              "firstLineIndent": 0,
+              "lineHeight": null,
+              "letterSpacing": 0,
               "rightToLeft": false
             },
             "defaultStyle": {
               "fontFamily": null,
               "fontSize": 16,
               "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
               "italic": false,
+              "isCode": false,
               "underline": false,
               "strikethrough": false,
               "foreground": null,
@@ -130,31 +170,46 @@
                   "fontFamily": null,
                   "fontSize": 16,
                   "bold": false,
+                  "fontWeight": null,
+                  "fontStretch": 5,
                   "italic": false,
+                  "isCode": false,
                   "underline": false,
                   "strikethrough": false,
                   "foreground": null,
                   "background": null,
                   "hyperlink": null,
                   "baseline": "Normal"
-                }
+                },
+                "inline": null
               }
             ],
             "style": {
               "alignment": "Left",
               "list": "Bullet",
               "listLevel": 1,
+              "listId": null,
+              "listDefinition": null,
+              "listStart": null,
+              "listRestart": false,
               "headingLevel": 0,
               "spaceBefore": 0,
               "spaceAfter": 8,
               "indent": 0,
+              "rightIndent": 0,
+              "firstLineIndent": 0,
+              "lineHeight": null,
+              "letterSpacing": 0,
               "rightToLeft": false
             },
             "defaultStyle": {
               "fontFamily": null,
               "fontSize": 16,
               "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
               "italic": false,
+              "isCode": false,
               "underline": false,
               "strikethrough": false,
               "foreground": null,
@@ -173,31 +228,46 @@
                   "fontFamily": null,
                   "fontSize": 16,
                   "bold": false,
+                  "fontWeight": null,
+                  "fontStretch": 5,
                   "italic": false,
+                  "isCode": false,
                   "underline": false,
                   "strikethrough": false,
                   "foreground": null,
                   "background": null,
                   "hyperlink": null,
                   "baseline": "Normal"
-                }
+                },
+                "inline": null
               }
             ],
             "style": {
               "alignment": "Left",
               "list": "Numbered",
               "listLevel": 0,
+              "listId": null,
+              "listDefinition": null,
+              "listStart": null,
+              "listRestart": false,
               "headingLevel": 0,
               "spaceBefore": 0,
               "spaceAfter": 8,
               "indent": 0,
+              "rightIndent": 0,
+              "firstLineIndent": 0,
+              "lineHeight": null,
+              "letterSpacing": 0,
               "rightToLeft": false
             },
             "defaultStyle": {
               "fontFamily": null,
               "fontSize": 16,
               "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
               "italic": false,
+              "isCode": false,
               "underline": false,
               "strikethrough": false,
               "foreground": null,
@@ -213,8 +283,9 @@
               [
                 {
                   "id": "def8d7c1-1357-7104-c132-0efff67c56b6",
-                  "paragraphs": [
+                  "blocks": [
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 000/00 caf\u00E9 \u4E2D\u6587",
@@ -222,31 +293,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -257,6 +343,7 @@
                       "id": "d6105921-64eb-61a9-b09d-a3fdc6ed1e7b"
                     },
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 000/01 caf\u00E9 \u4E2D\u6587",
@@ -264,31 +351,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -299,6 +401,7 @@
                       "id": "125695ed-7501-6baf-c517-42fd54714fa1"
                     },
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 001/00 caf\u00E9 \u4E2D\u6587",
@@ -306,31 +409,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -341,6 +459,7 @@
                       "id": "2d9334c0-2bd6-d0c9-2fa3-988ed67dcfbd"
                     },
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 001/01 caf\u00E9 \u4E2D\u6587",
@@ -348,31 +467,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -386,8 +520,11 @@
                   "columnSpan": 2,
                   "rowSpan": 2,
                   "background": "#EEF2FF",
-                  "mergeOriginal": [
+                  "padding": null,
+                  "borders": null,
+                  "mergeOriginalBlocks": [
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 000/00 caf\u00E9 \u4E2D\u6587",
@@ -395,31 +532,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -433,8 +585,9 @@
                 },
                 {
                   "id": "174a3bea-9c88-7b0b-bf99-4dda0b235291",
-                  "paragraphs": [
+                  "blocks": [
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 000/01 caf\u00E9 \u4E2D\u6587",
@@ -442,31 +595,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -480,12 +648,15 @@
                   "columnSpan": 1,
                   "rowSpan": 1,
                   "background": null,
-                  "mergeOriginal": []
+                  "padding": null,
+                  "borders": null,
+                  "mergeOriginalBlocks": []
                 },
                 {
                   "id": "fd4bd578-9e60-20e6-8c33-d0020d1d732b",
-                  "paragraphs": [
+                  "blocks": [
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 000/02 caf\u00E9 \u4E2D\u6587",
@@ -493,31 +664,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -531,14 +717,17 @@
                   "columnSpan": 1,
                   "rowSpan": 1,
                   "background": "#EEF2FF",
-                  "mergeOriginal": []
+                  "padding": null,
+                  "borders": null,
+                  "mergeOriginalBlocks": []
                 }
               ],
               [
                 {
                   "id": "8f8f6f4b-2c7b-bffb-4058-79649486da46",
-                  "paragraphs": [
+                  "blocks": [
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 001/00 caf\u00E9 \u4E2D\u6587",
@@ -546,31 +735,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -584,12 +788,15 @@
                   "columnSpan": 1,
                   "rowSpan": 1,
                   "background": null,
-                  "mergeOriginal": []
+                  "padding": null,
+                  "borders": null,
+                  "mergeOriginalBlocks": []
                 },
                 {
                   "id": "5a3d620f-ff3c-0544-719c-cc58d4058ba1",
-                  "paragraphs": [
+                  "blocks": [
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 001/01 caf\u00E9 \u4E2D\u6587",
@@ -597,31 +804,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -635,12 +857,15 @@
                   "columnSpan": 1,
                   "rowSpan": 1,
                   "background": "#EEF2FF",
-                  "mergeOriginal": []
+                  "padding": null,
+                  "borders": null,
+                  "mergeOriginalBlocks": []
                 },
                 {
                   "id": "66b6c94b-a121-726c-34d9-c54f24663590",
-                  "paragraphs": [
+                  "blocks": [
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 001/02 caf\u00E9 \u4E2D\u6587",
@@ -648,31 +873,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -686,14 +926,17 @@
                   "columnSpan": 1,
                   "rowSpan": 1,
                   "background": null,
-                  "mergeOriginal": []
+                  "padding": null,
+                  "borders": null,
+                  "mergeOriginalBlocks": []
                 }
               ],
               [
                 {
                   "id": "52758eb8-9050-03de-10c1-dc1668918a93",
-                  "paragraphs": [
+                  "blocks": [
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 002/00 caf\u00E9 \u4E2D\u6587",
@@ -701,31 +944,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -739,12 +997,15 @@
                   "columnSpan": 1,
                   "rowSpan": 1,
                   "background": "#EEF2FF",
-                  "mergeOriginal": []
+                  "padding": null,
+                  "borders": null,
+                  "mergeOriginalBlocks": []
                 },
                 {
                   "id": "fd0d74da-91d6-1392-d15a-12f994a465cf",
-                  "paragraphs": [
+                  "blocks": [
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 002/01 caf\u00E9 \u4E2D\u6587",
@@ -752,31 +1013,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -790,12 +1066,15 @@
                   "columnSpan": 1,
                   "rowSpan": 1,
                   "background": null,
-                  "mergeOriginal": []
+                  "padding": null,
+                  "borders": null,
+                  "mergeOriginalBlocks": []
                 },
                 {
                   "id": "a13e073d-7048-75cc-0d5c-444a73ef0599",
-                  "paragraphs": [
+                  "blocks": [
                     {
+                      "kind": "paragraph",
                       "runs": [
                         {
                           "text": "Cell 002/02 caf\u00E9 \u4E2D\u6587",
@@ -803,31 +1082,46 @@
                             "fontFamily": null,
                             "fontSize": 16,
                             "bold": false,
+                            "fontWeight": null,
+                            "fontStretch": 5,
                             "italic": false,
+                            "isCode": false,
                             "underline": false,
                             "strikethrough": false,
                             "foreground": null,
                             "background": null,
                             "hyperlink": null,
                             "baseline": "Normal"
-                          }
+                          },
+                          "inline": null
                         }
                       ],
                       "style": {
                         "alignment": "Left",
                         "list": "None",
                         "listLevel": 0,
+                        "listId": null,
+                        "listDefinition": null,
+                        "listStart": null,
+                        "listRestart": false,
                         "headingLevel": 0,
                         "spaceBefore": 0,
                         "spaceAfter": 8,
                         "indent": 0,
+                        "rightIndent": 0,
+                        "firstLineIndent": 0,
+                        "lineHeight": null,
+                        "letterSpacing": 0,
                         "rightToLeft": false
                       },
                       "defaultStyle": {
                         "fontFamily": null,
                         "fontSize": 16,
                         "bold": false,
+                        "fontWeight": null,
+                        "fontStretch": 5,
                         "italic": false,
+                        "isCode": false,
                         "underline": false,
                         "strikethrough": false,
                         "foreground": null,
@@ -841,16 +1135,22 @@
                   "columnSpan": 1,
                   "rowSpan": 1,
                   "background": "#EEF2FF",
-                  "mergeOriginal": []
+                  "padding": null,
+                  "borders": null,
+                  "mergeOriginalBlocks": []
                 }
               ]
             ],
+            "columnWidths": [],
+            "rowSizing": [],
             "id": "c3e92568-3748-6f95-7816-a799622bf729"
           }
         ],
         "background": "#EEF2FF",
         "borderColor": "#223344",
         "padding": 14,
+        "paddingEdges": null,
+        "borders": null,
         "id": "2356b43f-30cb-a875-af9a-2f81ef3beaa4"
       },
       {
@@ -862,31 +1162,46 @@
               "fontFamily": null,
               "fontSize": 16,
               "bold": false,
+              "fontWeight": null,
+              "fontStretch": 5,
               "italic": false,
+              "isCode": false,
               "underline": false,
               "strikethrough": false,
               "foreground": null,
               "background": null,
               "hyperlink": null,
               "baseline": "Normal"
-            }
+            },
+            "inline": null
           }
         ],
         "style": {
           "alignment": "Left",
           "list": "None",
           "listLevel": 0,
+          "listId": null,
+          "listDefinition": null,
+          "listStart": null,
+          "listRestart": false,
           "headingLevel": 0,
           "spaceBefore": 0,
           "spaceAfter": 8,
           "indent": 0,
+          "rightIndent": 0,
+          "firstLineIndent": 0,
+          "lineHeight": null,
+          "letterSpacing": 0,
           "rightToLeft": false
         },
         "defaultStyle": {
           "fontFamily": null,
           "fontSize": 16,
           "bold": false,
+          "fontWeight": null,
+          "fontStretch": 5,
           "italic": false,
+          "isCode": false,
           "underline": false,
           "strikethrough": false,
           "foreground": null,
@@ -896,6 +1211,7 @@
         },
         "id": "76f8620c-1def-83ea-0de9-f32c2f4b46dd"
       }
-    ]
+    ],
+    "resources": {}
   }
 }

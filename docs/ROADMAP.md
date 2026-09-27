@@ -44,8 +44,9 @@ preview subset. Expand them only with explicit contracts and regression coverage
 
 Changes must preserve immutable snapshots, directional UTF-16 selections,
 grapheme-safe edits, read-only behavior, undo/redo, caller-owned streams and
-cancellation. Deliberate contract changes need migration notes and independent
-consumer verification. Model/schema changes need old-file fixtures and round trips;
+cancellation. Deliberate contract changes need release notes and independent
+consumer verification. Model/schema changes need current-schema fixtures, round
+trips and rejection coverage for unsupported versions;
 resource changes need retention/disposal coverage; gestures need the actual control
 and shared layout/hit-test geometry.
 

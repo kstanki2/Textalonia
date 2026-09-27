@@ -24,13 +24,13 @@ Code uses Avalonia's ordered font-family fallback list: Cascadia Code, Consolas,
 
 The language label is at most 128 characters from ASCII letters/digits, `_`, `-`, `+`, `.`, and `#`. Unsupported fence info is diagnosed and omitted. An unfinished fence remains visible as code with `markdown.unclosed-fence`, useful during streamed updates.
 
-Quotes use `Section.Semantic = Quote`. Fenced code uses `Section.Semantic = CodeBlock` and `Section.CodeLanguage`. No rendered color spans are inserted into the document by highlighting. Native JSON version 4 preserves these fields and inline code meaning; native versions 1–3 still import through their frozen vocabularies.
+Quotes use `Section.Semantic = Quote`. Fenced code uses `Section.Semantic = CodeBlock` and `Section.CodeLanguage`. No rendered color spans are inserted into the document by highlighting. Native JSON version 4 preserves these fields and inline code meaning; only this current prerelease native schema is supported, and other versions are rejected.
 
 ## Boundaries and diagnostics
 
 Pipe tables and task lists are **disabled**. Pipe-table source stays literal paragraph text with `markdown.table`; task markers such as `[x]` stay literal list-item text with `markdown.task-list`. Raw HTML stays visible literal text, is diagnosed, and never executes. Thematic breaks, reference definitions, and indented code are diagnosed literal fallbacks. Setext headings, autolinks, entities, strikethrough, footnotes, and other extensions are outside this dialect; they have no special semantics.
 
-Markdown export reports unsupported typography, layout, custom list definitions, image dimensions, generic sections, tables, host controls, unavailable images, unused resources, and merge history. Empty paragraph counts are not representable and are diagnosed. Newlines in inline alternative text become spaces with a diagnostic. Native JSON or the data-only XAML codec should be used for exact document storage.
+Markdown export reports unsupported typography, layout, custom list definitions, image dimensions, generic sections, tables, host controls, unavailable images, unused resources, and merge history. Empty paragraph counts are not representable and are diagnosed. Leading, trailing, or consecutive soft breaks that create blank source lines, and soft breaks inside headings or list items, produce `markdown.soft-break`; strict export rejects these losses. Newlines in inline alternative text become spaces with a diagnostic. Native JSON or the data-only XAML codec should be used for exact document storage.
 
 ## Links and resources
 

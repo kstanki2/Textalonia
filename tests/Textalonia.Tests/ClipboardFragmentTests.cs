@@ -148,11 +148,11 @@ public class ClipboardFragmentTests
     public void Malformed_native_fragments_are_rejected(string payload) => Assert.ThrowsAny<Exception>(() => ClipboardInterchange.Parse(payload));
 
     [Fact]
-    public void Future_native_version_is_rejected_and_older_document_payload_is_accepted()
+    public void Future_fragment_version_is_rejected_and_current_document_payload_is_accepted()
     {
         Assert.Throws<NotSupportedException>(() => ClipboardInterchange.Parse("{\"fragmentVersion\":99}"));
-        var legacy = ClipboardInterchange.Parse(DocumentFormats.Json.Serialize(FlowDocument.FromText("legacy")));
-        Assert.Equal("legacy", legacy.Document.Text);
+        var document = ClipboardInterchange.Parse(DocumentFormats.Json.Serialize(FlowDocument.FromText("document")));
+        Assert.Equal("document", document.Document.Text);
     }
 
     [Fact]

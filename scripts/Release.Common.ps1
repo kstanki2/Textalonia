@@ -16,9 +16,34 @@ function Get-ReleaseHash {
 }
 function Get-ReleaseSources {
     param([string]$Repository)
-    $files = @(& git -C $Repository ls-files --cached --others --exclude-standard)
-    if ($LASTEXITCODE -ne 0) { throw 'Could not inventory source files.' }
-    @($files | Sort-Object -Unique | ForEach-Object {
+    # Line-based native output C-quotes non-ASCII names and cannot preserve paths
+    # containing newlines. Read Git's NUL-delimited UTF-8 output directly instead.
+    $startInfo = [Diagnostics.ProcessStartInfo]::new('git')
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+    $startInfo.StandardOutputEncoding = [Text.UTF8Encoding]::new($false)
+    $startInfo.StandardErrorEncoding = [Text.UTF8Encoding]::new($false)
+    foreach ($argument in @('-C', $Repository, 'ls-files', '-z', '--cached', '--others', '--exclude-standard')) {
+        $startInfo.ArgumentList.Add($argument)
+    }
+    $process = [Diagnostics.Process]::new()
+    $process.StartInfo = $startInfo
+    try {
+        if (!$process.Start()) { throw 'Could not start source inventory.' }
+        $stdout = $process.StandardOutput.ReadToEndAsync()
+        $stderr = $process.StandardError.ReadToEndAsync()
+        $process.WaitForExit()
+        $output = $stdout.GetAwaiter().GetResult()
+        $errorOutput = $stderr.GetAwaiter().GetResult()
+        if ($process.ExitCode -ne 0) { throw "Could not inventory source files: $errorOutput" }
+        $files = $output.Split([char]0, [StringSplitOptions]::RemoveEmptyEntries)
+    }
+    finally { $process.Dispose() }
+    $paths = [Collections.Generic.SortedSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($file in $files) { [void]$paths.Add($file) }
+    @($paths | ForEach-Object {
         $path = Join-Path $Repository $_
         if (Test-Path -LiteralPath $path -PathType Leaf) {
             [ordered]@{ path = $_; sha256 = Get-ReleaseHash $path }

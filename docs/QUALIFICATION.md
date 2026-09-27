@@ -6,7 +6,7 @@ This is a preview support policy, not platform certification. [Native procedures
 
 | Target and pinned engine/backend | Tier | Reproducible test route and execution owner |
 | --- | --- | --- |
-| .NET 8 model, editing and native v1-v4 serialization; Avalonia 12.1.3 | Supported preview contracts | `dotnet test tests/Textalonia.Tests -c Release`; core maintainer. Current execution evidence is retained per [release candidate](RELEASE.md). |
+| .NET 8 model, editing and native v4 serialization; Avalonia 12.1.3 | Supported preview contracts | `dotnet test tests/Textalonia.Tests -c Release`; core maintainer. Current execution evidence is retained per [release candidate](RELEASE.md). |
 | Windows 11 24H2, build 26100; Avalonia Win32/Skia 12.1.3 | Experimental native integration | Desktop demo, N01-N07 at 100%/150% DPI; Windows QA maintainer. Headless Skia tests pass locally; native evidence pending. |
 | macOS 14, Cocoa/Skia 12.1.3 (x64/arm64 hosts) | Untested native target | Demo, N01-N07 at standard/Retina scaling; macOS QA maintainer must record exact OS patch and architecture before execution. CI `macos-latest` is a moving automated runner, not this qualification image. |
 | Ubuntu 24.04 LTS, Avalonia X11/Skia 12.1.3 | Untested native target | Demo in an X11 session, N01-N07; Linux QA maintainer records OS point release, X server, desktop, display scale and font packages. Wayland/XWayland is a separate experimental configuration, not covered by an X11 result. |
@@ -34,7 +34,7 @@ Roles identify responsibility, not a claimed assignment to a named person. Maint
 | ID | Decision / current disposition | Responsible role | Required by |
 | --- | --- | --- | --- |
 | D01 | Preserve the preview tiers above; do not promote native/mobile support based on headless tests. Final advertised support scope remains open. | Product/core maintainer | Before expanding support claims; P8.2 |
-| D02 | Preserve v1-v3 files, UTF-16 offsets, immutable public snapshots and eager `Text` compatibility binding. Contract changes follow the [migration process](COMPATIBILITY.md#native-schema-policy). | Core/schema maintainer | Every schema/API change |
+| D02 | Preserve current-schema round trips, UTF-16 offsets, immutable public snapshots and eager `Text` compatibility binding. Native schema changes follow the [prerelease policy](COMPATIBILITY.md#native-schema-policy). | Core/schema maintainer | Every schema/API change |
 | D03 | Retain the adopted [latency/memory budgets](PERFORMANCE.md#phase-2-budgets); current overruns remain visible. The implementation completion decision defers residual latency qualification as [PERF-01](PERFORMANCE.md#perf-01-residual-latency-qualification) without changing numeric targets. | Performance/core maintainer | Before release performance claims; P8.2 |
 | D04 | MIT selected by the maintainer on 2026-09-27; LICENSE and package metadata added. Contributor attribution retained; copyright authority and named NuGet owner still require confirmation. | Project owner / release maintainer | P8.3, before redistribution/public publication |
 | D05 | Local `origin` is `https://github.com/kstanki2/Textalonia.git`, confirmed public by GitHub API; Repository/project/source-link metadata now use that URL. Maintainers must confirm authority before publication. | Repository owner | P8.3 |

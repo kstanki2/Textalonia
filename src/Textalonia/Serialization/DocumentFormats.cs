@@ -42,6 +42,25 @@ public static class DocumentFormats
         }
         return buffer.ToArray();
     }
+
+    internal static string DecodeText(byte[] bytes)
+    {
+        // StreamReader's BOM detection substitutes permissive encodings, even when its
+        // initial UTF-8 decoder throws on invalid input. Preserve BOM support explicitly.
+        ReadOnlySpan<byte> input = bytes;
+        Encoding encoding = new UTF8Encoding(false, true);
+        var preambleLength = 0;
+        if (input.StartsWith(new byte[] { 0x00, 0x00, 0xFE, 0xFF }))
+        { encoding = new UTF32Encoding(true, false, true); preambleLength = 4; }
+        else if (input.StartsWith(new byte[] { 0xFF, 0xFE, 0x00, 0x00 }))
+        { encoding = new UTF32Encoding(false, false, true); preambleLength = 4; }
+        else if (input.StartsWith(new byte[] { 0xEF, 0xBB, 0xBF })) preambleLength = 3;
+        else if (input.StartsWith(new byte[] { 0xFE, 0xFF }))
+        { encoding = new UnicodeEncoding(true, false, true); preambleLength = 2; }
+        else if (input.StartsWith(new byte[] { 0xFF, 0xFE }))
+        { encoding = new UnicodeEncoding(false, false, true); preambleLength = 2; }
+        return encoding.GetString(input[preambleLength..]);
+    }
 }
 
 /// <summary>Text codecs do parsing and encoding off the calling thread.</summary>
@@ -56,8 +75,7 @@ public abstract class TextDocumentFormat : IDocumentFormat
         var bytes = await DocumentFormats.ReadLimitedAsync(stream, cancellationToken);
         return await Task.Run(() =>
         {
-            using var reader = new StreamReader(new MemoryStream(bytes), new UTF8Encoding(false, true), true);
-            var document = Parse(reader.ReadToEnd());
+            var document = Parse(DocumentFormats.DecodeText(bytes));
             document.Validate();
             return document;
         }, cancellationToken);
@@ -94,72 +112,51 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
             Modifiers = { type =>
             {
                 if (type.Type != typeof(TableCell)) return;
-                // Ignored compatibility setters are not valid members of the v2 wire
-                // vocabulary; accepting both would silently discard one collection.
+                // Paragraph projections are not part of the wire vocabulary; accepting
+                // them alongside blocks would silently discard one collection.
                 foreach (var property in type.Properties.Where(p => p.Name is "paragraphs" or "mergeOriginal").ToArray())
                     type.Properties.Remove(property);
             } }
         },
         Converters = { new JsonStringEnumConverter() }
     };
-    // Freeze the v2 vocabulary even as new properties are added to the current model.
-    private static readonly JsonSerializerOptions VersionTwoOptions = new(Options)
-    {
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver
-        {
-            Modifiers = { type =>
-            {
-                foreach (var property in type.Properties.Where(p =>
-                    type.Type == typeof(TableCell) && p.Name is "paragraphs" or "mergeOriginal" ||
-                    type.Type == typeof(RichRun) && p.Name == "inline" ||
-                    type.Type == typeof(FlowDocument) && p.Name == "resources" ||
-                    type.Type == typeof(Section) && p.Name is "semantic" or "codeLanguage" ||
-                    type.Type == typeof(TextStyle) && p.Name == "isCode").ToArray())
-                    type.Properties.Remove(property);
-            } }
-        }
-    };
-    private static readonly JsonSerializerOptions VersionThreeOptions = new(Options)
-    {
-        TypeInfoResolver = new DefaultJsonTypeInfoResolver
-        {
-            Modifiers = { type =>
-            {
-                foreach (var property in type.Properties.Where(p =>
-                    type.Type == typeof(TableCell) && p.Name is "paragraphs" or "mergeOriginal" ||
-                    type.Type == typeof(Section) && p.Name is "semantic" or "codeLanguage" ||
-                    type.Type == typeof(TextStyle) && p.Name == "isCode").ToArray())
-                    type.Properties.Remove(property);
-            } }
-        }
-    };
     public override string Name => "Textalonia document";
     public override IReadOnlyList<string> Extensions => [".textalonia", ".json", ".art"];
     public override FlowDocument Parse(string text)
     {
-        // Inspect only the envelope before choosing a reader. Future document shapes must
-        // report an unsupported version rather than a misleading unknown-member error.
+        // Check the version before interpreting document members. Only the current
+        // prerelease schema is supported; development schemas have no migration contract.
         using var json = JsonDocument.Parse(text, new JsonDocumentOptions { MaxDepth = Options.MaxDepth });
         if (json.RootElement.ValueKind != JsonValueKind.Object) throw new FormatException("Missing document envelope.");
         var versions = json.RootElement.EnumerateObject().Where(p => p.NameEquals("version")).ToArray();
-        if (versions.Length == 0) throw new NotSupportedException("Document version is missing. Supported versions are 1, 2, 3, and 4.");
+        if (versions.Length == 0) throw new NotSupportedException($"Document version is missing. Supported version is {CurrentVersion}.");
         if (versions.Length != 1 || versions[0].Value.ValueKind != JsonValueKind.Number ||
             !versions[0].Value.TryGetInt32(out var version))
             throw new FormatException("Document version must be one integer.");
-        var document = version switch
-        {
-            1 => NativeDocumentV1.Read(json.RootElement, Options),
-            2 => json.RootElement.Deserialize<Envelope>(VersionTwoOptions)?.Document
-                ?? throw new FormatException("Missing document."),
-            3 => json.RootElement.Deserialize<Envelope>(VersionThreeOptions)?.Document
-                ?? throw new FormatException("Missing document."),
-            CurrentVersion => json.RootElement.Deserialize<Envelope>(Options)?.Document
-                ?? throw new FormatException("Missing document."),
-            _ => throw new NotSupportedException($"Document version {version} is not supported. Supported versions are 1, 2, 3, and 4.")
-        };
+        if (version != CurrentVersion)
+            throw new NotSupportedException($"Document version {version} is not supported. Supported version is {CurrentVersion}.");
+        ValidateUniqueMembers(json.RootElement);
+        var document = json.RootElement.Deserialize<Envelope>(Options)?.Document
+            ?? throw new FormatException("Missing document.");
         document.Validate();
         return document;
     }
+
+    private static void ValidateUniqueMembers(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var property in element.EnumerateObject())
+            {
+                if (!names.Add(property.Name)) throw new FormatException($"Duplicate native document member: {property.Name}.");
+                ValidateUniqueMembers(property.Value);
+            }
+        }
+        else if (element.ValueKind == JsonValueKind.Array)
+            foreach (var item in element.EnumerateArray()) ValidateUniqueMembers(item);
+    }
+
     public override string Serialize(FlowDocument document)
     {
         document.Validate();

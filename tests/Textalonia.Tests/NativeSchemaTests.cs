@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Textalonia.Tests;
 
-public class SchemaEvolutionTests
+public class NativeSchemaTests
 {
     private static string Fixture(string name) => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", name));
     private static string Encode(FlowDocument document) => DocumentFormats.Json.Serialize(document);
@@ -17,6 +17,9 @@ public class SchemaEvolutionTests
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
     [InlineData(5)]
     [InlineData(int.MaxValue)]
     public void Unsupported_versions_are_reported_before_decoding_future_members(int version)
@@ -24,7 +27,7 @@ public class SchemaEvolutionTests
         var error = Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(
             JsonSerializer.Serialize(new { version, futureEnvelope = true, document = new { futureNode = new { arbitrary = 42 } } })));
         Assert.Contains(version.ToString(), error.Message);
-        Assert.Contains("Supported versions are 1, 2, 3, and 4", error.Message);
+        Assert.Equal($"Document version {version} is not supported. Supported version is 4.", error.Message);
     }
 
     [Theory]
@@ -36,16 +39,16 @@ public class SchemaEvolutionTests
         DocumentFormats.Json.Parse("{\"version\":" + version + ",\"document\":{}}"));
 
     [Fact]
-    public void Version_one_remains_strict_when_current_model_adds_properties()
+    public void Current_version_rejects_unknown_nested_members()
     {
-        var json = Fixture("native-v1.json");
-        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"fontSize\": 16", "\"fontSize\": 16, \"fontWeight\": 700")));
-        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"spaceAfter\": 8", "\"spaceAfter\": 8, \"listRestart\": true")));
-        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"columnSpan\": 1", "\"columnSpan\": 1, \"blocks\": []")));
+        var json = Fixture("native-basic.json");
+        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"fontSize\": 16", "\"fontSize\": 16, \"unknownStyle\": 700")));
+        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"spaceAfter\": 8", "\"spaceAfter\": 8, \"unknownParagraph\": true")));
+        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"columnSpan\": 1", "\"columnSpan\": 1, \"unknownCell\": []")));
     }
 
     [Fact]
-    public void Current_version_rejects_parallel_legacy_cell_collections_and_unknown_members()
+    public void Current_version_rejects_parallel_cell_projections_and_unknown_members()
     {
         var document = new FlowDocument([Table.Create(1, 1)]);
         var json = Encode(document);
@@ -58,9 +61,9 @@ public class SchemaEvolutionTests
     }
 
     [Fact]
-    public void Frozen_version_one_migrates_hidden_content_with_legacy_defaults()
+    public void Basic_fixture_preserves_hidden_content_and_default_styles()
     {
-        var document = DocumentFormats.Json.Parse(Fixture("native-v1.json"));
+        var document = DocumentFormats.Json.Parse(Fixture("native-basic.json"));
         Assert.Equal(Encode(BaselineDocuments.Structured()), Encode(document));
         Assert.Equal(Encode(document), Encode(DocumentFormats.Json.Parse(Encode(document))));
         foreach (var block in AllBlocks(document.Blocks))
@@ -99,22 +102,22 @@ public class SchemaEvolutionTests
         }
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    public void Absent_optional_properties_have_documented_defaults(int version)
+    [Fact]
+    public void Absent_optional_properties_have_documented_defaults()
     {
-        var document = DocumentFormats.Json.Parse("{\"version\":" + version + ",\"document\":{\"blocks\":[{\"kind\":\"paragraph\",\"id\":\"00000000-0000-4000-8000-000000000001\"}]}}");
+        var document = DocumentFormats.Json.Parse("{\"version\":4,\"document\":{\"blocks\":[{\"kind\":\"paragraph\",\"id\":\"00000000-0000-4000-8000-000000000001\"}]}}");
         var paragraph = Assert.IsType<Paragraph>(Assert.Single(document.Blocks));
         Assert.Empty(paragraph.Runs);
         Assert.Equal(TextStyle.Default, paragraph.DefaultStyle);
         Assert.Equal(ParagraphStyle.Default, paragraph.Style);
+        Assert.Empty(document.Resources);
+        Assert.False(paragraph.DefaultStyle.IsCode);
     }
 
     [Fact]
-    public void Frozen_version_two_preserves_every_added_shape_and_undo_history()
+    public void Rich_fixture_preserves_formatting_shapes_and_undo_history()
     {
-        var document = DocumentFormats.Json.Parse(Fixture("native-v2.json"));
+        var document = DocumentFormats.Json.Parse(Fixture("native-rich.json"));
         var encoded = Encode(document);
         Assert.Equal(Encode(BaselineDocuments.DocumentSemantics()), encoded);
         Assert.Equal(encoded, Encode(DocumentFormats.Json.Parse(encoded)));
@@ -165,12 +168,12 @@ public class SchemaEvolutionTests
     }
 
     [Fact]
-    public void Version_one_merge_backup_identifiers_keep_their_historical_scope()
+    public void Merge_backup_identifiers_can_match_the_original_blocks()
     {
-        var json = JsonNode.Parse(Fixture("native-v1.json"))!;
+        var json = JsonNode.Parse(Fixture("native-basic.json"))!;
         var anchor = json["document"]!["blocks"]![1]!["blocks"]!.AsArray().Last()!["rows"]![0]![0]!;
-        var originalId = anchor["paragraphs"]![0]!["id"]!.GetValue<string>();
-        anchor["mergeOriginal"]![0]!["id"] = originalId;
+        var originalId = anchor["blocks"]![0]!["id"]!.GetValue<string>();
+        anchor["mergeOriginalBlocks"]![0]!["id"] = originalId;
         var document = DocumentFormats.Json.Parse(json.ToJsonString());
         var table = Assert.IsType<Table>(Assert.IsType<Section>(document.Blocks[1]).Blocks[^1]);
         Assert.Equal(table.Rows[0][0].Blocks[0].Id, table.Rows[0][0].MergeOriginalBlocks[0].Id);

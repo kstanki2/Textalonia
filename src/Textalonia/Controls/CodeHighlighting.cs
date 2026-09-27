@@ -46,6 +46,22 @@ internal sealed class CodeHighlightCache
                     result.Add(await HighlightSection(code, adapter, cancellationToken).ConfigureAwait(false));
                 else if (block is Section section)
                     result.Add(section with { Blocks = await Visit(section.Blocks).ConfigureAwait(false) });
+                else if (block is Table table)
+                {
+                    var rows = table.Rows.ToBuilder();
+                    for (var row = 0; row < rows.Count; row++)
+                    {
+                        var cells = rows[row].ToBuilder();
+                        for (var column = 0; column < cells.Count; column++)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            if (!table.IsCovered(row, column))
+                                cells[column] = cells[column] with { Blocks = await Visit(cells[column].Blocks).ConfigureAwait(false) };
+                        }
+                        rows[row] = cells.ToImmutable();
+                    }
+                    result.Add(table with { Rows = rows.ToImmutable() });
+                }
                 else result.Add(block);
             }
             return result.ToImmutable();

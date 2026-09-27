@@ -42,8 +42,7 @@ public sealed class MarkdownDocumentFormat : TextDocumentFormat
         var bytes = await DocumentFormats.ReadLimitedAsync(stream, cancellationToken);
         return await Task.Run(() =>
         {
-            using var reader = new StreamReader(new MemoryStream(bytes), new UTF8Encoding(false, true), true);
-            return Parse(reader.ReadToEnd(), cancellationToken);
+            return Parse(DocumentFormats.DecodeText(bytes), cancellationToken);
         }, cancellationToken);
     }
 
@@ -340,7 +339,11 @@ public sealed class MarkdownDocumentFormat : TextDocumentFormat
                         if (list) ConversionDiagnostics.Report("markdown.list-heading", "Heading inside a list item", "The heading level is omitted.", p.Id);
                         else builder.Append('#', p.Style.HeadingLevel).Append(' ');
                     }
-                    builder.Append(WriteRuns(p, document));
+                    var content = WriteRuns(p, document);
+                    if (content.Contains('\n') && (list || p.Style.HeadingLevel > 0 || content.Split('\n').Any(string.IsNullOrWhiteSpace)))
+                        ConversionDiagnostics.Report("markdown.soft-break", "Soft line break outside an ordinary paragraph continuation",
+                            "Leading, trailing, or consecutive breaks can be omitted; heading and list continuations become separate paragraphs.", p.Id);
+                    builder.Append(content);
                     break;
                 case Section s when s.Semantic == SectionSemantic.CodeBlock:
                     var code = string.Join("\n", new DocumentIndex(new FlowDocument(s.Blocks)).Paragraphs.Select(p => p.Paragraph.PlainText));

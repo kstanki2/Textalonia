@@ -9,13 +9,13 @@ namespace Textalonia.Tests;
 public class ReleaseContractTests
 {
     [Theory]
-    [InlineData("native-v1.json")]
-    [InlineData("native-v2.json")]
+    [InlineData("native-basic.json")]
+    [InlineData("native-rich.json")]
     [InlineData("Interchange/native-inline.json")]
-    public void Frozen_older_files_migrate_to_v4_and_keep_history_and_resources(string path)
+    public void Native_fixtures_round_trip_and_keep_history_and_resources(string path)
     {
-        var old = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", path));
-        var original = DocumentFormats.Json.Parse(old);
+        var fixture = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", path));
+        var original = DocumentFormats.Json.Parse(fixture);
         var current = DocumentFormats.Json.Serialize(original);
         Assert.Contains("\"version\": 4", current);
         Assert.Equal(current, DocumentFormats.Json.Serialize(DocumentFormats.Json.Parse(current)));

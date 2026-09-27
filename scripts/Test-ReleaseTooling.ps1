@@ -52,5 +52,48 @@ $candidate.files = @($candidate.files | Where-Object { $_.path -ne 'package-insp
 Write-ReleaseJson $copyManifest $candidate
 $missingHash = Get-ReleaseHash $copyManifest
 Expect-Failure 'missing inspection evidence' { & $verifier -CandidateDirectory $copy -ManifestSha256 $missingHash } 'Missing reviewed artifact'
+# Updating the artifact manifest must not make stale inspection receipts valid.
+foreach ($kind in @('nupkg', 'snupkg')) {
+    $candidate = Get-Content -Raw -LiteralPath $manifest | ConvertFrom-Json
+    $relativePath = "packages/Textalonia.$($candidate.version).$kind"
+    $packagePath = Join-Path $copy $relativePath
+    [IO.File]::AppendAllText($packagePath, 'changed since inspection')
+    ($candidate.files | Where-Object { $_.path -eq $relativePath }).sha256 = Get-ReleaseHash $packagePath
+    Write-ReleaseJson $copyManifest $candidate
+    $changedHash = Get-ReleaseHash $copyManifest
+    Expect-Failure "stale $kind inspection evidence" { & $verifier -CandidateDirectory $copy -ManifestSha256 $changedHash } 'same candidate'
+    Copy-Item -LiteralPath (Join-Path $root $relativePath) -Destination $packagePath
+}
+
+# Source inventories must include Git's quoted and untracked filenames so source
+# changes during qualification cannot disappear from the before/after comparison.
+$sourceRepo = Join-Path $output 'source-inventory'
+New-Item -ItemType Directory -Path $sourceRepo | Out-Null
+& git -C $sourceRepo init --quiet
+if ($LASTEXITCODE -ne 0) { throw 'Could not create source inventory fixture.' }
+$tracked = 'caf' + [char]0x00e9 + '.cs'
+$untracked = [string][char]0x6587 + [char]0x6863 + '.cs'
+$expectedNames = @($tracked, $untracked)
+if (!$IsWindows) {
+    $expectedNames += "line`nbreak.cs"
+}
+if ($IsLinux) { $expectedNames += 'Case.cs', 'case.cs' }
+foreach ($name in $expectedNames) { [IO.File]::WriteAllText((Join-Path $sourceRepo $name), 'original') }
+& git -C $sourceRepo add -- $tracked
+if ($LASTEXITCODE -ne 0) { throw 'Could not stage source inventory fixture.' }
+$inventory = @(Get-ReleaseSources $sourceRepo)
+if ($inventory.Count -ne $expectedNames.Count) { throw 'Source inventory omitted filenames requiring Git quoting.' }
+foreach ($name in $expectedNames) {
+    $entry = @($inventory | Where-Object { $_.path -ceq $name })
+    if ($entry.Count -ne 1 -or $entry[0].sha256 -ne (Get-ReleaseHash (Join-Path $sourceRepo $name))) {
+        throw "Source inventory has an incorrect path or checksum: $name"
+    }
+}
+[IO.File]::WriteAllText((Join-Path $sourceRepo $tracked), 'modified')
+$updated = @(Get-ReleaseSources $sourceRepo)
+if (($inventory | ConvertTo-Json -Depth 5 -Compress) -ceq ($updated | ConvertTo-Json -Depth 5 -Compress)) {
+    throw 'Source inventory missed a change to a Unicode filename.'
+}
+$passed.Add('quoted source paths and change detection')
 Write-ReleaseJson (Join-Path $output 'tooling-tests.json') @{ status = 'pass'; tests = $passed.ToArray(); count = $passed.Count; candidateManifestSha256 = $originalHash }
 Write-Host "Release tooling negative checks passed: $($passed.Count)"

@@ -52,6 +52,7 @@ public sealed record Paragraph : Block
 
     public ImmutableArray<RichRun> Slice(int start, int length)
     {
+        if (start < 0 || length < 0 || start > Length - length) throw new ArgumentOutOfRangeException(nameof(start));
         var result = ImmutableArray.CreateBuilder<RichRun>();
         var position = 0;
         foreach (var run in Runs)
@@ -67,6 +68,8 @@ public sealed record Paragraph : Block
 
     public Paragraph Format(int start, int length, Func<TextStyle, TextStyle> change)
     {
+        ArgumentNullException.ThrowIfNull(change);
+        if (start < 0 || length < 0 || start > Length - length) throw new ArgumentOutOfRangeException(nameof(start));
         var middle = Slice(start, length).Select(r => r with { Style = change(r.Style) });
         return this with
         {

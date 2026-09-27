@@ -44,6 +44,17 @@ internal static class Program
         var loaded = DocumentFormats.Json.LoadWithReportAsync(output, new() { Mode = ConversionMode.Strict }).GetAwaiter().GetResult();
         if (saved.Report.HasLoss || loaded.Report.HasLoss || DocumentFormats.Json.Serialize(loaded.Document) != DocumentFormats.Json.Serialize(document))
             throw new InvalidOperationException("Packaged strict native conversion failed.");
+        var envelope = System.Text.Json.Nodes.JsonNode.Parse(DocumentFormats.Json.Serialize(document))!;
+        foreach (var version in new[] { 1, 2, 3, 5 })
+        {
+            envelope["version"] = version;
+            try
+            {
+                DocumentFormats.Json.Parse(envelope.ToJsonString());
+                throw new InvalidOperationException($"Packaged native reader accepted unsupported schema {version}.");
+            }
+            catch (NotSupportedException) { }
+        }
         var source = new Textalonia.Editing.EditorSession(document);
         source.SelectAll();
         var fragment = source.CopyFragment();

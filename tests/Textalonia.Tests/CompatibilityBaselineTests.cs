@@ -33,12 +33,13 @@ public class CompatibilityBaselineTests
     }
 
     [Fact]
-    public void V1_reader_rejects_unknown_members_and_missing_or_new_versions()
+    public void Native_reader_rejects_unknown_members_and_missing_or_new_versions()
     {
-        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "native-v1.json"));
-        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 1", "\"unknown\": true, \"version\": 1")));
-        Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 1,", "")));
-        Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 1", "\"version\": 99")));
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", "native-basic.json"));
+        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 4", "\"unknown\": true, \"version\": 4")));
+        var missing = Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 4,", "")));
+        Assert.Equal("Document version is missing. Supported version is 4.", missing.Message);
+        Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 4", "\"version\": 99")));
     }
 
     [Fact]

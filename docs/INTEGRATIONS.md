@@ -58,19 +58,21 @@ must review that engine's languages, maintenance and redistribution terms; this
 package has selected no external engine. The demo's keyword adapter is illustrative
 and is not a complete C# parser.
 
-## Native schema migration
+## Current native schema
 
-The JSON writer now emits **version 4**. Readers continue to accept versions 1, 2,
-and 3 with their original strict vocabularies. Version 4 adds `Section.Semantic`
-(`None`, `Quote`, `CodeBlock`), nullable `Section.CodeLanguage`, and
-`TextStyle.IsCode`. Older documents default to ordinary sections and non-code text.
+Native JSON reads and writes **version 4 only**. Earlier versions were unused
+development formats and have no migration support. Missing or other versions are
+rejected before document decoding, and unknown members are rejected. The current
+schema includes `Section.Semantic` (`None`, `Quote`, `CodeBlock`), nullable
+`Section.CodeLanguage`, and `TextStyle.IsCode`. Their defaults are ordinary
+sections and non-code text.
 Code blocks contain ordinary paragraph lines, preserving selection coordinates and
 plain text. XAML preserves these fields. HTML/RTF/DOCX exports report their loss;
 Markdown preserves the supported semantics and reports unrepresentable formatting.
 
-Older package versions cannot read v4 output; retain source files during upgrades.
-Opening a legacy document does not overwrite it. The API snapshot and package
-consumer accompany these additive preview APIs for Phase 8 review.
+The project remains unpublished, with a single supported native schema. Loading a
+document does not overwrite its source. The API snapshot and package consumer
+cover the current preview APIs.
 
 ## Examples and verification
 

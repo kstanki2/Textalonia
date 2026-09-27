@@ -59,7 +59,8 @@ views. Range reads, lookup, search and normal editing use the persistent index.
 Complete text is not permanently cached by history. Compatibility arrays memoize
 their identity after explicit access; their possible allocation is charged
 conservatively in the history estimate before materialization.
-Native JSON remains version 1, with no persisted storage metadata.
+Native JSON uses current prerelease schema v4, with no persisted storage metadata.
+Only that schema is supported; unused development versions have no migration support.
 
 TextaloniaEditor defaults to eager Text synchronization. Opt into
 SynchronizeText=false when binding Document: Text's Avalonia property then holds
@@ -100,7 +101,7 @@ owned by their callers and are outside the session budget.
 
 ## Validation and rollout
 
-Keep the frozen native fixture. Extend (do not remove) the API baseline and package
+Keep current-schema native fixture coverage. Extend (do not remove) the API baseline and package
 consumer for new range, position, binding and budget APIs. Compare the full P1
 control workloads, bound and unbound, on the same host, and capture scalable mode
 separately. Include generated differential edits, cross-container replacement,

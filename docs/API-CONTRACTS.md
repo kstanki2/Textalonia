@@ -39,40 +39,30 @@ See [input](INPUT-COMPONENTS.md), [resources](INLINE-CONTENT.md),
 for the detailed extension contracts. Headless managed accessibility text ranges
 are covered; native screen-reader text navigation remains unqualified.
 
-## Native schemas and preview migrations
+## Current native schema
 
-| File schema | Release reader | Defaults / migration |
-| --- | --- | --- |
-| v1 | Supported, frozen strict DTO reader | Legacy cell paragraph collections migrate to blocks; later list/style/resource/semantic fields take documented defaults. |
-| v2 | Supported, strict version metadata | Rich lists, nested tables and merge backups retained; resources and inline/semantic additions default absent. |
-| v3 | Supported, strict version metadata | Inline descriptors and immutable resources retained; quote/code annotations default absent. |
-| v4 | Current writer and reader | Quote/code/language and inline-code metadata retained. |
+Native JSON reads and writes **schema v4 only**, preserving the full current
+model, including nested cells and merge backups, inline descriptors and resources,
+quote/code/language annotations, and inline-code metadata. The project has not been
+published or used; v1-v3 were unused development schemas and have no migration
+support. The version marker remains 4 to identify the current format.
 
-The 0.1 release line retains v1-v4 readers. Persisted additions require an explicit
-new writer version and tested reader migration. Unknown members and unsupported
-versions are rejected, never silently guessed. A reader's support window must be
-documented before a release; removing an old reader requires a future major
-release and an available migration route. The data XAML vocabulary has its own
-version (1); it is neither Avalonia object XAML nor another editor's format.
+The reader checks the envelope version before interpreting document members.
+Missing or unsupported versions throw `NotSupportedException`; unknown members
+are rejected. Current-schema round trips and rejection of other versions are
+covered by tests. Prerelease schema changes do not require readers or migration
+paths for earlier development formats. Establish a compatibility policy for
+published data before making future release commitments.
 
-The deliberate preview incompatibility is **newer wire formats requiring a newer
-reader**, not removed public methods. Preserve original files when upgrading:
-load an older file, validate, save to a new file, then reopen with this version
-before replacing the original. Do not relabel a v4 envelope as v1-v3.
-
-~~~csharp
-await using var input = File.OpenRead("original.art"); // legacy extension accepted
-var result = await DocumentFormats.Json.LoadWithReportAsync(input);
-await using var output = File.Create("migrated.textalonia");
-await DocumentFormats.Json.SaveWithReportAsync(result.Document, output);
-~~~
+The `.textalonia`, `.json`, and `.art` extensions all select the current native
+codec. The data XAML vocabulary has its own version (1); it is neither Avalonia
+object XAML nor another editor's format.
 
 For nested cell data use cell.Blocks and cell.MergeOriginalBlocks instead of the
 legacy Paragraphs/MergeOriginal projections. Keep projection-based code only
-where cells intentionally contain paragraphs alone. Native migration tests use
-frozen v1/v2 fixtures and the checked-in v3 inline resource fixture, then verify
-v4 round trips, resources, undo and reverse selection. Existing phase tests also
-cover hidden merge restoration and rejected later-version members.
+where cells intentionally contain paragraphs alone. Current-schema fixtures verify
+round trips, resources, undo and reverse selection. Tests also cover hidden merge
+restoration and rejection of unsupported versions and unknown members.
 
 For scalable document binding, replace a Text binding with a Document binding,
 set SynchronizeText=false, and explicitly read ranges when needed. For conversion

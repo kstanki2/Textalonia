@@ -8,7 +8,7 @@
 
 `Editing.EditorSession` owns the current snapshot, directional selection, insertion style, and bounded undo/redo stacks. Each edit replaces affected paragraph content and publishes a snapshot. Adjacent typed characters coalesce until navigation, formatting, another operation, or an 800 ms pause breaks the group. Application operations enter the same history through Execute.
 
-`Serialization.IDocumentFormat` operates on snapshots and caller-owned streams. Native JSON writes schema v3 and explicitly migrates v1/v2, preserving the entire model. External formats intentionally map only supported features. Codecs parse data; they do not instantiate XAML or execute document code. See [document semantics](DOCUMENT-MODEL.md) for list identity, style precedence, nested cells and structural merge rules.
+`Serialization.IDocumentFormat` operates on snapshots and caller-owned streams. Native JSON reads and writes only current prerelease schema v4, preserving the entire model; other versions are rejected. External formats intentionally map only supported features. Codecs parse data; they do not instantiate XAML or execute document code. See [document semantics](DOCUMENT-MODEL.md) for list identity, style precedence, nested cells and structural merge rules.
 
 `Controls.TextaloniaEditor` exposes Avalonia styled properties, binding, commands, clipboard and notifications. Its template composes TextaloniaToolbar, ScrollViewer, and DocumentSurface. TextaloniaViewer starts the same control in read-only mode.
 
@@ -35,7 +35,7 @@ complete view is intentionally linear on first materialization. Compatibility
 arrays memoize their identity after explicit access; their potential allocation
 is included in retention estimates. Complete text is not cached by history. `ReadText(start, length)`,
 `CharAt`, search and position lookup avoid document flattening. Native export still
-writes schema v3 and is necessarily linear in exported content.
+writes schema v4 and is necessarily linear in exported content.
 
 `TextaloniaEditor.SynchronizeText` defaults to true. It publishes complete text
 on each document revision. Set it to false when binding `Document` to avoid that
@@ -112,7 +112,7 @@ including window growth and recreated evicted layouts. Growth tries the remainin
 allowance before rejecting a request. A rejected exact context is reported through
 `LayoutError` and `OperationFailed`, without altering text or inventing approximate
 geometry. The surface releases partial layouts and displays a limit message until
-layout succeeds again. See [migration](COMPATIBILITY.md#optional-shaping-limit).
+layout succeeds again. See [shaping policy](COMPATIBILITY.md#optional-shaping-limit).
 
 For a limit L, every document-paragraph shaping input is at most L UTF-16 units. Reusable glyph
 ownership stays within 16 MiB/256 layouts; construction or one active lease adds
@@ -157,7 +157,7 @@ Tests cover formatting-preserving edits, Unicode graphemes, newline semantics, s
 
 Screenshots are generated under artifacts when tests run. CI is configured for Windows, Linux, and macOS; local verification only demonstrates the environment on which it actually ran. Native operating-system clipboard/IME/touch/screen-reader behavior still needs platform testing.
 
-The regression suite includes a deterministic corpus, a frozen v1 file/public API snapshot, replayable edit sequences,
+The regression suite includes a deterministic corpus, current-schema fixtures and public API snapshots, replayable edit sequences,
 and full-control performance measurements. See [retained benchmark summaries](BENCHMARK-BASELINES.md),
 [compatibility rules](COMPATIBILITY.md), and [performance budgets](PERFORMANCE.md) before changing
 storage, indexing, layout or binding behavior. [Native procedures](NATIVE-BASELINES.md) and their

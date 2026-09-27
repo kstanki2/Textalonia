@@ -12,7 +12,7 @@ requires updating these notes before creating the publication candidate.
 Immutable documents and editing sessions; formatting, lists, nested/merged
 tables and undo; editor, selectable viewer and replaceable toolbar/input;
 inline image/control descriptors and host resource services; diagnosed
-text/HTML/RTF/DOCX interchange; native JSON v4 with v1-v3 migration; data XAML;
+text/HTML/RTF/DOCX interchange; native JSON v4; data XAML;
 bounded Markdown codec/viewer and optional host highlighting. There is one shipped
 package, Textalonia. No optional integration package or desktop host is required.
 
@@ -45,12 +45,13 @@ are included in the same package. Use the independent PackageSmoke program as a
 compiling example for extension services and input replacement.
 
 Read [API contracts](API-CONTRACTS.md) before attaching mutable sessions/services
-to controls. Older native files load without modifying their source; save a new
-file to migrate to schema v4. New files require a reader supporting v4.
-Preserve originals and use strict conversion reports when export loss matters.
+to controls. Native JSON supports only current prerelease schema v4; other
+versions are rejected. Earlier development schemas were never published or used
+and have no migration support. Use strict conversion reports when export loss
+matters.
 
 Preview versions may add APIs or deliberately change behavior only with release
-notes, migration examples and refreshed reviewed baselines. Published versions
+notes, relevant usage examples and refreshed reviewed baselines. Published versions
 are immutable; a correction uses a new preview version. Stable 1.0 requires a
 separate support/API decision and completed qualification for every advertised
 claim. See [release procedure](RELEASE.md).

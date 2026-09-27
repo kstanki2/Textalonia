@@ -62,7 +62,7 @@ and clipboard operations. The demo shows conversion reports after file operation
 All external formats omit hidden physical cells and merge restoration backups with
 `conversion.merge-history`. Resources without visible image references produce
 `conversion.unused-resource`. Native JSON schema 4 preserves the full current model,
-including these values; frozen schema 1, 2 and 3 inputs still migrate explicitly.
+including these values. Other native schema versions are rejected.
 Plain text retains visible text/paragraph separators and inline alternative text;
 its `text.*` diagnostics describe discarded formatting, containers and resources.
 
@@ -96,15 +96,15 @@ strict rejection, boundary merging, destination shells and fallback order.
 The checked-in [manifest](../tests/Textalonia.Tests/Fixtures/Interchange/manifest.json)
 and [provenance](../tests/Textalonia.Tests/Fixtures/Interchange/provenance.json)
 record locally authored browser-, Writer- and Word-shaped specimens and native
-schema 3 input. DOCX tests package the checked-in XML rather than relying on an
+schema 4 input. DOCX tests package the checked-in XML rather than relying on an
 opaque binary archive. These specimens were not exported by those applications;
 application versions are null and native qualification is explicitly pending.
 
 `InterchangeCorpusTests` asserts exact visible text, declared tree/list/style/link/
 image properties, expected diagnostic codes and malformed-input errors. Dedicated
 HTML, RTF, DOCX, conversion and fragment tests extend those fixtures to rich lists,
-spans, styles, whitespace, image bytes, unsafe inputs and clipping. The historical
-native v1/v2 fixtures remain unchanged migration inputs.
+spans, styles, whitespace, image bytes, unsafe inputs and clipping. Native fixtures
+cover the current schema; unsupported development versions have rejection tests.
 
 Semantic comparison ignores generated block/cell/inline IDs and ZIP byte order.
 It compares list grouping and markers, visible block order, spans/nesting, supported

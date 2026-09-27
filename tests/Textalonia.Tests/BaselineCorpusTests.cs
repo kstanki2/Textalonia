@@ -35,14 +35,15 @@ public class BaselineCorpusTests
     }
 
     [Fact]
-    public void Frozen_v1_fixture_preserves_all_fields_and_merge_restoration()
+    public void Native_basic_fixture_preserves_all_fields_and_merge_restoration()
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "native-v1.json");
+        var path = Path.Combine(AppContext.BaseDirectory, "Fixtures", "native-basic.json");
         var json = File.ReadAllText(path).Replace("\r\n", "\n").TrimEnd();
         var loaded = DocumentFormats.Json.Parse(json);
-        var migrated = Encode(loaded);
-        Assert.Contains("\"version\": 4", migrated);
-        Assert.Equal(migrated, Encode(DocumentFormats.Json.Parse(migrated)));
+        var encoded = Encode(loaded);
+        Assert.Contains("\"version\": 4", encoded);
+        Assert.Equal(json, encoded.Replace("\r\n", "\n"));
+        Assert.Equal(encoded, Encode(DocumentFormats.Json.Parse(encoded)));
         Assert.Equal(Encode(BaselineDocuments.Structured()), Encode(loaded));
         var section = Assert.IsType<Section>(loaded.Blocks[1]);
         var table = Assert.IsType<Table>(section.Blocks[^1]);

@@ -207,7 +207,7 @@ Highlights use snapshot offsets: update or clear them after edits. Ctrl/Cmd-clic
 
 Table text participates in normal selection, formatting, and undo. Insert/delete rows and columns through merged spans, merge/split cells, and change cell backgrounds through the toolbar or model APIs. Cell `Blocks` can contain nested tables and sections; table commands target the innermost cell. Persisted column widths, row sizing, cell padding and independent borders are available through model APIs.
 
-Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited blocks in the anchor cell and restores the other original cells. Undo always restores the exact previous state. See [document semantics](docs/DOCUMENT-MODEL.md) for structural deletion rules, schema v1-to-v2 migration, list restart/continuation, mixed-selection state and typography APIs.
+Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited blocks in the anchor cell and restores the other original cells. Undo always restores the exact previous state. See [document semantics](docs/DOCUMENT-MODEL.md) for structural deletion rules, current native schema, list restart/continuation, mixed-selection state and typography APIs.
 
 Cross-cell text replacement preserves table structure; selecting and replacing the entire document clears its structure. Versioned rich clipboard fragments preserve sections, nested/merged tables and inline resources. Repeated paste remaps object/list identities and colliding resource keys; partial table selections clip unselected content. See [conversion and clipboard contracts](docs/INTERCHANGE.md) for boundary and destination merging rules.
 
@@ -277,6 +277,7 @@ Use `DocumentFormats.Xaml` for Textalonia's versioned, data-only `.txaml`/`.xaml
 vocabulary and `DocumentFormats.Markdown` for the documented `.md`/`.markdown`
 dialect. `MarkdownViewer` adds asynchronous source updates and optional host-provided
 code highlighting while reusing selection, themes, links and resource services.
-No new dependencies are required. Native JSON writes schema v4 and still reads
-v1-v3. See [integration boundaries and examples](docs/INTEGRATIONS.md),
+No new dependencies are required. Native JSON reads and writes only the current
+prerelease schema v4; other versions are rejected. Earlier development schemas have
+no migration support. See [integration boundaries and examples](docs/INTEGRATIONS.md),
 [Markdown dialect](docs/MARKDOWN.md), and [XAML vocabulary](docs/XAML.md).

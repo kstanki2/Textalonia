@@ -30,6 +30,8 @@ foreach ($required in @("packages/Textalonia.$($candidate.version).nupkg", "pack
 $inspection = Get-Content -Raw -LiteralPath (Join-Path $root 'package-inspection.json') | ConvertFrom-Json
 $consumer = Get-Content -Raw -LiteralPath (Join-Path $root 'consumer.json') | ConvertFrom-Json
 if ($inspection.status -ne 'pass' -or $inspection.version -ne $candidate.version -or $inspection.commit -ne $candidate.commit -or
+    $inspection.packageSha256 -ne (Get-ReleaseHash (Join-Path $root "packages/Textalonia.$($candidate.version).nupkg")) -or
+    $inspection.symbolsSha256 -ne (Get-ReleaseHash (Join-Path $root "packages/Textalonia.$($candidate.version).snupkg")) -or
     $consumer.status -ne 'pass' -or $consumer.version -ne $candidate.version -or $consumer.assemblySha256 -ne $inspection.assemblySha256) {
     throw 'Package and consumer evidence do not describe the same candidate.'
 }

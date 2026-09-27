@@ -1,7 +1,5 @@
 using System.Collections.Immutable;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Textalonia.Model;
 using Textalonia.Serialization;
 using Xunit;
@@ -116,22 +114,12 @@ public class MarkdownCodecTests
     }
 
     [Fact]
-    public void Native_version_four_preserves_semantics_and_older_vocabularies_remain_frozen()
+    public void Native_schema_preserves_quote_code_and_inline_semantics()
     {
         var original = Format.Parse("> Quote\n\n```csharp\ncode\n```\n\n`inline`");
         var json = DocumentFormats.Json.Serialize(original);
         Assert.Contains("\"version\": 4", json);
         Assert.Equal(json, DocumentFormats.Json.Serialize(DocumentFormats.Json.Parse(json)));
-        foreach (var version in new[] { 2, 3 })
-        {
-            var old = JsonNode.Parse(json)!; old["version"] = version;
-            Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(old.ToJsonString()));
-            var minimal = "{\"version\":" + version + ",\"document\":{\"blocks\":[{\"kind\":\"section\",\"blocks\":[{\"kind\":\"paragraph\"}]}]}}";
-            var migrated = DocumentFormats.Json.Parse(minimal);
-            Assert.Equal(SectionSemantic.None, Assert.IsType<Section>(migrated.Blocks[0]).Semantic);
-            var inlineCode = "{\"version\":" + version + ",\"document\":{\"blocks\":[{\"kind\":\"paragraph\",\"defaultStyle\":{\"isCode\":true}}]}}";
-            Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(inlineCode));
-        }
     }
 
     [Fact]
