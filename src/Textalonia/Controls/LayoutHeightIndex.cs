@@ -1,3 +1,4 @@
+using Avalonia.Media;
 using System.Runtime.CompilerServices;
 using Textalonia.Model;
 
@@ -7,11 +8,12 @@ namespace Textalonia.Controls;
 // acquire their current parent when a snapshot changes; shaping lives elsewhere.
 internal sealed class LayoutHeightIndex
 {
-    internal sealed class Branch(LayoutHeightIndex index, double width, Table? table)
+    internal sealed class Branch(LayoutHeightIndex index, double width, Table? table, TableCellTextDirection direction)
     {
         public required StorageTree<OrderKey, DocumentNode> Source;
         public double Width => width;
         public Table? Table => table;
+        public TableCellTextDirection Direction => direction;
         private Node? _value;
         private Branch? _left, _right;
         public Branch? Parent;
@@ -22,8 +24,8 @@ internal sealed class LayoutHeightIndex
             {
                 if (_value is null)
                 {
-                    var available = table is null ? width : ColumnWidth(table, width, Source.Value.Column, ((TableCell)Source.Value.Source!).ColumnSpan);
-                    _value = index.GetNode(Source.Value, available);
+                    var available = table is null ? width : ColumnWidth(table, width, Source.Value.Column, ((TableCell)Source.Value.Source!).ColumnSpan, index._resolver, index._font, index._fonts);
+                    _value = index.GetNode(Source.Value, available, table, direction);
                     Adjust(_value.Height - Estimate(Source.Value.Length, Source.Value.ParagraphCount, EstimateWidth));
                 }
                 _value.Parent = this;
@@ -37,7 +39,7 @@ internal sealed class LayoutHeightIndex
             if (source is null) return null;
             if (child is null)
             {
-                child = index.GetBranch(source, width, table)!;
+                child = index.GetBranch(source, width, table, direction)!;
                 Adjust(child.Height - Estimate(source.Length, source.Paragraphs, EstimateWidth));
             }
             child.Parent = this; child.Owner = null;
@@ -88,20 +90,24 @@ internal sealed class LayoutHeightIndex
     internal sealed class Node
     {
         public required DocumentNode Source;
+        public Paragraph? Paragraph;
+        public TableCell? Cell;
+        public TableCellTextDirection Direction;
+        public double SpaceBefore, SpaceAfter;
         public Branch? Children, Parent;
         public double Available, Height, ContentHeight;
         public double[] Rows = [], RowOffsets = [];
         private Node[][] _rowCells = [], _rowDependencies = [];
         private Node[] _spans = [];
-        public double TextWidth => Math.Max(16, Available - Indent - (Source.Source is Paragraph p ? p.Style.RightIndent : 0));
-        public double Indent => Source.Source is Paragraph p ? p.Style.Indent + (p.Style.List == ListKind.None ? 0 : 28 + p.Style.ListLevel * 24) : 0;
+        public double TextWidth => Math.Max(16, Available - Indent - (Paragraph?.Style.RightIndent ?? 0));
+        public double Indent => Paragraph is { } p ? ListMarkerDrawing.Indent(p) : 0;
         public void Update(Node? changedCell = null)
         {
             Height = Source.Source switch
             {
-                Paragraph p => ContentHeight + p.Style.SpaceBefore + p.Style.SpaceAfter,
+                Textalonia.Model.Paragraph => ContentHeight + SpaceBefore + SpaceAfter,
                 Section s => (Children?.Height ?? 0) + SectionPadding(s).Top + SectionPadding(s).Bottom + 10,
-                TableCell cell => (Children?.Height ?? 0) + CellPadding(cell).Top + CellPadding(cell).Bottom,
+                TableCell cell => (Children?.Height ?? 0) + CellPadding(Cell ?? cell).Top + CellPadding(Cell ?? cell).Bottom,
                 Table => TableHeight(changedCell),
                 _ => Children?.Height ?? 0
             };
@@ -163,32 +169,60 @@ internal sealed class LayoutHeightIndex
     private ConditionalWeakTable<StorageTree<OrderKey, DocumentNode>, Branch> _branches = new();
     public Node Root { get; private set; } = null!;
     public int CreatedNodes { get; private set; }
-    public void Synchronize(DocumentTree tree, double width)
+    private DocumentStyleResolver? _resolver;
+    private FontFamily _font = FontFamily.Default;
+    private DocumentFontService? _fonts;
+    private DocumentIndex? _documentIndex;
+    private bool _contextual;
+    private Func<Paragraph, Paragraph, Paragraph>? _prepareParagraph;
+    public void Synchronize(DocumentTree tree, double width, DocumentStyleResolver? resolver = null, DocumentIndex? index = null, Func<Paragraph, Paragraph, Paragraph>? prepareParagraph = null, FontFamily? font = null, DocumentFontService? fonts = null)
     {
+        if (_contextual && _documentIndex?.Tree != tree) { _nodes = new(); _branches = new(); }
+        _resolver = resolver; _documentIndex = index; _prepareParagraph = prepareParagraph; _font = font ?? FontFamily.Default; _fonts = fonts;
         // An undo may revisit a former root whose mutable geometry parent links
         // have since been reassigned. Reconstruct metadata for that reset.
         if (_nodes.TryGetValue(tree.Root, out var old) && !ReferenceEquals(old, Root))
         { _nodes = new(); _branches = new(); }
         Root = GetNode(tree.Root, width);
     }
-    private Node GetNode(DocumentNode source, double available)
+    private Node GetNode(DocumentNode source, double available, Table? table = null, TableCellTextDirection direction = TableCellTextDirection.Inherit)
     {
+        var effectiveCell = source.Source is TableCell sourceCell
+            ? table is not null ? _resolver?.ResolveTableCell(table, source.Row, source.Column) ?? sourceCell : sourceCell : null;
+        if (effectiveCell?.TextDirection is { } cellDirection && cellDirection != TableCellTextDirection.Inherit) direction = cellDirection;
         if (_nodes.TryGetValue(source, out var existing))
         {
-            if (Math.Abs(existing.Available - available) < .01) return existing;
+            if (Math.Abs(existing.Available - available) < .01 && existing.Cell == effectiveCell && existing.Direction == direction) return existing;
             _nodes.Remove(source);
         }
         CreatedNodes++;
-        var node = new Node { Source = source, Available = available };
+        var node = new Node { Source = source, Available = available, Cell = effectiveCell, Direction = direction };
         if (source.Source is Paragraph paragraph)
         {
+            node.Paragraph = _resolver?.ResolveParagraph(paragraph) ?? paragraph;
+            if (direction != TableCellTextDirection.Inherit) node.Paragraph = node.Paragraph with
+            { Style = node.Paragraph.Style with { RightToLeft = direction == TableCellTextDirection.RightToLeft } };
+            if (_prepareParagraph is not null) node.Paragraph = _prepareParagraph(paragraph, node.Paragraph);
+            if (node.Paragraph.Style.List != ListKind.None && node.Paragraph.Style.ListDefinition?.Levels.Any(level =>
+                level.TextIndent is not null || level.MarkerIndent is not null || level.TabPosition is not null ||
+                level.FollowCharacter != ListFollowCharacter.Tab || level.MarkerFormatting != new TextStyleOverrides() || level.CharacterStyleId is not null) == true) _contextual = true;
+            node.SpaceBefore = node.Paragraph.Style.SpaceBefore; node.SpaceAfter = node.Paragraph.Style.SpaceAfter;
+            if (node.Paragraph.Style.ContextualSpacing && _documentIndex is { } index)
+            {
+                _contextual = true;
+                var at = index.ById(paragraph.Id);
+                bool Same(ParagraphPosition other) => other.ContainerId == at.ContainerId && other.Paragraph.Style.StyleId == paragraph.Style.StyleId;
+                if (at.Start > 0 && Same(index.At(at.Start - 1))) node.SpaceBefore = 0;
+                if (at.End < index.Length && Same(index.At(at.End + 1))) node.SpaceAfter = 0;
+            }
+            paragraph = node.Paragraph;
             var fontSize = paragraph.DefaultStyle.FontSize;
             node.ContentHeight = Math.Max(1, Math.Ceiling(paragraph.Length * fontSize * .52 / node.TextWidth)) * (paragraph.Style.LineHeight ?? fontSize * 1.25);
         }
         else
         {
-            var childWidth = source.Source switch { Section s => Math.Max(16, available - SectionPadding(s).Left - SectionPadding(s).Right), TableCell cell => Math.Max(16, available - CellPadding(cell).Left - CellPadding(cell).Right), _ => available };
-            node.Children = GetBranch(source.Children, childWidth, source.Source as Table);
+            var childWidth = source.Source switch { Section s => Math.Max(16, available - SectionPadding(s).Left - SectionPadding(s).Right), TableCell cell => Math.Max(16, available - CellPadding(node.Cell ?? cell).Left - CellPadding(node.Cell ?? cell).Right), _ => available };
+            node.Children = GetBranch(source.Children, childWidth, source.Source as Table, direction);
             if (node.Children is not null) { node.Children.Parent = null; node.Children.Owner = null; }
         }
         node.Update();
@@ -197,30 +231,31 @@ internal sealed class LayoutHeightIndex
     }
     internal static EdgeInsets SectionPadding(Section section) => section.PaddingEdges ?? new(section.Padding, section.Padding, section.Padding, section.Padding);
     internal static EdgeInsets CellPadding(TableCell cell) => cell.Padding ?? new(8, 8, 8, 4);
-    internal static double ColumnWidth(Table table, double available, int column, int span = 1)
+    internal static double ColumnWidth(Table table, double available, int column, int span = 1, DocumentStyleResolver? resolver = null, FontFamily? font = null, DocumentFontService? fonts = null) =>
+        TableColumnLayout.Resolve(table, available, resolver, font, fonts).ColumnWidth(column, span);
+    internal static double ColumnOffset(Table table, double available, int column, int span = 1, DocumentStyleResolver? resolver = null, FontFamily? font = null, DocumentFontService? fonts = null) =>
+        TableColumnLayout.Resolve(table, available, resolver, font, fonts).ColumnOffset(table, column, span);
+    internal static double VerticalOffset(Node cell, double height) => (cell.Cell?.VerticalAlignment ?? TableCellVerticalAlignment.Top) switch
     {
-        if (table.ColumnWidths.IsDefaultOrEmpty) return available * span / table.ColumnCount;
-        var total = table.ColumnWidths.Sum();
-        var weight = 0d;
-        for (var i = column; i < column + span; i++) weight += table.ColumnWidths[i];
-        return available * weight / total;
-    }
-    internal static double ColumnOffset(Table table, double available, int column) => column == 0 ? 0 : ColumnWidth(table, available, 0, column);
+        TableCellVerticalAlignment.Center => Math.Max(0, height - cell.Height) / 2,
+        TableCellVerticalAlignment.Bottom => Math.Max(0, height - cell.Height),
+        _ => 0
+    };
 
     private static double Estimate(int length, int paragraphs, double width) =>
         paragraphs * 28d + length * (16 * .52 * 20 / Math.Max(16, width));
 
-    private Branch? GetBranch(StorageTree<OrderKey, DocumentNode>? source, double width, Table? table)
+    private Branch? GetBranch(StorageTree<OrderKey, DocumentNode>? source, double width, Table? table, TableCellTextDirection direction)
     {
         if (source is null) return null;
         if (_branches.TryGetValue(source, out var existing))
         {
-            if (Math.Abs(existing.Width - width) < .01 && ReferenceEquals(existing.Table, table)) return existing;
+            if (Math.Abs(existing.Width - width) < .01 && ReferenceEquals(existing.Table, table) && existing.Direction == direction) return existing;
             _branches.Remove(source);
         }
         // Estimates are additive across tree weights. Creating a branch does not
         // visit its descendants; measured corrections propagate through parents.
-        var branch = new Branch(this, width, table)
+        var branch = new Branch(this, width, table, direction)
         {
             Source = source,
             Height = Estimate(source.Length, source.Paragraphs, table is null ? width : width / table.ColumnCount)

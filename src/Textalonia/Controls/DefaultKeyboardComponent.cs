@@ -11,6 +11,8 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
     {
         if (e.Handled || Context.Editor is null) return;
         var session = Context.Editor.Session;
+        if (e.Key == Key.Escape && session.ActiveStoryId != Guid.Empty && !Context.IsComposing)
+        { Context.Editor.CloseStory(); e.Handled = true; return; }
         var primary = OperatingSystem.IsMacOS() ? KeyModifiers.Meta : KeyModifiers.Control;
         var command = e.KeyModifiers.HasFlag(primary) && !e.KeyModifiers.HasFlag(KeyModifiers.Alt);
         var word = OperatingSystem.IsMacOS() ? e.KeyModifiers.HasFlag(KeyModifiers.Alt) : command;
@@ -40,7 +42,8 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
                 Key.V => Context.Editor.PasteCommand, Key.A => Context.Editor.SelectAllCommand, _ => null
             };
             if (action is not null) { Context.CancelComposition(); if (action.CanExecute(null)) action.Execute(null); e.Handled = true; return; }
-            if (e.Key == Key.F) { Context.Editor.RequestFind(); e.Handled = true; return; }
+            if (e.Key == Key.F) { Context.CancelComposition(); Context.Editor.FindCommand.Execute(null); e.Handled = true; return; }
+            if (e.Key == Key.H) { Context.CancelComposition(); Context.Editor.ReplaceCommand.Execute(null); e.Handled = true; return; }
         }
         Context.Surface.EnsureLayout(Context.Surface.Bounds.Width);
         try
@@ -61,6 +64,14 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
                 case Key.PageDown:
                     var caret = Context.CaretRectangle;
                     if (Context.Editor.LayoutError is not null) return;
+                    if (Context.Surface.HasPagedLayout)
+                    {
+                        Context.PreferredCaretX ??= Context.Surface.PagedCaretColumnX;
+                        Context.CancelComposition();
+                        Context.Surface.MovePagedCaret(e.Key is Key.Down or Key.PageDown, e.Key is Key.PageUp or Key.PageDown,
+                            Context.PreferredCaretX.Value, shift);
+                        break;
+                    }
                     Context.PreferredCaretX ??= caret.X;
                     var direction = e.Key is Key.Up or Key.PageUp ? -1 : 1;
                     var distance = e.Key is Key.PageUp or Key.PageDown ? Math.Max(40, Context.ViewportHeight) : caret.Height;

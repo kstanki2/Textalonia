@@ -38,20 +38,51 @@ public sealed partial class EditorSession
         offset = Snap(offset);
         if (!CanDropContent(source, offset, targetRevision)) return ContentDropResult.None;
         move &= source is not null && !source.Source.IsReadOnly;
-        var destination = Document;
+        var destination = ActiveDocument;
         FlowDocument? removed = null;
+        DocumentBookmark[] movedBookmarks = [];
+        DocumentField[] movedFields = [];
         if (move)
         {
             // Build and validate both sides without changing either session. Failed insertion
             // therefore cannot delete source content or add a source history entry.
-            removed = RemoveDraggedSelection(source!.Source.Document, source.Selection);
+            var original = source!.Source.ActiveDocument;
+            var copiedNames = fragment.Document.Bookmarks.Select(bookmark => bookmark.Name).ToHashSet(StringComparer.Ordinal);
+            movedBookmarks = original.Bookmarks.Where(bookmark => copiedNames.Contains(bookmark.Name)).ToArray();
+            bool Copied(DocumentField field) => field.Start.StoryId == Guid.Empty
+                ? source.Selection.Start <= field.Start.Resolve(original) && field.End.Resolve(original) <= source.Selection.End
+                : fragment.Document.Stories.ContainsKey(field.Start.StoryId);
+            movedFields = original.Fields.Where(Copied).ToArray();
+            var bookmarkIds = movedBookmarks.Select(bookmark => bookmark.Id).ToHashSet();
+            var fieldIds = movedFields.Select(field => field.Id).ToHashSet();
+            removed = RemoveDraggedSelection(original with
+            { Bookmarks = original.Bookmarks.Where(bookmark => !bookmarkIds.Contains(bookmark.Id)).ToImmutableArray(),
+                Fields = original.Fields.Where(field => !fieldIds.Contains(field.Id)).ToImmutableArray() }, source.Selection);
             if (ReferenceEquals(source.Source, this))
             {
                 destination = removed;
                 if (offset > source.Selection.End) offset -= Index.Length - new DocumentIndex(removed).Length;
             }
         }
-        var (inserted, caret) = BuildFragmentInsertion(destination, new(offset, offset), fragment);
+        var occupiedNames = Document.Bookmarks.Where(bookmark => !move || !ReferenceEquals(source!.Source, this) ||
+            !movedBookmarks.Any(moved => moved.Id == bookmark.Id)).Select(bookmark => bookmark.Name);
+        var (inserted, caret) = BuildFragmentInsertion(destination, new(offset, offset), fragment, occupiedNames);
+        if (move && ReferenceEquals(source!.Source, this))
+        {
+            // Moving a complete range retains its public identity and target name. The
+            // clipboard path still clones content IDs to keep hidden merge backups unique.
+            var bookmarks = movedBookmarks.ToDictionary(bookmark => bookmark.Name, StringComparer.Ordinal);
+            var previousFields = destination.Fields.Select(field => field.Id).ToHashSet();
+            var fieldIds = inserted.Fields.Where(field => !previousFields.Contains(field.Id)).Zip(movedFields)
+                .ToDictionary(pair => pair.First.Id, pair => pair.Second.Id);
+            inserted = inserted with
+            {
+                Bookmarks = inserted.Bookmarks.Select(bookmark => bookmarks.TryGetValue(bookmark.Name, out var old)
+                    ? bookmark with { Id = old.Id } : bookmark).ToImmutableArray(),
+                Fields = inserted.Fields.Select(field => fieldIds.TryGetValue(field.Id, out var id) ? field with { Id = id } : field).ToImmutableArray()
+            };
+            inserted.Validate();
+        }
         // Same-session moves are published exactly once, including their undo and selection state.
         // Consume before publishing: a host Changed handler must not re-enter with the
         // same drag and insert it twice while a cross-editor source is still unchanged.
@@ -102,8 +133,8 @@ public sealed partial class EditorSession
                     table.IsCovered(r, c) ? cell : cell with { Blocks = Prune(cell.Blocks) }).ToImmutableArray()).ToImmutableArray() },
                 _ => block
             }).ToImmutableArray());
-        if (completeContainers.Count > 0) removed = removed with { Blocks = Prune(removed.Blocks) };
-        removed = removed.PruneUnusedResources();
+        if (completeContainers.Count > 0) removed = DocumentAnchors.Reconcile(removed, removed with { Blocks = Prune(removed.Blocks) });
+        removed = DocumentSection.Reconcile(removed).PruneUnusedResources();
         removed.Validate();
         return removed;
     }

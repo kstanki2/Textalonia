@@ -66,7 +66,7 @@ public partial class DocumentSurface
             { ClearDropPreview(); e.DragEffects = DragDropEffects.None; return; }
             // Keep the hit's visual affinity while retaining a logical insertion offset.
             // The preview must not alter the editor's selection or pointer affinity.
-            var hit = _layout.HitTestCaret(e.GetPosition(this));
+            var hit = GeometryHitTestCaret(e.GetPosition(this));
             var offset = hit.Position;
             var revision = editor.Session.Revision;
             var effect = editor.GetContentDropEffect(e.DataTransfer, offset, revision, e.KeyModifiers, e.DragEffects);
@@ -103,15 +103,13 @@ public partial class DocumentSurface
     {
         if (_dropOffset is null || Editor is not { IsReadOnly: false } editor || editor.Session.Revision != _dropRevision) return;
         var viewport = _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(Bounds.Size);
-        var visual = _layout.Paragraphs.FirstOrDefault(p => _dropCaret.Position >= p.TextStart &&
-            (_dropCaret.Position < p.TextEnd || _dropCaret.Position == p.TextEnd && p.TextEnd == p.Position.End) && p.Bounds.Intersects(viewport));
-        if (visual is null) return;
+        if (!GeometryRanges().Any(range => _dropCaret.Position >= range.Start &&
+            _dropCaret.Position <= range.End && range.Bounds.Intersects(viewport))) return;
         // Resolve against the current layout so wrapping, resize, and viewport changes
         // never paint the stale rectangle captured by an earlier DragOver event.
         try
         {
-            var caret = _layout.Caret(_dropCaret).WithWidth(2).Intersect(viewport);
-            if (visual.Clip is { } clip) caret = caret.Intersect(clip);
+            var caret = GeometryCaret(_dropCaret).WithWidth(2).Intersect(viewport);
             if (caret.Width > 0 && caret.Height > 0) context.FillRectangle(editor.Foreground ?? Brushes.Black, caret);
         }
         catch (ShapingLimitExceededException error) { ClearDropPreview(); RejectLayout(error); }

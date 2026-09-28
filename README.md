@@ -1,8 +1,8 @@
 # Textalonia
 
-An independent, native rich text editor for **Avalonia 12** and **.NET 8+**, distributed as one NuGet package.
+An independent, native rich text editor for **Avalonia 12** and **.NET 8+**, with an optional PDF export package.
 
-**Status: 0.1.0-preview.1 candidate; not yet published.** This repository contains a working editor, desktop demo, tests, and local NuGet packaging. It is not a feature-complete or API-compatible replacement for Avalonia's commercial editor. See [the feature matrix and roadmap](docs/ROADMAP.md) before adopting it.
+**Status: 0.1.0-preview.1 candidate; not yet published.** This repository contains a working editor, desktop demo, tests, and local NuGet packaging. The feature target is a selected subset of [DevExpress's WPF Rich Text Editor](https://docs.devexpress.com/WPF/8651/controls-and-libraries/rich-text-editor), implemented independently for Avalonia. ActiveX, VBA, charts, and drawing shapes are excluded. It is not yet feature-complete within that scope and does not provide DevExpress API compatibility. See the [scoped DevExpress implementation plan](docs/DEVEXPRESS-PARITY-PLAN.md) and [current feature matrix and roadmap](docs/ROADMAP.md).
 
 ## Run the demo
 
@@ -13,7 +13,7 @@ dotnet restore Textalonia.sln --configfile NuGet.Config
 dotnet run --project samples/Textalonia.Demo
 ```
 
-The demo includes editable sample content, light/dark themes, read-only mode, search, tables, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
+The demo includes bookmarks, outline navigation, story-aware find/replace, general fields, TOCs and captions (see [fields and navigation](docs/FIELDS.md)), editable sample content, light/dark themes, read-only mode, search, tables, page setup and numbering dialogs, document views, zoom, page navigation, print preview, PDF export, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
 
 ## Build, test, and pack
 
@@ -21,6 +21,7 @@ The demo includes editable sample content, light/dark themes, read-only mode, se
 dotnet build Textalonia.sln -c Release --no-restore
 dotnet test tests/Textalonia.Tests -c Release --no-build
 dotnet pack src/Textalonia -c Release --no-build -o artifacts/packages
+dotnet pack src/Textalonia.Pdf.Skia -c Release --no-build -o artifacts/packages
 ```
 
 Verify the packed artifact through an independent consumer (after packing):
@@ -30,7 +31,7 @@ dotnet restore tests/Textalonia.PackageSmoke --configfile tests/Textalonia.Packa
 dotnet run --project tests/Textalonia.PackageSmoke -c Release --no-restore
 ```
 
-Output: `artifacts/packages/Textalonia.0.1.0-preview.1.nupkg`, plus a symbols package. Nothing is published automatically. The library's Avalonia dependency is bounded to **[12.1.3, 13.0.0)**. The demo and tests use 12.1.3, configured centrally in `Directory.Build.props`.
+Output: `artifacts/packages/Textalonia.0.1.0-preview.1.nupkg`, its symbols package, and optional `Textalonia.Pdf.Skia.0.1.0-preview.1.nupkg`. Nothing is published automatically. The library's Avalonia dependency is bounded to **[12.1.3, 13.0.0)**. The demo and tests use 12.1.3, configured centrally in `Directory.Build.props`.
 
 ## Use the package in another app
 
@@ -76,6 +77,13 @@ Drop the editor into a window:
 ```
 
 The package contains no desktop platform dependency or application entry point. The host application chooses its Avalonia backend and theme.
+
+For physical pages, set `ViewMode="PrintLayout"`. The toolbar's **Page setup** dialog
+edits paper size, orientation, margins, columns and page decoration; **Insert** adds
+page, column and section breaks. **View** switches between Simple, Draft and Print
+Layout and provides zoom, fit and page navigation. These view changes leave document
+content and undo history unchanged. See [pagination and page setup](docs/PAGINATION.md)
+for APIs, persistence, table behavior and qualification limits.
 
 ## Structured documents and MVVM
 
@@ -198,6 +206,16 @@ clipboard notices. See [the full support and stream contracts](docs/INTERCHANGE.
 and [platform qualification](docs/QUALIFICATION.md).
 Implement `IDocumentFormat` to add a format and pass your instance to `LoadAsync`/`SaveAsync`. The native `.textalonia` format is a versioned JSON schema, **not Avalonia XAML**. The `.json` and legacy `.art` extensions remain supported.
 
+## Print preview, printing and PDF
+
+The toolbar's **Output** menu provides preview and configured export/print actions.
+Preview, optional `Textalonia.Pdf.Skia` PDF export and host printer adapters use
+the same captured physical page snapshot, including headers, footers and notes.
+Set `editor.PdfExporter` and `editor.PrintService` for your application. The core
+package supplies the print contract; a native printer adapter belongs to the host.
+Tagged PDF, PDF/A and PDF/UA are not currently exposed. See [output usage and
+qualification boundaries](docs/OUTPUT.md).
+
 ## Viewer, themes, highlights, and links
 
 Use `TextaloniaViewer` for an initially read-only, selectable display without a toolbar, or set `IsReadOnly="True"` on an editor.
@@ -214,9 +232,16 @@ Highlights use snapshot offsets: update or clear them after edits. Ctrl/Cmd-clic
 
 ## Table behavior
 
+Preferred widths and AutoFit, RTL column order, conditional styles, repeated page
+headers, row splitting and list marker formatting are described in the
+[table/list guide](docs/TABLES.md). Use **Table properties** for table and cell
+settings and **Styles** for reusable table shading and bands.
+
 Table text participates in normal selection, formatting, and undo. Insert/delete rows and columns through merged spans, merge/split cells, and change cell backgrounds through the toolbar or model APIs. Cell `Blocks` can contain nested tables and sections; table commands target the innermost cell. Persisted column widths, row sizing, cell padding and independent borders are available through model APIs.
 
-Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited blocks in the anchor cell and restores the other original cells. Undo always restores the exact previous state. See [document semantics](docs/DOCUMENT-MODEL.md) for structural deletion rules, current native schema, list restart/continuation, mixed-selection state and typography APIs.
+Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited blocks in the anchor cell and restores the other original cells. Undo always restores the exact previous state. See [document semantics](docs/DOCUMENT-MODEL.md) for structural deletion rules, current native schema, list restart/continuation, mixed-selection state and typography APIs. See [headers, footers and notes](docs/STORIES.md) for story editing, shared undo,
+page fields, continuation layout and DOCX/RTF support. See [styles and themes](docs/STYLES.md)
+for named definitions, sparse inheritance, advanced typography, embedded fonts and formatting dialogs.
 
 Cross-cell text replacement preserves table structure; selecting and replacing the entire document clears its structure. Versioned rich clipboard fragments preserve sections, nested/merged tables and inline resources. Repeated paste remaps object/list identities and colliding resource keys; partial table selections clip unselected content. See [conversion and clipboard contracts](docs/INTERCHANGE.md) for boundary and destination merging rules.
 
@@ -236,6 +261,7 @@ qualification explicit; headless tests do not certify those integrations.
 ## Repository and release status
 
 - `src/Textalonia`: packable control, model, editing, serializers, theme.
+- `src/Textalonia.Pdf.Skia`: optional PDF backend package.
 - `samples/Textalonia.Demo`: desktop application.
 - `tests/Textalonia.Tests`: model, serializer, binding, headless input and rendering tests.
 - `tests/Textalonia.PackageSmoke`: separate consumer that references the generated NuGet package.
@@ -271,7 +297,7 @@ the demo includes an alternate keymap and caret. See [input contracts](docs/INPU
 Insert immutable inline image/control descriptors with `Session.InsertInline`,
 resize or update them with `Session.UpdateInline`, resolve external images through
 `InlineResourceResolver`, and register explicit control factories through
-`InlineControlFactories`. Native schema v4 preserves descriptors and encoded
+`InlineControlFactories`. Native schema v7 preserves descriptors and encoded
 resources without creating controls during save/load. See
 [inline content and ownership](docs/INLINE-CONTENT.md).
 
@@ -286,7 +312,9 @@ Use `DocumentFormats.Xaml` for Textalonia's versioned, data-only `.txaml`/`.xaml
 vocabulary and `DocumentFormats.Markdown` for the documented `.md`/`.markdown`
 dialect. `MarkdownViewer` adds asynchronous source updates and optional host-provided
 code highlighting while reusing selection, themes, links and resource services.
-No new dependencies are required. Native JSON reads and writes only the current
-prerelease schema v4; other versions are rejected. Earlier development schemas have
-no migration support. See [integration boundaries and examples](docs/INTEGRATIONS.md),
+No new dependencies are required. Native JSON writes schema v10 and reads v4–v10;
+other versions are rejected. V4 formatting loads as explicit direct formatting. See [integration boundaries and examples](docs/INTEGRATIONS.md),
 [Markdown dialect](docs/MARKDOWN.md), and [XAML vocabulary](docs/XAML.md).
+
+Image placement, cropping, section watermarks and OLE previews are documented in
+[pictures and objects](docs/IMAGES.md), including toolbar authoring and interchange limits.

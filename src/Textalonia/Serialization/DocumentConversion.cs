@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using Textalonia.Model;
+using Textalonia.Model.Fields;
 
 namespace Textalonia.Serialization;
 
@@ -29,6 +30,8 @@ public sealed record ConversionOptions
     public ConversionMode Mode { get; init; }
     /// <summary>Explicitly flatten the successfully parsed document or export snapshot to plain text.</summary>
     public bool PlainTextOnly { get; init; }
+    /// <summary>Null preserves cached results. An explicit policy updates fields on the loaded or saved snapshot.</summary>
+    public FieldEvaluationOptions? FieldOptions { get; init; }
 }
 
 public sealed record DocumentLoadResult(FlowDocument Document, ConversionReport Report);
@@ -66,7 +69,7 @@ public static class DocumentFormatExtensions
         FlowDocument document;
         if (format is IReportingDocumentFormat reporting)
         {
-            var result = await reporting.LoadWithReportAsync(stream, options with { Mode = ConversionMode.Tolerant, PlainTextOnly = false }, cancellationToken);
+            var result = await reporting.LoadWithReportAsync(stream, options with { Mode = ConversionMode.Tolerant, PlainTextOnly = false, FieldOptions = null }, cancellationToken);
             document = result.Document;
             diagnostics.AddRange(result.Report.Diagnostics);
         }
@@ -77,6 +80,7 @@ public static class DocumentFormatExtensions
         }
         cancellationToken.ThrowIfCancellationRequested();
         document.Validate();
+        document = UpdateFields(document, options, cancellationToken);
         if (options.PlainTextOnly) document = Flatten(document);
         cancellationToken.ThrowIfCancellationRequested();
         var report = diagnostics.ToReport();
@@ -94,12 +98,13 @@ public static class DocumentFormatExtensions
         cancellationToken.ThrowIfCancellationRequested();
         document.Validate();
         using var diagnostics = ConversionDiagnostics.Begin();
+        document = UpdateFields(document, options, cancellationToken);
         if (options.PlainTextOnly) document = Flatten(document);
         ReportExportLosses(format, document);
         using var buffer = new MemoryStream();
         if (format is IReportingDocumentFormat reporting)
         {
-            var result = await reporting.SaveWithReportAsync(document, buffer, options with { Mode = ConversionMode.Tolerant, PlainTextOnly = false }, cancellationToken);
+            var result = await reporting.SaveWithReportAsync(document, buffer, options with { Mode = ConversionMode.Tolerant, PlainTextOnly = false, FieldOptions = null }, cancellationToken);
             diagnostics.AddRange(result.Report.Diagnostics);
         }
         else
@@ -116,12 +121,66 @@ public static class DocumentFormatExtensions
         return new(report);
     }
 
+    private static FlowDocument UpdateFields(FlowDocument document, ConversionOptions options, CancellationToken token)
+    {
+        if (options.FieldOptions is not { } fieldOptions) return document;
+        var result = FieldEvaluator.Update(document, fieldOptions with { CancellationToken = token });
+        foreach (var diagnostic in result.Diagnostics)
+            ConversionDiagnostics.Report(diagnostic.Code, "Field evaluation", diagnostic.Message, diagnostic.FieldId);
+        return result.Document;
+    }
+
     internal static void ReportExportLosses(IDocumentFormat format, FlowDocument document)
     {
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat))
+        {
+            foreach (var section in document.Sections.Where(section => section.Watermark is not null))
+                ConversionDiagnostics.Report("conversion.watermark", "Section text or image watermark", "Watermark omitted; supported document content retained.", section.Id);
+            var imageParagraphs = new DocumentIndex(document).Paragraphs.AsEnumerable();
+            foreach (var story in document.Stories.Values) imageParagraphs = imageParagraphs.Concat(new DocumentIndex(new FlowDocument(story.Blocks)).Paragraphs);
+            foreach (var inline in imageParagraphs.SelectMany(entry => entry.Paragraph.Runs).Select(run => run.Inline).OfType<InlineDescriptor>())
+            {
+                if (inline.Placement is not null)
+                    ConversionDiagnostics.Report("conversion.image-placement", "Image anchoring, wrapping, crop, rotation and aspect lock", format is PlainTextDocumentFormat ? "Image replaced by alternative text; placement settings omitted." : "Supported image bytes and display dimensions retained as an untransformed inline image; placement settings omitted.", inline.Id);
+                if (inline.Payload is ImageInlinePayload { PreviewResourceId: not null })
+                    ConversionDiagnostics.Report("conversion.image-preview", "Separate image original and preview", "Only the supported original image is exported; preview relationship omitted.", inline.Id);
+                if (inline.Payload is OleInlinePayload)
+                    ConversionDiagnostics.Report("conversion.ole", "Embedded OLE package, preview and object metadata", "Object replaced with alternative text; embedded data and preview relationship omitted.", inline.Id);
+            }
+        }
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat))
+        {
+            if (!document.Fields.IsEmpty) ConversionDiagnostics.Report("conversion.fields", "General fields", "Cached rich results retained; instructions and update semantics omitted.");
+            if (!document.Bookmarks.IsEmpty) ConversionDiagnostics.Report("conversion.bookmarks", "Bookmark ranges", "Bookmark destinations omitted.");
+            if (new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs).Any(r => r.Style.InternalLink is not null))
+                ConversionDiagnostics.Report("conversion.internal-links", "Internal hyperlinks", "Visible link text retained; destination omitted.");
+        }
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat) && !document.Properties.IsEmpty)
+            ConversionDiagnostics.Report("conversion.document-properties", "Document properties", "Property metadata omitted; cached field results retained.");
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat))
+        {
+            var resolver = new DocumentStyleResolver(document);
+            foreach (var entry in new DocumentIndex(document).Paragraphs)
+            {
+                var style = resolver.ResolveParagraphStyle(entry.Paragraph.Style);
+                if (style.ColumnBreakBefore) ConversionDiagnostics.Report("conversion.column-break", "Column break", "Column break is omitted.", entry.Paragraph.Id);
+                if (style.Frame is not null) ConversionDiagnostics.Report("conversion.paragraph-frame", "Legacy paragraph frame", "Paragraph placement is omitted; text remains in normal flow.", entry.Paragraph.Id);
+            }
+        }
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat) && !document.Sections.IsEmpty)
+            ConversionDiagnostics.Report("conversion.page-sections", "Physical page sections",
+                "Page settings, section boundaries, numbering, columns and page decoration are omitted by this format.");
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat) && (!document.Stories.IsEmpty || !document.Notes.IsEmpty))
+            ConversionDiagnostics.Report("conversion.stories", "Headers, footers and note stories", "Main story retained with reference alternative text; secondary stories and note semantics omitted.");
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat))
+            foreach (var inline in new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs).Select(r => r.Inline).OfType<InlineDescriptor>().Where(i => i.Payload is PageFieldInlinePayload))
+                ConversionDiagnostics.Report("conversion.page-field", "Dynamic page field", "Cached alternative text retained.", inline.Id);
         if (format is HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or MarkdownDocumentFormat)
         {
             ReportMergeHistory(document.Blocks);
-            ReportUnusedResources(document);
+            if (format is RtfDocumentFormat or DocxDocumentFormat)
+                foreach (var story in document.Stories.Values) { ReportMergeHistory(story.Blocks); ReportIntegrationSemantics(story.Blocks); }
+            ReportUnusedResources(document, format is DocxDocumentFormat);
         }
         if (format is PlainTextDocumentFormat) ReportPlainTextLoss(document);
         if (format is HtmlDocumentFormat or MarkdownDocumentFormat)
@@ -184,6 +243,10 @@ public static class DocumentFormatExtensions
 
     private static void ReportPlainTextLoss(FlowDocument document)
     {
+        StyleConversion.ReportLosses(DocumentFormats.PlainText, document);
+        if (!document.Stories.IsEmpty || !document.Notes.IsEmpty) ConversionDiagnostics.Report("conversion.stories", "Headers, footers and note stories", "Secondary stories and note semantics omitted.");
+        if (!document.Sections.IsEmpty) ConversionDiagnostics.Report("conversion.page-sections", "Physical page sections",
+            "Physical page settings and section boundaries are omitted.");
         void Visit(IEnumerable<Block> blocks)
         {
             foreach (var block in blocks)
@@ -217,10 +280,23 @@ public static class DocumentFormatExtensions
         ConversionDiagnostics.Report(format + ".merge-field", "Live mail-merge field definition",
             "The field is replaced by its display text and can no longer be merged. Use native JSON, Textalonia XAML, DOCX, or RTF to retain merge fields, or merge the document before exporting.", inline.Id);
 
-    private static void ReportUnusedResources(FlowDocument document)
+    private static void ReportUnusedResources(FlowDocument document, bool includeFonts)
     {
-        var visible = new HashSet<string>(new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs)
+        var paragraphs = new DocumentIndex(document).Paragraphs.AsEnumerable();
+        foreach (var story in document.Stories.Values) paragraphs = paragraphs.Concat(new DocumentIndex(new FlowDocument(story.Blocks)).Paragraphs);
+        var visible = new HashSet<string>(paragraphs.SelectMany(p => p.Paragraph.Runs)
             .Select(r => r.Inline?.Payload).OfType<ImageInlinePayload>().Select(p => p.ResourceId), StringComparer.Ordinal);
+        if (includeFonts)
+        {
+            visible.UnionWith(document.Fonts.Select(font => font.ResourceId));
+            visible.UnionWith(document.Sections.Select(section => section.Watermark?.ResourceId).OfType<string>());
+            foreach (var payload in paragraphs.SelectMany(p => p.Paragraph.Runs).Select(run => run.Inline?.Payload))
+                switch (payload)
+                {
+                    case ImageInlinePayload { PreviewResourceId: { } preview }: visible.Add(preview); break;
+                    case OleInlinePayload ole: visible.Add(ole.ResourceId); visible.Add(ole.PreviewResourceId); break;
+                }
+        }
         foreach (var resource in document.Resources.Keys.Order(StringComparer.Ordinal))
             if (!visible.Contains(resource))
                 ConversionDiagnostics.Report("conversion.unused-resource", "Resource without a visible image reference",

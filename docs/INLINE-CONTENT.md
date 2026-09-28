@@ -2,7 +2,7 @@
 
 Inline content is immutable document data. `RichRun.Inline` holds an
 `InlineDescriptor` with a stable `Id`, `AltText`, positive `Width`/`Height` in DIPs,
-and an `ImageInlinePayload`, `ControlInlinePayload`, or `MergeFieldInlinePayload`. Neither snapshots nor
+and an image, OLE, registered control, merge-field, note or page-field payload. Neither snapshots nor
 codecs contain controls, bitmaps, factories, callbacks, or CLR type names to load.
 
 ```csharp
@@ -54,7 +54,7 @@ history eviction; caller-held snapshots remain valid. Hosts can call
 `PruneUnusedResources` on snapshots directly. A save never requires a resolver or
 visual factory.
 
-Native JSON reads and writes only current prerelease schema v4, preserving inline
+Native JSON writes schema v10 and reads v4–v10, preserving inline
 descriptors and resources. Other versions are rejected; unused development schemas
 have no migration support. Encoded bytes are base64 and inline payload kinds are an
 explicit allowlist. Unknown members, invalid payloads and excessive resources are rejected.
@@ -113,3 +113,6 @@ See [input contracts](INPUT-COMPONENTS.md) and the
 Merge fields use measured run typography for their label geometry rather than fixed
 descriptor dimensions. See [mail merge](MAIL-MERGE.md) for preview, generation and
 field interchange contracts.
+
+See [DX-07 pictures and objects](IMAGES.md) for placement/cropping, section
+watermarks, preserved originals, supplied previews and OLE package APIs.

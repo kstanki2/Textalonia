@@ -99,7 +99,8 @@ public partial class TextaloniaEditor
         text = FlowDocument.NormalizeNewlines(text).Replace("\0", "");
         if (text.Length == 0) return null;
         var paragraph = Session.Index.At(Math.Clamp(offset, 0, Session.Index.Length));
-        var style = paragraph.Paragraph.StyleAt(Math.Clamp(offset - paragraph.Start, 0, paragraph.Paragraph.Length));
+        var style = new DocumentStyleResolver(Session.Document).ResolveText(paragraph.Paragraph,
+            paragraph.Paragraph.StyleAt(Math.Clamp(offset - paragraph.Start, 0, paragraph.Paragraph.Length)));
         return new() { Document = new FlowDocument(text.Split('\n').Select(value => new Paragraph(value, style))),
             StartsInsideParagraph = true, EndsInsideParagraph = true };
     }

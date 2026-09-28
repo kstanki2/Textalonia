@@ -12,16 +12,34 @@ public sealed record InlineDescriptor
     public string AltText { get; init; } = "";
     public double Width { get; init; } = 32;
     public double Height { get; init; } = 32;
+    public ImagePlacement? Placement { get; init; }
     public required InlinePayload Payload { get; init; }
+
+    public static InlineDescriptor Note(Guid noteId, string mark = "1") => new()
+    { Payload = new NoteInlinePayload(noteId), AltText = mark, Width = 12, Height = 16 };
+    public static InlineDescriptor PageField(PageFieldKind field) => new()
+    { Payload = new PageFieldInlinePayload(field), AltText = "1", Width = 24, Height = 16 };
 
     internal void Validate()
     {
         if (Id == Guid.Empty || AltText is null || AltText.Length > 16_384 ||
             !double.IsFinite(Width) || !double.IsFinite(Height) || Width is <= 0 or > 10_000 || Height is <= 0 or > 10_000)
             throw new FormatException("Invalid inline identity, alternative text, or dimensions.");
+        if (Placement is not null)
+        {
+            if (Payload is not (ImageInlinePayload or OleInlinePayload))
+                throw new FormatException("Only images and OLE previews support image placement.");
+            Placement.Validate();
+        }
         switch (Payload)
         {
-            case ImageInlinePayload image when ValidKey(image.ResourceId): break;
+            case NoteInlinePayload note when note.NoteId != Guid.Empty: break;
+            case PageFieldInlinePayload field when Enum.IsDefined(field.Field): break;
+            case ImageInlinePayload image when ValidKey(image.ResourceId) &&
+                (image.PreviewResourceId is null || ValidKey(image.PreviewResourceId)): break;
+            case OleInlinePayload ole when ValidKey(ole.ResourceId) && ValidKey(ole.PreviewResourceId) &&
+                ole.ProgramId is not null && ole.ProgramId.Length <= 256 && !ole.ProgramId.Any(char.IsControl) &&
+                ole.FileName is not null && ole.FileName.Length <= 256 && !ole.FileName.Any(char.IsControl): break;
             case MergeFieldInlinePayload field:
                 field.Validate();
                 break;
@@ -38,9 +56,23 @@ public sealed record InlineDescriptor
 [JsonDerivedType(typeof(ImageInlinePayload), "image")]
 [JsonDerivedType(typeof(ControlInlinePayload), "control")]
 [JsonDerivedType(typeof(MergeFieldInlinePayload), "mergeField")]
+[JsonDerivedType(typeof(NoteInlinePayload), "note")]
+[JsonDerivedType(typeof(PageFieldInlinePayload), "pageField")]
+[JsonDerivedType(typeof(OleInlinePayload), "ole")]
 public abstract record InlinePayload;
 
-public sealed record ImageInlinePayload(string ResourceId) : InlinePayload;
+public sealed record ImageInlinePayload(string ResourceId) : InlinePayload
+{
+    /// <summary>Optional renderable preview; the original resource is retained independently.</summary>
+    public string? PreviewResourceId { get; init; }
+}
+
+/// <summary>Opaque embedded package with a supplied image preview. Never activates an application.</summary>
+public sealed record OleInlinePayload(string ResourceId, string PreviewResourceId) : InlinePayload
+{
+    public string ProgramId { get; init; } = "";
+    public string FileName { get; init; } = "";
+}
 
 /// <summary>The host maps Type to a registered factory; serialized names never activate CLR types.</summary>
 public sealed record ControlInlinePayload(string Type) : InlinePayload

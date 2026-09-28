@@ -1,8 +1,8 @@
-# Document semantics and schema v4
+# Document semantics and schema v10
 
 The document model is independent of Avalonia controls. Native JSON reads and
-writes only the current prerelease schema, version 4. Earlier versions were unused
-development formats and have no migration support. See [integration semantics](INTEGRATIONS.md)
+writes schema version 10. Versions 4, 5, 6, 7, 8 and 9 remain readable; version 4 migrates concrete styles as
+explicit direct formatting. Versions 1-3 were unused development formats and have no migration support. See [integration semantics](INTEGRATIONS.md)
 for quote/code metadata and [inline content](INLINE-CONTENT.md) for descriptors,
 resources and the coordinate/export contract. The version is checked before
 interpreting the document; missing or unsupported versions fail with
@@ -15,6 +15,38 @@ height is automatic, list identity/definitions/start are absent, restart is fals
 column widths are equal, and rows size automatically. Null container padding and
 borders use the default geometry. Current-schema fixtures exercise these contracts.
 
+See [named styles, themes and typography](STYLES.md) for the DX-01 cascade, sparse
+overrides, font ownership, dialogs and format support.
+
+## Physical page sections
+
+`FlowDocument.Sections` is an ordered physical partition, separate from the nested
+`Section` decorative block. An empty array uses the default US Letter page with
+one-inch margins. An explicit first section uses `Guid.Empty` for its
+`StartParagraphId`; later entries identify visible paragraph boundaries outside
+tables. Duplicate, detached, unordered or table-cell boundaries are rejected.
+
+`PageSettings` stores DIP (96 per inch), orientation, margins, gutter, mirrored
+margins, proportional column widths and gaps, balancing, background and borders,
+line numbering and the document grid. `DocumentUnits` converts inches, millimeters,
+points and twips at format boundaries. Zoom never changes these stored values.
+`DocumentSection` owns the transition and optional page-number restart/format.
+`ParagraphStyle.PageBreakBefore` and `ColumnBreakBefore` are independent explicit
+breaks; `Frame` holds legacy paragraph placement relative to page content origin.
+
+Session page setup, section and break commands are undoable and respect read-only
+state. Splitting a paragraph preserves its existing section boundary on the first
+piece. Deleting a boundary joins its content into the preceding physical section,
+whose settings survive. Arbitrary `Execute` operations must supply a valid
+partition; they cannot silently detach boundaries. Clipboard extraction and paste
+remap paragraph/section identities. Whole-document paste adopts source page settings;
+partial paste keeps the destination initial settings and source interior boundaries.
+
+Native v7 and data XAML retain all page metadata; old native documents default to
+an implicit page section. Other formats currently report `conversion.page-sections`,
+`conversion.column-break` and `conversion.paragraph-frame` losses when applicable.
+Strict conversion rejects these losses before writing the destination stream.
+See [pagination](PAGINATION.md) for layout and view limits.
 ## Selection formatting
 
 `EditorSession.FormattingState` aggregates the selected runs and paragraphs,
@@ -114,3 +146,14 @@ See the [current interchange support matrix](INTERCHANGE.md#supported-subset-and
 literal missing/null fallback. It shares inline coordinates, clipboard identity remapping,
 formatting and history. The pure mail-merge transforms include retained table cells and
 merge backups. See [mail merge](MAIL-MERGE.md) for the complete contract.
+
+## Secondary stories
+
+DX-03 adds document-owned header/footer/footnote/endnote stories, atomic note
+references, section header/footer linkage and note settings. Main-body accessors
+remain unchanged; session editing addresses `ActiveStoryId`/`ActiveDocument` with
+one full-document undo stack. See [STORIES.md](STORIES.md) for selection, identity,
+clipboard, resource ownership, layout and serialization contracts.
+
+See [pictures, watermarks and embedded objects](IMAGES.md) for DX-07 placement,
+preview resources, section background ownership and editing contracts.

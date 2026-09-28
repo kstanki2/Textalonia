@@ -8,7 +8,7 @@
 
 `Editing.EditorSession` owns the current snapshot, directional selection, insertion style, and bounded undo/redo stacks. Each edit replaces affected paragraph content and publishes a snapshot. Adjacent typed characters coalesce until navigation, formatting, another operation, or an 800 ms pause breaks the group. Application operations enter the same history through Execute.
 
-`Serialization.IDocumentFormat` operates on snapshots and caller-owned streams. Native JSON reads and writes only current prerelease schema v4, preserving the entire model; other versions are rejected. External formats intentionally map only supported features. Codecs parse data; they do not instantiate XAML or execute document code. See [document semantics](DOCUMENT-MODEL.md) for list identity, style precedence, nested cells and structural merge rules.
+`Serialization.IDocumentFormat` operates on snapshots and caller-owned streams. Native JSON writes schema v5 and reads v4/v5, preserving the entire model; other versions are rejected. External formats intentionally map only supported features. Codecs parse data; they do not instantiate XAML or execute document code. See [document semantics](DOCUMENT-MODEL.md) for list identity, style precedence, nested cells and structural merge rules.
 
 `Controls.TextaloniaEditor` exposes Avalonia styled properties, binding, commands, clipboard and notifications. Its template composes TextaloniaToolbar, ScrollViewer, and DocumentSurface. TextaloniaViewer starts the same control in read-only mode.
 
@@ -35,7 +35,7 @@ complete view is intentionally linear on first materialization. Compatibility
 arrays memoize their identity after explicit access; their potential allocation
 is included in retention estimates. Complete text is not cached by history. `ReadText(start, length)`,
 `CharAt`, search and position lookup avoid document flattening. Native export still
-writes schema v4 and is necessarily linear in exported content.
+writes schema v5 and is necessarily linear in exported content.
 
 `TextaloniaEditor.SynchronizeText` defaults to true. It publishes complete text
 on each document revision. Set it to false when binding `Document` to avoid that

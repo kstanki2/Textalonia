@@ -65,7 +65,8 @@ public class MergeFieldInterchangeTests
         var run = OnlyField(loaded.Document);
         Assert.Equal(name, ((MergeFieldInlinePayload)run.Inline!.Payload).Name);
         Assert.Equal("Zoë & Co", run.Inline.AltText);
-        Assert.Equal(style, run.Style);
+        var paragraph = Assert.IsType<Paragraph>(loaded.Document.Blocks[0]);
+        Assert.Equal(style, new DocumentStyleResolver(loaded.Document).ResolveText(paragraph, run.Style));
         Assert.Equal("\uFFFC", loaded.Document.Text);
         Assert.Equal("Zoë & Co", loaded.Document.PlainText);
     }
@@ -146,19 +147,24 @@ public class MergeFieldInterchangeTests
     [InlineData(false, "\"MERGEFIELD\" Name")]
     [InlineData(true, "DATE")]
     [InlineData(false, "DATE")]
-    public async Task Malformed_or_unsupported_instructions_flatten_with_a_loss_report(bool docx, string instruction)
+    public async Task General_instructions_preserve_cached_results_and_diagnose_malformed_codes(bool docx, string instruction)
     {
         using var source = Input(docx, instruction);
         var result = await Format(docx).LoadWithReportAsync(source);
         Assert.Equal("Alice", result.Document.PlainText);
         Assert.All(Assert.IsType<Paragraph>(result.Document.Blocks[0]).Runs, r => Assert.Null(r.Inline));
-        Assert.True(result.Report.HasLoss);
-        source.Position = 0;
-        await Assert.ThrowsAsync<DocumentConversionException>(() => Format(docx).LoadWithReportAsync(source, new() { Mode = ConversionMode.Strict }));
+        Assert.Equal(instruction, Assert.Single(result.Document.Fields).Instruction);
+        if (instruction == "DATE") Assert.False(result.Report.HasLoss);
+        else
+        {
+            Assert.True(result.Report.HasLoss);
+            source.Position = 0;
+            await Assert.ThrowsAsync<DocumentConversionException>(() => Format(docx).LoadWithReportAsync(source, new() { Mode = ConversionMode.Strict }));
+        }
     }
 
     [Fact]
-    public async Task Nested_complex_docx_fields_keep_only_the_outer_cached_display()
+    public async Task Nested_complex_docx_fields_preserve_instruction_nesting_and_outer_cached_display()
     {
         using var source = Package("""
             <w:p>
@@ -170,7 +176,10 @@ public class MergeFieldInterchangeTests
         var result = await DocumentFormats.Docx.LoadWithReportAsync(source);
         Assert.Equal("Yes", result.Document.PlainText);
         Assert.All(Assert.IsType<Paragraph>(result.Document.Blocks[0]).Runs, r => Assert.Null(r.Inline));
-        Assert.Contains(result.Report.Diagnostics, d => d.Code == "docx.nested-field");
+        var field = Assert.Single(result.Document.Fields);
+        Assert.Contains("{  MERGEFIELD Name  }", field.Instruction);
+        Assert.StartsWith("IF", field.Instruction);
+        Assert.False(result.Report.HasLoss);
     }
 
     [Theory]
@@ -189,14 +198,17 @@ public class MergeFieldInterchangeTests
     }
 
     [Fact]
-    public async Task Nested_rtf_fields_flatten_instead_of_activating_inner_merge_fields()
+    public async Task Nested_rtf_fields_preserve_both_rich_result_ranges()
     {
         const string input = """{\rtf1{\field{\*\fldinst MERGEFIELD Outer}{\fldrslt {\field{\*\fldinst MERGEFIELD Inner}{\fldrslt Alice}}}}}""";
         using var source = new MemoryStream(Encoding.ASCII.GetBytes(input));
         var result = await DocumentFormats.Rtf.LoadWithReportAsync(source);
         Assert.Equal("Alice", result.Document.PlainText);
         Assert.All(Assert.IsType<Paragraph>(result.Document.Blocks[0]).Runs, r => Assert.Null(r.Inline));
-        Assert.Contains(result.Report.Diagnostics, d => d.Code == "rtf.nested-field");
+        Assert.Equal(2, result.Document.Fields.Length);
+        Assert.Contains(result.Document.Fields, f => f.Instruction == "MERGEFIELD Inner");
+        Assert.Contains(result.Document.Fields, f => f.Instruction == "MERGEFIELD Outer");
+        Assert.False(result.Report.HasLoss);
     }
 
     [Theory]

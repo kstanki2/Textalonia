@@ -1,6 +1,8 @@
 # Feature matrix and path to parity
 
-The target is the feature set described by [Avalonia's editor announcement](https://avaloniaui.net/blog/rich-text-editor). This is an independently implemented preview with its own API, data format, and theme. The commercial editor is not a dependency.
+The feature target is a selected subset of [DevExpress's WPF Rich Text Editor](https://docs.devexpress.com/WPF/8651/controls-and-libraries/rich-text-editor), implemented independently for Avalonia with Textalonia's own API, data format, and theme. ActiveX, VBA, charts, and drawing shapes are excluded from the target. Images, watermarks, and OLE previews remain in scope. DevExpress is not a dependency.
+
+The [scoped DevExpress implementation plan](DEVEXPRESS-PARITY-PLAN.md) supersedes the previous Avalonia commercial-editor target and defines the additional feature work and exclusions. The matrix below describes the existing preview subset; it is not the complete backlog for the selected target. Existing qualification and release tasks remain open.
 
 | Area | Current preview | Remaining work |
 | --- | --- | --- |
@@ -11,7 +13,8 @@ The target is the feature set described by [Avalonia's editor announcement](http
 | IME | Composition client, transient preedit and committed text | Native Windows/macOS/Linux and mobile keyboard qualification |
 | Clipboard | Versioned section/table/resource fragments, platform HTML adapter, plain text | Native cross-application qualification on every platform |
 | Formats | Native JSON, data XAML, Markdown, text, expanded HTML/RTF/DOCX subsets with strict/tolerant diagnostics | Arbitrary RTF/DOCX fidelity, application-export corpus and native qualification |
-| Merge fields / mail merge | Atomic editable fields, native/XAML/clipboard persistence, headless preview and lazy per-record generation, basic DOCX/RTF MERGEFIELD interchange; [contract](MAIL-MERGE.md) | Word field expressions/switches, repeating regions, linked recipient sources and native Office qualification |
+| Merge fields / mail merge | Atomic editable fields, native/XAML/clipboard persistence, headless preview and lazy per-record generation, basic DOCX/RTF MERGEFIELD interchange; [contract](MAIL-MERGE.md) | Complete Word switch semantics, repeating regions, linked recipient sources and native Office qualification |
+| Bookmarks / general fields / navigation | Anchored ranges, internal links, nested fields and rich results, TOC/captions, bounded page updates, story-aware find/replace and outline; [contract](FIELDS.md) | Advanced formatted page expressions in repeated stories, editable mixed code/result projection, complete Word switches and native/Office qualification |
 | Embedded content | Atomic inline images, registered host controls, immutable resources, native save/load and bounded view caches | External image interchange fidelity; native qualification |
 | Display | Viewer mode, light/dark, replaceable theme/toolbar/input components, text highlights, managed text-range contract | Native accessibility text-provider bridges and screen-reader evidence |
 | Markdown | [Explicit bounded dialect, async viewer, optional host highlighting](INTEGRATIONS.md) | Broader dialects and native release qualification |
@@ -20,9 +23,10 @@ The target is the feature set described by [Avalonia's editor announcement](http
 
 ## Open work
 
-The implementation plans and milestone reports have been retired. Current behavior
-is documented in the feature guides above; these remaining tasks retain their
-original IDs so unfinished qualification is not mistaken for completion.
+Earlier implementation plans and milestone reports have been retired. Current
+behavior is documented in the feature guides above. The new DevExpress plan uses
+DX-prefixed workstream IDs; the remaining tasks below retain their original IDs
+so unfinished qualification is not mistaken for completion.
 
 | ID / original tasks | Remaining work and completion evidence | Responsible role |
 | --- | --- | --- |
@@ -39,7 +43,8 @@ original IDs so unfinished qualification is not mistaken for completion.
 
 Per-run letter spacing/advanced font features, broader Markdown dialects, external
 image interchange and arbitrary Office fidelity remain outside the documented
-preview subset. Expand them only with explicit contracts and regression coverage.
+preview subset. The DevExpress plan schedules the relevant extensions with explicit
+contracts and regression coverage; planned work does not expand current support claims.
 
 ## Completion and release policy
 

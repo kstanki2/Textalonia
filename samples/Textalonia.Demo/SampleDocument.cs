@@ -31,13 +31,12 @@ public static class SampleDocument
                     TextStyle.Default with { Foreground = "#304E70" }) { Style = new() { SpaceAfter = 0 } }
             ]
         };
-        var table = Table.Create(3, 3);
+        var table = Table.Create(3, 3) with { AutoFit = TableAutoFit.Window, RepeatHeaderRows = 1, StyleId = "SampleTable" };
         var data = new[] { new[] { "Your next document", "Owner", "Status" }, new[] { "Design notes", "Product", "In progress" }, new[] { "Release checklist", "Engineering", "Ready" } };
         for (var r = 0; r < 3; r++)
             for (var c = 0; c < 3; c++)
                 table = table.SetCell(r, c, table.Rows[r][c] with
                 {
-                    Background = r == 0 ? "#EDF2F8" : null,
                     Paragraphs = [new Paragraph(data[r][c], TextStyle.Default with { FontSize = 14, Bold = r == 0, Foreground = r == 0 ? "#344860" : null })
                     { Style = new() { SpaceAfter = 2 } }]
                 });
@@ -51,6 +50,12 @@ public static class SampleDocument
             { Style = new() { HeadingLevel = 2, SpaceBefore = 8, SpaceAfter = 12 } },
             table,
             new Paragraph("Built for Avalonia 12. Packaged for your next application.", TextStyle.Default with { FontSize = 13, Italic = true })
-        ]);
+        ]) { Styles = new() { Tables = ImmutableDictionary<string, TableStyleDefinition>.Empty.Add("SampleTable", new()
+        {
+            Id = "SampleTable", Name = "Sample table bands",
+            Conditions = ImmutableDictionary<TableStyleRegion, TableStyleOverrides>.Empty
+                .Add(TableStyleRegion.HeaderRow, new() { Background = "#EDF2F8" })
+                .Add(TableStyleRegion.EvenRowBand, new() { Background = "#F5F8FC" })
+        }) } };
     }
 }

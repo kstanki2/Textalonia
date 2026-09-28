@@ -15,7 +15,7 @@ internal sealed class ShapedLayoutCache(Action disposed, int layoutLimit = 256, 
 
     public readonly struct Lease(ShapedLayoutCache cache, ParagraphLayout.Page page) : IDisposable
     {
-        public TextLayout Layout => page.Layout!;
+        public ShapingTextLayout Layout => page.Layout!;
         public void Dispose() { page.Users--; cache.Trim(); }
     }
 
@@ -36,7 +36,7 @@ internal sealed class ShapedLayoutCache(Action disposed, int layoutLimit = 256, 
 
     public void RecordTransient(int characters) => PeakBytes = Math.Max(PeakBytes, Bytes + 256L + characters * 32L);
 
-    public TextLayout Take(ParagraphLayout.Page page)
+    public ShapingTextLayout Take(ParagraphLayout.Page page)
     {
         var layout = page.Layout!;
         Remove(page);

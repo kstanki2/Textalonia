@@ -60,8 +60,8 @@ and is not a complete C# parser.
 
 ## Current native schema
 
-Native JSON reads and writes **version 4 only**. Earlier versions were unused
-development formats and have no migration support. Missing or other versions are
+Native JSON writes **version 7** and reads **versions 4, 5, 6 and 7**. Version 4 concrete
+formatting loads as explicit overrides. Missing or other versions are
 rejected before document decoding, and unknown members are rejected. The current
 schema includes `Section.Semantic` (`None`, `Quote`, `CodeBlock`), nullable
 `Section.CodeLanguage`, and `TextStyle.IsCode`. Their defaults are ordinary
@@ -70,7 +70,7 @@ Code blocks contain ordinary paragraph lines, preserving selection coordinates a
 plain text. XAML preserves these fields. HTML/RTF/DOCX exports report their loss;
 Markdown preserves the supported semantics and reports unrepresentable formatting.
 
-The project remains unpublished, with a single supported native schema. Loading a
+The project remains unpublished, with one current writable native schema. Loading a
 document does not overwrite its source. The API snapshot and package consumer
 cover the current preview APIs.
 

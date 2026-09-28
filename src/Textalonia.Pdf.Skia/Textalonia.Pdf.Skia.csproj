@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Textalonia.Pdf.Skia</PackageId>
+    <Authors>Textalonia contributors</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/kstanki2/Textalonia</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/kstanki2/Textalonia</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Optional Skia PDF output for Textalonia exact page snapshots.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Textalonia/Textalonia.csproj" />
+    <PackageReference Include="Avalonia.Skia" Version="[$(AvaloniaVersion),13.0.0)" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../docs/OUTPUT.md" Pack="true" PackagePath="docs/" />
+    <None Include="../../LICENSE;../../THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

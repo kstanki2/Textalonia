@@ -109,7 +109,8 @@ public class RtfInterchangeTests
         using var stream = new MemoryStream(Encoding.ASCII.GetBytes(rtf));
         var result = await DocumentFormats.Rtf.LoadWithReportAsync(stream);
         Assert.Equal("safelinkimage", result.Document.Text);
-        Assert.Equal(new[] { "rtf.unsupported-destination", "rtf.unsafe-link", "rtf.unsupported-field" }, result.Report.Diagnostics.Select(d => d.Code));
+        Assert.StartsWith("INCLUDEPICTURE", Assert.Single(result.Document.Fields).Instruction);
+        Assert.Equal(new[] { "rtf.unsupported-destination", "rtf.unsafe-link" }, result.Report.Diagnostics.Select(d => d.Code));
         Assert.All(result.Report.Diagnostics, d => Assert.StartsWith("rtf:", d.SourceLocation));
         Assert.All(new DocumentIndex(result.Document).Paragraphs.SelectMany(p => p.Paragraph.Runs), r => Assert.Null(r.Style.Hyperlink));
         stream.Position = 0;

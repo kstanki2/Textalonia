@@ -45,7 +45,7 @@ internal static class Program
         if (saved.Report.HasLoss || loaded.Report.HasLoss || DocumentFormats.Json.Serialize(loaded.Document) != DocumentFormats.Json.Serialize(document))
             throw new InvalidOperationException("Packaged strict native conversion failed.");
         var envelope = System.Text.Json.Nodes.JsonNode.Parse(DocumentFormats.Json.Serialize(document))!;
-        foreach (var version in new[] { 1, 2, 3, 5 })
+        foreach (var version in new[] { 1, 2, 3, 11 })
         {
             envelope["version"] = version;
             try
@@ -96,8 +96,17 @@ internal static class Program
 
     public static void Main()
     {
+        ImageExample.Verify();
         VerifyInterchange();
         VerifyIntegrationCodecs();
+        var fieldSession = new Textalonia.Editing.EditorSession(FlowDocument.FromText("cached"));
+        fieldSession.SelectAll();
+        fieldSession.InsertField("IF { MERGEFIELD Count } > 1 \"many\" \"one\"", FlowDocument.FromText("cached"));
+        fieldSession.UpdateFields(new() { MergeValues = new Dictionary<string, object?> { ["Count"] = 2 } });
+        fieldSession.SelectAll(); fieldSession.AddBookmark("result");
+        var fieldReopened = DocumentFormats.Json.Parse(DocumentFormats.Json.Serialize(fieldSession.Document));
+        if (fieldReopened.Text != "many" || fieldReopened.Fields.Length != 1 || fieldReopened.Bookmarks.Length != 1)
+            throw new InvalidOperationException("Packaged general fields and bookmark round trip failed.");
         using var session = HeadlessUnitTestSession.StartNew(typeof(Bootstrap));
         // Keep disposal on the entry thread, outside the headless dispatcher.
         session.Dispatch<bool>(async () =>
@@ -177,7 +186,7 @@ internal static class Program
                 editor.InsertText("Edited "); editor.Undo();
                 if (DocumentFormats.Json.Serialize(editor.Document) != original ||
                     DocumentFormats.Json.Serialize(DocumentFormats.Json.Parse(original)) != original)
-                    throw new InvalidOperationException("Packaged schema v4 and nested undo round trip failed.");
+                    throw new InvalidOperationException("Packaged native v7 and nested undo round trip failed.");
                 var resizeOriginal = editor.Document;
                 if (!editor.BeginTableResize(outer.Id, Textalonia.Controls.TableResizeAxis.Column, 0, 200))
                     throw new InvalidOperationException("Packaged table resize did not start.");
@@ -206,14 +215,15 @@ internal static class Program
                     throw new InvalidOperationException("Packaged inline coordinates or accessibility contract failed.");
                 var inlineJson = DocumentFormats.Json.Serialize(editor.Document);
                 if (DocumentFormats.Json.Parse(inlineJson).PlainText != "A sample image")
-                    throw new InvalidOperationException("Packaged schema v4 inline round trip failed.");
+                    throw new InvalidOperationException("Packaged native v7 inline round trip failed.");
                 editor.UpdateInline(inline.Id, value => value with { Width = 96 });
                 editor.Undo(); editor.Redo();
                 window.UpdateLayout();
                 using var frame = window.CaptureRenderedFrame()
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
+                await StoryExample.VerifyAsync(editor, window);
                 await ExtensionExamples.VerifyAsync(window);
-                Console.WriteLine("Package consumer passed: custom codecs/resources/input/viewer lifecycle, compiled XAML, themes, input, formatting, schema v4, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, and rendering.");
+                Console.WriteLine("Package consumer passed: general fields/bookmarks, custom codecs/resources/input/viewer lifecycle, compiled XAML, themes, input, formatting, native v10, DX-07 image/watermark/OLE round trips, DX-06 table/list formatting and repeated headers, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, editable header/note stories, DOCX stories, page regions, and rendering.");
             }
             finally { window.Close(); }
             return true;

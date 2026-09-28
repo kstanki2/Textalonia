@@ -6,6 +6,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Textalonia.Tests" />
     <ProjectReference Include="../../src/Textalonia/Textalonia.csproj" />
+    <ProjectReference Include="../../src/Textalonia.Pdf.Skia/Textalonia.Pdf.Skia.csproj" />
     <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />

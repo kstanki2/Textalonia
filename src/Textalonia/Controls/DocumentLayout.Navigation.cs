@@ -59,7 +59,7 @@ internal sealed partial class DocumentLayout
         }
         stops.Sort((left, right) => left.X.CompareTo(right.X));
         return new(visual.TextStart + start, visual.TextStart + line.FirstTextSourceIndex + line.Length,
-            visual.Position.Start, visual.Position.End, visual.Position.Paragraph.Style.RightToLeft, line.NewLineLength > 0, stops);
+            visual.Position.Start, visual.Position.End, visual.Page.Owner.Paragraph.Style.RightToLeft, line.NewLineLength > 0, stops);
     }
 
     private (ParagraphVisual Visual, int Index)? FindLine(VisualCaret caret)
@@ -115,7 +115,9 @@ internal sealed partial class DocumentLayout
         var hit = new CharacterHit(caret.FirstCharacterIndex - visual.TextStart, caret.TrailingLength);
         return new Rect(visual.Origin.X + line.GetDistanceFromCharacterHit(hit),
             visual.Origin.Y + lease.Layout.TextLines.Take(found.Index).Sum(previous => previous.Height), 1.5,
-            Math.Max(line.Height, visual.Position.Paragraph.Style.LineHeight ?? visual.Position.Paragraph.DefaultStyle.FontSize * 1.1));
+            visual.Page.Owner.Paragraph.Style.LineSpacingMode == Textalonia.Model.LineSpacingMode.Natural
+                ? Math.Max(line.Height, visual.Page.Owner.Paragraph.Style.LineHeight ?? visual.Page.Owner.Paragraph.DefaultStyle.FontSize * 1.1)
+                : line.Height);
     }
 
     internal VisualCaret MoveCaret(VisualCaret caret, bool right)

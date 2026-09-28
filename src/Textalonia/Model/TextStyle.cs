@@ -1,9 +1,14 @@
 namespace Textalonia.Model;
 
 /// <summary>Immutable character formatting. Null colors inherit the editor's theme.</summary>
-public sealed record TextStyle
+public sealed partial record TextStyle
 {
     public static TextStyle Default { get; } = new();
+    /// <summary>A named character style. Null Overrides retains legacy fully explicit formatting.</summary>
+    public string? StyleId { get; init; }
+    public TextStyleOverrides? Overrides { get; init; }
+    /// <summary>Creates a style reference whose formatting inherits until explicitly overridden.</summary>
+    public static TextStyle ForStyle(string? id) => new() { StyleId = id, Overrides = new() };
     public string? FontFamily { get; init; }
     public double FontSize { get; init; } = 16;
     public bool Bold { get; init; }
@@ -21,6 +26,7 @@ public sealed record TextStyle
     public string? Foreground { get; init; }
     public string? Background { get; init; }
     public string? Hyperlink { get; init; }
+    public InternalLinkDestination? InternalLink { get; init; }
     public Baseline Baseline { get; init; }
 }
 
@@ -28,9 +34,13 @@ public enum Baseline { Normal, Subscript, Superscript }
 public enum ParagraphAlignment { Left, Center, Right, Justify }
 public enum ListKind { None, Bullet, Numbered }
 
-public sealed record ParagraphStyle
+public sealed partial record ParagraphStyle
 {
     public static ParagraphStyle Default { get; } = new();
+    public string? StyleId { get; init; }
+    public ParagraphStyleOverrides? Overrides { get; init; }
+    /// <summary>Creates a paragraph style reference without direct formatting.</summary>
+    public static ParagraphStyle ForStyle(string? id) => new() { StyleId = id, Overrides = new() };
     public ParagraphAlignment Alignment { get; init; }
     public ListKind List { get; init; }
     public int ListLevel { get; init; }

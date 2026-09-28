@@ -12,9 +12,10 @@ requires updating these notes before creating the publication candidate.
 Immutable documents and editing sessions; formatting, lists, nested/merged
 tables and undo; editor, selectable viewer and replaceable toolbar/input;
 inline image/control descriptors and host resource services; diagnosed
-text/HTML/RTF/DOCX interchange; native JSON v4; data XAML;
-bounded Markdown codec/viewer and optional host highlighting. There is one shipped
-package, Textalonia. No optional integration package or desktop host is required.
+text/HTML/RTF/DOCX interchange; native JSON v10 (v4-v10 readable); data XAML v5;
+bounded Markdown codec/viewer and optional host highlighting. The core package is
+Textalonia; PDF export is available through optional Textalonia.Pdf.Skia.
+The core editor does not require that backend or a desktop host.
 
 Minimum framework is .NET 8. Minimum and pinned tested Avalonia version is 12.1.3;
 the declared <13 range is a restore constraint, not certification of every version.
@@ -50,8 +51,7 @@ are included in the same package. Use the independent PackageSmoke program as a
 compiling example for extension services and input replacement.
 
 Read [API contracts](API-CONTRACTS.md) before attaching mutable sessions/services
-to controls. Native JSON supports only current prerelease schema v4; other
-versions are rejected. Earlier development schemas were never published or used
+to controls. Native JSON writes schema v10 and reads v4/v5/v6/v7/v8/v9/v10; other versions are rejected. Earlier development schemas were never published or used
 and have no migration support. Use strict conversion reports when export loss
 matters.
 
@@ -69,3 +69,61 @@ inspector records this bounded exception; other unmapped sources fail inspection
 Bit-for-bit equality across different checkout paths/OS hosts is not claimed for
 Avalonia-generated debug metadata; publication always uses the exact reviewed
 artifacts, with source/SDK/dependency identity retained for reproduction.
+
+## DX-01 styles and typography
+
+Added document-owned named character/paragraph/table styles with inheritance,
+linked/next styles, sparse direct overrides, themes and embedded-font services.
+Editing, mixed selections, layout and DOCX share effective style resolution.
+Font/paragraph/tabs/style dialogs are available from the toolbar. Advanced run
+shaping, tab stops/leaders, paragraph spacing and decorations share hit-test and
+caret geometry. DX-02 subsequently added pagination for page/keep/widow and grid metadata.
+
+DX-01 introduced native v5; the current native schema is v10 as described above.
+XAML and clipboard retain the new model;
+DOCX retains mapped styles/themes/fonts. Other formats report flattened style
+identity and unsupported typography. See [support details](STYLES.md).
+
+## DX-04 output
+
+Added shared exact-page output rendering, print preview and editor output commands,
+optional `Textalonia.Pdf.Skia` PDF export, and host print-service contracts with
+page ranges, copies, collation and capability validation. Output captures the
+complete immutable document, including DX-03 stories/page fields, without changing
+selection or history. Caller-owned streams remain open on every completion path.
+See [OUTPUT.md](OUTPUT.md) for APIs, unsupported-content policy and ownership.
+
+The application supplies a native printer/dialog adapter. Native printer evidence
+and platform font qualification remain pending. Tagged PDF, PDF/A and PDF/UA are
+not exposed; logical structure and external-validator conformance remain future
+DX-04 work. The optional backend adds Avalonia.Skia and its native dependencies;
+see [third-party notices](../THIRD-PARTY-NOTICES.md).
+
+
+## DX-05 fields and navigation
+
+Persistent bookmarks and internal destinations, rich general fields, deterministic
+field evaluation, contents/captions, bounded page re-evaluation, outline navigation
+and reusable story-aware find/replace are available in this candidate. Field
+results retain ordinary rich-text coordinates; code previews are read-only.
+Native v8, data XAML v3 and clipboard v4 preserve the new metadata, with DOCX/RTF
+standard field/bookmark interchange and diagnosed unsupported cases. See
+[FIELDS.md](FIELDS.md) for exact field families, update policy and remaining
+formatted repeated-field, complete switch and native/Office qualification limits.
+
+## DX-06 table and list extensions
+
+Added preferred widths and content/window AutoFit, RTL grids, cell alignment and
+bidi direction, conditional table styles and border kinds, repeating headers and
+row split policies, positioned page tables with rectangular text wrapping, and
+formatted/style-linked list markers. Table properties and band shading can be
+edited through the toolbar dialogs. Native v9, data XAML v4 and clipboard v5 retain
+the metadata, with earlier supported versions still readable. See [table/list
+contracts](TABLES.md) for format coverage and explicit layout limitations.
+
+## DX-07 pictures and objects
+
+Image placement/crop/rotation, section text/image watermarks and OLE packages with
+supplied previews are available through focused APIs and the Pictures toolbar menu.
+Native v10, XAML v5 and clipboard v6 retain the expanded model. See [image contracts](IMAGES.md)
+for format/rendering support and qualification boundaries.

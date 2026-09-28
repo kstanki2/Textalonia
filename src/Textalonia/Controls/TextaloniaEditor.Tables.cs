@@ -32,6 +32,7 @@ public partial class TextaloniaEditor
             if (_cellSelection is not { } selected || FindTable(selected.TableId) is not { } table ||
                 selected.Row + selected.RowCount > table.Rows.Length || selected.Column + selected.ColumnCount > table.ColumnCount) return Session.FormattingState;
             var text = new List<TextStyle>(); var paragraphs = new List<ParagraphStyle>();
+            var resolver = new DocumentStyleResolver(Session.Document);
             for (var row = selected.Row; row < selected.Row + selected.RowCount; row++)
                 for (var column = selected.Column; column < selected.Column + selected.ColumnCount; column++)
                 {
@@ -41,9 +42,9 @@ public partial class TextaloniaEditor
                     foreach (var entry in Session.Index.Enumerate(location.Start, Math.Min(end, Session.Index.Length)))
                     {
                         if (entry.Start >= end) break;
-                        paragraphs.Add(entry.Paragraph.Style);
-                        if (entry.Paragraph.Runs.IsEmpty) text.Add(entry.Paragraph.DefaultStyle);
-                        else text.AddRange(entry.Paragraph.Runs.Select(run => run.Style));
+                        paragraphs.Add(resolver.ResolveParagraphStyle(entry.Paragraph.Style));
+                        if (entry.Paragraph.Runs.IsEmpty) text.Add(resolver.ResolveText(entry.Paragraph, entry.Paragraph.DefaultStyle));
+                        else text.AddRange(entry.Paragraph.Runs.Select(run => resolver.ResolveText(entry.Paragraph, run.Style)));
                     }
                 }
             return new(text, paragraphs);
@@ -57,12 +58,26 @@ public partial class TextaloniaEditor
         return table.SetCell(row, column, cell with { Blocks = blocks });
     });
     private void ApplySelectedTextStyle(Func<TextStyle, TextStyle> change) => FormatSelectedCellParagraphs(paragraph =>
-        paragraph.Format(0, paragraph.Length, change) with { DefaultStyle = change(paragraph.DefaultStyle) });
+        paragraph.Format(0, paragraph.Length, value => ChangeCellTextStyle(paragraph, value, change)) with
+        { DefaultStyle = ChangeCellTextStyle(paragraph, paragraph.DefaultStyle, change) });
     public void ApplyParagraphStyle(Func<ParagraphStyle, ParagraphStyle> change)
     {
         ArgumentNullException.ThrowIfNull(change);
         if (_cellSelection is null) Session.ApplyParagraphStyle(change);
-        else FormatSelectedCellParagraphs(paragraph => paragraph with { Style = change(paragraph.Style) });
+        else FormatSelectedCellParagraphs(paragraph =>
+        {
+            var effective = new DocumentStyleResolver(Session.Document).ResolveParagraphStyle(paragraph.Style);
+            var changed = change(effective);
+            return paragraph with { Style = paragraph.Style.Overrides is null ? changed : paragraph.Style with
+            { Overrides = ParagraphStyleOverrides.Difference(effective, changed, paragraph.Style.Overrides) } };
+        });
+    }
+    private TextStyle ChangeCellTextStyle(Paragraph paragraph, TextStyle stored, Func<TextStyle, TextStyle> change)
+    {
+        var effective = new DocumentStyleResolver(Session.Document).ResolveText(paragraph, stored);
+        var changed = change(effective);
+        return stored.Overrides is null ? changed : stored with
+        { Overrides = TextStyleOverrides.Difference(effective, changed, stored.Overrides) };
     }
     private void ToggleSelectedBold()
     {
@@ -77,12 +92,12 @@ public partial class TextaloniaEditor
     private void ToggleSelectedUnderline()
     {
         var state = FormattingState.Underline; var enabled = state.IsMixed || !state.Value;
-        ApplyStyle(style => style with { Underline = enabled });
+        ApplyStyle(style => style with { Underline = enabled, UnderlineKind = UnderlineKind.None });
     }
     private void ToggleSelectedStrikethrough()
     {
         var state = FormattingState.Strikethrough; var enabled = state.IsMixed || !state.Value;
-        ApplyStyle(style => style with { Strikethrough = enabled });
+        ApplyStyle(style => style with { Strikethrough = enabled, StrikeKind = StrikeKind.None });
     }
     internal void SetSelectedHeading(int level)
     {
@@ -90,8 +105,17 @@ public partial class TextaloniaEditor
         if (level is < 0 or > 6) throw new ArgumentOutOfRangeException(nameof(level));
         var size = level switch { 1 => 32, 2 => 26, 3 => 22, 4 => 20, 5 => 18, _ => 16 };
         TextStyle Change(TextStyle style) => style with { FontSize = size, Bold = level > 0, FontWeight = null };
-        FormatSelectedCellParagraphs(paragraph => paragraph.Format(0, paragraph.Length, Change) with
-        { DefaultStyle = Change(paragraph.DefaultStyle), Style = paragraph.Style with { HeadingLevel = level, SpaceBefore = level > 0 ? 12 : 0 } });
+        FormatSelectedCellParagraphs(paragraph =>
+        {
+            var effective = new DocumentStyleResolver(Session.Document).ResolveParagraphStyle(paragraph.Style);
+            var changed = effective with { HeadingLevel = level, SpaceBefore = level > 0 ? 12 : 0 };
+            return paragraph.Format(0, paragraph.Length, value => ChangeCellTextStyle(paragraph, value, Change)) with
+            {
+                DefaultStyle = ChangeCellTextStyle(paragraph, paragraph.DefaultStyle, Change),
+                Style = paragraph.Style.Overrides is null ? changed : paragraph.Style with
+                { Overrides = ParagraphStyleOverrides.Difference(effective, changed, paragraph.Style.Overrides) }
+            };
+        });
     }
     internal void ToggleSelectedList(ListKind kind)
     {
@@ -114,7 +138,9 @@ public partial class TextaloniaEditor
 
     public TableCellSelection? CellSelection => _cellSelection;
     public bool IsResizingTable => _tableResize is not null;
-    internal FlowDocument? TablePreviewDocument => _tablePreviewDocument;
+    internal FlowDocument? TablePreviewDocument => _tablePreviewDocument is not { } preview ? null :
+        ActiveStoryId == Guid.Empty ? preview : Session.Document with
+        { Stories = Session.Document.Stories.SetItem(ActiveStoryId, Session.Document.Stories[ActiveStoryId] with { Blocks = preview.Blocks }) };
 
     private void AttachTableEvents()
     {
@@ -264,9 +290,9 @@ public partial class TextaloniaEditor
         CancelTableResize(); Session.Execute(document => document with { Blocks = Remove(document.Blocks) });
     }
 
-    public void SetTableCellPadding(EdgeInsets? padding) => ApplySelectedCells((table, row, column) => table.SetCell(row, column, table.Rows[row][column] with { Padding = padding }));
-    public void SetTableCellBorders(BlockBorders? borders) => ApplySelectedCells((table, row, column) => table.SetCell(row, column, table.Rows[row][column] with { Borders = borders }));
-    public void SetTableCellBackground(string? background) => ApplySelectedCells((table, row, column) => table.SetCell(row, column, table.Rows[row][column] with { Background = background }));
+    public void SetTableCellPadding(EdgeInsets? padding) => ApplySelectedCells((table, row, column) => table.SetCell(row, column, table.Rows[row][column] with { Padding = padding, StyleOverrides = table.Rows[row][column].StyleOverrides is { } direct ? direct with { Padding = padding } : null }));
+    public void SetTableCellBorders(BlockBorders? borders) => ApplySelectedCells((table, row, column) => table.SetCell(row, column, table.Rows[row][column] with { Borders = borders, StyleOverrides = table.Rows[row][column].StyleOverrides is { } direct ? direct with { Borders = borders } : null }));
+    public void SetTableCellBackground(string? background) => ApplySelectedCells((table, row, column) => table.SetCell(row, column, table.Rows[row][column] with { Background = background, StyleOverrides = table.Rows[row][column].StyleOverrides is { } direct ? direct with { Background = background } : null }));
 
     /// <summary>Sets a positive relative column width.</summary>
     public void SetTableColumnWidth(double width) => ChangeTargetTable((table, _, column) =>
@@ -278,7 +304,7 @@ public partial class TextaloniaEditor
     public void SetTableRowHeight(double height, TableRowHeightMode mode = TableRowHeightMode.AtLeast) => ChangeTargetTable((table, row, _) =>
     {
         var sizing = table.RowSizing.IsEmpty ? Enumerable.Range(0, table.Rows.Length).Select(_ => new TableRowSizing()).ToImmutableArray() : table.RowSizing;
-        return table with { RowSizing = sizing.SetItem(row, new() { Height = height, Mode = mode }) };
+        return table with { RowSizing = sizing.SetItem(row, sizing[row] with { Height = height, Mode = mode }) };
     });
 
     /// <summary>Keyboard/toolbar equivalent of dragging a current cell edge by a distance in device-independent pixels.</summary>
@@ -287,7 +313,7 @@ public partial class TextaloniaEditor
         if (Session.IsReadOnly || _surface is null || TableTarget() is not { } target) return false;
         if (!double.IsFinite(delta)) throw new ArgumentOutOfRangeException(nameof(delta));
         _surface.EnsureLayout(_surface.Bounds.Width);
-        var cell = _surface.Layout.TableCells().FirstOrDefault(cell => cell.Table.Id == target.Table.Id && cell.Row == target.Row && cell.Column == target.Column);
+        var cell = _surface.GeometryTableCells().FirstOrDefault(cell => cell.Table.Id == target.Table.Id && cell.Row == target.Row && cell.Column == target.Column);
         if (cell is null) return false;
         var size = axis == TableResizeAxis.Column ? cell.ColumnWidth : cell.RowHeight;
         var index = axis == TableResizeAxis.Column ? cell.Column + cell.Cell.ColumnSpan - 1 : cell.Row + cell.Cell.RowSpan - 1;
@@ -304,7 +330,20 @@ public partial class TextaloniaEditor
         if (index < 0 || index >= (axis == TableResizeAxis.Column ? table.ColumnCount : table.Rows.Length)) throw new ArgumentOutOfRangeException(nameof(index));
         if (axis == TableResizeAxis.Column && table.ColumnCount == 1) return false;
         AttachTableEvents(); CancelTableResize();
-        _tableResize = new(Session.Document, Session.Revision, table, axis, index, initialSize);
+        if (axis == TableResizeAxis.Column && (table.AutoFit != TableAutoFit.Legacy ||
+            table.Rows.SelectMany((row, r) => row.Where((cell, c) => !table.IsCovered(r, c))).Any(cell => cell.PreferredWidth.Unit != TableWidthUnit.Auto)))
+        {
+            // Freeze the measured grid before a manual resize; content preferences must not override the drag.
+            var cells = _surface?.GeometryTableCells().Where(cell => cell.Table.Id == table.Id).ToArray() ?? [];
+            var weights = table.ColumnWidths.IsEmpty ? Enumerable.Repeat(1d, table.ColumnCount).ToArray() : table.ColumnWidths.ToArray();
+            var widths = weights.Select(weight => weight * initialSize / weights[index]).ToArray();
+            foreach (var group in cells.GroupBy(cell => cell.Column + cell.Cell.ColumnSpan - 1))
+                widths[group.Key] = group.First().ColumnWidth;
+            table = table with { AutoFit = TableAutoFit.Fixed, ColumnWidths = widths.ToImmutableArray(),
+                PreferredWidth = new(TableWidthUnit.Absolute, widths.Sum()),
+                Rows = table.Rows.Select((row, r) => row.Select((cell, c) => table.IsCovered(r, c) ? cell : cell with { PreferredWidth = new() }).ToImmutableArray()).ToImmutableArray() };
+        }
+        _tableResize = new(Session.ActiveDocument, Session.Revision, table, axis, index, initialSize);
         return true;
     }
     public void PreviewTableResize(double size)
@@ -333,7 +372,7 @@ public partial class TextaloniaEditor
             else
             {
                 var rows = table.RowSizing.IsEmpty ? Enumerable.Range(0, table.Rows.Length).Select(_ => new TableRowSizing()).ToImmutableArray() : table.RowSizing;
-                table = table with { RowSizing = rows.SetItem(resize.Index, new() { Mode = rows[resize.Index].Mode == TableRowHeightMode.Exact ? TableRowHeightMode.Exact : TableRowHeightMode.AtLeast, Height = size }) };
+                table = table with { RowSizing = rows.SetItem(resize.Index, rows[resize.Index] with { Mode = rows[resize.Index].Mode == TableRowHeightMode.Exact ? TableRowHeightMode.Exact : TableRowHeightMode.AtLeast, Height = size }) };
             }
             _tablePreviewDocument = resize.Document.ReplaceBlock(table.Id, table);
         }
@@ -356,10 +395,12 @@ public partial class TextaloniaEditor
     public void ContinuePreviousList()
     {
         var selected = Session.Index.At(Session.Selection.Start);
-        var previous = Session.Index.Enumerate(0, selected.Start).LastOrDefault(p => p.Start < selected.Start && p.Paragraph.Style.List != ListKind.None && p.Paragraph.Style.ListId is not null);
-        if (previous?.Paragraph.Style.ListId is not { } identity) return;
+        var resolver = new DocumentStyleResolver(Session.Document);
+        var previous = Session.Index.Enumerate(0, selected.Start).Where(p => p.Start < selected.Start)
+            .Select(p => resolver.ResolveParagraphStyle(p.Paragraph.Style)).LastOrDefault(s => s.List != ListKind.None && s.ListId is not null);
+        if (previous?.ListId is not { } identity) return;
         if (_cellSelection is null) Session.ContinueList(identity);
         else ApplyParagraphStyle(style => style with
-        { List = previous.Paragraph.Style.List, ListDefinition = previous.Paragraph.Style.ListDefinition, ListId = identity, ListRestart = false, ListStart = null });
+        { List = previous.List, ListDefinition = previous.ListDefinition, ListId = identity, ListRestart = false, ListStart = null });
     }
 }

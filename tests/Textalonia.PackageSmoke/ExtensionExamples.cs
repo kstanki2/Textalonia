@@ -15,6 +15,7 @@ internal static class ExtensionExamples
     {
         IDocumentFormat format = new HostTextFormat();
         var editor = window.FindControl<TextaloniaEditor>("Editor")!;
+        TableListExample.Verify();
         await MailMergeExample.VerifyAsync(editor);
         using var source = new MemoryStream(Encoding.UTF8.GetBytes("Host codec"));
         await editor.LoadAsync(source, format);

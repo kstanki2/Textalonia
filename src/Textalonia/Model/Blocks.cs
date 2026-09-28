@@ -113,6 +113,10 @@ public sealed record Section : Block
 
 public sealed record TableCell
 {
+    public TablePreferredWidth PreferredWidth { get; init; } = new();
+    public TableCellVerticalAlignment VerticalAlignment { get; init; }
+    public TableCellTextDirection TextDirection { get; init; }
+    public TableStyleOverrides? StyleOverrides { get; init; }
     public Guid Id { get; init; } = Guid.NewGuid();
     private SnapshotArray<Block> _blocks = SnapshotArray<Block>.From([new Paragraph()]);
     public ImmutableArray<Block> Blocks { get => _blocks.Read(); init => _blocks = SnapshotArray<Block>.From(value); }
@@ -143,12 +147,23 @@ public sealed record TableCell
 public enum TableRowHeightMode { Auto, AtLeast, Exact }
 public sealed record TableRowSizing
 {
+    public bool AllowSplit { get; init; } = true;
     public TableRowHeightMode Mode { get; init; }
     public double Height { get; init; }
 }
 
 public sealed record Table : Block
 {
+    public TablePreferredWidth PreferredWidth { get; init; } = new();
+    public TableAutoFit AutoFit { get; init; }
+    public TableAlignment Alignment { get; init; }
+    public double Indent { get; init; }
+    public bool RightToLeft { get; init; }
+    public int RepeatHeaderRows { get; init; }
+    public TablePosition? Position { get; init; }
+    /// <summary>Named table formatting, shared by every cell without a direct cell override.</summary>
+    public string? StyleId { get; init; }
+    public TableStyleOverrides? StyleOverrides { get; init; }
     public ImmutableArray<ImmutableArray<TableCell>> Rows { get; init; } = [];
     /// <summary>Positive relative column widths; an empty array gives equal columns.</summary>
     public ImmutableArray<double> ColumnWidths { get; init; } = [];

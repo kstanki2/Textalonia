@@ -3,11 +3,12 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Textalonia.Model;
+using Textalonia.Model.Fields;
 
 namespace Textalonia.Serialization;
 
 /// <summary>Bounded RTF interchange for flow text, lists, tables, sections, links and embedded PNG/JPEG images.</summary>
-public sealed class RtfDocumentFormat : TextDocumentFormat
+public sealed partial class RtfDocumentFormat : TextDocumentFormat
 {
     public override string Name => "Rich Text Format";
     public override IReadOnlyList<string> Extensions => [".rtf"];
@@ -101,15 +102,22 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
     private sealed record State(TextStyle Text, ParagraphStyle Paragraph, int UnicodeFallback = 1, int List = 0);
     private sealed record ListInfo(Guid Id, ListDefinition Definition, ImmutableDictionary<int, int> Starts);
     private sealed record CellInfo(int Right = 0, string? Background = null, bool HorizontalStart = false,
-        bool HorizontalContinue = false, bool VerticalStart = false, bool VerticalContinue = false);
+        bool HorizontalContinue = false, bool VerticalStart = false, bool VerticalContinue = false,
+        TablePreferredWidth? PreferredWidth = null, TableCellVerticalAlignment VerticalAlignment = TableCellVerticalAlignment.Top);
     private sealed class Row
     {
         public List<CellInfo> Definitions { get; } = [];
         public List<TableCell> Cells { get; } = [];
         public List<Block> Blocks { get; } = [];
         public TableRowSizing Sizing { get; set; } = new();
+        public TablePreferredWidth PreferredWidth { get; set; } = new();
+        public TableAutoFit AutoFit { get; set; }
+        public TableAlignment Alignment { get; set; }
+        public double Indent { get; set; }
+        public bool RightToLeft { get; set; }
+        public bool Header { get; set; }
     }
-    private sealed class Reader(Group root, bool byteSource = false)
+    private sealed partial class Reader(Group root, bool byteSource = false, bool readingStory = false)
     {
         private readonly Dictionary<int, string> _fonts = [];
         private readonly List<string?> _colors = [null];
@@ -135,6 +143,15 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
         private bool _nestedProperties;
         private bool _flattenFields;
         private long _resourceBytes;
+        private readonly string _resourcePrefix = Guid.NewGuid().ToString("N");
+        private readonly ImmutableDictionary<Guid, DocumentStory>.Builder _stories = ImmutableDictionary.CreateBuilder<Guid, DocumentStory>();
+        private readonly List<DocumentNote> _notes = [];
+        private readonly List<DocumentSection> _physicalSections = [];
+        private DocumentSection _physicalSection = new();
+        private bool _hasPhysicalSections;
+        private bool _oddEvenHeaders;
+        private NoteSettings _footnoteSettings = new();
+        private NoteSettings _endnoteSettings = new() { Placement = NotePlacement.DocumentEnd };
 
         private void Loss(string code, string feature, string fallback, int? offset = null)
         {
@@ -180,9 +197,10 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 }
                 else Loss("rtf.undefined-list", "Undefined list override", "Imported the paragraph without numbering.");
             }
-            var paragraph = new Paragraph(_runs) { Style = style, DefaultStyle = state.Text };
+            var paragraph = new Paragraph(_runs) { Id = _paragraphId, Style = style, DefaultStyle = state.Text };
             if (_row is not null) _row.Blocks.Add(paragraph);
             else { EndTable(); _section.Add(paragraph); }
+            _paragraphId = Guid.NewGuid();
             _runs.Clear(); _lastState = state;
         }
         private void PendingParagraph(State state) { if (_buffer.Length > 0 || _runs.Count > 0) Paragraph(state); }
@@ -192,7 +210,9 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             PendingParagraph(state);
             if (_row.Blocks.Count == 0) _row.Blocks.Add(new Paragraph { Style = state.Paragraph, DefaultStyle = state.Text });
             if (_row.Cells.Count >= 100 || _row.Cells.Count >= _row.Definitions.Count && (_outerRows.Count == 0 || _row.Definitions.Count != 0)) throw new FormatException("RTF cell has no cell boundary.");
-            _row.Cells.Add(new() { Blocks = _row.Blocks.ToImmutableArray(), Background = _row.Cells.Count < _row.Definitions.Count ? _row.Definitions[_row.Cells.Count].Background : null });
+            var definition = _row.Cells.Count < _row.Definitions.Count ? _row.Definitions[_row.Cells.Count] : new CellInfo();
+            _row.Cells.Add(new() { Blocks = _row.Blocks.ToImmutableArray(), Background = definition.Background,
+                PreferredWidth = definition.PreferredWidth ?? new(), VerticalAlignment = definition.VerticalAlignment });
             _row.Blocks.Clear();
         }
         private void NestedRow(State state, int offset)
@@ -244,16 +264,32 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                     }
                 }
             var first = _rows[0].Definitions;
-            var widths = first.Count == columns ? first.Select((cell, i) => (cell.Right - (i == 0 ? 0 : first[i - 1].Right)) / 15d).ToImmutableArray() : [];
+            var widths = first.Count == columns ? first.Select((cell, i) => (cell.Right - (i == 0 ? _rows[0].Indent * 15 : first[i - 1].Right)) / 15d).ToImmutableArray() : [];
             if (_rows.Skip(1).Any(row => !row.Definitions.Select(c => c.Right).SequenceEqual(first.Select(c => c.Right))))
                 Loss("rtf.row-cell-widths", "Per-row cell widths", "Used the first row's column widths.");
+            var settings = _rows[0]; var headers = _rows.TakeWhile(row => row.Header).Count();
+            if (_rows.Skip(headers).Any(row => row.Header)) Loss("rtf.noncontiguous-header-rows", "Repeating header after a body row", "Only contiguous leading headers repeat.");
+            if (_rows.Skip(1).Any(row => row.PreferredWidth != settings.PreferredWidth || row.AutoFit != settings.AutoFit || row.Alignment != settings.Alignment || row.Indent != settings.Indent || row.RightToLeft != settings.RightToLeft))
+                Loss("rtf.row-table-settings", "Different table settings between rows", "The first row defines table width, alignment, indent and direction.");
             _section.Add(new Table { Rows = cells.Select(r => r.ToImmutableArray()).ToImmutableArray(), ColumnWidths = widths,
-                RowSizing = _rows.Select(r => r.Sizing).ToImmutableArray() });
+                RowSizing = _rows.Select(r => r.Sizing).ToImmutableArray(), PreferredWidth = settings.PreferredWidth, AutoFit = settings.AutoFit,
+                Alignment = settings.Alignment, Indent = settings.Indent, RightToLeft = settings.RightToLeft, RepeatHeaderRows = headers });
             _rows.Clear();
         }
         private void EndSection(bool force)
         {
             EndTable();
+            if (_section.Count == 0 && (force || _hasPhysicalSections && _blocks.Count == 0)) _section.Add(new Paragraph());
+            if (_hasPhysicalSections && _physicalSections.Count > 0 && _section.FirstOrDefault() is Table)
+            {
+                Loss("rtf.section-table-boundary", "Physical section beginning with a table", "Inserted an empty paragraph before the table to retain the section boundary.");
+                _section.Insert(0, new Paragraph());
+            }
+            if (_section.Count > 0 || force)
+            {
+                var first = new DocumentIndex(new FlowDocument(_section)).Paragraphs.First().Paragraph.Id;
+                _physicalSections.Add(_physicalSection with { StartParagraphId = _physicalSections.Count == 0 ? Guid.Empty : first });
+            }
             if (force || _sectionActive && _section.Count > 0) _blocks.Add(new Section { Blocks = _section.Count == 0 ? [new Paragraph()] : _section.ToImmutableArray() });
             else _blocks.AddRange(_section);
             _section.Clear(); _sectionActive = false;
@@ -271,8 +307,12 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             }
             Walk(root, new(_defaultText, ParagraphStyle.Default), true);
             if (_row is not null) throw new FormatException("Unterminated RTF table row.");
+            if (_anchorParagraphs.Contains(_paragraphId)) Paragraph(_lastState);
             PendingParagraph(_lastState); EndSection(false);
-            var document = new FlowDocument(_blocks) { Resources = _resources.ToImmutable() };
+            var document = new FlowDocument(_blocks) { Resources = _resources.ToImmutable(), Stories = _stories.ToImmutable(), Notes = _notes.ToImmutableArray(),
+                Sections = _hasPhysicalSections ? _physicalSections.ToImmutableArray() : [], FootnoteSettings = _footnoteSettings, EndnoteSettings = _endnoteSettings };
+            foreach (var unmatched in _bookmarkStarts.Values) Loss("rtf.bookmark", "Unclosed bookmark", "Omitted the detached bookmark.");
+            document = document with { Bookmarks = _bookmarks.ToImmutableArray(), Fields = _fields.ToImmutableArray(), Properties = _properties };
             document.Validate(); return document;
         }
         private string DecodeLiterals(List<Node> nodes, ref int index, ref int fallback)
@@ -392,15 +432,35 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 Loss("rtf.list-pattern", "Unrepresentable list marker pattern", "Used the current level's number and supported ancestor ordering.", level.Offset);
             if (slots.Length > 1 && Enumerable.Range(0, slots.Length - 1).Any(i => pattern[(slots[i].index + 1)..slots[i + 1].index] != "."))
                 Loss("rtf.list-pattern", "Custom ancestor list separators", "Used dots between ancestor numbers.", level.Offset);
+            var words = new HashSet<string>(["plain", "b", "i", "ul", "ulnone", "strike", "sub", "super", "nosupersub", "fs", "f", "cf", "highlight", "chcbpat", "charscalex"]);
+            var controls = level.Nodes.OfType<Control>().Where(c => words.Contains(c.Word)).ToArray();
+            var state = new State(TextStyle.Default, ParagraphStyle.Default);
+            foreach (var control in controls) state = Apply(control, state);
+            bool Has(params string[] names) => controls.Any(c => c.Word == "plain" || names.Contains(c.Word));
+            var textStyle = state.Text;
+            var markerFormatting = new TextStyleOverrides
+            {
+                FontFamily = Has("f") ? new(textStyle.FontFamily) : default, FontSize = Has("fs") ? new(textStyle.FontSize) : default,
+                Bold = Has("b") ? new(textStyle.Bold) : default, Italic = Has("i") ? new(textStyle.Italic) : default,
+                Underline = Has("ul", "ulnone") ? new(textStyle.Underline) : default, Strikethrough = Has("strike") ? new(textStyle.Strikethrough) : default,
+                Foreground = Has("cf") ? new(textStyle.Foreground) : default, Background = Has("highlight", "chcbpat") ? new(textStyle.Background) : default,
+                Baseline = Has("sub", "super", "nosupersub") ? new(textStyle.Baseline) : default, FontStretch = Has("charscalex") ? new(textStyle.FontStretch) : default
+            };
+            if (level.Number("levelstyle") is not null) Loss("rtf.list-style-link", "List paragraph style link", "Imported list numbering without the named style link.", level.Offset);
             return new() { Start = (int)Range(level.Number("levelstartat") ?? 1, 1, 1_000_000, "List start", level.Offset), Marker = marker,
                 Kind = marker == ListMarkerStyle.Bullet ? ListKind.Bullet : ListKind.Numbered, Text = marker == ListMarkerStyle.Bullet && pattern.Length > 0 ? pattern : null,
-                Prefix = prefix, Suffix = suffix, IncludeAncestors = slots.Length > 1 };
+                Prefix = prefix, Suffix = suffix, IncludeAncestors = slots.Length > 1, MarkerFormatting = markerFormatting,
+                TextIndent = level.Number("li") is { } left ? Range(left / 15d, 0, 100000, "List indent", level.Offset) : null,
+                MarkerIndent = level.Number("li") is { } indent ? Range((indent + (level.Number("fi") ?? 0)) / 15d, 0, 100000, "List marker indent", level.Offset) : null,
+                TabPosition = level.Number("tx") is { } tab ? Range(tab / 15d, 0, 100000, "List tab", level.Offset) : null,
+                FollowCharacter = (ListFollowCharacter)(int)Range(level.Number("levelfollow") ?? 0, 0, 2, "List follow character", level.Offset) };
         }
         private void Walk(Group group, State state, bool documentRoot = false)
         {
             if (!documentRoot)
             {
                 var destination = group.Destination;
+                if (RangeDestination(group, state)) return;
                 if (destination is "fonttbl" or "colortbl" or "listtable" or "listoverridetable" or "generator" or "info" or "nonesttables") return;
                 if (destination is "listtext" or "pntext")
                 {
@@ -409,7 +469,21 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 }
                 if (destination == "field") { Field(group, state); return; }
                 if (destination == "pict") { Picture(group, state); return; }
-                if (destination is "stylesheet" or "object" or "header" or "headerl" or "headerr" or "headerf" or "footer" or "footerl" or "footerr" or "footerf" or "footnote" or "annotation" or "pn" || group.Nodes.FirstOrDefault() is Control { Word: "*" } && destination != "nesttableprops")
+                if (destination is "header" or "headerl" or "headerr" or "headerf" or "footer" or "footerl" or "footerr" or "footerf") { HeaderFooter(group); return; }
+                if (destination == "footnote") { Note(group, state); return; }
+                if (destination is "ftnsep" or "ftnsepc" or "aftnsep" or "aftnsepc")
+                {
+                    var settings = destination.StartsWith('a') ? _endnoteSettings : _footnoteSettings;
+                    var separator = Plain(group);
+                    if (separator.Length > 256) { Loss("rtf.note-separator", "Oversized note separator", "Retained the default separator.", group.Offset); return; }
+                    settings = destination.EndsWith('c') ? settings with { ContinuationSeparatorText = separator } : settings with { SeparatorText = separator };
+                    if (destination.StartsWith('a')) _endnoteSettings = settings; else _footnoteSettings = settings;
+                    if (group.Nodes.OfType<Group>().Any() || group.Nodes.OfType<Control>().Any(c => c.Word is "b" or "i" or "pict" or "trowd"))
+                        Loss("rtf.note-separator-formatting", "Rich note separator", "Retained the separator text without rich formatting.", group.Offset);
+                    return;
+                }
+                if (destination == "textalonianotemark") return;
+                if (destination is "stylesheet" or "object" or "annotation" or "pn" || group.Nodes.FirstOrDefault() is Control { Word: "*" } && destination != "nesttableprops")
                 { Loss("rtf.unsupported-destination", $"RTF destination {destination}", "Omitted this destination; retained surrounding body text.", group.Offset); return; }
             }
             var outerProperties = _nestedProperties;
@@ -424,14 +498,90 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 }
             _nestedProperties = outerProperties;
         }
+        private DocumentStory ReadStory(Group group, DocumentStoryKind kind)
+        {
+            if (readingStory) throw new FormatException("Nested RTF stories are unsupported.");
+            var nodes = root.Nodes.Where(n => n is Control { Word: "ansicpg" or "deff" } || n is Group { Destination: "fonttbl" or "colortbl" or "listtable" or "listoverridetable" }).ToList();
+            nodes.AddRange(group.Nodes.Where(n => n is not Control { Word: "header" or "headerl" or "headerr" or "headerf" or "footer" or "footerl" or "footerr" or "footerf" or "footnote" or "ftnalt" or "*" }));
+            var storyDocument = new Reader(new Group(nodes, group.Offset), byteSource, true).Read();
+            foreach (var resource in storyDocument.Resources)
+            {
+                _resourceBytes += resource.Value.Data.Length;
+                if (_resourceBytes > DocumentResource.MaximumDocumentEmbeddedBytes || _resources.Count >= 4096) throw new FormatException("RTF embedded resources exceed the size limit.");
+                _resources.Add(resource.Key, resource.Value);
+            }
+            var story = new DocumentStory { Kind = kind, Blocks = storyDocument.Blocks };
+            if (_stories.Count >= 10000) throw new FormatException("RTF contains too many stories.");
+            _stories.Add(story.Id, story);
+            _bookmarks.AddRange(storyDocument.Bookmarks.Select(bookmark => bookmark with { Start = bookmark.Start with { StoryId = story.Id }, End = bookmark.End with { StoryId = story.Id } }));
+            _fields.AddRange(storyDocument.Fields.Select(field => field with { Start = field.Start with { StoryId = story.Id }, End = field.End with { StoryId = story.Id } }));
+            return story;
+        }
+        private void HeaderFooter(Group group)
+        {
+            if (readingStory) { Loss("rtf.nested-story", "Nested header/footer story", "Omitted the nested destination.", group.Offset); return; }
+            var story = ReadStory(group, group.Destination!.StartsWith("header", StringComparison.Ordinal) ? DocumentStoryKind.Header : DocumentStoryKind.Footer);
+            var reference = new StoryReference { StoryId = story.Id, LinkToPrevious = false };
+            var settings = _physicalSection.HeaderFooter;
+            settings = group.Destination switch
+            {
+                "headerf" => settings with { FirstHeader = reference }, "headerl" => settings with { EvenHeader = reference },
+                "footerf" => settings with { FirstFooter = reference }, "footerl" => settings with { EvenFooter = reference },
+                "footer" or "footerr" => settings with { PrimaryFooter = reference }, _ => settings with { PrimaryHeader = reference }
+            };
+            _physicalSection = _physicalSection with { HeaderFooter = settings };
+            _hasPhysicalSections = true;
+        }
+        private void Note(Group group, State state)
+        {
+            if (readingStory) { Loss("rtf.nested-note", "Note reference in a secondary story", "Omitted the nested note destination.", group.Offset); return; }
+            var endnote = group.Nodes.OfType<Control>().Any(c => c.Word == "ftnalt");
+            var custom = group.Groups("textalonianotemark").FirstOrDefault();
+            var mark = custom is null ? null : Plain(custom);
+            var markerGroup = group.Nodes.OfType<Group>().FirstOrDefault(g => g.Destination == "super");
+            if (mark is null && markerGroup is not null && !group.Nodes.OfType<Control>().Any(c => c.Word == "chftn"))
+                mark = Plain(markerGroup);
+            if (mark is not null && (string.IsNullOrWhiteSpace(mark) || mark.Length > 32 || mark.Any(char.IsControl)))
+            { Loss("rtf.custom-note-mark", "Unsupported custom note mark", "Retained marker text and used automatic note numbering.", group.Offset); mark = null; }
+            if (mark is not null)
+            {
+                Flush();
+                if (_runs.LastOrDefault() is { Inline: null } last && last.Text.EndsWith(mark, StringComparison.Ordinal))
+                {
+                    _runs.RemoveAt(_runs.Count - 1);
+                    if (last.Text.Length > mark.Length) _runs.Add(new RichRun(last.Text[..^mark.Length], last.Style));
+                }
+                else Loss("rtf.custom-note-mark", "Detached custom note marker", "Retained surrounding body text and attached the custom mark to the note reference.", group.Offset);
+                if (markerGroup is not null && Plain(markerGroup) == mark)
+                    group = group with { Nodes = group.Nodes.Where(node => !ReferenceEquals(node, markerGroup)).ToList() };
+            }
+            var story = ReadStory(group, endnote ? DocumentStoryKind.Endnote : DocumentStoryKind.Footnote);
+            var note = new DocumentNote { StoryId = story.Id, Kind = endnote ? DocumentNoteKind.Endnote : DocumentNoteKind.Footnote, CustomMark = mark };
+            _notes.Add(note); Flush();
+            _runs.Add(new RichRun(InlineDescriptor.Note(note.Id, mark ?? "1"), state.Text));
+        }
         private State Apply(Control control, State state)
         {
             var number = control.Number ?? 0; var enabled = control.Number is null || number != 0;
             switch (control.Word)
             {
                 case "*": case "nesttableprops": case "rtf": case "ansi": case "ansicpg": case "deff": case "deflang": case "viewkind": case "viewscale": case "fet": case "formshade":
-                case "fldrslt": case "sbknone": case "intbl": case "lang": case "langfe": case "loch": case "hich": case "dbch": break;
-                case "trgaph": case "trleft":
+                case "fldrslt": case "intbl": case "lang": case "langfe": case "loch": case "hich": case "dbch": break;
+                case "chftn": break; // The adjacent footnote destination supplies the atomic body marker.
+                case "facingp": _oddEvenHeaders = enabled; _hasPhysicalSections = true; _physicalSection = _physicalSection with { HeaderFooter = _physicalSection.HeaderFooter with { DifferentOddEvenPages = enabled } }; break;
+                case "titlepg": _hasPhysicalSections = true; _physicalSection = _physicalSection with { HeaderFooter = _physicalSection.HeaderFooter with { DifferentFirstPage = enabled } }; break;
+                case "headery": _hasPhysicalSections = true; _physicalSection = _physicalSection with { HeaderFooter = _physicalSection.HeaderFooter with { HeaderDistance = Range(number / 15d, 0, 10000, "Header distance", control.Offset) } }; break;
+                case "footery": _hasPhysicalSections = true; _physicalSection = _physicalSection with { HeaderFooter = _physicalSection.HeaderFooter with { FooterDistance = Range(number / 15d, 0, 10000, "Footer distance", control.Offset) } }; break;
+                case "sbknone": _physicalSection = _physicalSection with { BreakKind = SectionBreakKind.Continuous }; break;
+                case "sbkpage": _physicalSection = _physicalSection with { BreakKind = SectionBreakKind.NextPage }; break;
+                case "sbkodd": _physicalSection = _physicalSection with { BreakKind = SectionBreakKind.OddPage }; break;
+                case "sbkeven": _physicalSection = _physicalSection with { BreakKind = SectionBreakKind.EvenPage }; break;
+                case "sbkcol": _physicalSection = _physicalSection with { BreakKind = SectionBreakKind.NextColumn }; break;
+                case "ftnstart": case "aftnstart": case "ftnrstpg": case "ftnrestart": case "ftnrstcont": case "aftnrestart": case "aftnrstcont":
+                case "ftnnar": case "ftnnalc": case "ftnnauc": case "ftnnrlc": case "ftnnruc": case "aftnnar": case "aftnnalc": case "aftnnauc": case "aftnnrlc": case "aftnnruc":
+                case "ftnbj": case "ftntj": case "aenddoc": case "aendnotes": case "enddoc": case "endnotes":
+                    NoteSetting(control); break;
+                case "trgaph":
                     if (number != 0) Loss("rtf.table-spacing", "RTF table offset or cell gap", "Used the model's default table spacing.", control.Offset);
                     break;
                 case "slmult":
@@ -478,7 +628,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                     var stretch = Enumerable.Range(1, 9).MinBy(s => Math.Abs(StretchPercent(s) - number));
                     if (StretchPercent(stretch) != number) Loss("rtf.font-stretch", "Arbitrary character scaling", "Used the nearest font width class.", control.Offset);
                     return state with { Text = state.Text with { FontStretch = stretch } };
-                case "plain": return state with { Text = _defaultText with { Hyperlink = state.Text.Hyperlink } };
+                case "plain": return state with { Text = _defaultText with { Hyperlink = state.Text.Hyperlink, InternalLink = state.Text.InternalLink } };
                 case "pard":
                     if (_row is null) EndTable();
                     return state with { Paragraph = ParagraphStyle.Default, List = 0 };
@@ -506,8 +656,11 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 case "ilvl":
                     if (number is < 0 or > 8) throw new FormatException("Invalid RTF list level.");
                     return state with { Paragraph = state.Paragraph with { ListLevel = number } };
-                case "sectd": PendingParagraph(state); if (_section.Count > 0 || _rows.Count > 0) EndSection(false); _sectionActive = true; break;
-                case "sect": PendingParagraph(state); EndSection(true); _sectionActive = true; break;
+                case "sectd": PendingParagraph(state); if (_section.Count > 0 || _rows.Count > 0) EndSection(false); _sectionActive = true;
+                    _physicalSection = new() { HeaderFooter = new() { DifferentOddEvenPages = _oddEvenHeaders } }; break;
+                case "sect": PendingParagraph(state); EndSection(true); _sectionActive = true;
+                    _physicalSection = _physicalSection with { Id = Guid.NewGuid(), HeaderFooter = new() { DifferentOddEvenPages = _oddEvenHeaders,
+                        HeaderDistance = _physicalSection.HeaderFooter.HeaderDistance, FooterDistance = _physicalSection.HeaderFooter.FooterDistance } }; break;
                 case "trowd":
                     if (_nestedProperties)
                     {
@@ -525,13 +678,24 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 case "cellx":
                     if (_row is null || _row.Definitions.Count >= 100 || number <= (_row.Definitions.LastOrDefault()?.Right ?? 0)) throw new FormatException("Invalid RTF cell boundary.");
                     _row.Definitions.Add(_cell with { Right = number }); _cell = new(); break;
+                case "trleft": if (_row is not null) _row.Indent = Range(number / 15d, 0, 100000, "Table indentation", control.Offset); break;
+                case "trql": case "trqc": case "trqr": if (_row is not null) _row.Alignment = control.Word == "trqc" ? TableAlignment.Center : control.Word == "trqr" ? TableAlignment.Right : TableAlignment.Left; break;
+                case "rtlrow": case "ltrrow": if (_row is not null) _row.RightToLeft = control.Word == "rtlrow"; break;
+                case "trhdr": if (_row is not null) _row.Header = control.Number != 0; break;
+                case "trkeep": if (_row is not null) _row.Sizing = _row.Sizing with { AllowSplit = control.Number == 0 }; break;
+                case "trautofit": if (_row is not null) _row.AutoFit = number == 0 ? TableAutoFit.Fixed : TableAutoFit.Content; break;
+                case "trftsWidth": if (_row is not null) _row.PreferredWidth = _row.PreferredWidth with { Unit = WidthUnit(number, control.Offset) }; break;
+                case "trwWidth": if (_row is not null) _row.PreferredWidth = _row.PreferredWidth with { Value = ReadWidth(number, _row.PreferredWidth.Unit) }; break;
+                case "clftsWidth": _cell = _cell with { PreferredWidth = (_cell.PreferredWidth ?? new()) with { Unit = WidthUnit(number, control.Offset) } }; break;
+                case "clwWidth": _cell = _cell with { PreferredWidth = (_cell.PreferredWidth ?? new()) with { Value = ReadWidth(number, _cell.PreferredWidth?.Unit ?? TableWidthUnit.Auto) } }; break;
+                case "clvertalt": case "clvertalc": case "clvertalb": _cell = _cell with { VerticalAlignment = control.Word == "clvertalc" ? TableCellVerticalAlignment.Center : control.Word == "clvertalb" ? TableCellVerticalAlignment.Bottom : TableCellVerticalAlignment.Top }; break;
                 case "clcbpat": _cell = _cell with { Background = Color(number) }; break;
                 case "clmgf": _cell = _cell with { HorizontalStart = true }; break;
                 case "clmrg": _cell = _cell with { HorizontalContinue = true }; break;
                 case "clvmgf": _cell = _cell with { VerticalStart = true }; break;
                 case "clvmrg": _cell = _cell with { VerticalContinue = true }; break;
                 case "trrh":
-                    if (_row is not null) _row.Sizing = new() { Mode = number == 0 ? TableRowHeightMode.Auto : number < 0 ? TableRowHeightMode.Exact : TableRowHeightMode.AtLeast, Height = Math.Abs(number / 15d) };
+                    if (_row is not null) _row.Sizing = _row.Sizing with { Mode = number == 0 ? TableRowHeightMode.Auto : number < 0 ? TableRowHeightMode.Exact : TableRowHeightMode.AtLeast, Height = Math.Abs(number / 15d) };
                     break;
                 case "cell": case "nestcell": EndCell(state); break;
                 case "nestrow":
@@ -541,6 +705,32 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 default: Loss("rtf.unsupported-control", $"RTF control \\{control.Word}", "Ignored this control and retained its text.", control.Offset); break;
             }
             return state;
+        }
+        private TableWidthUnit WidthUnit(int value, int offset)
+        {
+            if (value is not (0 or 1 or 2 or 3)) Loss("rtf.preferred-width-unit", "Unsupported preferred width unit", "Automatic width used.", offset);
+            return value switch { 2 => TableWidthUnit.Percentage, 3 => TableWidthUnit.Absolute, _ => TableWidthUnit.Auto };
+        }
+        private static double ReadWidth(int value, TableWidthUnit unit) => unit switch { TableWidthUnit.Percentage => value / 50d, TableWidthUnit.Absolute => value / 15d, _ => 0 };
+        private void NoteSetting(Control control)
+        {
+            var word = control.Word; var endnote = word.StartsWith('a');
+            if (word is "endnotes" or "enddoc") endnote = true;
+            var settings = endnote ? _endnoteSettings : _footnoteSettings;
+            if (word.StartsWith('a')) word = word[1..];
+            settings = word switch
+            {
+                "ftnstart" => settings with { Start = (int)Range(control.Number ?? 1, 1, 1000000, "Note starting number", control.Offset) },
+                "ftnrstpg" => settings with { Restart = NoteRestartPolicy.EachPage },
+                "ftnrestart" => settings with { Restart = NoteRestartPolicy.EachSection },
+                "ftnrstcont" => settings with { Restart = NoteRestartPolicy.Continuous },
+                "ftnnalc" => settings with { NumberFormat = PageNumberFormat.LowerLetter }, "ftnnauc" => settings with { NumberFormat = PageNumberFormat.UpperLetter },
+                "ftnnrlc" => settings with { NumberFormat = PageNumberFormat.LowerRoman }, "ftnnruc" => settings with { NumberFormat = PageNumberFormat.UpperRoman },
+                "ftnnar" => settings with { NumberFormat = PageNumberFormat.Decimal },
+                "ftntj" => settings with { Placement = NotePlacement.BelowText }, "ftnbj" => settings with { Placement = NotePlacement.PageBottom },
+                "endnotes" => settings with { Placement = NotePlacement.SectionEnd }, "enddoc" => settings with { Placement = NotePlacement.DocumentEnd }, _ => settings
+            };
+            if (endnote) _endnoteSettings = settings; else _footnoteSettings = settings;
         }
         private void Field(Group group, State state)
         {
@@ -554,11 +744,32 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             }
             var instructions = group.Groups("fldinst").ToArray();
             var instruction = instructions.Length == 1 ? instructions[0] : null;
-            var value = instruction is null ? "" : Plain(instruction, state.UnicodeFallback).Trim();
+            var value = instruction is null ? "" : Plain(InstructionGroup(instruction), state.UnicodeFallback).Trim();
             var results = group.Groups("fldrslt").ToArray();
             var nested = Descendants(group).OfType<Group>().Any(g => g.Destination == "field");
             var structured = results.SelectMany(Descendants).OfType<Control>().Any(c => c.Word is "par" or "pard" or "sectd" or "sect" or "cell" or "row" or "trowd" or "nestcell" or "nestrow" or "itap" or "nesttableprops" or "cellx" or "clcbpat" or "clmgf" or "clmrg" or "clvmgf" or "clvmrg" or "trrh");
             var parsed = MergeFieldInstructions.Parse(value);
+            var metadata = group.Groups("textaloniafield").FirstOrDefault();
+            if (metadata is not null || results.SelectMany(Descendants).OfType<Group>().Any(g => g.Destination is "bkmkstart" or "bkmkend") || _fieldDepth > 0 && !value.StartsWith("HYPERLINK", StringComparison.OrdinalIgnoreCase) || !_flattenFields && results.Length <= 1 && (nested || !structured && parsed is null && !PageFieldInstructions.TryParse(value, out _) && !value.StartsWith("HYPERLINK", StringComparison.OrdinalIgnoreCase)))
+            {
+                ReadGeneralField(group, state, value, results, metadata); return;
+            }
+            if (!_flattenFields && !nested && !structured && results.Length <= 1 && PageFieldInstructions.TryParse(value, out var pageField))
+            {
+                Flush(); var start = _runs.Count;
+                foreach (var result in results) Walk(result, state);
+                Flush();
+                var cachedRuns = _runs.Skip(start).ToArray();
+                var cached = string.Concat(cachedRuns.Select(r => r.PlainText));
+                if (cachedRuns.Any(r => r.Inline is not null) || cached.Length > 16384)
+                { Loss("rtf.field-result", "Non-text or oversized page-field result", "Retained the result content without active field semantics.", group.Offset); return; }
+                _runs.RemoveRange(start, _runs.Count - start);
+                var style = cachedRuns.FirstOrDefault()?.Style ?? state.Text;
+                if (cachedRuns.Any(r => r.Style != style))
+                    Loss("rtf.field-result-formatting", "Multiple styles in an atomic page field", "Applied the first character style to the field display.", group.Offset);
+                _runs.Add(new RichRun(new InlineDescriptor { Payload = new PageFieldInlinePayload(pageField), AltText = results.Length == 0 ? "1" : cached }, style));
+                return;
+            }
             if (nested) Loss("rtf.nested-field", "Nested RTF fields", "Retained visible results without active field semantics.", group.Offset);
             if (results.Length > 1) Loss("rtf.field-structure", "Multiple field results", "Retained visible results without active field semantics.", group.Offset);
             if (parsed is not null && !_flattenFields && !nested && !structured && results.Length <= 1)
@@ -586,7 +797,30 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 Loss("rtf.field-result", "Block structure in a merge-field result", "Retained the result content without active field semantics.", group.Offset);
             var match = Regex.Match(value, "^HYPERLINK\\s+(?:\"([^\"]*)\"|(\\S+))\\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             var link = match.Success ? (match.Groups[1].Success ? match.Groups[1].Value : match.Groups[2].Value) : null;
-            if (!_flattenFields && !nested && link is not null && FlowDocument.IsSafeHyperlink(link)) state = state with { Text = state.Text with { Hyperlink = link } };
+            InternalLinkDestination? internalLink = null;
+            if (value.StartsWith("HYPERLINK", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    var code = FieldInstructionParser.Parse(value);
+                    if (code.Code == "HYPERLINK" && code.Arguments.IsEmpty && code.Switch("l")?.Argument?.Literal is { } bookmark &&
+                        InlineDescriptor.ValidKey(bookmark) && code.Switches.All(s => s.Name.Equals("l", StringComparison.OrdinalIgnoreCase) || s.Name.Equals("o", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        internalLink = new() { BookmarkName = bookmark, Tooltip = code.Switch("o")?.Argument?.Literal };
+                        if (group.Groups("textalonialink").FirstOrDefault() is { } linkMetadata)
+                        {
+                            var stored = RangeInterchange.Decode<InternalLinkDestination>(Plain(linkMetadata, state.UnicodeFallback).Trim());
+                            if (stored.BookmarkName != bookmark) throw new FormatException("Internal hyperlink metadata disagrees with its destination.");
+                            internalLink = stored;
+                        }
+                    }
+                }
+                catch (FormatException) { internalLink = null; }
+            }
+            if (!_flattenFields && !nested && internalLink is not null)
+                state = state with { Text = state.Text with { Hyperlink = null, InternalLink = internalLink } };
+            else if (!_flattenFields && !nested && link is not null && FlowDocument.IsSafeHyperlink(link))
+                state = state with { Text = state.Text with { Hyperlink = link, InternalLink = null } };
             else Loss(link is null || _flattenFields || nested ? "rtf.unsupported-field" : "rtf.unsafe-link", link is null || _flattenFields || nested ? "RTF field instruction" : "Unsafe hyperlink", "Retained the visible field result without an active link.", group.Offset);
             var previous = _flattenFields;
             _flattenFields = true;
@@ -612,7 +846,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             if (bytes.Length == 0 || bytes.Length > DocumentResource.MaximumEmbeddedBytes) throw new FormatException("Invalid RTF image size.");
             _resourceBytes += bytes.Length;
             if (_resourceBytes > DocumentResource.MaximumDocumentEmbeddedBytes || _resources.Count >= 4096) throw new FormatException("RTF embedded resources exceed the size limit.");
-            var id = $"rtf-image-{_resources.Count + 1}";
+            var id = $"rtf-image-{_resourcePrefix}-{_resources.Count + 1}";
             _resources.Add(id, new() { Kind = DocumentResourceKind.Embedded, MediaType = mediaType, Data = bytes.ToImmutableArray() });
             var width = group.Number("picwgoal") is { } w ? w / 15d : group.Number("picw") ?? 32;
             var height = group.Number("pichgoal") is { } h ? h / 15d : group.Number("pich") ?? 32;
@@ -623,6 +857,11 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
     private sealed record ExportList(int Id, ListDefinition Definition, int Start, int Level, ImmutableDictionary<int, int> Ancestors);
     public override string Serialize(FlowDocument document)
     {
+        ArgumentNullException.ThrowIfNull(document);
+        document.Validate();
+        StyleConversion.ReportLosses(this, document);
+        TableConversion.ReportLosses("rtf", document);
+        document = new DocumentStyleResolver(document).ResolveDocument();
         document.Validate();
         var foundSection = false;
         foreach (var block in document.Blocks)
@@ -632,11 +871,14 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 ConversionDiagnostics.Report("rtf.section-grouping", "Root blocks following a flow section", "Grouped the following root blocks into the next RTF section.", block.Id);
                 break;
             }
-        var positions = new DocumentIndex(document).Paragraphs.ToArray();
+        var storyDocuments = document.Stories.Values.Select(story => new FlowDocument(story.Blocks)).ToArray();
+        var positions = new DocumentIndex(document).Paragraphs.Concat(storyDocuments.SelectMany(story => new DocumentIndex(story).Paragraphs)).ToArray();
+        var paragraphDocuments = storyDocuments.Prepend(document).SelectMany(owner => new DocumentIndex(owner).Paragraphs.Select(p => (p.Paragraph.Id, Owner: owner))).ToDictionary(p => p.Id, p => p.Owner);
         var paragraphs = positions.Select(p => p.Paragraph).ToArray();
-        var styles = paragraphs.SelectMany(p => p.Runs.Select(r => r.Style).Append(p.DefaultStyle)).ToArray();
+        var styles = paragraphs.SelectMany(p => p.Runs.Select(r => r.Style).Append(p.DefaultStyle)
+            .Concat(p.Style.ListDefinition?.Levels.Select(level => level.MarkerFormatting.Apply(TextStyle.Default)) ?? [])).ToArray();
         var fonts = styles.Select(s => s.FontFamily ?? "Arial").Distinct().ToArray();
-        var colors = styles.SelectMany(s => new[] { s.Foreground, s.Background }).Concat(AllCells(document.Blocks).Select(c => c.Background)).Where(c => c is not null).Distinct().ToArray();
+        var colors = styles.SelectMany(s => new[] { s.Foreground, s.Background }).Concat(AllCells(document.Blocks.Concat(document.Stories.Values.SelectMany(s => s.Blocks))).Select(c => c.Background)).Where(c => c is not null).Distinct().ToArray();
         foreach (var color in colors.Where(c => c!.Length == 9 && !c.StartsWith("#FF", StringComparison.OrdinalIgnoreCase)))
             ConversionDiagnostics.Report("rtf.color-alpha", "Color transparency", "Exported the opaque RGB color.");
         int ColorIndex(string? color) => color is null ? 0 : Array.IndexOf(colors, color) + 1;
@@ -659,7 +901,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             var definition = new ListDefinition { Levels = Enumerable.Range(0, 9).Select(level => inherited.Level(level, p.Style.List)).ToImmutableArray() };
             if (!counters.TryGetValue(identity, out var values)) counters[identity] = values = new int?[9];
             for (var i = 0; i < p.Style.ListLevel; i++) values[i] ??= definition.Level(i, p.Style.List).Start;
-            values[p.Style.ListLevel] = ListNumbering.GetMarker(document, p.Id)!.Number;
+            values[p.Style.ListLevel] = ListNumbering.GetMarker(paragraphDocuments[p.Id], p.Id)!.Number;
             for (var i = p.Style.ListLevel + 1; i < values.Length; i++) values[i] = null;
             if (!activeLists.TryGetValue(identity, out var current) || p.Style.ListRestart || p.Style.ListStart is not null || !lists[current - 1].Definition.Equals(definition))
             {
@@ -677,7 +919,49 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
             var rgb = color![^6..];
             b.Append("\\red").Append(Convert.ToInt32(rgb[..2], 16)).Append("\\green").Append(Convert.ToInt32(rgb[2..4], 16)).Append("\\blue").Append(Convert.ToInt32(rgb[4..], 16)).Append(';');
         }
-        b.Append('}'); WriteLists(b, lists);
+        b.Append('}'); WriteLists(b, lists, fonts, ColorIndex);
+        var writingStory = false;
+        var exportedStories = new HashSet<Guid>();
+        var sectionStarts = document.Sections.Skip(1).ToDictionary(section => section.StartParagraphId);
+        void WriteNoteSettings(NoteSettings settings, bool endnote)
+        {
+            var prefix = endnote ? "aftn" : "ftn";
+            b.Append('\\').Append(prefix).Append("start").Append(settings.Start).Append('\\').Append(prefix)
+                .Append(settings.Restart switch { NoteRestartPolicy.EachPage => "rstpg", NoteRestartPolicy.EachSection => "restart", _ => "rstcont" })
+                .Append('\\').Append(prefix).Append(settings.NumberFormat switch { PageNumberFormat.UpperRoman => "nruc", PageNumberFormat.LowerRoman => "nrlc", PageNumberFormat.UpperLetter => "nauc", PageNumberFormat.LowerLetter => "nalc", _ => "nar" })
+                .Append(settings.Placement switch { NotePlacement.BelowText => "\\ftntj", NotePlacement.SectionEnd => "\\aendnotes", NotePlacement.DocumentEnd => "\\aenddoc", _ => "\\ftnbj" });
+            b.Append("{\\*\\").Append(prefix).Append("sep ").Append(Escape(settings.SeparatorText)).Append('}')
+                .Append("{\\*\\").Append(prefix).Append("sepc ").Append(Escape(settings.ContinuationSeparatorText)).Append('}');
+        }
+        if (document.Properties.Count != 0) b.Append("{\\*\\textaloniaproperties ").Append(RangeInterchange.Encode(document.Properties)).Append('}');
+        WriteNoteSettings(document.FootnoteSettings, false);
+        WriteNoteSettings(document.EndnoteSettings, true);
+        if (document.Sections.Any(section => section.HeaderFooter.DifferentOddEvenPages)) b.Append("\\facingp ");
+        void WriteStory(DocumentStory story)
+        {
+            exportedStories.Add(story.Id);
+            var previous = writingStory; writingStory = true;
+            try { WriteBlocks(story.Blocks); }
+            finally { writingStory = previous; }
+        }
+        void WritePhysicalSection(DocumentSection section)
+        {
+            var settings = section.HeaderFooter;
+            Precision(section.Id, settings.HeaderDistance, settings.FooterDistance);
+            b.Append("\\sectd").Append(section.BreakKind switch { SectionBreakKind.Continuous => "\\sbknone", SectionBreakKind.OddPage => "\\sbkodd", SectionBreakKind.EvenPage => "\\sbkeven", SectionBreakKind.NextColumn => "\\sbkcol", _ => "\\sbkpage" })
+                .Append("\\headery").Append(Twips(settings.HeaderDistance)).Append("\\footery").Append(Twips(settings.FooterDistance)).Append(settings.DifferentFirstPage ? "\\titlepg" : "\\titlepg0").Append(' ');
+            if (!settings.DifferentOddEvenPages && document.Sections.Any(s => s.HeaderFooter.DifferentOddEvenPages))
+                ConversionDiagnostics.Report("rtf.section-odd-even", "Section-specific odd/even header option", "RTF uses a document-wide odd/even header option.", section.Id);
+            if (section.PageSettings != new PageSettings() || section.PageNumberStart is not null || section.PageNumberFormat != PageNumberFormat.Decimal)
+                ConversionDiagnostics.Report("rtf.physical-page-settings", "Physical page metrics and page numbering", "Retained section boundaries and header/footer settings using default page metrics and numbering.", section.Id);
+            foreach (var item in new[] { ("header", settings.PrimaryHeader), ("headerf", settings.FirstHeader), ("headerl", settings.EvenHeader), ("footer", settings.PrimaryFooter), ("footerf", settings.FirstFooter), ("footerl", settings.EvenFooter) })
+            {
+                if (item.Item2.LinkToPrevious) continue;
+                b.Append("{\\").Append(item.Item1).Append(' ');
+                if (item.Item2.StoryId is { } id) WriteStory(document.Stories[id]);
+                b.Append('}');
+            }
+        }
         void CharacterStyle(TextStyle s, Guid id)
         {
             if (s.FontFamily is { } family && (family.Contains(';') || family.Trim() != family))
@@ -691,16 +975,49 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
         }
         void WriteParagraph(Paragraph p, bool inTable)
         {
+            if (!writingStory && !inTable && sectionStarts.TryGetValue(p.Id, out var physicalSection))
+            { b.Append("\\sect\n"); WritePhysicalSection(physicalSection); }
             Precision(p.Id, p.Style.Indent, p.Style.RightIndent, p.Style.FirstLineIndent, p.Style.SpaceBefore, p.Style.SpaceAfter, p.Style.LetterSpacing, p.Style.LineHeight ?? 0);
             b.Append("\\pard").Append(inTable ? "\\intbl" : "").Append(p.Style.Alignment switch { ParagraphAlignment.Center => "\\qc", ParagraphAlignment.Right => "\\qr", ParagraphAlignment.Justify => "\\qj", _ => "\\ql" });
-            b.Append(p.Style.RightToLeft ? "\\rtlpar" : "\\ltrpar").Append("\\li").Append(Twips(p.Style.Indent)).Append("\\ri").Append(Twips(p.Style.RightIndent)).Append("\\fi").Append(Twips(p.Style.FirstLineIndent))
-                .Append("\\sb").Append(Twips(p.Style.SpaceBefore)).Append("\\sa").Append(Twips(p.Style.SpaceAfter)).Append("\\expndtw").Append(Twips(p.Style.LetterSpacing))
+            b.Append(p.Style.RightToLeft ? "\\rtlpar" : "\\ltrpar").Append("\\ri").Append(Twips(p.Style.RightIndent));
+            var level = paragraphLists.TryGetValue(p.Id, out var listNumber) ? lists[listNumber - 1].Definition.Level(p.Style.ListLevel, p.Style.List) : null;
+            var levelPlacement = level is not null && (level.TextIndent is not null || level.MarkerIndent is not null || level.TabPosition is not null);
+            if (!levelPlacement || p.Style.Indent != 0 || p.Style.FirstLineIndent != 0)
+                b.Append("\\li").Append(Twips(p.Style.Indent)).Append("\\fi").Append(Twips(p.Style.FirstLineIndent));
+            if (levelPlacement && (p.Style.Indent != 0 || p.Style.FirstLineIndent != 0))
+                ConversionDiagnostics.Report("rtf.list-paragraph-indent", "Combined direct paragraph and list-level indentation",
+                    "Retained both properties; RTF readers can prefer direct paragraph indentation instead of adding list indentation.", p.Id);
+            b.Append("\\sb").Append(Twips(p.Style.SpaceBefore)).Append("\\sa").Append(Twips(p.Style.SpaceAfter)).Append("\\expndtw").Append(Twips(p.Style.LetterSpacing))
                 .Append("\\sl").Append(p.Style.LineHeight is { } lineHeight ? -Math.Max(1, Twips(lineHeight)) : 0).Append("\\slmult0");
             if (p.Style.HeadingLevel > 0) b.Append("\\outlinelevel").Append(p.Style.HeadingLevel - 1);
             if (paragraphLists.TryGetValue(p.Id, out var list)) b.Append("\\ls").Append(list).Append("\\ilvl").Append(p.Style.ListLevel);
             b.Append(' '); CharacterStyle(p.DefaultStyle, p.Id);
-            foreach (var run in p.Runs)
+            foreach (var item in RangeInterchange.Items(document, p))
             {
+                if (item.Run is not { } run) { WriteRangeBoundary(b, item); continue; }
+                if (run.Inline is { Payload: NoteInlinePayload notePayload } noteInline)
+                {
+                    var note = document.Notes.Single(n => n.Id == notePayload.NoteId);
+                    if (writingStory)
+                    {
+                        ConversionDiagnostics.Report("rtf.nested-note", "Note reference in a secondary story", "Retained the reference display without its note story.", noteInline.Id);
+                        b.Append(Escape(note.CustomMark ?? noteInline.AltText)); continue;
+                    }
+                    b.Append('{'); CharacterStyle(run.Style, noteInline.Id);
+                    if (note.CustomMark is null) b.Append("\\chftn ");
+                    else b.Append("{\\super ").Append(Escape(note.CustomMark)).Append('}');
+                    b.Append("{\\footnote").Append(note.Kind == DocumentNoteKind.Endnote ? "\\ftnalt " : " ");
+                    if (note.CustomMark is { } custom)
+                        b.Append("{\\*\\textalonianotemark ").Append(Escape(custom)).Append("}{\\super ").Append(Escape(custom)).Append('}');
+                    else b.Append("\\chftn ");
+                    WriteStory(document.Stories[note.StoryId]); b.Append("}}");
+                    continue;
+                }
+                if (run.Inline is { Payload: PageFieldInlinePayload pageField } pageInline)
+                {
+                    b.Append("{\\field{\\*\\fldinst ").Append(pageField.Field.ToString().ToUpperInvariant()).Append("}{\\fldrslt {");
+                    CharacterStyle(run.Style, pageInline.Id); b.Append(Escape(pageInline.AltText)).Append("}}}"); continue;
+                }
                 if (run.Inline is { Payload: MergeFieldInlinePayload field } fieldInline)
                 {
                     MergeFieldInstructions.ReportExportOptions("rtf", fieldInline, field);
@@ -711,6 +1028,15 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                     b.Append(Escape(fieldInline.AltText)).Append("}}}");
                     continue;
                 }
+                if (run.Style.InternalLink is { } destination)
+                {
+                    var switches = ImmutableArray.Create(new FieldSwitch("l", new([new FieldLiteral(destination.BookmarkName)], true)));
+                    if (destination.Tooltip is { } tip) switches = switches.Add(new("o", new([new FieldLiteral(tip)], true)));
+                    var instruction = FieldInstructionParser.Write(new("", "HYPERLINK", [], switches));
+                    b.Append("{\\field{\\*\\textalonialink ").Append(RangeInterchange.Encode(destination)).Append("}{\\*\\fldinst ")
+                        .Append(Escape(instruction)).Append("}{\\fldrslt ");
+                }
+                else
                 if (run.Style.Hyperlink is { } link) b.Append("{\\field{\\*\\fldinst HYPERLINK \"").Append(Escape(link.Replace("\"", "%22"))).Append("\"}{\\fldrslt ");
                 b.Append('{'); CharacterStyle(run.Style, p.Id);
                 if (run.Inline is { } inline)
@@ -724,9 +1050,16 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                     else { ConversionDiagnostics.Report("rtf.inline-fallback", "Inline control or unavailable/unsupported image", "Exported the alternative text without fetching external resources.", inline.Id); b.Append(Escape(inline.AltText)); }
                 }
                 else b.Append(Escape(run.Text));
-                b.Append('}'); if (run.Style.Hyperlink is not null) b.Append("}}");
+                b.Append('}'); if (run.Style.Hyperlink is not null || run.Style.InternalLink is not null) b.Append("}}");
             }
             b.Append("\\par\n");
+        }
+        void WriteWidth(string prefix, TablePreferredWidth width)
+        {
+            var units = width.Unit == TableWidthUnit.Percentage ? width.Value * 50 : width.Value * 15;
+            if (Math.Abs(units - Math.Round(units)) > .000001) ConversionDiagnostics.Report("rtf.dimension-precision", "Preferred table or cell width precision", "Rounded to the nearest RTF width unit.");
+            b.Append('\\').Append(prefix).Append("ftsWidth").Append(width.Unit switch { TableWidthUnit.Percentage => 2, TableWidthUnit.Absolute => 3, _ => 1 });
+            b.Append('\\').Append(prefix).Append("wWidth").Append(width.Unit == TableWidthUnit.Auto ? 0 : (int)Math.Round(units));
         }
         void WriteBlocks(IEnumerable<Block> blocks, bool inTable = false, bool inSection = false)
         {
@@ -738,6 +1071,7 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                         if (section.Background is not null || section.BorderColor is not null || section.Borders is not null || section.PaddingEdges is not null || section.Padding != 12)
                             ConversionDiagnostics.Report("rtf.section-decoration", "Section background, borders or padding", "Retained section content without its decoration.", section.Id);
                         if (inTable || inSection) { ConversionDiagnostics.Report("rtf.nested-section", "Nested flow section", "Exported the section's blocks in its parent container.", section.Id); WriteBlocks(section.Blocks, inTable, inSection); }
+                        else if (!document.Sections.IsEmpty || writingStory) WriteBlocks(section.Blocks, false, true);
                         else { b.Append("\\sectd\\sbknone "); WriteBlocks(section.Blocks, false, true); b.Append("\\sect\n"); }
                         break;
                     case Table table when inTable:
@@ -748,13 +1082,21 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                         Precision(table.Id, table.ColumnWidths.Concat(table.RowSizing.Select(s => s.Height)).ToArray());
                         for (var r = 0; r < table.Rows.Length; r++)
                         {
-                            b.Append("\\trowd\\trgaph0\\trleft0");
+                            b.Append("\\trowd\\trgaph0\\trleft").Append(Twips(table.Indent));
+                            b.Append(table.Alignment switch { TableAlignment.Center => "\\trqc", TableAlignment.Right => "\\trqr", _ => "\\trql" });
+                            b.Append(table.RightToLeft ? "\\rtlrow" : "\\ltrrow");
+                            WriteWidth("tr", table.PreferredWidth);
+                            if (table.AutoFit != TableAutoFit.Legacy) b.Append("\\trautofit").Append(table.AutoFit == TableAutoFit.Fixed ? 0 : 1);
+                            if (r < table.RepeatHeaderRows) b.Append("\\trhdr");
                             var height = table.RowSizing.IsEmpty ? new TableRowSizing() : table.RowSizing[r];
+                            if (!height.AllowSplit) b.Append("\\trkeep");
                             b.Append("\\trrh").Append(height.Mode == TableRowHeightMode.Auto ? 0 : (height.Mode == TableRowHeightMode.Exact ? -1 : 1) * Math.Max(1, Twips(height.Height)));
-                            var right = 0;
+                            var right = Twips(table.Indent);
                             for (var c = 0; c < table.ColumnCount; c++)
                             {
                                 var cell = table.Rows[r][c]; var owner = table.OwnerOf(r, c); var anchor = table.Rows[owner.Row][owner.Column];
+                                WriteWidth("cl", cell.PreferredWidth);
+                                b.Append(cell.VerticalAlignment switch { TableCellVerticalAlignment.Center => "\\clvertalc", TableCellVerticalAlignment.Bottom => "\\clvertalb", _ => "\\clvertalt" });
                                 if (cell.Padding is not null || cell.Borders is not null) ConversionDiagnostics.Report("rtf.cell-decoration", "Cell borders or padding", "Retained cell content and background without borders or padding.", cell.Id);
                                 if (anchor.ColumnSpan > 1) b.Append(c == owner.Column ? "\\clmgf" : "\\clmrg");
                                 if (anchor.RowSpan > 1) b.Append(r == owner.Row ? "\\clvmgf" : "\\clvmrg");
@@ -768,9 +1110,13 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                         break;
                 }
         }
-        WriteBlocks(document.Blocks); return b.Append('}').ToString();
+        if (!document.Sections.IsEmpty) WritePhysicalSection(document.Sections[0]);
+        WriteBlocks(document.Blocks);
+        foreach (var story in document.Stories.Values.Where(story => !exportedStories.Contains(story.Id)))
+            ConversionDiagnostics.Report("rtf.unreferenced-story", "Unreferenced secondary story", "RTF retains stories attached to exported sections and note markers; omitted this unattached story.", story.Id);
+        return b.Append('}').ToString();
     }
-    private static void WriteLists(StringBuilder b, List<ExportList> lists)
+    private static void WriteLists(StringBuilder b, List<ExportList> lists, string[] fonts, Func<string?, int> colorIndex)
     {
         if (lists.Count == 0) return;
         b.Append("{\\*\\listtable");
@@ -782,7 +1128,25 @@ public sealed class RtfDocumentFormat : TextDocumentFormat
                 var level = list.Definition.Level(index, ListKind.Numbered); var bullet = level.Kind == ListKind.Bullet || level.Marker == ListMarkerStyle.Bullet;
                 var format = bullet ? 23 : level.Marker switch { ListMarkerStyle.UpperRoman => 1, ListMarkerStyle.LowerRoman => 2, ListMarkerStyle.UpperLetter => 3, ListMarkerStyle.LowerLetter => 4, _ => 0 };
                 var pattern = bullet ? level.Text ?? "\u2022" : level.Prefix + (level.IncludeAncestors ? string.Join(".", Enumerable.Range(0, index + 1).Select(i => ((char)i).ToString())) : ((char)index).ToString()) + level.Suffix;
-                b.Append("{\\listlevel\\levelnfc").Append(format).Append("\\leveljc0\\levelfollow0\\levelstartat").Append(level.Start).Append("{\\leveltext ");
+                b.Append("{\\listlevel\\levelnfc").Append(format).Append("\\leveljc0\\levelfollow").Append((int)level.FollowCharacter).Append("\\levelstartat").Append(level.Start);
+                if (level.TextIndent is not null || level.MarkerIndent is not null)
+                    b.Append("\\li").Append(Twips(level.TextIndent ?? 28 + index * 24)).Append("\\fi").Append(Twips((level.MarkerIndent ?? 4 + index * 24) - (level.TextIndent ?? 28 + index * 24)));
+                if (level.TabPosition is { } tab) b.Append("\\jclisttab\\tx").Append(Twips(tab));
+                var o = level.MarkerFormatting; var style = o.Apply(TextStyle.Default);
+                if (o.FontFamily.IsSet) b.Append("\\f").Append(Array.IndexOf(fonts, style.FontFamily ?? "Arial"));
+                if (o.FontSize.IsSet) b.Append("\\fs").Append((int)Math.Round(style.FontSize * 1.5));
+                if (o.Bold.IsSet || o.FontWeight.IsSet) b.Append(style.EffectiveBold ? "\\b1" : "\\b0");
+                if (o.Italic.IsSet) b.Append(style.Italic ? "\\i1" : "\\i0");
+                if (o.Underline.IsSet) b.Append(style.Underline ? "\\ul1" : "\\ulnone");
+                if (o.Strikethrough.IsSet) b.Append(style.Strikethrough ? "\\strike1" : "\\strike0");
+                if (o.Baseline.IsSet) b.Append(style.Baseline switch { Baseline.Subscript => "\\sub", Baseline.Superscript => "\\super", _ => "\\nosupersub" });
+                if (o.FontStretch.IsSet) b.Append("\\charscalex").Append(StretchPercent(style.FontStretch));
+                if (o.Foreground.IsSet) b.Append("\\cf").Append(colorIndex(style.Foreground));
+                if (o.Background.IsSet) b.Append("\\highlight").Append(colorIndex(style.Background));
+                if (style.FontWeight is not null) ConversionDiagnostics.Report("rtf.list-marker-weight", "Numeric list marker weight", "Used regular or bold marker formatting.");
+                if (Math.Abs(style.FontSize * 1.5 - Math.Round(style.FontSize * 1.5)) > .00001)
+                    ConversionDiagnostics.Report("rtf.list-marker-font-size", "Fractional list marker font size", "Rounded to an RTF half point.");
+                b.Append("{\\leveltext ");
                 b.Append("\\'").Append(pattern.Length.ToString("x2", CultureInfo.InvariantCulture));
                 foreach (var ch in pattern) if (ch <= 8) b.Append("\\'").Append(((int)ch).ToString("x2", CultureInfo.InvariantCulture)); else b.Append(Escape(ch.ToString()));
                 b.Append(";}{\\levelnumbers ");

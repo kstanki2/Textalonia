@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 namespace Textalonia.Model;
 
 public enum ListMarkerStyle { Decimal, LowerLetter, UpperLetter, LowerRoman, UpperRoman, Bullet }
+public enum ListFollowCharacter { Tab, Space, Nothing }
 
 /// <summary>Numbering at one zero-based list level. Ancestors use their own level's number format.</summary>
 public sealed record ListLevelDefinition
@@ -16,12 +17,29 @@ public sealed record ListLevelDefinition
     public string Prefix { get; init; } = "";
     public string Suffix { get; init; } = ".";
     public bool IncludeAncestors { get; init; }
+    /// <summary>Marker-only overrides, applied after the paragraph and named character style.</summary>
+    public TextStyleOverrides MarkerFormatting { get; init; } = new();
+    public string? CharacterStyleId { get; init; }
+    /// <summary>Paragraph style used by CreateParagraphStyle; it does not change numbering identity.</summary>
+    public string? ParagraphStyleId { get; init; }
+    /// <summary>Text and marker positions in DIPs relative to the paragraph's left indent. Null retains legacy placement.</summary>
+    public double? TextIndent { get; init; }
+    public double? MarkerIndent { get; init; }
+    public ListFollowCharacter FollowCharacter { get; init; }
+    public double? TabPosition { get; init; }
 }
 
 /// <summary>Shared immutable level definitions. Undefined levels use the paragraph's list kind and start at one.</summary>
 public sealed record ListDefinition
 {
     public ImmutableArray<ListLevelDefinition> Levels { get; init; } = [];
+    /// <summary>Creates inheriting paragraph formatting using the level's named paragraph-style link.</summary>
+    public ParagraphStyle CreateParagraphStyle(int level = 0, Guid? listId = null)
+    {
+        if (level < 0 || level >= Levels.Length) throw new ArgumentOutOfRangeException(nameof(level));
+        return ParagraphStyle.ForStyle(Levels[level].ParagraphStyleId) with { Overrides = new()
+        { List = Levels[level].Kind, ListLevel = level, ListId = listId, ListDefinition = this } };
+    }
     internal ListLevelDefinition Level(int level, ListKind kind) => level < Levels.Length ? Levels[level] :
         new() { Kind = kind, Marker = kind == ListKind.Bullet ? ListMarkerStyle.Bullet : ListMarkerStyle.Decimal };
 
@@ -33,14 +51,22 @@ public sealed record ListDefinition
         if (Levels.IsDefault || Levels.Length > 9) throw new FormatException("Lists support at most nine levels.");
         foreach (var level in Levels)
             if (level is null || level.Start is < 1 or > 1_000_000 || !Enum.IsDefined(level.Kind) || level.Kind == ListKind.None ||
-                !Enum.IsDefined(level.Marker) || level.Prefix is null || level.Suffix is null ||
+                !Enum.IsDefined(level.Marker) || !Enum.IsDefined(level.FollowCharacter) || level.MarkerFormatting is null ||
+                !ValidPosition(level.TextIndent) || !ValidPosition(level.MarkerIndent) || !ValidPosition(level.TabPosition) ||
+                level.Prefix is null || level.Suffix is null ||
                 level.Prefix.Length > 100 || level.Suffix.Length > 100 || level.Text?.Length > 100)
                 throw new FormatException("Invalid list level definition.");
+        static bool ValidPosition(double? value) => value is null || double.IsFinite(value.Value) && value is >= 0 and <= 100000;
     }
 }
 
 /// <summary>The visible marker and counter assigned to a paragraph in document order.</summary>
-public sealed record ListMarker(string Text, int Number, int Level, Guid? ListId);
+public sealed record ListMarker(string Text, int Number, int Level, Guid? ListId)
+{
+    public ListDefinition Definition { get; init; } = new();
+    internal ListKind Kind { get; init; } = ListKind.Numbered;
+    public ListLevelDefinition LevelDefinition => Definition.Level(Level, Kind);
+}
 
 /// <summary>Document-wide numbering. Identified lists continue across ordinary paragraphs, sections, and cells.</summary>
 public static class ListNumbering
@@ -80,6 +106,13 @@ public static class ListNumbering
     private static long _evaluationMisses;
     internal static long EvaluationMisses => Interlocked.Read(ref _evaluationMisses);
     private static readonly ConditionalWeakTable<FlowDocument, Result> Cache = new();
+    private static readonly ConditionalWeakTable<FlowDocument, FlowDocument> StyleProjections = new();
+    private static FlowDocument ResolveStyles(FlowDocument document) => StyleProjections.GetValue(document, value =>
+    {
+        var resolver = new DocumentStyleResolver(value);
+        return value.RewriteParagraphs(paragraph => [paragraph with { Style = resolver.ResolveParagraphStyle(paragraph.Style) }])
+            with { Styles = new(), Defaults = new() };
+    });
     private static readonly ConditionalWeakTable<StorageTree<OrderKey, DocumentNode>, EvaluationCache> Evaluations = new();
 
     /// <summary>Returns markers keyed by visible paragraph ID.</summary>
@@ -89,6 +122,9 @@ public static class ListNumbering
         return Cache.GetValue(document, d =>
         {
             var index = new DocumentIndex(d);
+            if (!d.Styles.Paragraphs.IsEmpty || d.Defaults.Paragraph != ParagraphStyle.Default ||
+                index.Enumerate(0, index.Length).Any(p => p.Paragraph.Style.Overrides is not null))
+            { d = ResolveStyles(d); index = new DocumentIndex(d); }
             return new() { Markers = index.Enumerate(0, index.Length).Where(p => p.Paragraph.Style.List != ListKind.None)
                 .ToImmutableDictionary(p => p.Paragraph.Id, p => GetMarker(d, p.Paragraph.Id)!) };
         }).Markers;
@@ -104,6 +140,8 @@ public static class ListNumbering
         var index = new DocumentIndex(document);
         var path = index.Tree.Paths?.Find(paragraphId)?.Value ?? throw new ArgumentException("The paragraph is not visible.", nameof(paragraphId));
         var paragraph = index.Tree.Locate(paragraphId).Node.Source as Paragraph ?? throw new ArgumentException("The identifier is not a paragraph.", nameof(paragraphId));
+        if (!document.Styles.Paragraphs.IsEmpty || document.Defaults.Paragraph != ParagraphStyle.Default || paragraph.Style.Overrides is not null)
+            return GetMarker(ResolveStyles(document), paragraphId);
         var style = paragraph.Style;
         if (style.List == ListKind.None) return null;
         var keys = path.Keys().ToArray();
@@ -121,7 +159,7 @@ public static class ListNumbering
         var text = format.Kind == ListKind.Bullet || format.Marker == ListMarkerStyle.Bullet ? format.Text ?? "•" :
             format.Prefix + (format.IncludeAncestors ? string.Join(".", Enumerable.Range(0, style.ListLevel + 1)
                 .Select(i => Format(state.Values[i]!.Value, state.Definition.Level(i, style.List).Marker))) : Format(number, format.Marker)) + format.Suffix;
-        return new(text, number, style.ListLevel, style.ListId);
+        return new(text, number, style.ListLevel, style.ListId) { Definition = state.Definition, Kind = style.List };
     }
 
     internal static void ValidateStyle(ParagraphStyle style)
@@ -178,7 +216,7 @@ public static class ListNumbering
         for (var i = level + 1; i < values.Count; i++) values[i] = null;
         return new(definition, values.ToImmutable());
     }
-    private static string Format(int value, ListMarkerStyle marker)
+    internal static string Format(int value, ListMarkerStyle marker)
     {
         if (marker is ListMarkerStyle.LowerLetter or ListMarkerStyle.UpperLetter)
         {

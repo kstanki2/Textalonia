@@ -17,13 +17,14 @@ public sealed class SelectionFormattingState
         _text = text; _paragraphs = paragraphs; IsCollapsed = false;
     }
 
-    internal SelectionFormattingState(DocumentIndex index, TextSelection selection, TextStyle typingStyle)
+    internal SelectionFormattingState(DocumentIndex index, TextSelection selection, TextStyle typingStyle, DocumentStyleResolver? resolver = null)
     {
         IsCollapsed = selection.IsEmpty;
         if (IsCollapsed)
         {
-            _text = [typingStyle];
-            _paragraphs = [index.At(selection.Active).Paragraph.Style];
+            var paragraph = index.At(selection.Active).Paragraph;
+            _text = [resolver?.ResolveText(paragraph, typingStyle) ?? typingStyle];
+            _paragraphs = [resolver?.ResolveParagraphStyle(paragraph.Style) ?? paragraph.Style];
             return;
         }
         var text = new List<TextStyle>();
@@ -31,7 +32,7 @@ public sealed class SelectionFormattingState
         foreach (var entry in index.Enumerate(selection.Start, selection.End))
         {
             if (entry.Start >= selection.End) break;
-            paragraphs.Add(entry.Paragraph.Style);
+            paragraphs.Add(resolver?.ResolveParagraphStyle(entry.Paragraph.Style) ?? entry.Paragraph.Style);
             var start = Math.Max(0, selection.Start - entry.Start);
             var end = Math.Min(entry.Paragraph.Length, selection.End - entry.Start);
             if (end > start)
@@ -39,12 +40,12 @@ public sealed class SelectionFormattingState
                 var offset = 0;
                 foreach (var run in entry.Paragraph.Runs)
                 {
-                    if (offset < end && offset + run.Storage.Length > start) text.Add(run.Style);
+                    if (offset < end && offset + run.Storage.Length > start) text.Add(resolver?.ResolveText(entry.Paragraph, run.Style) ?? run.Style);
                     offset += run.Storage.Length;
                     if (offset >= end) break;
                 }
             }
-            else text.Add(entry.Paragraph.DefaultStyle);
+            else text.Add(resolver?.ResolveText(entry.Paragraph, entry.Paragraph.DefaultStyle) ?? entry.Paragraph.DefaultStyle);
         }
         _text = text;
         _paragraphs = paragraphs;
@@ -56,8 +57,8 @@ public sealed class SelectionFormattingState
     public FormattingValue<T> Paragraph<T>(Func<ParagraphStyle, T> property) => Aggregate(_paragraphs, property);
     public FormattingValue<bool> Bold => Text(s => s.EffectiveBold);
     public FormattingValue<bool> Italic => Text(s => s.Italic);
-    public FormattingValue<bool> Underline => Text(s => s.Underline);
-    public FormattingValue<bool> Strikethrough => Text(s => s.Strikethrough);
+    public FormattingValue<bool> Underline => Text(s => s.Underline || s.UnderlineKind != UnderlineKind.None);
+    public FormattingValue<bool> Strikethrough => Text(s => s.Strikethrough || s.StrikeKind != StrikeKind.None);
     public FormattingValue<string?> FontFamily => Text(s => s.FontFamily);
     public FormattingValue<double> FontSize => Text(s => s.FontSize);
     public FormattingValue<int> FontWeight => Text(s => s.EffectiveFontWeight);

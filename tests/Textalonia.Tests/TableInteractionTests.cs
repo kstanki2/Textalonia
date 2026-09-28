@@ -26,6 +26,32 @@ public class TableInteractionTests(UiFixture fixture) : IClassFixture<UiFixture>
         return (window, editor, surface);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public Task Rtl_column_drag_widens_toward_left_and_freezes_content_autofit(bool contentFit, bool preferredWidth) => Run(() =>
+    {
+        var table = Table.Create(2, 2) with { RightToLeft = true, AutoFit = contentFit ? TableAutoFit.Content : TableAutoFit.Legacy };
+        table = table.SetCell(0, 0, table.Rows[0][0] with { Blocks = [new Paragraph("Longer content for the first column")] });
+        table = table.SetCell(0, 1, table.Rows[0][1] with { Blocks = [new Paragraph("Enough adjacent width to resize")] });
+        if (preferredWidth) table = table.SetCell(0, 0, table.Rows[0][0] with { PreferredWidth = new(TableWidthUnit.Absolute, 260) });
+        var original = new FlowDocument([table]); var (window, editor, surface) = Create(original);
+        try
+        {
+            var before = surface.GeometryTableCells().Single(cell => cell.Row == 0 && cell.Column == 0);
+            var start = surface.TranslatePoint(new Point(before.Bounds.Left, before.Bounds.Center.Y), window)!.Value;
+            window.MouseDown(start, MouseButton.Left); Assert.True(editor.IsResizingTable);
+            window.MouseMove(start + new Vector(-30, 0)); window.MouseUp(start + new Vector(-30, 0), MouseButton.Left);
+            Assert.False(editor.IsResizingTable); window.UpdateLayout(); surface.EnsureLayout(surface.Bounds.Width);
+            var after = surface.GeometryTableCells().Single(cell => cell.Row == 0 && cell.Column == 0);
+            Assert.InRange(after.ColumnWidth - before.ColumnWidth, 29.9, 30.1);
+            if (contentFit || preferredWidth) Assert.Equal(TableAutoFit.Fixed, editor.FindTable(table.Id)!.AutoFit);
+            editor.Undo(); Assert.Same(original, editor.Document); Assert.False(editor.Session.CanUndo);
+        }
+        finally { window.Close(); }
+    });
+
     [Fact]
     public Task Many_resize_previews_commit_one_undo_and_cancel_restores_exact_snapshot() => Run(() =>
     {

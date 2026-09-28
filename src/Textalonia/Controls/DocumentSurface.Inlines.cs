@@ -7,6 +7,8 @@ using Avalonia.VisualTree;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Textalonia.Model;
+using Textalonia.Rendering;
+using ImageDrawing = Textalonia.Rendering.ImageDrawing;
 
 namespace Textalonia.Controls;
 
@@ -19,11 +21,14 @@ public partial class DocumentSurface
         public InlineDescriptor Descriptor { get; set; } = descriptor;
         public Geometry? HostClip { get; set; } = control.Clip;
         public Geometry? AppliedClip { get; set; }
+        public ITransform? HostTransform { get; set; } = control.RenderTransform;
+        public RelativePoint HostTransformOrigin { get; set; } = control.RenderTransformOrigin;
+        public ITransform? AppliedTransform { get; set; }
         public bool Released { get; set; }
         public bool LogicalAttachmentAttempted { get; set; }
         public bool VisualAttachmentAttempted { get; set; }
     }
-    private readonly Dictionary<Guid, InlineChild> _inlineChildren = [];
+    private readonly Dictionary<(Guid Id, Guid StoryId, int PageIndex), InlineChild> _inlineChildren = [];
     private readonly List<InlineVisual> _inlineVisuals = [];
     private InlineImageCache? _inlineImages;
     internal InlineImageCache? InlineImageCache => _inlineImages;
@@ -74,6 +79,11 @@ public partial class DocumentSurface
         {
             if (child.AppliedClip is not null && ReferenceEquals(child.Control.Clip, child.AppliedClip))
                 child.Control.SetCurrentValue(ClipProperty, child.HostClip);
+            if (child.AppliedTransform is not null && ReferenceEquals(child.Control.RenderTransform, child.AppliedTransform))
+            {
+                child.Control.SetCurrentValue(RenderTransformProperty, child.HostTransform);
+                child.Control.SetCurrentValue(RenderTransformOriginProperty, child.HostTransformOrigin);
+            }
         });
         Cleanup(() => child.Factory.Release(child.Control));
     }
@@ -117,27 +127,35 @@ public partial class DocumentSurface
         }
         _inlineVisuals.Clear();
         var viewport = _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, 0, Math.Max(1, Bounds.Width), 500);
-        _inlineVisuals.AddRange(_layout.InlineVisuals().Where(v => v.Bounds.Intersects(viewport) &&
-            (v.Clip is null || v.Clip.Value.Intersects(v.Bounds))));
-        var visibleControls = _inlineVisuals.Where(v => v.Descriptor.Payload is ControlInlinePayload).Select(v => v.Descriptor.Id).ToHashSet();
+        _inlineVisuals.AddRange(GeometryInlineVisuals().Where(v => ImageDrawing.RotatedBounds(v.Bounds, v.Descriptor.Placement?.Rotation ?? 0).Intersects(viewport) &&
+            (v.Clip is null || v.Clip.Value.Intersects(ImageDrawing.RotatedBounds(v.Bounds, v.Descriptor.Placement?.Rotation ?? 0)))));
+        var visibleControls = _inlineVisuals.Where(v => v.Descriptor.Payload is ControlInlinePayload).Select(v => v.Key).ToHashSet();
         foreach (var pair in _inlineChildren.ToArray())
             if (!visibleControls.Contains(pair.Key)) { _inlineChildren.Remove(pair.Key); ReleaseInlineChild(pair.Value); }
-        var resources = _inlineVisuals.Select(v => v.Descriptor.Payload).OfType<ImageInlinePayload>().Select(p => p.ResourceId).ToHashSet(StringComparer.Ordinal);
+        var resources = _inlineVisuals.Select(v => ImageDrawing.ResourceId(v.Descriptor)).OfType<string>().ToHashSet(StringComparer.Ordinal);
+        if (_pagedLayout is { } pages)
+            foreach (var watermark in pages.Watermarks())
+                if (watermark.Watermark.ResourceId is { } resourceId && ToSurface(watermark.Page.Bounds).Intersects(viewport))
+                {
+                    resources.Add(resourceId);
+                    Editor.Document.Resources.TryGetValue(resourceId, out var resource);
+                    _inlineImages.Request(resourceId, resource);
+                }
         _inlineImages.Retain(resources);
         foreach (var visual in _inlineVisuals)
         {
             var descriptor = visual.Descriptor;
-            if (descriptor.Payload is ImageInlinePayload image)
+            if (ImageDrawing.ResourceId(descriptor) is { } resourceId)
             {
-                Editor.Document.Resources.TryGetValue(image.ResourceId, out var resource);
-                _inlineImages.Request(image.ResourceId, resource);
+                Editor.Document.Resources.TryGetValue(resourceId, out var resource);
+                _inlineImages.Request(resourceId, resource);
             }
             else if (descriptor.Payload is ControlInlinePayload control)
             {
                 var factory = _inlineFactories?.TryGet(control.Type, out var found) == true ? found : null;
-                _inlineChildren.TryGetValue(descriptor.Id, out var child);
+                _inlineChildren.TryGetValue(visual.Key, out var child);
                 if (child is not null && !ReferenceEquals(factory, child.Factory))
-                { _inlineChildren.Remove(descriptor.Id); ReleaseInlineChild(child); child = null; }
+                { _inlineChildren.Remove(visual.Key); ReleaseInlineChild(child); child = null; }
                 if (factory is null) continue;
                 try
                 {
@@ -149,7 +167,7 @@ public partial class DocumentSurface
                             throw new InvalidOperationException("An inline factory must return a control without a parent.");
                         child.LogicalAttachmentAttempted = true; LogicalChildren.Add(view);
                         child.VisualAttachmentAttempted = true; VisualChildren.Add(view);
-                        _inlineChildren.Add(descriptor.Id, child);
+                        _inlineChildren.Add(visual.Key, child);
                     }
                     else if (child.Descriptor != descriptor)
                     {
@@ -158,11 +176,11 @@ public partial class DocumentSurface
                     }
                     AutomationProperties.SetName(child.Control, descriptor.AltText);
                     KeyboardNavigation.SetTabIndex(child.Control, visual.Position);
-                    child.Control.Measure(visual.Bounds.Size);
+                    child.Control.Measure(new Size(visual.Bounds.Width / ViewZoom, visual.Bounds.Height / ViewZoom));
                 }
                 catch (Exception exception)
                 {
-                    _inlineChildren.Remove(descriptor.Id);
+                    _inlineChildren.Remove(visual.Key);
                     if (child is not null) ReleaseInlineChild(child);
                     Editor.ReportError(exception);
                 }
@@ -180,14 +198,36 @@ public partial class DocumentSurface
     private void ArrangeInlineViews()
     {
         foreach (var visual in _inlineVisuals)
-            if (_inlineChildren.TryGetValue(visual.Descriptor.Id, out var child))
+            if (_inlineChildren.TryGetValue(visual.Key, out var child))
             {
                 try
                 {
-                    child.Control.Arrange(visual.Bounds);
+                    var size = new Size(visual.Bounds.Width / ViewZoom, visual.Bounds.Height / ViewZoom);
+                    if (child.AppliedTransform is null || !ReferenceEquals(child.Control.RenderTransform, child.AppliedTransform))
+                    {
+                        child.HostTransform = child.Control.RenderTransform;
+                        child.HostTransformOrigin = child.Control.RenderTransformOrigin;
+                    }
+                    if (ViewZoom == 1)
+                    {
+                        child.Control.SetCurrentValue(RenderTransformProperty, child.HostTransform);
+                        child.Control.SetCurrentValue(RenderTransformOriginProperty, child.HostTransformOrigin);
+                        child.AppliedTransform = null;
+                    }
+                    else
+                    {
+                        var origin = child.HostTransformOrigin.ToPixels(size);
+                        var matrix = Matrix.CreateTranslation(-origin.X, -origin.Y) * (child.HostTransform?.Value ?? Matrix.Identity) *
+                            Matrix.CreateTranslation(origin.X, origin.Y) * Matrix.CreateScale(ViewZoom, ViewZoom);
+                        child.AppliedTransform = new MatrixTransform(matrix);
+                        child.Control.SetCurrentValue(RenderTransformOriginProperty, new RelativePoint(0, 0, RelativeUnit.Absolute));
+                        child.Control.SetCurrentValue(RenderTransformProperty, child.AppliedTransform);
+                    }
+                    child.Control.Arrange(new Rect(visual.Bounds.Position, size));
                     if (!ReferenceEquals(child.Control.Clip, child.AppliedClip)) child.HostClip = child.Control.Clip;
-                    var surfaceClip = visual.Clip is { } clip
-                        ? new RectangleGeometry(clip.Intersect(visual.Bounds).Translate(new Vector(-visual.Bounds.X, -visual.Bounds.Y))) : null;
+                    var localClip = visual.Clip is { } clip
+                        ? ToDocument(clip.Intersect(visual.Bounds).Translate(new Vector(-visual.Bounds.X, -visual.Bounds.Y))) : (Rect?)null;
+                    var surfaceClip = localClip is { } bounds ? new RectangleGeometry(bounds) : null;
                     child.AppliedClip = surfaceClip is null ? child.HostClip : child.HostClip is null ? surfaceClip :
                         new CombinedGeometry(GeometryCombineMode.Intersect, child.HostClip, surfaceClip);
                     if (!ReferenceEquals(child.Control.Clip, child.AppliedClip))
@@ -195,32 +235,50 @@ public partial class DocumentSurface
                 }
                 catch (Exception exception)
                 {
-                    _inlineChildren.Remove(visual.Descriptor.Id);
+                    _inlineChildren.Remove(visual.Key);
                     ReleaseInlineChild(child);
                     Editor?.ReportError(exception);
                 }
             }
     }
 
-    private void DrawInlineImages(DrawingContext context, Rect viewport)
+    internal InlineVisual? HitTestImage(Point point) => GeometryInlineVisuals().LastOrDefault(visual =>
+        visual.Descriptor.Payload is ImageInlinePayload or OleInlinePayload &&
+        visual.StoryId == GeometryStoryId && (GeometryStoryPage < 0 || visual.PageIndex == GeometryStoryPage) &&
+        (visual.Clip is null || visual.Clip.Value.Contains(point)) &&
+        visual.Bounds.Contains(point.Transform(ImageDrawing.Rotation(visual.Bounds, -(visual.Descriptor.Placement?.Rotation ?? 0)))));
+
+    internal bool IsInlineSelected(InlineVisual visual) => Editor is not null && !HasComposition &&
+        visual.StoryId == (_pagedLayout is null ? Guid.Empty : GeometryStoryId) &&
+        (_pagedLayout is null || GeometryStoryPage < 0 || visual.PageIndex == GeometryStoryPage) &&
+        Editor.Session.Selection.Start <= visual.Position && Editor.Session.Selection.End > visual.Position;
+
+    private void DrawInlineImages(DrawingContext context, Rect viewport, bool behindText = false)
     {
         if (Editor is null || _inlineImages is null) return;
         foreach (var visual in _inlineVisuals)
         {
-            if (!visual.Bounds.Intersects(viewport)) continue;
-            if (visual.Descriptor.Payload is ImageInlinePayload image)
+            if (!ImageDrawing.RotatedBounds(visual.Bounds, visual.Descriptor.Placement?.Rotation ?? 0).Intersects(viewport) ||
+                (visual.IsPositioned && ImageDrawing.BehindText(visual.Descriptor)) != behindText) continue;
+            if (ImageDrawing.ResourceId(visual.Descriptor) is { } resourceId)
             {
-                Editor.Document.Resources.TryGetValue(image.ResourceId, out var resource);
-                if (_inlineImages.Request(image.ResourceId, resource) is { } bitmap)
+                Editor.Document.Resources.TryGetValue(resourceId, out var resource);
+                if (_inlineImages.Request(resourceId, resource) is { } bitmap)
                 {
-                    using var clip = context.PushClip(visual.Clip?.Intersect(visual.Bounds) ?? visual.Bounds);
-                    context.DrawImage(bitmap, new Rect(bitmap.Size), visual.Bounds);
+                    using var clip = context.PushClip(visual.Clip ?? viewport);
+                    ImageDrawing.Draw(context, bitmap, visual.Bounds, visual.Descriptor.Placement);
+                }
+                else if (visual.IsPositioned)
+                {
+                    using var clip = context.PushClip(visual.Clip ?? viewport);
+                    ImageDrawing.DrawPlaceholder(context, visual.Descriptor, visual.Bounds);
                 }
             }
-            var selected = !HasComposition && Editor.Session.Selection.Start <= visual.Position && Editor.Session.Selection.End > visual.Position;
+            var selected = IsInlineSelected(visual);
             if (selected)
             {
                 using var selectionClip = context.PushClip(visual.Clip ?? viewport);
+                using var selectionRotation = context.PushTransform(ImageDrawing.Rotation(visual.Bounds, visual.Descriptor.Placement?.Rotation ?? 0));
                 context.DrawRectangle(null, new Pen(Editor.SelectionBrush, 3), visual.Bounds.Inflate(1.5));
             }
         }
