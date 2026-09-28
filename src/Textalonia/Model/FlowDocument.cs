@@ -224,11 +224,18 @@ public sealed record FlowDocument
                         Visit(s.Blocks, depth + 1);
                         break;
                     case Table t:
-                        DocumentStyleCatalog.Reference(Styles.Tables, t.StyleId);
-                        DocumentStyleValidation.Table(resolver.ResolveTableStyle(t));
                         if (t.Rows.IsDefaultOrEmpty || t.Rows.Length > 1000 || t.ColumnCount is < 1 or > 100 ||
                             t.Rows.Any(row => row.IsDefault || row.Length != t.ColumnCount))
                             throw new FormatException("Tables must have a rectangular cell grid.");
+                        DocumentStyleCatalog.Reference(Styles.Tables, t.StyleId);
+                        DocumentStyleValidation.Table(resolver.ResolveTableStyle(t));
+                        TableFormatting.ValidateWidth(t.PreferredWidth);
+                        if (!Enum.IsDefined(t.AutoFit) || !Enum.IsDefined(t.Alignment) || !double.IsFinite(t.Indent) ||
+                            t.Indent is < 0 or > 100000 || t.RepeatHeaderRows < 0 || t.RepeatHeaderRows > t.Rows.Length)
+                            throw new FormatException("Invalid table layout settings.");
+                        if (t.Position is { } position && (!double.IsFinite(position.X) || !double.IsFinite(position.Y) ||
+                            !double.IsFinite(position.Distance) || position.X is < 0 or > 100000 || position.Y is < 0 or > 100000 ||
+                            position.Distance is < 0 or > 1000)) throw new FormatException("Invalid positioned table settings.");
                         if (t.ColumnWidths.IsDefault || !t.ColumnWidths.IsEmpty &&
                             (t.ColumnWidths.Length != t.ColumnCount || t.ColumnWidths.Any(width => !double.IsFinite(width) || width <= 0 || width > 100000)))
                             throw new FormatException("Column widths must be positive and match the table columns.");
@@ -244,6 +251,10 @@ public sealed record FlowDocument
                                 if (cell is null) throw new FormatException("Null table cell.");
                                 Identify(cell.Id); ValidateColor(cell.Background);
                                 ValidateEdges(cell.Padding); ValidateBorders(cell.Borders);
+                                TableFormatting.ValidateWidth(cell.PreferredWidth);
+                                if (!Enum.IsDefined(cell.VerticalAlignment) || !Enum.IsDefined(cell.TextDirection))
+                                    throw new FormatException("Invalid table cell alignment or direction.");
+                                DocumentStyleValidation.Table(cell.StyleOverrides?.Apply(new TableStyle()) ?? new TableStyle());
                                 if (cell.Blocks.IsDefaultOrEmpty || cell.MergeOriginalBlocks.IsDefault)
                                     throw new FormatException("Invalid table cell content.");
                                 if (!cell.MergeOriginalBlocks.IsEmpty)
@@ -314,7 +325,7 @@ public sealed record FlowDocument
         foreach (var side in new[] { borders.Left, borders.Top, borders.Right, borders.Bottom })
         {
             if (side is null) continue;
-            if (!double.IsFinite(side.Width) || side.Width < 0 || side.Width > 1000) throw new FormatException("Invalid border width.");
+            if (!double.IsFinite(side.Width) || side.Width < 0 || side.Width > 1000 || !Enum.IsDefined(side.Kind)) throw new FormatException("Invalid border width.");
             ValidateColor(side.Color);
         }
     }

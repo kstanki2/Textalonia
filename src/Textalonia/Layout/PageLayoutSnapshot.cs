@@ -31,6 +31,8 @@ public sealed record LineFragment
     public Guid SectionId { get; internal init; }
     public int PageIndex { get; internal init; }
     public int ColumnIndex { get; internal init; }
+    /// <summary>A visual header copy. Its text offsets still address the original table content.</summary>
+    public bool IsRepeatedTableHeader { get; internal init; }
     public int TextStart { get; internal init; }
     public int TextEnd { get; internal init; }
     public int Start => TextStart;
@@ -46,6 +48,8 @@ public sealed record LineFragment
     internal Point Origin { get; init; }
     internal Rect ColumnBounds { get; init; }
     internal string? Marker { get; init; }
+    internal ListLevelDefinition? MarkerDefinition { get; init; }
+    internal TextStyle? MarkerStyle { get; init; }
     internal double LineNumberDistance { get; init; }
     internal ShapedLayoutCache.Lease Acquire() => Measurement.Layout.Acquire(Line.Window);
 }
@@ -125,7 +129,13 @@ public sealed partial class PageLayoutSnapshot : IDisposable
                 if (textRenderer is null) line.Draw(context, fragment.Origin);
                 else textRenderer.DrawLine(context, line, fragment.Origin);
             }
-            if (fragment.Marker is { } marker) DrawLabel(marker, fragment.Origin.X - 24, fragment.Origin.Y, fragment.Measurement.Paragraph.DefaultStyle.FontSize);
+            if (fragment.Marker is { } marker)
+            {
+                if (fragment.MarkerDefinition is { } definition)
+                    ListMarkerDrawing.Draw(context, marker, fragment.MarkerStyle ?? fragment.Measurement.Paragraph.DefaultStyle,
+                        definition, fragment.Measurement.Paragraph, fragment.Origin, _font, _foreground, fragment.Clip, textRenderer, fragment.Measurement.Fonts);
+                else DrawLabel(marker, fragment.Origin.X - 24, fragment.Origin.Y, fragment.Measurement.Paragraph.DefaultStyle.FontSize);
+            }
             if (fragment.LineNumber is { } number) DrawLabel(number.ToString(CultureInfo.InvariantCulture),
                 fragment.ColumnBounds.Left - fragment.LineNumberDistance, fragment.Origin.Y, 10, true);
         }
@@ -177,12 +187,12 @@ public sealed partial class PageLayoutSnapshot : IDisposable
         var position = Math.Clamp(caret.Position, 0, _index.Length);
         if (caret.LineStart >= 0)
         {
-            var exact = Fragments.FirstOrDefault(f => f.TextStart == caret.LineStart && position >= f.TextStart && position <= f.TextEnd);
+            var exact = Fragments.FirstOrDefault(f => !f.IsRepeatedTableHeader && f.TextStart == caret.LineStart && position >= f.TextStart && position <= f.TextEnd);
             if (exact is not null) return exact;
         }
-        return Fragments.LastOrDefault(f => position >= f.TextStart && position <= f.TextEnd &&
+        return Fragments.LastOrDefault(f => !f.IsRepeatedTableHeader && position >= f.TextStart && position <= f.TextEnd &&
             (position < f.TextEnd || f.TextEnd == f.Position.End)) ??
-            Fragments.MinBy(f => Math.Min(Math.Abs((long)f.TextStart - position), Math.Abs((long)f.TextEnd - position)));
+            Fragments.Where(f => !f.IsRepeatedTableHeader).MinBy(f => Math.Min(Math.Abs((long)f.TextStart - position), Math.Abs((long)f.TextEnd - position)));
     }
 
     public Rect Caret(int position) => Caret(VisualCaret.Logical(position));

@@ -30,12 +30,12 @@ internal sealed partial class DocumentLayout
                     {
                         var cell = (TableCell)cellNode.Source.Source!;
                         var row = cellNode.Source.Row; var column = cellNode.Source.Column;
-                        var bounds = new Rect(x + LayoutHeightIndex.ColumnOffset(table, node.Available, column), y + node.RowOffsets[row],
-                            LayoutHeightIndex.ColumnWidth(table, node.Available, column, cell.ColumnSpan), node.RowOffsets[row + cell.RowSpan] - node.RowOffsets[row]);
-                        result.Add(new(table, row, column, bounds, LayoutHeightIndex.ColumnWidth(table, node.Available, column + cell.ColumnSpan - 1),
+                        var bounds = new Rect(x + LayoutHeightIndex.ColumnOffset(table, node.Available, column, cell.ColumnSpan, _resolver, _font, _fonts), y + node.RowOffsets[row],
+                            LayoutHeightIndex.ColumnWidth(table, node.Available, column, cell.ColumnSpan, _resolver, _font, _fonts), node.RowOffsets[row + cell.RowSpan] - node.RowOffsets[row]);
+                        result.Add(new(table, row, column, bounds, LayoutHeightIndex.ColumnWidth(table, node.Available, column + cell.ColumnSpan - 1, resolver: _resolver, font: _font, fonts: _fonts),
                             node.Rows[row + cell.RowSpan - 1], clip));
                         var exact = !table.RowSizing.IsEmpty && Enumerable.Range(row, cell.RowSpan).All(r => table.RowSizing[r].Mode == TableRowHeightMode.Exact);
-                        Visit(cellNode, bounds.X, bounds.Y, exact ? clip?.Intersect(bounds) ?? bounds : clip);
+                        Visit(cellNode, bounds.X, bounds.Y + LayoutHeightIndex.VerticalOffset(cellNode, bounds.Height), exact ? clip?.Intersect(bounds) ?? bounds : clip);
                     }
                     return;
                 case Section section:

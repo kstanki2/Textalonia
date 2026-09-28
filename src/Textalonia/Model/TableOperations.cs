@@ -27,6 +27,9 @@ public static class TableOperations
                 : table.Rows.Select(row => insert ? row.Insert(index, new TableCell()) : row.RemoveAt(index)).ToImmutableArray(),
             ColumnWidths = rows || table.ColumnWidths.IsEmpty ? table.ColumnWidths : insert
                 ? table.ColumnWidths.Insert(index, table.ColumnWidths[Math.Min(index, size - 1)]) : table.ColumnWidths.RemoveAt(index),
+            RepeatHeaderRows = !rows ? table.RepeatHeaderRows : insert
+                ? table.RepeatHeaderRows + (index < table.RepeatHeaderRows ? 1 : 0)
+                : table.RepeatHeaderRows - (index < table.RepeatHeaderRows ? 1 : 0),
             RowSizing = !rows || table.RowSizing.IsEmpty ? table.RowSizing : insert
                 ? table.RowSizing.Insert(index, new TableRowSizing()) : table.RowSizing.RemoveAt(index)
         };

@@ -64,6 +64,8 @@ internal sealed class RetentionGraph
         byte[] bytes => 24 + bytes.Length,
         ImmutableDictionary<string, DocumentResource> resources => 56 + resources.Count * 64L,
         ImmutableDictionary<string, string> properties => 56 + properties.Count * 64L,
+        ImmutableDictionary<TableStyleRegion, TableStyleOverrides> conditions => 56 + conditions.Count * 64L,
+        TableStyleOverrides => 192,
         DocumentResource => 64,
         InlineDescriptor => 80,
         TableCell[] cells => 24 + cells.Length * 8L,
@@ -155,6 +157,9 @@ internal sealed class RetentionGraph
                 }
                 break;
             case TabStop[] stops: foreach (var stop in stops) visit(stop); break;
+            case ImmutableDictionary<TableStyleRegion, TableStyleOverrides> conditions:
+                foreach (var condition in conditions.Values) visit(condition);
+                break;
             case ImmutableDictionary<string, DocumentResource> resources:
                 foreach (var item in resources) { visit(item.Key); visit(item.Value); }
                 break;
@@ -186,6 +191,8 @@ internal sealed class RetentionGraph
             // Row arrays contribute allocation only. Visible cells are already
             // owned by indexed nodes; covered cells are in HiddenCellStorage.
             case TableCell cell:
+                visit(cell.PreferredWidth);
+                if (cell.StyleOverrides is not null) visit(cell.StyleOverrides);
                 foreach (var block in cell.Blocks) visit(DocumentNode.HiddenBlock(block));
                 foreach (var block in cell.MergeOriginalBlocks) visit(DocumentNode.HiddenBlock(block));
                 if (cell.Borders is not null) visit(cell.Borders);
@@ -210,6 +217,9 @@ internal sealed class RetentionGraph
                 break;
             case ListLevelDefinition level:
                 if (level.Text is not null) visit(level.Text);
+                visit(level.MarkerFormatting);
+                if (level.CharacterStyleId is not null) visit(level.CharacterStyleId);
+                if (level.ParagraphStyleId is not null) visit(level.ParagraphStyleId);
                 visit(level.Prefix); visit(level.Suffix);
                 break;
             case BlockBorders borders:

@@ -18,7 +18,7 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
     private static readonly HashSet<string> BlockTags = ["p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li", "pre", "blockquote", "section"];
     private static readonly HashSet<string> IgnoredTags = ["script", "style", "iframe", "object", "embed", "template", "noscript", "link"];
     private static readonly HashSet<string> SupportedTags = ["html", "head", "body", "meta", "title", "p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li", "pre", "blockquote", "section", "ul", "ol", "table", "thead", "tbody", "tfoot", "tr", "td", "th", "colgroup", "col", "span", "b", "strong", "i", "em", "u", "s", "strike", "del", "sub", "sup", "code", "a", "br", "img"];
-    private static readonly HashSet<string> SupportedStyles = ["font-weight", "font-style", "font-family", "font-size", "font-stretch", "color", "background", "background-color", "text-decoration", "text-decoration-line", "vertical-align", "text-align", "direction", "margin", "margin-top", "margin-bottom", "margin-left", "margin-right", "text-indent", "line-height", "letter-spacing", "white-space", "padding", "padding-left", "padding-top", "padding-right", "padding-bottom", "border", "border-left", "border-top", "border-right", "border-bottom", "border-collapse", "width", "height", "min-height", "list-style-type"];
+    private static readonly HashSet<string> SupportedStyles = ["font-weight", "font-style", "font-family", "font-size", "font-stretch", "color", "background", "background-color", "text-decoration", "text-decoration-line", "vertical-align", "text-align", "direction", "margin", "margin-top", "margin-bottom", "margin-left", "margin-right", "text-indent", "line-height", "letter-spacing", "white-space", "padding", "padding-left", "padding-top", "padding-right", "padding-bottom", "border", "border-left", "border-top", "border-right", "border-bottom", "border-collapse", "width", "height", "min-height", "list-style-type", "table-layout", "break-inside"];
     private static readonly string[] StretchNames = ["ultra-condensed", "extra-condensed", "condensed", "semi-condensed", "normal", "semi-expanded", "expanded", "extra-expanded", "ultra-expanded"];
     private const string Metadata = "data-textalonia-";
     private sealed class ImportContext
@@ -63,16 +63,18 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
         foreach (var (name, value) in Css(element))
         {
             var mapped = SupportedStyles.Contains(name);
-            if (name is "width") mapped = tag is "img" or "col";
+            if (name is "width") mapped = tag is "img" or "col" or "table" or "td" or "th";
             if (name is "height" or "min-height") mapped = tag == "tr" || tag == "img" && name == "height";
             if (name == "border-collapse") mapped = tag == "table" && value == "collapse";
             if (name == "list-style-type") mapped = tag is "ul" or "ol";
             if (name == "padding" || name.StartsWith("padding-", StringComparison.Ordinal) || name == "border" || name.StartsWith("border-", StringComparison.Ordinal) && name != "border-collapse")
                 mapped = tag is "section" or "blockquote" or "td" or "th";
             if (name is "text-align" or "direction" or "text-indent" or "line-height" or "letter-spacing" || name == "margin" || name.StartsWith("margin-", StringComparison.Ordinal))
-                mapped = BlockTags.Contains(tag) || tag is "body" or "td" or "th";
+                mapped = BlockTags.Contains(tag) || tag is "body" or "td" or "th" or "table";
             if (name == "font-style" && value is not ("normal" or "italic" or "oblique")) mapped = false;
-            if (name == "vertical-align" && value is not ("baseline" or "sub" or "super")) mapped = false;
+            if (name == "vertical-align" && value is not ("baseline" or "sub" or "super") && !(tag is "td" or "th" && value is "top" or "middle" or "bottom")) mapped = false;
+            if (name == "table-layout") mapped = tag == "table" && value is "auto" or "fixed";
+            if (name == "break-inside") mapped = tag == "tr" && value is "auto" or "avoid";
             if (name == "text-align" && value is not ("left" or "center" or "right" or "justify" or "start" or "end")) mapped = false;
             if (name == "direction" && value is not ("ltr" or "rtl")) mapped = false;
             if (name == "white-space" && value is not ("normal" or "pre" or "pre-wrap" or "break-spaces")) mapped = false;
@@ -80,7 +82,7 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
             if (name == "font-family" && value.Contains(',')) Report("html.font-family", "CSS font fallback list", "The first font family was retained.", element);
             if (!mapped) Report("html.unsupported-style", $"{name}: {value}", "Unsupported style or component was ignored; supported components were retained.", element);
         }
-        if ((element.HasAttribute("width") && tag is not ("img" or "col")) || (element.HasAttribute("height") && tag is not ("img" or "tr")))
+        if ((element.HasAttribute("width") && tag is not ("img" or "col" or "table" or "td" or "th")) || (element.HasAttribute("height") && tag is not ("img" or "tr")))
             Report("html.unsupported-style", "Element width or height attribute", "Container size was determined by document flow.", element);
         if (element.HasAttribute("class")) Report("html.unsupported-style", "CSS class rules", "Only inline CSS and semantic HTML tags were applied.", element);
         if (tag == "a" && element.GetAttribute("href") is { } href && !FlowDocument.IsSafeHyperlink(href))
@@ -484,11 +486,12 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
             var value = css.GetValueOrDefault(name) ?? css.GetValueOrDefault("border");
             if (value is null or "none" or "0" or "0px") return null;
             var parts = value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Any(p => p is "dashed" or "dotted" or "double" or "groove" or "ridge" or "inset" or "outset"))
+            if (parts.Any(p => p is "groove" or "ridge" or "inset" or "outset"))
                 Report("html.unsupported-style", name + ": " + value, "Border was approximated as solid.", element);
             var width = parts.FirstOrDefault(p => Regex.IsMatch(p, @"^\d"));
             var color = parts.Select(Color).FirstOrDefault(c => c is not null);
-            return new(Bound(Length(width, 1, element), 0, 1000, element, name), color);
+            return new(Bound(Length(width, 1, element), 0, 1000, element, name), color)
+            { Kind = parts.Contains("none") ? BorderKind.None : parts.Contains("dashed") ? BorderKind.Dashed : parts.Contains("dotted") ? BorderKind.Dotted : parts.Contains("double") ? BorderKind.Double : BorderKind.Solid };
         }
         return new(Side("border-left"), Side("border-top"), Side("border-right"), Side("border-bottom"));
     }
@@ -543,7 +546,9 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
                 {
                     Blocks = FlowDocument.EnsureBlocks(ReadBlocks(cell, cellStyle, context).ToImmutableArray()),
                     ColumnSpan = colSpan, RowSpan = rowSpan, Background = ReadColor(css, "background-color", cell) ?? ReadColor(css, "background", cell),
-                    Padding = ReadEdges(css, "padding", cell), Borders = ReadBorders(css, cell)
+                    Padding = ReadEdges(css, "padding", cell), Borders = ReadBorders(css, cell), PreferredWidth = ReadHtmlWidth(cell),
+                    VerticalAlignment = css.GetValueOrDefault("vertical-align") switch { "middle" => TableCellVerticalAlignment.Center, "bottom" => TableCellVerticalAlignment.Bottom, _ => TableCellVerticalAlignment.Top },
+                    TextDirection = css.GetValueOrDefault("direction") switch { "rtl" => TableCellTextDirection.RightToLeft, "ltr" => TableCellTextDirection.LeftToRight, _ => TableCellTextDirection.Inherit }
                 };
                 c += colSpan; columns = Math.Max(columns, c);
             }
@@ -563,12 +568,17 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
         {
             var css = Css(row);
             var height = Bound(Length(css.GetValueOrDefault("height") ?? css.GetValueOrDefault("min-height") ?? row.GetAttribute("height"), 0, row), 0, 100000, row, "row height");
-            return new TableRowSizing { Height = height, Mode = height == 0 ? TableRowHeightMode.Auto : row.GetAttribute(Metadata + "height-mode") == "Exact" ? TableRowHeightMode.Exact : TableRowHeightMode.AtLeast };
+            return new TableRowSizing { AllowSplit = css.GetValueOrDefault("break-inside") != "avoid", Height = height, Mode = height == 0 ? TableRowHeightMode.Auto : row.GetAttribute(Metadata + "height-mode") == "Exact" ? TableRowHeightMode.Exact : TableRowHeightMode.AtLeast };
         }).ToImmutableArray();
         return new Table
         {
             Rows = Enumerable.Range(0, rows.Length).Select(r => Enumerable.Range(0, columns).Select(c => cells.GetValueOrDefault((r, c)) ?? new TableCell()).ToImmutableArray()).ToImmutableArray(),
-            ColumnWidths = widths.Count == columns ? widths.ToImmutableArray() : [], RowSizing = sizing.Any(s => s.Mode != TableRowHeightMode.Auto) ? sizing : []
+            ColumnWidths = widths.Count == columns ? widths.ToImmutableArray() : [], RowSizing = sizing.Any(s => s.Mode != TableRowHeightMode.Auto || !s.AllowSplit) ? sizing : [],
+            PreferredWidth = ReadHtmlWidth(element),
+            AutoFit = ReadTableEnum(element, "autofit", Css(element).GetValueOrDefault("table-layout") == "fixed" ? TableAutoFit.Fixed : TableAutoFit.Legacy),
+            Alignment = ReadTableEnum(element, "alignment", Css(element).GetValueOrDefault("margin-left") == "auto" ? Css(element).GetValueOrDefault("margin-right") == "auto" ? TableAlignment.Center : TableAlignment.Right : TableAlignment.Left),
+            Indent = MetadataNumber(element, "indent", 0), RightToLeft = Css(element).GetValueOrDefault("direction") == "rtl",
+            RepeatHeaderRows = rows.TakeWhile(row => row.ParentElement?.LocalName == "thead").Count()
         };
     }
 
@@ -577,6 +587,7 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
         StyleConversion.ReportLosses(this, document);
+        TableConversion.ReportLosses("html", document);
         document = new DocumentStyleResolver(document).ResolveDocument();
         document.Validate();
         var builder = new StringBuilder("<!DOCTYPE html><html><head><meta charset=\"utf-8\"></head><body>");
@@ -677,19 +688,24 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
     }
     private static void WriteTable(StringBuilder builder, Table table, FlowDocument document, IReadOnlyDictionary<Guid, ListMarker> markers)
     {
-        builder.Append("<table style=\"border-collapse:collapse\" border=\"1\">");
+        builder.Append("<table border=\"1\"");
+        Attribute(builder, "style", "border-collapse:collapse;" + HtmlWidthCss(table.PreferredWidth) + "table-layout:" + (table.AutoFit == TableAutoFit.Fixed ? "fixed" : "auto") + ";direction:" + (table.RightToLeft ? "rtl" : "ltr") + ";" +
+            (table.Alignment == TableAlignment.Center ? "margin-left:auto;margin-right:auto;" : table.Alignment == TableAlignment.Right ? "margin-left:auto;margin-right:0;" : "margin-left:" + N(table.Indent) + "px;"));
+        Attribute(builder, Metadata + "autofit", table.AutoFit.ToString()); Attribute(builder, Metadata + "alignment", table.Alignment.ToString()); Attribute(builder, Metadata + "indent", N(table.Indent)); builder.Append('>');
         if (!table.ColumnWidths.IsEmpty)
         {
             builder.Append("<colgroup>"); var sum = table.ColumnWidths.Sum();
             foreach (var width in table.ColumnWidths) { builder.Append("<col"); Attribute(builder, Metadata + "width", N(width)); Attribute(builder, "style", "width:" + N(width / sum * 100) + "%"); builder.Append('>'); }
             builder.Append("</colgroup>");
         }
+        builder.Append(table.RepeatHeaderRows > 0 ? "<thead>" : "<tbody>");
         for (var row = 0; row < table.Rows.Length; row++)
         {
+            if (row > 0 && row == table.RepeatHeaderRows) builder.Append("</thead><tbody>");
             builder.Append("<tr");
-            if (!table.RowSizing.IsEmpty && table.RowSizing[row].Mode != TableRowHeightMode.Auto)
+            if (!table.RowSizing.IsEmpty)
             {
-                var sizing = table.RowSizing[row]; Attribute(builder, "style", "height:" + N(sizing.Height) + "px"); Attribute(builder, Metadata + "height-mode", sizing.Mode.ToString());
+                var sizing = table.RowSizing[row]; Attribute(builder, "style", (sizing.Mode == TableRowHeightMode.Auto ? "" : "height:" + N(sizing.Height) + "px;") + "break-inside:" + (sizing.AllowSplit ? "auto" : "avoid") + ";"); Attribute(builder, Metadata + "height-mode", sizing.Mode.ToString());
                 if (sizing.Mode == TableRowHeightMode.Exact) ConversionDiagnostics.Report("html.row-height", "Exact table row height", "Browser row height is a minimum; exact sizing is retained in Textalonia metadata.", table.Id);
             }
             builder.Append('>');
@@ -698,12 +714,14 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
                 if (table.IsCovered(row, column)) continue;
                 var cell = table.Rows[row][column]; builder.Append("<td");
                 Attribute(builder, "rowspan", cell.RowSpan.ToString(CultureInfo.InvariantCulture)); Attribute(builder, "colspan", cell.ColumnSpan.ToString(CultureInfo.InvariantCulture));
-                Attribute(builder, "style", BackgroundCss(cell.Background) + EdgesCss(cell.Padding, "padding") + BordersCss(cell.Borders));
+                Attribute(builder, "style", BackgroundCss(cell.Background) + EdgesCss(cell.Padding, "padding") + BordersCss(cell.Borders) + HtmlWidthCss(cell.PreferredWidth) +
+                    "vertical-align:" + (cell.VerticalAlignment switch { TableCellVerticalAlignment.Center => "middle", TableCellVerticalAlignment.Bottom => "bottom", _ => "top" }) + ";" +
+                    (cell.TextDirection == TableCellTextDirection.Inherit ? "" : "direction:" + (cell.TextDirection == TableCellTextDirection.RightToLeft ? "rtl" : "ltr") + ";"));
                 builder.Append('>'); WriteBlocks(builder, cell.Blocks, document, markers); builder.Append("</td>");
             }
             builder.Append("</tr>");
         }
-        builder.Append("</table>");
+        builder.Append(table.RepeatHeaderRows == table.Rows.Length ? "</thead></table>" : "</tbody></table>");
     }
     private static void WriteRun(StringBuilder builder, RichRun run, FlowDocument document)
     {
@@ -751,9 +769,24 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
         if (value is null) return "";
         var builder = new StringBuilder("border:none;");
         foreach (var (name, side) in new[] { ("left", value.Left), ("top", value.Top), ("right", value.Right), ("bottom", value.Bottom) })
-            if (side is not null) builder.Append("border-").Append(name).Append(':').Append(N(side.Width)).Append("px solid ").Append(side.Color is null ? "currentColor" : CssColor(side.Color)).Append(';');
+            if (side is not null) builder.Append("border-").Append(name).Append(':').Append(N(side.Width)).Append("px ").Append(side.Kind.ToString().ToLowerInvariant()).Append(' ').Append(side.Color is null ? "currentColor" : CssColor(side.Color)).Append(';');
         return builder.ToString();
     }
+    private static TablePreferredWidth ReadHtmlWidth(IElement element)
+    {
+        var value = Css(element).GetValueOrDefault("width") ?? element.GetAttribute("width");
+        if (value is null or "auto") return new();
+        return value.EndsWith('%') ? new(TableWidthUnit.Percentage, Bound(Number(value[..^1], 100), .001, 100, element, "preferred width"))
+            : new(TableWidthUnit.Absolute, Bound(Length(value, 1, element), .001, 100000, element, "preferred width"));
+    }
+    private static T ReadTableEnum<T>(IElement element, string name, T fallback) where T : struct, Enum
+    {
+        var value = element.GetAttribute(Metadata + name);
+        if (value is null) return fallback;
+        if (!Enum.TryParse<T>(value, out var parsed) || !Enum.IsDefined(parsed)) throw new FormatException("Invalid HTML table metadata: " + name);
+        return parsed;
+    }
+    private static string HtmlWidthCss(TablePreferredWidth width) => "width:" + (width.Unit switch { TableWidthUnit.Percentage => N(width.Value) + "%", TableWidthUnit.Absolute => N(width.Value) + "px", _ => "auto" }) + ";";
     private static string N(double value) => value.ToString("R", CultureInfo.InvariantCulture);
     private static string CssColor(string value) => value.Length == 9 ? "#" + value[3..] + value[1..3] : value;
     private static void Attribute(StringBuilder builder, string name, string value) => builder.Append(' ').Append(name).Append("=\"").Append(WebUtility.HtmlEncode(value)).Append('"');

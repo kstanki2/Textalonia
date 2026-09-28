@@ -98,6 +98,7 @@ public class TextaloniaToolbar : WrapPanel
         viewButton.Flyout!.Opened += (_, _) => Refresh();
         AddOutputFlyout();
         AddFlyout("Insert", "Insert link or table", InsertMenu());
+        DialogButton("Table\u2026", "Table properties", editor.ShowTablePropertiesDialogAsync);
         AddFlyout("Stories", "Headers, footers and notes", StoriesMenu(), editing: false);
         AddMergeFieldFlyout();
         ActionButton("Clear", "Clear character formatting", () => editor.ApplyStyle(_ => TextStyle.Default));
@@ -348,11 +349,13 @@ public class TextaloniaToolbar : WrapPanel
         }));
         var borderWidth = Number("Cell border width", 1, 0, 1000);
         panel.Children.Add(borderWidth);
+        var borderKind = new ComboBox { ItemsSource = Enum.GetValues<BorderKind>(), SelectedItem = BorderKind.Solid };
+        AutomationProperties.SetName(borderKind, "Cell border kind"); panel.Children.Add(borderKind);
         var borderColor = new TextBox { Text = "#808080", PlaceholderText = "Border color" };
         AutomationProperties.SetName(borderColor, "Cell border color"); panel.Children.Add(borderColor);
         panel.Children.Add(MenuAction("Apply cell borders", () =>
         {
-            var side = new BorderSide((double)(borderWidth.Value ?? 1), borderColor.Text);
+            var side = new BorderSide((double)(borderWidth.Value ?? 1), borderColor.Text) { Kind = (BorderKind)borderKind.SelectedItem! };
             Editor!.SetTableCellBorders(new(side, side, side, side));
         }));
         panel.Children.Add(MenuAction("Remove cell borders", () => Editor!.SetTableCellBorders(new())));

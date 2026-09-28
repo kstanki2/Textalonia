@@ -273,15 +273,8 @@ public partial class DocumentSurface : Control
                 paragraph.Draw(context, documentViewport);
                 if (paragraph.Marker is not null)
                 {
-                    var marker = new FormattedText(paragraph.Marker, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-                        DocumentLayout.Typeface(paragraph.Position.Paragraph.DefaultStyle, Editor.FontFamily), paragraph.Position.Paragraph.DefaultStyle.FontSize, Editor.Foreground);
-                    var origin = new Point(paragraph.Origin.X - marker.Width - 10, paragraph.Origin.Y);
-                    if (paragraph.Clip is { } clip)
-                    {
-                        using var scope = context.PushClip(clip);
-                        context.DrawText(marker, origin);
-                    }
-                    else context.DrawText(marker, origin);
+                    ListMarkerDrawing.Draw(context, paragraph.Marker, paragraph.MarkerStyle ?? paragraph.Position.Paragraph.DefaultStyle,
+                        paragraph.MarkerDefinition ?? new(), paragraph.Page.Owner.Paragraph, paragraph.Origin, Editor.FontFamily, Editor.Foreground, paragraph.Clip, fonts: paragraph.MarkerFonts);
                 }
             }
             if (Editor.Session.Index.Length == 0 && !HasComposition && Editor.Session.ActiveDocument.Blocks is [Paragraph])

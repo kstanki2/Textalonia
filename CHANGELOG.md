@@ -2,6 +2,8 @@
 
 ## 0.1.0-preview.1
 
+- Added DX-06 preferred table/cell widths, AutoFit, RTL grids, conditional styles and border kinds, repeating headers and row split policies, positioned table wrapping, formatted/style-linked list markers, and table-property UI. Native v9, XAML v4 and clipboard v5 retain the model; external formats preserve mapped settings or report losses. See `docs/TABLES.md` for behavior and qualification boundaries.
+
 - Added DX-05 anchored bookmarks and internal links, rich general fields and deterministic evaluation, TOCs/captions with bounded pagination, outline/bookmark navigation and story-aware transactional find/replace. Native v8, XAML v3 and clipboard v4 plus DOCX/RTF field interchange; see `docs/FIELDS.md` for supported families and qualification limits.
 - Added DX-04 exact-snapshot output rendering, print preview and output commands, validated host print-service jobs with ranges/copies/collation, and optional `Textalonia.Pdf.Skia` PDF export. Output preserves caller-owned streams and reports cancellation/fallbacks. Native printing and tagged/archival/accessibility PDF qualification remain open; see `docs/OUTPUT.md`.
 - Added DX-03 secondary stories: linked first/even/primary headers and footers, rich footnotes/endnotes, story editing and shared undo, page-context fields, continuation pagination, toolbar commands and DOCX/RTF interchange. Native v7, data XAML v2 and clipboard v3 preserve stories. See `docs/STORIES.md` for scope and qualification limits.

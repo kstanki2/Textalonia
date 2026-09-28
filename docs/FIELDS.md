@@ -174,7 +174,7 @@ revision, do not split graphemes, and reject stale/foreign/overlapping replaceme
 requests. All-story replacement is one transaction. This slice implements literal
 search; regex and whole-word search remain separate future work.
 
-Native JSON v8 (reading v4-v8), data XAML v3 (reading v1-v3), and clipboard v4
+Native JSON v9 (reading v4-v9), data XAML v4 (reading v1-v4), and clipboard v5
 (reading v1-v4) preserve ranges, source instructions, lock/dirty/display state,
 internal links and properties. DOCX/RTF map standard field/bookmark markup and
 rich cached results, including nested source instructions and secondary stories.

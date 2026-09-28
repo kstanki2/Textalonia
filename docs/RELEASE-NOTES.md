@@ -12,7 +12,7 @@ requires updating these notes before creating the publication candidate.
 Immutable documents and editing sessions; formatting, lists, nested/merged
 tables and undo; editor, selectable viewer and replaceable toolbar/input;
 inline image/control descriptors and host resource services; diagnosed
-text/HTML/RTF/DOCX interchange; native JSON v8 (v4-v8 readable); data XAML v3;
+text/HTML/RTF/DOCX interchange; native JSON v9 (v4-v9 readable); data XAML v4;
 bounded Markdown codec/viewer and optional host highlighting. The core package is
 Textalonia; PDF export is available through optional Textalonia.Pdf.Skia.
 The core editor does not require that backend or a desktop host.
@@ -51,7 +51,7 @@ are included in the same package. Use the independent PackageSmoke program as a
 compiling example for extension services and input replacement.
 
 Read [API contracts](API-CONTRACTS.md) before attaching mutable sessions/services
-to controls. Native JSON writes schema v8 and reads v4/v5/v6/v7/v8; other versions are rejected. Earlier development schemas were never published or used
+to controls. Native JSON writes schema v9 and reads v4/v5/v6/v7/v8/v9; other versions are rejected. Earlier development schemas were never published or used
 and have no migration support. Use strict conversion reports when export loss
 matters.
 
@@ -110,3 +110,13 @@ Native v8, data XAML v3 and clipboard v4 preserve the new metadata, with DOCX/RT
 standard field/bookmark interchange and diagnosed unsupported cases. See
 [FIELDS.md](FIELDS.md) for exact field families, update policy and remaining
 formatted repeated-field, complete switch and native/Office qualification limits.
+
+## DX-06 table and list extensions
+
+Added preferred widths and content/window AutoFit, RTL grids, cell alignment and
+bidi direction, conditional table styles and border kinds, repeating headers and
+row split policies, positioned page tables with rectangular text wrapping, and
+formatted/style-linked list markers. Table properties and band shading can be
+edited through the toolbar dialogs. Native v9, data XAML v4 and clipboard v5 retain
+the metadata, with earlier supported versions still readable. See [table/list
+contracts](TABLES.md) for format coverage and explicit layout limitations.

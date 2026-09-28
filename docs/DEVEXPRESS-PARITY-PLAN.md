@@ -2,7 +2,7 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **implementation plan; DX-01 through DX-05 implementation and
+candidate. Status: **implementation plan; DX-01 through DX-06 implementation and
 qualification status is recorded below. Other workstreams remain proposed unless explicitly noted.**
 
 The audit tables in sections 2-3 describe the baseline commit above; the DX-01
@@ -15,6 +15,8 @@ entry and [output guide](OUTPUT.md) supersede baseline findings for print previe
 host printing and basic PDF export; conformance and native qualification remain open.
 The DX-05 implementation entry and [field/navigation guide](FIELDS.md) supersede
 baseline findings for bookmarks, general fields, contents and navigation.
+The DX-06 implementation entry and [table/list guide](TABLES.md) supersede baseline
+findings for table layout, conditional styles, table pagination and marker formatting.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -455,6 +457,27 @@ projection; ordinary editing retains cached-result coordinates. DX-14 release ga
 remain open.
 
 ### DX-06 — Table and list extensions
+
+**Implementation status (2026-09-27):** table/cell preferred widths, Content/Window
+AutoFit, alignment/indent and RTL grids; conditional table styles, cell alignment
+and bidi direction, inside/outside and non-solid borders; repeated header instances,
+row split policies and coordinated merged-cell fragments; positioned page tables
+with rectangular body-text wrapping; and formatted, positioned, style-linked list
+markers are implemented. Table properties and conditional shading are authorable
+through the existing toolbar/dialogs, with undo and read-only guards. Native v9,
+XAML v4 and clipboard v5 preserve the expanded model; DOCX/RTF/HTML map supported
+settings or report explicit losses. See [table/list contracts](TABLES.md).
+
+Managed validation: **1,041 tests passed, 3 existing native-bidi tests skipped**.
+The public API baselines retain existing members and record the additive APIs and
+clipboard schema version change.
+
+Simple view places positioned tables inline; rotated vertical cell text is not
+implemented. Positioned tables clip to their anchor column with diagnostics;
+positioned tables with notes use inline flow. Nested-table header requests and
+oversized unsplittable groups have explicit pagination fallbacks. Native UI and
+external Word/DevExpress rendering qualification remain DX-14 gates. This
+implementation does not claim those qualification results.
 
 **Priority: core. Size: L. Dependencies: DX-01, DX-02.**
 

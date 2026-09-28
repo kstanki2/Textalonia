@@ -109,8 +109,7 @@ public sealed partial class DocxDocumentFormat
                 var properties = element.Element(W + "tblPr");
                 var cell = element.Element(W + "tcPr");
                 var formatting = ReadTableFormatting(properties, cell);
-                tables.Add(id, new TableStyleDefinition { Id = id, Name = name, BasedOn = Reference(id, "basedOn", kind), Formatting = formatting });
-                if (element.Elements(W + "tblStylePr").Any()) Loss("table-conditional-style", "Conditional table style regions", "Base named table style retained.", element);
+                tables.Add(id, new TableStyleDefinition { Id = id, Name = name, BasedOn = Reference(id, "basedOn", kind), Formatting = formatting, Conditions = ReadTableConditions(element) });
                 if (element.Element(W + "rPr") is not null || element.Element(W + "pPr") is not null)
                     Loss("table-text-style", "Table style character and paragraph formatting", "Base table cell decoration retained.", element);
             }
@@ -201,7 +200,7 @@ public sealed partial class DocxDocumentFormat
             catalog.Paragraphs.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => Definition("paragraph", p.Key, p.Value.Name, p.Value.BasedOn, p.Value.LinkedStyle, p.Value.NextStyle,
                 catalog.DefaultParagraphStyleId == p.Key, ParagraphFormatting(p.Value), WriteTextStyle(new TextStyle { Overrides = p.Value.TextFormatting }, Guid.Empty))),
             catalog.Tables.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => Definition("table", p.Key, p.Value.Name, p.Value.BasedOn, null, null,
-                catalog.DefaultTableStyleId == p.Key, WriteTableStyle(p.Value.Formatting))));
+                catalog.DefaultTableStyleId == p.Key, new[] { WriteTableStyle(p.Value.Formatting), WriteTableCellStyle(p.Value.Formatting) }.Concat(WriteTableConditions(p.Value)).ToArray())));
     }
 
     private static TableStyleOverrides ReadTableFormatting(XElement? properties, XElement? cell = null)
@@ -209,12 +208,23 @@ public sealed partial class DocxDocumentFormat
         var formatting = new TableStyleOverrides();
         if ((cell?.Element(W + "shd") ?? properties?.Element(W + "shd")) is { } shading) formatting = formatting with { Background = new(ReadColor((string?)shading.Attribute(W + "fill"))) };
         if ((cell?.Element(W + "tcMar") ?? properties?.Element(W + "tblCellMar")) is { } padding) formatting = formatting with { Padding = new(ReadPadding(padding)) };
-        if ((cell?.Element(W + "tcBorders") ?? properties?.Element(W + "tblBorders")) is { } borders) formatting = formatting with { Borders = new(ReadBorders(borders)) };
+        if (cell?.Element(W + "tcBorders") is { } cellBorders) formatting = formatting with { Borders = new(ReadBorders(cellBorders)) };
+        if (properties?.Element(W + "tblBorders") is { } borders) formatting = formatting with
+        {
+            OutsideBorders = new(ReadBorders(borders)),
+            InsideHorizontal = borders.Element(W + "insideH") is { } horizontal ? new(ReadBorder(horizontal)) : default,
+            InsideVertical = borders.Element(W + "insideV") is { } vertical ? new(ReadBorder(vertical)) : default
+        };
+        if (cell?.Element(W + "vAlign") is not null) formatting = formatting with { VerticalAlignment = ReadCellVerticalAlignment(cell) };
+        ReadCellTextDirection(cell);
         return formatting;
     }
 
     private static XElement WriteTableStyle(TableStyleOverrides formatting) => new(W + "tblPr",
         formatting.Background.IsSet ? new XElement(W + "shd", new XAttribute(W + "val", "clear"), new XAttribute(W + "fill", formatting.Background.Value is { } color ? Color(color, Guid.Empty) : "auto")) : null,
         formatting.Padding.IsSet ? WritePadding("tblCellMar", formatting.Padding.Value ?? new EdgeInsets()) : null,
-        formatting.Borders.IsSet ? new XElement(W + "tblBorders", WriteBorders(formatting.Borders.Value ?? new BlockBorders(), Guid.Empty).Elements()) : null);
+        formatting.OutsideBorders.IsSet || formatting.InsideHorizontal.IsSet || formatting.InsideVertical.IsSet
+            ? new XElement(W + "tblBorders", formatting.OutsideBorders.IsSet ? WriteBorders(formatting.OutsideBorders.Value ?? new BlockBorders(), Guid.Empty).Elements() : null,
+                formatting.InsideHorizontal.IsSet ? WriteBorder("insideH", formatting.InsideHorizontal.Value, Guid.Empty) : null,
+                formatting.InsideVertical.IsSet ? WriteBorder("insideV", formatting.InsideVertical.Value, Guid.Empty) : null) : null);
 }

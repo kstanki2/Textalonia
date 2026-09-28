@@ -23,6 +23,11 @@ stop the gesture and release its resources. Read-only documents still allow sele
 
 ## Tables and formatting
 
+The **Table properties** dialog edits widths, AutoFit, alignment, column order,
+cell text direction and vertical alignment, repeated headers and row splitting as
+one undoable change. **Styles** edits reusable header and row-band shading.
+See [table/list contracts](TABLES.md) for the APIs and page-placement behavior.
+
 Hover a cell to show its resize edges. Drag an internal column boundary or a row's
 bottom edge to resize. Column sizing follows the model's relative weights, sharing
 width with the neighboring column; row sizing retains an existing Exact rule and

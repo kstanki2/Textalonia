@@ -6,7 +6,7 @@ namespace Textalonia.Editing;
 /// <summary>A versioned, self-contained clipboard fragment. Partial containers retain their formatting.</summary>
 public sealed record DocumentFragment
 {
-    public const int CurrentVersion = 4;
+    public const int CurrentVersion = 5;
     public int Version { get; init; } = CurrentVersion;
     public FlowDocument Document { get; init; } = new();
     /// <summary>Whether the first paragraph edge merges when pasted inside destination text.</summary>
@@ -16,7 +16,7 @@ public sealed record DocumentFragment
 
     public void Validate()
     {
-        if (Version is not (1 or 2 or 3 or CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {Version} is not supported.");
+        if (Version is not (1 or 2 or 3 or 4 or CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {Version} is not supported.");
         if (Document is null) throw new FormatException("Missing clipboard document.");
         Document.Validate();
     }
@@ -250,6 +250,7 @@ internal static class DocumentFragments
     {
         Rows = Enumerable.Range(top, bottom - top + 1).Select(r => Enumerable.Range(left, right - left + 1)
             .Select(c => cell(r, c)).ToImmutableArray()).ToImmutableArray(),
+        RepeatHeaderRows = Math.Clamp(table.RepeatHeaderRows - top, 0, bottom - top + 1),
         ColumnWidths = table.ColumnWidths.IsEmpty ? [] : table.ColumnWidths.Skip(left).Take(right - left + 1).ToImmutableArray(),
         RowSizing = table.RowSizing.IsEmpty ? [] : table.RowSizing.Skip(top).Take(bottom - top + 1).ToImmutableArray()
     };

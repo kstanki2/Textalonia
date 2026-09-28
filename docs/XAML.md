@@ -1,11 +1,11 @@
 # Textalonia XAML data vocabulary
 
-`DocumentFormats.Xaml` writes **Textalonia XAML data version 2** and reads versions 1/2. The namespace is `urn:textalonia:document:1`; the root is `Document` with `Version="2"`. `.txaml` is the recommended extension; `.xaml` also selects this codec through `DocumentFormats.ForPath`. Native JSON and its `.textalonia`, `.json`, and `.art` extensions remain supported independently.
+`DocumentFormats.Xaml` writes **Textalonia XAML data version 4** and reads versions 1/2/3/4. The namespace is `urn:textalonia:document:1`; the root is `Document` with `Version="4"`. `.txaml` is the recommended extension; `.xaml` also selects this codec through `DocumentFormats.ForPath`. Native JSON and its `.textalonia`, `.json`, and `.art` extensions remain supported independently.
 
 This is an XML data format, implemented using the .NET XML reader and explicit model constructors in the main Textalonia package. It adds no dependency. It does not implement Avalonia XAML, WPF FlowDocument XAML, or another editor's vocabulary; those documents require an explicit converter and fixtures.
 
 ```xml
-<Document xmlns="urn:textalonia:document:1" Version="2">
+<Document xmlns="urn:textalonia:document:1" Version="4">
   <Resources>
     <Resource Key="logo" Kind="Host" MediaType="image/png" Location="app:logo" />
   </Resources>

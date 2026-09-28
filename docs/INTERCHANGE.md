@@ -100,7 +100,7 @@ strict rejection, boundary merging, destination shells and fallback order.
 
 ## Anchored fields, bookmarks and internal links
 
-Native JSON v8 and data XAML v3 retain range identities, story/paragraph anchors,
+Native JSON v9 and data XAML v4 retain range identities, story/paragraph anchors,
 boundary affinity, instructions, lock/dirty/show-code flags, internal-link metadata
 and the string property catalog. Data XAML also reads v1/v2. Existing atomic
 `MERGEFIELD` and page-field descriptors remain supported.
@@ -153,7 +153,7 @@ or desktop interoperability evidence.
 
 ## Fragment transfer
 
-`DocumentFragment` version 4 (readers also accept v1/v2/v3) contains a native document and paragraph boundary
+`DocumentFragment` version 5 (readers also accept v1/v2/v3/v4) contains a native document and paragraph boundary
 flags. `EditorSession.CopyFragment`, `CopyCells`, and `InsertFragment` work without
 a control, and can also be used by a future drag/drop adapter. `CopySelection` and
 `InsertDocument` remain available as document-based compatibility APIs.
@@ -207,3 +207,6 @@ payloads, paste fallback, and atomic undo/cut cases. Record both directions and
 export opening/repair results. [Qualification](QUALIFICATION.md) lists the still
 unqualified platform/application pairs. Full arbitrary HTML/RTF/DOCX compatibility
 is outside the declared subset.
+
+DX-06 table/list format mappings and precise loss boundaries are listed in the
+[table/list guide](TABLES.md#persistence-and-evidence).

@@ -107,7 +107,7 @@ public class NamedStyleEditingTests
     {
         var loaded = DocumentFormats.Json.Parse("{\"version\":4,\"document\":{\"blocks\":[{\"kind\":\"paragraph\",\"id\":\"00000000-0000-4000-8000-000000000001\",\"runs\":[{\"text\":\"legacy\",\"style\":{\"fontSize\":20,\"bold\":false}}]}]}}");
         Assert.Null(((Paragraph)loaded.Blocks[0]).Runs[0].Style.Overrides);
-        Assert.Contains("\"version\": 8", DocumentFormats.Json.Serialize(loaded));
+        Assert.Contains("\"version\": 9", DocumentFormats.Json.Serialize(loaded));
     }
 
     [Fact]

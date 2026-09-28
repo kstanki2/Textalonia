@@ -102,13 +102,20 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
     private sealed record State(TextStyle Text, ParagraphStyle Paragraph, int UnicodeFallback = 1, int List = 0);
     private sealed record ListInfo(Guid Id, ListDefinition Definition, ImmutableDictionary<int, int> Starts);
     private sealed record CellInfo(int Right = 0, string? Background = null, bool HorizontalStart = false,
-        bool HorizontalContinue = false, bool VerticalStart = false, bool VerticalContinue = false);
+        bool HorizontalContinue = false, bool VerticalStart = false, bool VerticalContinue = false,
+        TablePreferredWidth? PreferredWidth = null, TableCellVerticalAlignment VerticalAlignment = TableCellVerticalAlignment.Top);
     private sealed class Row
     {
         public List<CellInfo> Definitions { get; } = [];
         public List<TableCell> Cells { get; } = [];
         public List<Block> Blocks { get; } = [];
         public TableRowSizing Sizing { get; set; } = new();
+        public TablePreferredWidth PreferredWidth { get; set; } = new();
+        public TableAutoFit AutoFit { get; set; }
+        public TableAlignment Alignment { get; set; }
+        public double Indent { get; set; }
+        public bool RightToLeft { get; set; }
+        public bool Header { get; set; }
     }
     private sealed partial class Reader(Group root, bool byteSource = false, bool readingStory = false)
     {
@@ -203,7 +210,9 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
             PendingParagraph(state);
             if (_row.Blocks.Count == 0) _row.Blocks.Add(new Paragraph { Style = state.Paragraph, DefaultStyle = state.Text });
             if (_row.Cells.Count >= 100 || _row.Cells.Count >= _row.Definitions.Count && (_outerRows.Count == 0 || _row.Definitions.Count != 0)) throw new FormatException("RTF cell has no cell boundary.");
-            _row.Cells.Add(new() { Blocks = _row.Blocks.ToImmutableArray(), Background = _row.Cells.Count < _row.Definitions.Count ? _row.Definitions[_row.Cells.Count].Background : null });
+            var definition = _row.Cells.Count < _row.Definitions.Count ? _row.Definitions[_row.Cells.Count] : new CellInfo();
+            _row.Cells.Add(new() { Blocks = _row.Blocks.ToImmutableArray(), Background = definition.Background,
+                PreferredWidth = definition.PreferredWidth ?? new(), VerticalAlignment = definition.VerticalAlignment });
             _row.Blocks.Clear();
         }
         private void NestedRow(State state, int offset)
@@ -255,11 +264,16 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
                     }
                 }
             var first = _rows[0].Definitions;
-            var widths = first.Count == columns ? first.Select((cell, i) => (cell.Right - (i == 0 ? 0 : first[i - 1].Right)) / 15d).ToImmutableArray() : [];
+            var widths = first.Count == columns ? first.Select((cell, i) => (cell.Right - (i == 0 ? _rows[0].Indent * 15 : first[i - 1].Right)) / 15d).ToImmutableArray() : [];
             if (_rows.Skip(1).Any(row => !row.Definitions.Select(c => c.Right).SequenceEqual(first.Select(c => c.Right))))
                 Loss("rtf.row-cell-widths", "Per-row cell widths", "Used the first row's column widths.");
+            var settings = _rows[0]; var headers = _rows.TakeWhile(row => row.Header).Count();
+            if (_rows.Skip(headers).Any(row => row.Header)) Loss("rtf.noncontiguous-header-rows", "Repeating header after a body row", "Only contiguous leading headers repeat.");
+            if (_rows.Skip(1).Any(row => row.PreferredWidth != settings.PreferredWidth || row.AutoFit != settings.AutoFit || row.Alignment != settings.Alignment || row.Indent != settings.Indent || row.RightToLeft != settings.RightToLeft))
+                Loss("rtf.row-table-settings", "Different table settings between rows", "The first row defines table width, alignment, indent and direction.");
             _section.Add(new Table { Rows = cells.Select(r => r.ToImmutableArray()).ToImmutableArray(), ColumnWidths = widths,
-                RowSizing = _rows.Select(r => r.Sizing).ToImmutableArray() });
+                RowSizing = _rows.Select(r => r.Sizing).ToImmutableArray(), PreferredWidth = settings.PreferredWidth, AutoFit = settings.AutoFit,
+                Alignment = settings.Alignment, Indent = settings.Indent, RightToLeft = settings.RightToLeft, RepeatHeaderRows = headers });
             _rows.Clear();
         }
         private void EndSection(bool force)
@@ -418,9 +432,28 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
                 Loss("rtf.list-pattern", "Unrepresentable list marker pattern", "Used the current level's number and supported ancestor ordering.", level.Offset);
             if (slots.Length > 1 && Enumerable.Range(0, slots.Length - 1).Any(i => pattern[(slots[i].index + 1)..slots[i + 1].index] != "."))
                 Loss("rtf.list-pattern", "Custom ancestor list separators", "Used dots between ancestor numbers.", level.Offset);
+            var words = new HashSet<string>(["plain", "b", "i", "ul", "ulnone", "strike", "sub", "super", "nosupersub", "fs", "f", "cf", "highlight", "chcbpat", "charscalex"]);
+            var controls = level.Nodes.OfType<Control>().Where(c => words.Contains(c.Word)).ToArray();
+            var state = new State(TextStyle.Default, ParagraphStyle.Default);
+            foreach (var control in controls) state = Apply(control, state);
+            bool Has(params string[] names) => controls.Any(c => c.Word == "plain" || names.Contains(c.Word));
+            var textStyle = state.Text;
+            var markerFormatting = new TextStyleOverrides
+            {
+                FontFamily = Has("f") ? new(textStyle.FontFamily) : default, FontSize = Has("fs") ? new(textStyle.FontSize) : default,
+                Bold = Has("b") ? new(textStyle.Bold) : default, Italic = Has("i") ? new(textStyle.Italic) : default,
+                Underline = Has("ul", "ulnone") ? new(textStyle.Underline) : default, Strikethrough = Has("strike") ? new(textStyle.Strikethrough) : default,
+                Foreground = Has("cf") ? new(textStyle.Foreground) : default, Background = Has("highlight", "chcbpat") ? new(textStyle.Background) : default,
+                Baseline = Has("sub", "super", "nosupersub") ? new(textStyle.Baseline) : default, FontStretch = Has("charscalex") ? new(textStyle.FontStretch) : default
+            };
+            if (level.Number("levelstyle") is not null) Loss("rtf.list-style-link", "List paragraph style link", "Imported list numbering without the named style link.", level.Offset);
             return new() { Start = (int)Range(level.Number("levelstartat") ?? 1, 1, 1_000_000, "List start", level.Offset), Marker = marker,
                 Kind = marker == ListMarkerStyle.Bullet ? ListKind.Bullet : ListKind.Numbered, Text = marker == ListMarkerStyle.Bullet && pattern.Length > 0 ? pattern : null,
-                Prefix = prefix, Suffix = suffix, IncludeAncestors = slots.Length > 1 };
+                Prefix = prefix, Suffix = suffix, IncludeAncestors = slots.Length > 1, MarkerFormatting = markerFormatting,
+                TextIndent = level.Number("li") is { } left ? Range(left / 15d, 0, 100000, "List indent", level.Offset) : null,
+                MarkerIndent = level.Number("li") is { } indent ? Range((indent + (level.Number("fi") ?? 0)) / 15d, 0, 100000, "List marker indent", level.Offset) : null,
+                TabPosition = level.Number("tx") is { } tab ? Range(tab / 15d, 0, 100000, "List tab", level.Offset) : null,
+                FollowCharacter = (ListFollowCharacter)(int)Range(level.Number("levelfollow") ?? 0, 0, 2, "List follow character", level.Offset) };
         }
         private void Walk(Group group, State state, bool documentRoot = false)
         {
@@ -548,7 +581,7 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
                 case "ftnnar": case "ftnnalc": case "ftnnauc": case "ftnnrlc": case "ftnnruc": case "aftnnar": case "aftnnalc": case "aftnnauc": case "aftnnrlc": case "aftnnruc":
                 case "ftnbj": case "ftntj": case "aenddoc": case "aendnotes": case "enddoc": case "endnotes":
                     NoteSetting(control); break;
-                case "trgaph": case "trleft":
+                case "trgaph":
                     if (number != 0) Loss("rtf.table-spacing", "RTF table offset or cell gap", "Used the model's default table spacing.", control.Offset);
                     break;
                 case "slmult":
@@ -645,13 +678,24 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
                 case "cellx":
                     if (_row is null || _row.Definitions.Count >= 100 || number <= (_row.Definitions.LastOrDefault()?.Right ?? 0)) throw new FormatException("Invalid RTF cell boundary.");
                     _row.Definitions.Add(_cell with { Right = number }); _cell = new(); break;
+                case "trleft": if (_row is not null) _row.Indent = Range(number / 15d, 0, 100000, "Table indentation", control.Offset); break;
+                case "trql": case "trqc": case "trqr": if (_row is not null) _row.Alignment = control.Word == "trqc" ? TableAlignment.Center : control.Word == "trqr" ? TableAlignment.Right : TableAlignment.Left; break;
+                case "rtlrow": case "ltrrow": if (_row is not null) _row.RightToLeft = control.Word == "rtlrow"; break;
+                case "trhdr": if (_row is not null) _row.Header = control.Number != 0; break;
+                case "trkeep": if (_row is not null) _row.Sizing = _row.Sizing with { AllowSplit = control.Number == 0 }; break;
+                case "trautofit": if (_row is not null) _row.AutoFit = number == 0 ? TableAutoFit.Fixed : TableAutoFit.Content; break;
+                case "trftsWidth": if (_row is not null) _row.PreferredWidth = _row.PreferredWidth with { Unit = WidthUnit(number, control.Offset) }; break;
+                case "trwWidth": if (_row is not null) _row.PreferredWidth = _row.PreferredWidth with { Value = ReadWidth(number, _row.PreferredWidth.Unit) }; break;
+                case "clftsWidth": _cell = _cell with { PreferredWidth = (_cell.PreferredWidth ?? new()) with { Unit = WidthUnit(number, control.Offset) } }; break;
+                case "clwWidth": _cell = _cell with { PreferredWidth = (_cell.PreferredWidth ?? new()) with { Value = ReadWidth(number, _cell.PreferredWidth?.Unit ?? TableWidthUnit.Auto) } }; break;
+                case "clvertalt": case "clvertalc": case "clvertalb": _cell = _cell with { VerticalAlignment = control.Word == "clvertalc" ? TableCellVerticalAlignment.Center : control.Word == "clvertalb" ? TableCellVerticalAlignment.Bottom : TableCellVerticalAlignment.Top }; break;
                 case "clcbpat": _cell = _cell with { Background = Color(number) }; break;
                 case "clmgf": _cell = _cell with { HorizontalStart = true }; break;
                 case "clmrg": _cell = _cell with { HorizontalContinue = true }; break;
                 case "clvmgf": _cell = _cell with { VerticalStart = true }; break;
                 case "clvmrg": _cell = _cell with { VerticalContinue = true }; break;
                 case "trrh":
-                    if (_row is not null) _row.Sizing = new() { Mode = number == 0 ? TableRowHeightMode.Auto : number < 0 ? TableRowHeightMode.Exact : TableRowHeightMode.AtLeast, Height = Math.Abs(number / 15d) };
+                    if (_row is not null) _row.Sizing = _row.Sizing with { Mode = number == 0 ? TableRowHeightMode.Auto : number < 0 ? TableRowHeightMode.Exact : TableRowHeightMode.AtLeast, Height = Math.Abs(number / 15d) };
                     break;
                 case "cell": case "nestcell": EndCell(state); break;
                 case "nestrow":
@@ -662,6 +706,12 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
             }
             return state;
         }
+        private TableWidthUnit WidthUnit(int value, int offset)
+        {
+            if (value is not (0 or 1 or 2 or 3)) Loss("rtf.preferred-width-unit", "Unsupported preferred width unit", "Automatic width used.", offset);
+            return value switch { 2 => TableWidthUnit.Percentage, 3 => TableWidthUnit.Absolute, _ => TableWidthUnit.Auto };
+        }
+        private static double ReadWidth(int value, TableWidthUnit unit) => unit switch { TableWidthUnit.Percentage => value / 50d, TableWidthUnit.Absolute => value / 15d, _ => 0 };
         private void NoteSetting(Control control)
         {
             var word = control.Word; var endnote = word.StartsWith('a');
@@ -810,6 +860,7 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
         StyleConversion.ReportLosses(this, document);
+        TableConversion.ReportLosses("rtf", document);
         document = new DocumentStyleResolver(document).ResolveDocument();
         document.Validate();
         var foundSection = false;
@@ -824,7 +875,8 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
         var positions = new DocumentIndex(document).Paragraphs.Concat(storyDocuments.SelectMany(story => new DocumentIndex(story).Paragraphs)).ToArray();
         var paragraphDocuments = storyDocuments.Prepend(document).SelectMany(owner => new DocumentIndex(owner).Paragraphs.Select(p => (p.Paragraph.Id, Owner: owner))).ToDictionary(p => p.Id, p => p.Owner);
         var paragraphs = positions.Select(p => p.Paragraph).ToArray();
-        var styles = paragraphs.SelectMany(p => p.Runs.Select(r => r.Style).Append(p.DefaultStyle)).ToArray();
+        var styles = paragraphs.SelectMany(p => p.Runs.Select(r => r.Style).Append(p.DefaultStyle)
+            .Concat(p.Style.ListDefinition?.Levels.Select(level => level.MarkerFormatting.Apply(TextStyle.Default)) ?? [])).ToArray();
         var fonts = styles.Select(s => s.FontFamily ?? "Arial").Distinct().ToArray();
         var colors = styles.SelectMany(s => new[] { s.Foreground, s.Background }).Concat(AllCells(document.Blocks.Concat(document.Stories.Values.SelectMany(s => s.Blocks))).Select(c => c.Background)).Where(c => c is not null).Distinct().ToArray();
         foreach (var color in colors.Where(c => c!.Length == 9 && !c.StartsWith("#FF", StringComparison.OrdinalIgnoreCase)))
@@ -867,7 +919,7 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
             var rgb = color![^6..];
             b.Append("\\red").Append(Convert.ToInt32(rgb[..2], 16)).Append("\\green").Append(Convert.ToInt32(rgb[2..4], 16)).Append("\\blue").Append(Convert.ToInt32(rgb[4..], 16)).Append(';');
         }
-        b.Append('}'); WriteLists(b, lists);
+        b.Append('}'); WriteLists(b, lists, fonts, ColorIndex);
         var writingStory = false;
         var exportedStories = new HashSet<Guid>();
         var sectionStarts = document.Sections.Skip(1).ToDictionary(section => section.StartParagraphId);
@@ -927,8 +979,15 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
             { b.Append("\\sect\n"); WritePhysicalSection(physicalSection); }
             Precision(p.Id, p.Style.Indent, p.Style.RightIndent, p.Style.FirstLineIndent, p.Style.SpaceBefore, p.Style.SpaceAfter, p.Style.LetterSpacing, p.Style.LineHeight ?? 0);
             b.Append("\\pard").Append(inTable ? "\\intbl" : "").Append(p.Style.Alignment switch { ParagraphAlignment.Center => "\\qc", ParagraphAlignment.Right => "\\qr", ParagraphAlignment.Justify => "\\qj", _ => "\\ql" });
-            b.Append(p.Style.RightToLeft ? "\\rtlpar" : "\\ltrpar").Append("\\li").Append(Twips(p.Style.Indent)).Append("\\ri").Append(Twips(p.Style.RightIndent)).Append("\\fi").Append(Twips(p.Style.FirstLineIndent))
-                .Append("\\sb").Append(Twips(p.Style.SpaceBefore)).Append("\\sa").Append(Twips(p.Style.SpaceAfter)).Append("\\expndtw").Append(Twips(p.Style.LetterSpacing))
+            b.Append(p.Style.RightToLeft ? "\\rtlpar" : "\\ltrpar").Append("\\ri").Append(Twips(p.Style.RightIndent));
+            var level = paragraphLists.TryGetValue(p.Id, out var listNumber) ? lists[listNumber - 1].Definition.Level(p.Style.ListLevel, p.Style.List) : null;
+            var levelPlacement = level is not null && (level.TextIndent is not null || level.MarkerIndent is not null || level.TabPosition is not null);
+            if (!levelPlacement || p.Style.Indent != 0 || p.Style.FirstLineIndent != 0)
+                b.Append("\\li").Append(Twips(p.Style.Indent)).Append("\\fi").Append(Twips(p.Style.FirstLineIndent));
+            if (levelPlacement && (p.Style.Indent != 0 || p.Style.FirstLineIndent != 0))
+                ConversionDiagnostics.Report("rtf.list-paragraph-indent", "Combined direct paragraph and list-level indentation",
+                    "Retained both properties; RTF readers can prefer direct paragraph indentation instead of adding list indentation.", p.Id);
+            b.Append("\\sb").Append(Twips(p.Style.SpaceBefore)).Append("\\sa").Append(Twips(p.Style.SpaceAfter)).Append("\\expndtw").Append(Twips(p.Style.LetterSpacing))
                 .Append("\\sl").Append(p.Style.LineHeight is { } lineHeight ? -Math.Max(1, Twips(lineHeight)) : 0).Append("\\slmult0");
             if (p.Style.HeadingLevel > 0) b.Append("\\outlinelevel").Append(p.Style.HeadingLevel - 1);
             if (paragraphLists.TryGetValue(p.Id, out var list)) b.Append("\\ls").Append(list).Append("\\ilvl").Append(p.Style.ListLevel);
@@ -995,6 +1054,13 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
             }
             b.Append("\\par\n");
         }
+        void WriteWidth(string prefix, TablePreferredWidth width)
+        {
+            var units = width.Unit == TableWidthUnit.Percentage ? width.Value * 50 : width.Value * 15;
+            if (Math.Abs(units - Math.Round(units)) > .000001) ConversionDiagnostics.Report("rtf.dimension-precision", "Preferred table or cell width precision", "Rounded to the nearest RTF width unit.");
+            b.Append('\\').Append(prefix).Append("ftsWidth").Append(width.Unit switch { TableWidthUnit.Percentage => 2, TableWidthUnit.Absolute => 3, _ => 1 });
+            b.Append('\\').Append(prefix).Append("wWidth").Append(width.Unit == TableWidthUnit.Auto ? 0 : (int)Math.Round(units));
+        }
         void WriteBlocks(IEnumerable<Block> blocks, bool inTable = false, bool inSection = false)
         {
             foreach (var block in blocks)
@@ -1016,13 +1082,21 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
                         Precision(table.Id, table.ColumnWidths.Concat(table.RowSizing.Select(s => s.Height)).ToArray());
                         for (var r = 0; r < table.Rows.Length; r++)
                         {
-                            b.Append("\\trowd\\trgaph0\\trleft0");
+                            b.Append("\\trowd\\trgaph0\\trleft").Append(Twips(table.Indent));
+                            b.Append(table.Alignment switch { TableAlignment.Center => "\\trqc", TableAlignment.Right => "\\trqr", _ => "\\trql" });
+                            b.Append(table.RightToLeft ? "\\rtlrow" : "\\ltrrow");
+                            WriteWidth("tr", table.PreferredWidth);
+                            if (table.AutoFit != TableAutoFit.Legacy) b.Append("\\trautofit").Append(table.AutoFit == TableAutoFit.Fixed ? 0 : 1);
+                            if (r < table.RepeatHeaderRows) b.Append("\\trhdr");
                             var height = table.RowSizing.IsEmpty ? new TableRowSizing() : table.RowSizing[r];
+                            if (!height.AllowSplit) b.Append("\\trkeep");
                             b.Append("\\trrh").Append(height.Mode == TableRowHeightMode.Auto ? 0 : (height.Mode == TableRowHeightMode.Exact ? -1 : 1) * Math.Max(1, Twips(height.Height)));
-                            var right = 0;
+                            var right = Twips(table.Indent);
                             for (var c = 0; c < table.ColumnCount; c++)
                             {
                                 var cell = table.Rows[r][c]; var owner = table.OwnerOf(r, c); var anchor = table.Rows[owner.Row][owner.Column];
+                                WriteWidth("cl", cell.PreferredWidth);
+                                b.Append(cell.VerticalAlignment switch { TableCellVerticalAlignment.Center => "\\clvertalc", TableCellVerticalAlignment.Bottom => "\\clvertalb", _ => "\\clvertalt" });
                                 if (cell.Padding is not null || cell.Borders is not null) ConversionDiagnostics.Report("rtf.cell-decoration", "Cell borders or padding", "Retained cell content and background without borders or padding.", cell.Id);
                                 if (anchor.ColumnSpan > 1) b.Append(c == owner.Column ? "\\clmgf" : "\\clmrg");
                                 if (anchor.RowSpan > 1) b.Append(r == owner.Row ? "\\clvmgf" : "\\clvmrg");
@@ -1042,7 +1116,7 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
             ConversionDiagnostics.Report("rtf.unreferenced-story", "Unreferenced secondary story", "RTF retains stories attached to exported sections and note markers; omitted this unattached story.", story.Id);
         return b.Append('}').ToString();
     }
-    private static void WriteLists(StringBuilder b, List<ExportList> lists)
+    private static void WriteLists(StringBuilder b, List<ExportList> lists, string[] fonts, Func<string?, int> colorIndex)
     {
         if (lists.Count == 0) return;
         b.Append("{\\*\\listtable");
@@ -1054,7 +1128,25 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
                 var level = list.Definition.Level(index, ListKind.Numbered); var bullet = level.Kind == ListKind.Bullet || level.Marker == ListMarkerStyle.Bullet;
                 var format = bullet ? 23 : level.Marker switch { ListMarkerStyle.UpperRoman => 1, ListMarkerStyle.LowerRoman => 2, ListMarkerStyle.UpperLetter => 3, ListMarkerStyle.LowerLetter => 4, _ => 0 };
                 var pattern = bullet ? level.Text ?? "\u2022" : level.Prefix + (level.IncludeAncestors ? string.Join(".", Enumerable.Range(0, index + 1).Select(i => ((char)i).ToString())) : ((char)index).ToString()) + level.Suffix;
-                b.Append("{\\listlevel\\levelnfc").Append(format).Append("\\leveljc0\\levelfollow0\\levelstartat").Append(level.Start).Append("{\\leveltext ");
+                b.Append("{\\listlevel\\levelnfc").Append(format).Append("\\leveljc0\\levelfollow").Append((int)level.FollowCharacter).Append("\\levelstartat").Append(level.Start);
+                if (level.TextIndent is not null || level.MarkerIndent is not null)
+                    b.Append("\\li").Append(Twips(level.TextIndent ?? 28 + index * 24)).Append("\\fi").Append(Twips((level.MarkerIndent ?? 4 + index * 24) - (level.TextIndent ?? 28 + index * 24)));
+                if (level.TabPosition is { } tab) b.Append("\\jclisttab\\tx").Append(Twips(tab));
+                var o = level.MarkerFormatting; var style = o.Apply(TextStyle.Default);
+                if (o.FontFamily.IsSet) b.Append("\\f").Append(Array.IndexOf(fonts, style.FontFamily ?? "Arial"));
+                if (o.FontSize.IsSet) b.Append("\\fs").Append((int)Math.Round(style.FontSize * 1.5));
+                if (o.Bold.IsSet || o.FontWeight.IsSet) b.Append(style.EffectiveBold ? "\\b1" : "\\b0");
+                if (o.Italic.IsSet) b.Append(style.Italic ? "\\i1" : "\\i0");
+                if (o.Underline.IsSet) b.Append(style.Underline ? "\\ul1" : "\\ulnone");
+                if (o.Strikethrough.IsSet) b.Append(style.Strikethrough ? "\\strike1" : "\\strike0");
+                if (o.Baseline.IsSet) b.Append(style.Baseline switch { Baseline.Subscript => "\\sub", Baseline.Superscript => "\\super", _ => "\\nosupersub" });
+                if (o.FontStretch.IsSet) b.Append("\\charscalex").Append(StretchPercent(style.FontStretch));
+                if (o.Foreground.IsSet) b.Append("\\cf").Append(colorIndex(style.Foreground));
+                if (o.Background.IsSet) b.Append("\\highlight").Append(colorIndex(style.Background));
+                if (style.FontWeight is not null) ConversionDiagnostics.Report("rtf.list-marker-weight", "Numeric list marker weight", "Used regular or bold marker formatting.");
+                if (Math.Abs(style.FontSize * 1.5 - Math.Round(style.FontSize * 1.5)) > .00001)
+                    ConversionDiagnostics.Report("rtf.list-marker-font-size", "Fractional list marker font size", "Rounded to an RTF half point.");
+                b.Append("{\\leveltext ");
                 b.Append("\\'").Append(pattern.Length.ToString("x2", CultureInfo.InvariantCulture));
                 foreach (var ch in pattern) if (ch <= 8) b.Append("\\'").Append(((int)ch).ToString("x2", CultureInfo.InvariantCulture)); else b.Append(Escape(ch.ToString()));
                 b.Append(";}{\\levelnumbers ");

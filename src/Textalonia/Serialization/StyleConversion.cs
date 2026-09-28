@@ -6,6 +6,7 @@ internal static class StyleConversion
 {
     internal static void ReportLosses(IDocumentFormat format, FlowDocument document)
     {
+        ListInterchange.ReportLosses(format, document);
         if (document.Styles.Characters.Count + document.Styles.Paragraphs.Count + document.Styles.Tables.Count != 0 ||
             document.Theme.Colors.Count + document.Theme.Fonts.Count != 0 || document.Theme.Name is not null ||
             document.Defaults != new DocumentDefaults())

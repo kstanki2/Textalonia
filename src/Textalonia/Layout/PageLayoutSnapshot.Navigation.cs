@@ -14,7 +14,7 @@ public sealed partial class PageLayoutSnapshot
     {
         var current = FindLine(caret);
         if (current is null) return caret;
-        var groups = Fragments.Where(f => f.Bounds.Intersect(f.Clip).Height > 0)
+        var groups = Fragments.Where(f => !f.IsRepeatedTableHeader && f.Bounds.Intersect(f.Clip).Height > 0)
             .GroupBy(f => (f.PageIndex, f.SectionId, f.ColumnIndex)).ToArray();
         var groupIndex = Array.FindIndex(groups, g => g.Key == (current.PageIndex, current.SectionId, current.ColumnIndex));
         if (groupIndex < 0) return caret;
@@ -35,10 +35,10 @@ public sealed partial class PageLayoutSnapshot
         var current = FindLine(caret);
         if (current is null) return caret;
         var page = current.PageIndex + (down ? 1 : -1);
-        while (page >= 0 && page < Pages.Length && !Fragments.Any(f => f.PageIndex == page && f.Bounds.Intersect(f.Clip).Height > 0)) page += down ? 1 : -1;
+        while (page >= 0 && page < Pages.Length && !Fragments.Any(f => !f.IsRepeatedTableHeader && f.PageIndex == page && f.Bounds.Intersect(f.Clip).Height > 0)) page += down ? 1 : -1;
         if (page < 0 || page >= Pages.Length) return caret;
         var y = current.Bounds.Top - Pages[current.PageIndex].Bounds.Top + Pages[page].Bounds.Top;
-        var candidates = Fragments.Where(f => f.PageIndex == page && f.Bounds.Intersect(f.Clip).Height > 0).ToArray();
+        var candidates = Fragments.Where(f => !f.IsRepeatedTableHeader && f.PageIndex == page && f.Bounds.Intersect(f.Clip).Height > 0).ToArray();
         var column = candidates.Select(f => f.ColumnIndex).Distinct().MinBy(c => Math.Abs(c - current.ColumnIndex));
         var target = candidates.Where(f => f.ColumnIndex == column).MinBy(f => Math.Abs(f.Bounds.Top - y) * 100000 + HorizontalDistance(f, preferredX));
         return target is null ? caret : HitTestFragment(target, target.ColumnBounds.Left + preferredX);

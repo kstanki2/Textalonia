@@ -492,6 +492,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Threading.Tasks.Task<System.Boolean> ShowPrintDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowPrintPreviewDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowStylesDialogAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowTablePropertiesDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowTabsDialogAsync()
   method public System.Threading.Tasks.Task<Textalonia.Export.PagedOutputResult> ExportPdfAsync(System.IO.Stream destination, Textalonia.Export.PagedExportOptions options = , System.IProgress<Textalonia.Export.PagedOutputProgress> progress = , System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task<Textalonia.Export.PagedOutputResult> PrintAsync(Textalonia.Printing.PrintOptions options = , System.Boolean showDialog = True, System.IProgress<Textalonia.Export.PagedOutputProgress> progress = , System.Threading.CancellationToken cancellationToken = )
@@ -500,6 +501,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Void AddBookmark(System.String name)
   method public System.Void ApplyNamedCharacterStyle(System.String id, System.Boolean clearDirectFormatting = True)
   method public System.Void ApplyNamedParagraphStyle(System.String id, System.Boolean clearDirectFormatting = True)
+  method public System.Void ApplyNamedTableStyle(System.String styleId)
   method public System.Void ApplyPageSettings(Textalonia.Model.PageSettings settings)
   method public System.Void ApplyParagraphStyle(System.Func<Textalonia.Model.ParagraphStyle,Textalonia.Model.ParagraphStyle> change)
   method public System.Void ApplyStyle(System.Func<Textalonia.Model.TextStyle,Textalonia.Model.TextStyle> change)
@@ -539,11 +541,20 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Void SelectCurrentTableCell()
   method public System.Void SelectTableCells(System.Guid tableId, System.Int32 anchorRow, System.Int32 anchorColumn, System.Int32 activeRow, System.Int32 activeColumn)
   method public System.Void SetInternalLink(System.String bookmarkName, System.String tooltip = , Textalonia.Model.InternalLinkActivation activation = ModifierClick)
+  method public System.Void SetTableAlignment(Textalonia.Model.TableAlignment alignment, System.Double indent = 0)
+  method public System.Void SetTableAutoFit(Textalonia.Model.TableAutoFit mode)
   method public System.Void SetTableCellBackground(System.String background)
   method public System.Void SetTableCellBorders(Textalonia.Model.BlockBorders borders)
   method public System.Void SetTableCellPadding(Textalonia.Model.EdgeInsets padding)
+  method public System.Void SetTableCellPreferredWidth(Textalonia.Model.TablePreferredWidth width)
+  method public System.Void SetTableCellTextDirection(Textalonia.Model.TableCellTextDirection direction)
+  method public System.Void SetTableCellVerticalAlignment(Textalonia.Model.TableCellVerticalAlignment alignment)
   method public System.Void SetTableColumnWidth(System.Double width)
+  method public System.Void SetTablePreferredWidth(Textalonia.Model.TablePreferredWidth width)
+  method public System.Void SetTableRepeatHeaderRows(System.Int32 count)
+  method public System.Void SetTableRightToLeft(System.Boolean rightToLeft)
   method public System.Void SetTableRowHeight(System.Double height, Textalonia.Model.TableRowHeightMode mode = AtLeast)
+  method public System.Void SetTableRowsAllowSplit(System.Boolean allowSplit)
   method public System.Void SplitSelectedTableCells()
   method public System.Void Undo()
   method public System.Void UpdateInline(System.Guid id, System.Func<Textalonia.Model.InlineDescriptor,Textalonia.Model.InlineDescriptor> change)
@@ -697,7 +708,7 @@ type Textalonia.Controls.TextaloniaViewer : Textalonia.Controls.TextaloniaEditor
 type Textalonia.Editing.DocumentFragment : System.Object sealed
   interface System.IEquatable<Textalonia.Editing.DocumentFragment>
   ctor public ()
-  field System.Int32 CurrentVersion static = 4
+  field System.Int32 CurrentVersion static = 5
   method public System.Boolean Equals(System.Object obj) virtual
   method public System.Boolean Equals(Textalonia.Editing.DocumentFragment other) virtual
   method public System.Int32 GetHashCode() virtual
@@ -1004,6 +1015,7 @@ type Textalonia.Layout.LineFragment : System.Object sealed
   method public Textalonia.Layout.LineFragment <Clone>$()
   property Avalonia.Rect Bounds { public get; }
   property Avalonia.Rect Clip { public get; }
+  property System.Boolean IsRepeatedTableHeader { public get; }
   property System.Double Baseline { public get; }
   property System.Guid ParagraphId { public get; }
   property System.Guid SectionId { public get; }
@@ -1199,6 +1211,17 @@ type Textalonia.Model.BlockBorders : System.Object sealed
   property Textalonia.Model.BorderSide Top { public get; public set; }
 type Textalonia.Model.BlockOperations : System.Object sealed abstract
   method public static Textalonia.Model.Block CloneWithNewIds(Textalonia.Model.Block block)
+type Textalonia.Model.BorderKind : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.BorderKind Dashed static = 1
+  field Textalonia.Model.BorderKind Dotted static = 2
+  field Textalonia.Model.BorderKind Double static = 3
+  field Textalonia.Model.BorderKind None static = 4
+  field Textalonia.Model.BorderKind Solid static = 0
 type Textalonia.Model.BorderSide : System.Object sealed
   interface System.IEquatable<Textalonia.Model.BorderSide>
   ctor public (System.Double Width = 0, System.String Color = )
@@ -1210,6 +1233,7 @@ type Textalonia.Model.BorderSide : System.Object sealed
   method public Textalonia.Model.BorderSide <Clone>$()
   property System.Double Width { public get; public set; }
   property System.String Color { public get; public set; }
+  property Textalonia.Model.BorderKind Kind { public get; public set; }
 type Textalonia.Model.CharacterStyleDefinition : System.Object sealed
   interface System.IEquatable<Textalonia.Model.CharacterStyleDefinition>
   ctor public ()
@@ -1417,7 +1441,9 @@ type Textalonia.Model.DocumentStyleResolver : System.Object sealed
   method public Textalonia.Model.FlowDocument ResolveDocument()
   method public Textalonia.Model.Paragraph ResolveParagraph(Textalonia.Model.Paragraph paragraph)
   method public Textalonia.Model.ParagraphStyle ResolveParagraphStyle(Textalonia.Model.ParagraphStyle style)
+  method public Textalonia.Model.TableCell ResolveTableCell(Textalonia.Model.Table table, System.Int32 row, System.Int32 column)
   method public Textalonia.Model.TableStyle ResolveTableStyle(Textalonia.Model.Table table)
+  method public Textalonia.Model.TextStyle ResolveListMarkerStyle(Textalonia.Model.Paragraph paragraph, Textalonia.Model.ListLevelDefinition level)
   method public Textalonia.Model.TextStyle ResolveText(Textalonia.Model.Paragraph paragraph, Textalonia.Model.TextStyle style)
 type Textalonia.Model.DocumentTheme : System.Object sealed
   interface System.IEquatable<Textalonia.Model.DocumentTheme>
@@ -1844,7 +1870,17 @@ type Textalonia.Model.ListDefinition : System.Object sealed
   method public System.Int32 GetHashCode() virtual
   method public System.String ToString() virtual
   method public Textalonia.Model.ListDefinition <Clone>$()
+  method public Textalonia.Model.ParagraphStyle CreateParagraphStyle(System.Int32 level = 0, System.Nullable<System.Guid> listId = )
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.ListLevelDefinition> Levels { public get; public set; }
+type Textalonia.Model.ListFollowCharacter : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.ListFollowCharacter Nothing static = 2
+  field Textalonia.Model.ListFollowCharacter Space static = 1
+  field Textalonia.Model.ListFollowCharacter Tab static = 0
 type Textalonia.Model.ListKind : System.Enum sealed
   interface System.IComparable
   interface System.IConvertible
@@ -1864,11 +1900,18 @@ type Textalonia.Model.ListLevelDefinition : System.Object sealed
   method public Textalonia.Model.ListLevelDefinition <Clone>$()
   property System.Boolean IncludeAncestors { public get; public set; }
   property System.Int32 Start { public get; public set; }
+  property System.Nullable<System.Double> MarkerIndent { public get; public set; }
+  property System.Nullable<System.Double> TabPosition { public get; public set; }
+  property System.Nullable<System.Double> TextIndent { public get; public set; }
+  property System.String CharacterStyleId { public get; public set; }
+  property System.String ParagraphStyleId { public get; public set; }
   property System.String Prefix { public get; public set; }
   property System.String Suffix { public get; public set; }
   property System.String Text { public get; public set; }
+  property Textalonia.Model.ListFollowCharacter FollowCharacter { public get; public set; }
   property Textalonia.Model.ListKind Kind { public get; public set; }
   property Textalonia.Model.ListMarkerStyle Marker { public get; public set; }
+  property Textalonia.Model.TextStyleOverrides MarkerFormatting { public get; public set; }
 type Textalonia.Model.ListMarker : System.Object sealed
   interface System.IEquatable<Textalonia.Model.ListMarker>
   ctor public (System.String Text, System.Int32 Number, System.Int32 Level, System.Nullable<System.Guid> ListId)
@@ -1882,6 +1925,8 @@ type Textalonia.Model.ListMarker : System.Object sealed
   property System.Int32 Number { public get; public set; }
   property System.Nullable<System.Guid> ListId { public get; public set; }
   property System.String Text { public get; public set; }
+  property Textalonia.Model.ListDefinition Definition { public get; public set; }
+  property Textalonia.Model.ListLevelDefinition LevelDefinition { public get; }
 type Textalonia.Model.ListMarkerStyle : System.Enum sealed
   interface System.IComparable
   interface System.IConvertible
@@ -2336,13 +2381,39 @@ type Textalonia.Model.Table : Textalonia.Model.Block sealed
   method public Textalonia.Model.Table SetCell(System.Int32 row, System.Int32 column, Textalonia.Model.TableCell cell)
   method public Textalonia.Model.Table SplitCell(System.Int32 row, System.Int32 column)
   method public static Textalonia.Model.Table Create(System.Int32 rows, System.Int32 columns)
+  property System.Boolean RightToLeft { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<System.Collections.Immutable.ImmutableArray<Textalonia.Model.TableCell>> Rows { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<System.Double> ColumnWidths { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.TableRowSizing> RowSizing { public get; public set; }
+  property System.Double Indent { public get; public set; }
   property System.Int32 ColumnCount { public get; }
+  property System.Int32 RepeatHeaderRows { public get; public set; }
   property System.String StyleId { public get; public set; }
   property System.Type EqualityContract { protected get; }
+  property Textalonia.Model.TableAlignment Alignment { public get; public set; }
+  property Textalonia.Model.TableAutoFit AutoFit { public get; public set; }
+  property Textalonia.Model.TablePosition Position { public get; public set; }
+  property Textalonia.Model.TablePreferredWidth PreferredWidth { public get; public set; }
   property Textalonia.Model.TableStyleOverrides StyleOverrides { public get; public set; }
+type Textalonia.Model.TableAlignment : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.TableAlignment Center static = 1
+  field Textalonia.Model.TableAlignment Left static = 0
+  field Textalonia.Model.TableAlignment Right static = 2
+type Textalonia.Model.TableAutoFit : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.TableAutoFit Content static = 2
+  field Textalonia.Model.TableAutoFit Fixed static = 1
+  field Textalonia.Model.TableAutoFit Legacy static = 0
+  field Textalonia.Model.TableAutoFit Window static = 3
 type Textalonia.Model.TableCell : System.Object sealed
   interface System.IEquatable<Textalonia.Model.TableCell>
   ctor public ()
@@ -2361,11 +2432,56 @@ type Textalonia.Model.TableCell : System.Object sealed
   property System.String Background { public get; public set; }
   property Textalonia.Model.BlockBorders Borders { public get; public set; }
   property Textalonia.Model.EdgeInsets Padding { public get; public set; }
+  property Textalonia.Model.TableCellTextDirection TextDirection { public get; public set; }
+  property Textalonia.Model.TableCellVerticalAlignment VerticalAlignment { public get; public set; }
+  property Textalonia.Model.TablePreferredWidth PreferredWidth { public get; public set; }
+  property Textalonia.Model.TableStyleOverrides StyleOverrides { public get; public set; }
+type Textalonia.Model.TableCellTextDirection : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.TableCellTextDirection Inherit static = 0
+  field Textalonia.Model.TableCellTextDirection LeftToRight static = 1
+  field Textalonia.Model.TableCellTextDirection RightToLeft static = 2
+type Textalonia.Model.TableCellVerticalAlignment : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.TableCellVerticalAlignment Bottom static = 2
+  field Textalonia.Model.TableCellVerticalAlignment Center static = 1
+  field Textalonia.Model.TableCellVerticalAlignment Top static = 0
 type Textalonia.Model.TableOperations : System.Object sealed abstract
   method public static Textalonia.Model.Table InsertColumn(Textalonia.Model.Table table, System.Int32 index)
   method public static Textalonia.Model.Table InsertRow(Textalonia.Model.Table table, System.Int32 index)
   method public static Textalonia.Model.Table RemoveColumn(Textalonia.Model.Table table, System.Int32 index)
   method public static Textalonia.Model.Table RemoveRow(Textalonia.Model.Table table, System.Int32 index)
+type Textalonia.Model.TablePosition : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.TablePosition>
+  ctor public (System.Double X = 0, System.Double Y = 0, System.Double Distance = 8)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.TablePosition other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Double& X, System.Double& Y, System.Double& Distance)
+  method public Textalonia.Model.TablePosition <Clone>$()
+  property System.Double Distance { public get; public set; }
+  property System.Double X { public get; public set; }
+  property System.Double Y { public get; public set; }
+type Textalonia.Model.TablePreferredWidth : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.TablePreferredWidth>
+  ctor public (Textalonia.Model.TableWidthUnit Unit = Auto, System.Double Value = 0)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.TablePreferredWidth other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(Textalonia.Model.TableWidthUnit& Unit, System.Double& Value)
+  method public Textalonia.Model.TablePreferredWidth <Clone>$()
+  property System.Double Value { public get; public set; }
+  property Textalonia.Model.TableWidthUnit Unit { public get; public set; }
 type Textalonia.Model.TableRowHeightMode : System.Enum sealed
   interface System.IComparable
   interface System.IConvertible
@@ -2383,6 +2499,7 @@ type Textalonia.Model.TableRowSizing : System.Object sealed
   method public System.Int32 GetHashCode() virtual
   method public System.String ToString() virtual
   method public Textalonia.Model.TableRowSizing <Clone>$()
+  property System.Boolean AllowSplit { public get; public set; }
   property System.Double Height { public get; public set; }
   property Textalonia.Model.TableRowHeightMode Mode { public get; public set; }
 type Textalonia.Model.TableStyle : System.Object sealed
@@ -2395,7 +2512,12 @@ type Textalonia.Model.TableStyle : System.Object sealed
   method public Textalonia.Model.TableStyle <Clone>$()
   property System.String Background { public get; public set; }
   property Textalonia.Model.BlockBorders Borders { public get; public set; }
+  property Textalonia.Model.BlockBorders OutsideBorders { public get; public set; }
+  property Textalonia.Model.BorderSide InsideHorizontal { public get; public set; }
+  property Textalonia.Model.BorderSide InsideVertical { public get; public set; }
   property Textalonia.Model.EdgeInsets Padding { public get; public set; }
+  property Textalonia.Model.TableCellTextDirection TextDirection { public get; public set; }
+  property Textalonia.Model.TableCellVerticalAlignment VerticalAlignment { public get; public set; }
 type Textalonia.Model.TableStyleDefinition : System.Object sealed
   interface System.IEquatable<Textalonia.Model.TableStyleDefinition>
   ctor public ()
@@ -2404,6 +2526,7 @@ type Textalonia.Model.TableStyleDefinition : System.Object sealed
   method public System.Int32 GetHashCode() virtual
   method public System.String ToString() virtual
   method public Textalonia.Model.TableStyleDefinition <Clone>$()
+  property System.Collections.Immutable.ImmutableDictionary<Textalonia.Model.TableStyleRegion,Textalonia.Model.TableStyleOverrides> Conditions { public get; public set; }
   property System.String BasedOn { public get; public set; }
   property System.String Id { public get; public set; }
   property System.String Name { public get; public set; }
@@ -2419,7 +2542,36 @@ type Textalonia.Model.TableStyleOverrides : System.Object sealed
   method public Textalonia.Model.TableStyleOverrides <Clone>$()
   property Textalonia.Model.StyleValue<System.String> Background { public get; public set; }
   property Textalonia.Model.StyleValue<Textalonia.Model.BlockBorders> Borders { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.BlockBorders> OutsideBorders { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.BorderSide> InsideHorizontal { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.BorderSide> InsideVertical { public get; public set; }
   property Textalonia.Model.StyleValue<Textalonia.Model.EdgeInsets> Padding { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.TableCellTextDirection> TextDirection { public get; public set; }
+  property Textalonia.Model.StyleValue<Textalonia.Model.TableCellVerticalAlignment> VerticalAlignment { public get; public set; }
+type Textalonia.Model.TableStyleRegion : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.TableStyleRegion EvenColumnBand static = 1
+  field Textalonia.Model.TableStyleRegion EvenRowBand static = 3
+  field Textalonia.Model.TableStyleRegion FirstColumn static = 4
+  field Textalonia.Model.TableStyleRegion FirstRow static = 6
+  field Textalonia.Model.TableStyleRegion HeaderRow static = 8
+  field Textalonia.Model.TableStyleRegion LastColumn static = 5
+  field Textalonia.Model.TableStyleRegion LastRow static = 7
+  field Textalonia.Model.TableStyleRegion OddColumnBand static = 0
+  field Textalonia.Model.TableStyleRegion OddRowBand static = 2
+type Textalonia.Model.TableWidthUnit : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.TableWidthUnit Absolute static = 1
+  field Textalonia.Model.TableWidthUnit Auto static = 0
+  field Textalonia.Model.TableWidthUnit Percentage static = 2
 type Textalonia.Model.TextStyle : System.Object sealed
   interface System.IEquatable<Textalonia.Model.TextStyle>
   ctor public ()

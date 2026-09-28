@@ -120,6 +120,8 @@ public sealed partial class PaginationEngine : IDisposable
         private readonly List<LineFragment> _fragments = [];
         private readonly List<(int Page, BlockDecoration Decoration)> _decorations = [];
         private readonly List<(int Page, TableCellVisual Cell)> _cells = [];
+        private readonly List<(int Page, int Column, Rect Bounds)> _wrapExclusions = [];
+        private bool _hasPositionedTables;
         private readonly HashSet<ExactParagraph> _held = [];
         private readonly Dictionary<Guid, Paragraph> _resolved = [];
         private readonly List<Item> _items = [];
@@ -141,6 +143,7 @@ public sealed partial class PaginationEngine : IDisposable
             foreach (var section in document.Sections)
                 if (section.StartParagraphId != Guid.Empty) _sections.Add(section.StartParagraphId, section);
             Flatten(document.Blocks, 0, 0, null);
+            _hasPositionedTables = _items.Any(i => i.Block is Table { Position: not null });
             Run();
             // Binary search the final occupied page of each multicolumn section. Every trial reruns exact
             // line layout at the actual (possibly unequal) column widths; estimates never choose breaks.
@@ -173,7 +176,7 @@ public sealed partial class PaginationEngine : IDisposable
 
         private void Run()
         {
-            _pages.Clear(); _fragments.Clear(); _decorations.Clear(); _cells.Clear();
+            _pages.Clear(); _fragments.Clear(); _decorations.Clear(); _cells.Clear(); _wrapExclusions.Clear();
             ResetStories();
             _checkpoints.Clear(); engine.ReusedCheckpoints = 0; engine.ReflowedBlocks = 0;
             _column = 0;
@@ -215,11 +218,15 @@ public sealed partial class PaginationEngine : IDisposable
         }
         private bool TryReuse(Item item, ImmutableArray<Block> dependencies, State before)
         {
-            if (!document.Notes.IsEmpty || !document.Stories.IsEmpty || _prior is null || _prior._options != options || !Equals(_prior._border, border) ||
+            if (_hasPositionedTables || !document.Notes.IsEmpty || !document.Stories.IsEmpty || _prior is null || _prior._options != options || !Equals(_prior._border, border) ||
                 !_prior._source.Sections.SequenceEqual(document.Sections) || _balanceLimits.Count != 0 || _prior._balanceLimits.Count != 0 ||
                 !_prior._checkpoints.TryGetValue(item.Block.Id, out var checkpoint) || checkpoint.Item != item ||
                 !checkpoint.Dependencies.SequenceEqual(dependencies) ||
                 checkpoint.Before with { Columns = before.Columns } != before || !checkpoint.Before.Columns.SequenceEqual(before.Columns)) return false;
+            // Marker width and inherited level geometry can change after an earlier list edit.
+            if (_prior._fragments.Skip(checkpoint.FragmentStart).Take(checkpoint.FragmentCount)
+                .Any(old => old.Measurement.Paragraph.Style.List != ListKind.None &&
+                    Resolve(_index.ById(old.ParagraphId).Paragraph) != old.Measurement.Paragraph)) return false;
             foreach (var old in _prior._fragments.Skip(checkpoint.FragmentStart).Take(checkpoint.FragmentCount))
             {
                 var position = _index.ById(old.ParagraphId); var shift = position.Start - old.Position.Start;
@@ -325,6 +332,7 @@ public sealed partial class PaginationEngine : IDisposable
         {
             if (_resolved.TryGetValue(paragraph.Id, out var result)) return result;
             result = engine._resolvedParagraphs.GetValue(paragraph, _resolver.ResolveParagraph);
+            result = ListMarkerDrawing.Prepare(_displayStoryId == Guid.Empty ? document : document.GetStoryDocument(_displayStoryId), paragraph, result, engine._environment!.Font, engine._environment.Foreground, engine._environment.Fonts);
             return _resolved[paragraph.Id] = result;
         }
         private ExactParagraph Measure(Paragraph paragraph, double width, int offset = 0)
@@ -336,7 +344,7 @@ public sealed partial class PaginationEngine : IDisposable
             _knownMeasurements[key] = result;
             return result;
         }
-        private static double Indent(Paragraph paragraph) => paragraph.Style.Indent + (paragraph.Style.List == ListKind.None ? 0 : 28 + paragraph.Style.ListLevel * 24);
+        private static double Indent(Paragraph paragraph) => ListMarkerDrawing.Indent(paragraph);
         private Paragraph Grid(Paragraph paragraph)
         {
             if (!paragraph.Style.SnapToGrid || (paragraph.Style.EastAsianGrid ?? _section.PageSettings.Grid) is not { } grid) return paragraph;
@@ -376,6 +384,9 @@ public sealed partial class PaginationEngine : IDisposable
                     _decorations.Add((_pages.Count - 1, new(region, DocumentLayout.Brush(style.Shading), border, false, style.Borders, clip)));
                 return;
             }
+            if (_wrapExclusions.Any(e => e.Page == _pages.Count - 1 && e.Column == _column && e.Bounds.Bottom > _y &&
+                e.Bounds.Right > Column.Left && e.Bounds.Left < Column.Right))
+            { PlaceWrappedParagraph(source, paragraph, item); return; }
             var indent = Indent(paragraph);
             double Width() => Math.Max(16, Column.Width - item.Left - item.Right - indent - style.RightIndent);
             var measurement = Measure(paragraph, Width());
@@ -468,15 +479,29 @@ public sealed partial class PaginationEngine : IDisposable
                 Bounds = new Rect(origin, new Size(Math.Max(1, width), line.Height)), Clip = clip, Baseline = origin.Y + line.Baseline,
                 Measurement = measurement, Line = line, Position = position, Origin = origin, ColumnBounds = Column,
                 SourceStart = position.Start + measurement.Offset + line.Window.Start, Marker = marker, LineNumber = number,
+                MarkerDefinition = marker is null ? null : ListNumbering.GetMarker(document, position.Paragraph.Id)?.LevelDefinition,
+                MarkerStyle = marker is null ? null : _resolver.ResolveListMarkerStyle(position.Paragraph, ListNumbering.GetMarker(document, position.Paragraph.Id)!.LevelDefinition),
                 LineNumberDistance = _section.PageSettings.LineNumbering?.Distance ?? 0 };
         }
 
         private void PlaceTable(Table table, Item item)
         {
+            if (table.Position is not null && !options.Draft)
+            {
+                if (CellParagraphs([table]).Any(p => p.Runs.Any(r => r.Inline?.Payload is NoteInlinePayload)))
+                    _layoutDiagnostics.Add($"Positioned table {table.Id} contains note references and flows inline to retain note ownership.");
+                else { PlacePositionedTable(table, item); return; }
+            }
             // A row-span group shares one vertical cut. No cell can draw across a line in a
             // neighbouring cell, and continuation is reshaped at each actual column width.
             var progress = new Dictionary<Guid, int>();
             double Width() => Math.Max(16, Column.Width - item.Left - item.Right);
+            // A header boundary cannot bisect a vertically merged cell. Extend it through
+            // the connected row-span group so every repeated instance has a complete grid.
+            var headerEnd = table.RepeatHeaderRows;
+            for (var r = 0; r < headerEnd; r++)
+                for (var c = 0; c < table.ColumnCount; c++)
+                    if (!table.IsCovered(r, c)) headerEnd = Math.Max(headerEnd, r + table.Rows[r][c].RowSpan);
             for (var startRow = 0; startRow < table.Rows.Length;)
             {
                 var endRow = startRow + 1;
@@ -487,16 +512,48 @@ public sealed partial class PaginationEngine : IDisposable
                 var group = MeasureTable(table, measuredWidth, progress, startRow, endRow)[0];
                 var groupHeight = group.Select(c => c.GroupHeight).DefaultIfEmpty().Max();
                 var consumed = 0d;
+                var noSplit = startRow < headerEnd || !table.RowSizing.IsEmpty &&
+                    Enumerable.Range(startRow, endRow - startRow).Any(r => !table.RowSizing[r].AllowSplit);
+                var atSliceTop = AtTop;
+                void RepeatHeaders()
+                {
+                    atSliceTop = true;
+                    if (options.Draft || headerEnd == 0 || startRow < headerEnd) return;
+                    var headers = MeasureTable(table, Width(), firstRow: 0, endRow: headerEnd);
+                    var headerHeight = headers.Sum(g => g.Select(c => c.GroupHeight).DefaultIfEmpty().Max());
+                    var pendingLines = group.SelectMany(c => c.Lines.Skip(c.Next)).ToArray();
+                    var firstY = pendingLines.Select(l => l.Y).DefaultIfEmpty(consumed).Min();
+                    var nextHeight = Math.Max(1, pendingLines.Where(l => l.Y <= firstY + .01)
+                        .Select(l => l.Y + l.Line.Height - consumed).DefaultIfEmpty(1).Max());
+                    // Keep space for real content; oversized headers must never create a
+                    // header-only pagination loop.
+                    if (headerHeight + nextHeight > Remaining + .01)
+                    {
+                        _layoutDiagnostics.Add($"Table {table.Id} omits repeated headers where the header and a body line cannot fit in the column.");
+                        return;
+                    }
+                    foreach (var header in headers)
+                    {
+                        var height = header.Select(c => c.GroupHeight).DefaultIfEmpty().Max();
+                        EmitTableSlice(header, 0, height, Column.Left + item.Left, null, repeatedHeader: true);
+                        _y += height;
+                    }
+                }
                 void Continue(bool reflow = false)
                 {
                     Advance();
-                    if (!reflow && Math.Abs(measuredWidth - Width()) < .01) return;
-                    measuredWidth = Width();
-                    group = MeasureTable(table, measuredWidth, progress, startRow, endRow)[0];
-                    groupHeight = group.Select(c => c.GroupHeight).DefaultIfEmpty().Max();
-                    consumed = 0;
+                    if (reflow || Math.Abs(measuredWidth - Width()) >= .01)
+                    {
+                        measuredWidth = Width();
+                        group = MeasureTable(table, measuredWidth, progress, startRow, endRow)[0];
+                        groupHeight = group.Select(c => c.GroupHeight).DefaultIfEmpty().Max();
+                        consumed = 0;
+                    }
+                    RepeatHeaders();
                 }
-                if (groupHeight <= Column.Height && groupHeight > Remaining && !AtTop) Continue();
+                if (noSplit && groupHeight > Remaining && !AtTop) Continue();
+                if (noSplit && groupHeight > Remaining + .01)
+                    _layoutDiagnostics.Add($"Table {table.Id} row group {startRow + 1}-{endRow} exceeds a column and is split to guarantee progress.");
                 while (consumed + .01 < groupHeight || group.Any(c => c.Next < c.Lines.Count))
                 {
                     if (Remaining < 1 && !options.Draft) Continue();
@@ -507,10 +564,15 @@ public sealed partial class PaginationEngine : IDisposable
                         var oldPage = _pages.Count;
                         foreach (var local in group.SelectMany(c => c.Lines.Skip(c.Next)).Where(l => l.Y <= consumed + .01))
                             PrepareNotes(local.Position.Paragraph, local.Line.Start, local.Line.End, local.Line.Height);
-                        if (oldPage != _pages.Count && Math.Abs(measuredWidth - Width()) > .01)
+                        if (oldPage != _pages.Count)
                         {
-                            measuredWidth = Width(); group = MeasureTable(table, measuredWidth, progress, startRow, endRow)[0];
-                            groupHeight = group.Select(c => c.GroupHeight).DefaultIfEmpty().Max(); consumed = 0; continue;
+                            if (Math.Abs(measuredWidth - Width()) > .01)
+                            {
+                                measuredWidth = Width(); group = MeasureTable(table, measuredWidth, progress, startRow, endRow)[0];
+                                groupHeight = group.Select(c => c.GroupHeight).DefaultIfEmpty().Max(); consumed = 0;
+                            }
+                            RepeatHeaders();
+                            continue;
                         }
                     }
                     var cut = Math.Min(groupHeight, consumed + Remaining);
@@ -521,12 +583,24 @@ public sealed partial class PaginationEngine : IDisposable
                     {
                         changed = false;
                         foreach (var cell in group)
+                        {
+                            foreach (var nested in cell.Cells)
+                            {
+                                var sizing = nested.Table.RowSizing;
+                                if (sizing.IsEmpty || sizing[nested.Row].AllowSplit || nested.Bounds.Height > Column.Height + .01) continue;
+                                if (nested.Bounds.Top < cut - .01 && nested.Bounds.Bottom > cut + .01)
+                                {
+                                    var candidate = Math.Max(consumed, nested.Bounds.Top);
+                                    if (candidate < cut - .01) { cut = candidate; changed = true; }
+                                }
+                            }
                             foreach (var line in cell.Lines.Skip(cell.Next))
                                 if (line.Y < cut - .01 && Math.Min(line.Y + line.Line.Height, line.Clip?.Bottom ?? cell.Top + cell.Height) > cut + .01)
                                 {
                                     var candidate = Math.Max(consumed, line.Y);
                                     if (candidate < cut - .01) { cut = candidate; changed = true; }
                                 }
+                        }
                     } while (changed && cut > consumed + .01);
                     if (cut <= consumed + .01)
                     {
@@ -558,51 +632,162 @@ public sealed partial class PaginationEngine : IDisposable
                         }
                         else
                         {
-                            if (!AtTop) { Continue(); continue; }
+                            if (!atSliceTop && !AtTop) { Continue(); continue; }
                             oversize = true;
                             // An oversize atomic line is emitted once with the page/cell clip.
                             cut = Math.Min(groupHeight, consumed + Remaining);
                             if (cut <= consumed + .01) cut = consumed + Math.Max(1, Math.Min(Remaining, 1));
                         }
                     }
-                    foreach (var cell in group)
-                    {
-                        var origin = new Point(Column.Left + item.Left + cell.X, _y - consumed);
-                        var top = Math.Max(consumed, cell.Top);
-                        var bottom = Math.Min(cut, cell.Top + cell.Height);
-                        var bounds = new Rect(origin.X, origin.Y + top, cell.Width, Math.Max(0, bottom - top));
-                        var clip = bounds.Intersect(Column);
-                        if (bottom > top)
-                        {
-                            _cells.Add((_pages.Count - 1, new(cell.Table, cell.Row, cell.Column, bounds,
-                                cell.LastColumnWidth, cell.LastRowHeight, clip)));
-                            _decorations.Add((_pages.Count - 1, new(bounds, DocumentLayout.Brush(cell.Cell.Background), border, false, cell.Cell.Borders, clip)));
-                            foreach (var nested in cell.Cells)
-                            {
-                                var shifted = nested with { Bounds = nested.Bounds.Translate(new Vector(origin.X, origin.Y)), Clip = clip };
-                                if (shifted.Bounds.Intersects(clip)) _cells.Add((_pages.Count - 1, shifted));
-                            }
-                            foreach (var decoration in cell.Decorations)
-                            {
-                                var shifted = decoration with { Bounds = decoration.Bounds.Translate(new Vector(origin.X, origin.Y)), Clip = clip };
-                                if (shifted.Bounds.Intersects(clip)) _decorations.Add((_pages.Count - 1, shifted));
-                            }
-                        }
-                        while (cell.Next < cell.Lines.Count && cell.Lines[cell.Next].Y < cut - .01)
-                        {
-                            var local = cell.Lines[cell.Next++];
-                            _fragments.Add(Fragment(local.Position, local.Measurement, local.Line,
-                                new Point(origin.X + local.X, origin.Y + local.Y), local.Width,
-                                local.Clip is { } localClip ? clip.Intersect(localClip.Translate(new Vector(origin.X, origin.Y))) : clip));
-                            progress[local.Position.Paragraph.Id] = local.Line.End >= local.Position.Paragraph.Length ? -1 : local.Line.End;
-                        }
-                    }
+                    EmitTableSlice(group, consumed, cut, Column.Left + item.Left, progress);
                     _y += cut - consumed; consumed = cut;
                     if (consumed + .01 < groupHeight || group.Any(c => c.Next < c.Lines.Count)) Continue(oversize);
                 }
                 startRow = endRow;
             }
             _y += 12;
+        }
+
+        private void EmitTableSlice(List<CellContent> group, double consumed, double cut, double x,
+            Dictionary<Guid, int>? progress, bool repeatedHeader = false)
+        {
+            foreach (var cell in group)
+            {
+                var origin = new Point(x + cell.X, _y - consumed);
+                var top = Math.Max(consumed, cell.Top);
+                var bottom = Math.Min(cut, cell.Top + cell.Height);
+                var bounds = new Rect(origin.X, origin.Y + top, cell.Width, Math.Max(0, bottom - top));
+                var clip = bounds.Intersect(Column);
+                if (bottom > top)
+                {
+                    _cells.Add((_pages.Count - 1, new(cell.Table, cell.Row, cell.Column, bounds,
+                        cell.LastColumnWidth, cell.LastRowHeight, clip)));
+                    _decorations.Add((_pages.Count - 1, new(bounds, DocumentLayout.Brush(cell.Cell.Background), border, false, cell.Cell.Borders, clip)));
+                    foreach (var nested in cell.Cells)
+                    {
+                        var shifted = nested with { Bounds = nested.Bounds.Translate(new Vector(origin.X, origin.Y)), Clip = clip };
+                        if (shifted.Bounds.Intersects(clip)) _cells.Add((_pages.Count - 1, shifted));
+                    }
+                    foreach (var decoration in cell.Decorations)
+                    {
+                        var shifted = decoration with { Bounds = decoration.Bounds.Translate(new Vector(origin.X, origin.Y)), Clip = clip };
+                        if (shifted.Bounds.Intersects(clip)) _decorations.Add((_pages.Count - 1, shifted));
+                    }
+                }
+                while (cell.Next < cell.Lines.Count && cell.Lines[cell.Next].Y < cut - .01)
+                {
+                    var local = cell.Lines[cell.Next++];
+                    var lineNumber = _lineNumber;
+                    _fragments.Add(Fragment(local.Position, local.Measurement, local.Line,
+                        new Point(origin.X + local.X, origin.Y + local.Y), local.Width,
+                        local.Clip is { } localClip ? clip.Intersect(localClip.Translate(new Vector(origin.X, origin.Y))) : clip,
+                        local.Line.Start == 0 && local.Measurement.Paragraph.Style.List != ListKind.None ?
+                            ListNumbering.GetMarker(document, local.Position.Paragraph.Id)?.Text : null)
+                        with { IsRepeatedTableHeader = repeatedHeader });
+                    if (repeatedHeader)
+                    {
+                        _lineNumber = lineNumber;
+                        _fragments[^1] = _fragments[^1] with { LineNumber = null };
+                    }
+                    if (progress is not null) progress[local.Position.Paragraph.Id] = local.Line.End >= local.Position.Paragraph.Length ? -1 : local.Line.End;
+                }
+            }
+        }
+
+        private void PlaceWrappedParagraph(Paragraph source, Paragraph paragraph, Item item)
+        {
+            var style = paragraph.Style;
+            if (style.KeepTogether || style.KeepWithNext || style.WidowControl)
+                _layoutDiagnostics.Add($"Paragraph {source.Id} prioritizes positioned-table wrapping over paragraph keep and widow/orphan constraints.");
+            var indent = Indent(paragraph);
+            var leadingReserve = Math.Max(0, -indent - style.FirstLineIndent);
+            var marker = style.List == ListKind.None ? null : ListNumbering.GetMarker(document, source.Id);
+            if (marker is not null)
+            {
+                var level = marker.LevelDefinition;
+                var custom = level.MarkerIndent is not null || level.TextIndent is not null || level.TabPosition is not null || level.FollowCharacter != ListFollowCharacter.Tab;
+                using var shaped = ListMarkerDrawing.Shape(marker.Text, _resolver.ResolveListMarkerStyle(source, level), engine._environment!.Font, engine._environment.Foreground);
+                var markerLeft = custom ? style.Indent + (level.MarkerIndent ?? Math.Max(0, (level.TextIndent ?? 28 + style.ListLevel * 24) - 24)) :
+                    indent + style.FirstLineIndent - shaped.Width - 10;
+                leadingReserve = Math.Max(leadingReserve, -markerLeft);
+            }
+            var inset = leadingReserve + indent + style.RightIndent;
+            _y += Math.Min(style.SpaceBefore, Math.Max(0, Remaining - 1));
+            var offset = 0; var nextLine = 0; var first = true;
+            ExactParagraph? measurement = null;
+            while (true)
+            {
+                var exclusions = _wrapExclusions.Where(e => e.Page == _pages.Count - 1 && e.Column == _column).Select(e => e.Bounds).ToArray();
+                var column = new Rect(Column.Left + item.Left, Column.Top,
+                    Math.Max(16, Column.Width - item.Left - item.Right), Column.Height);
+                var lineHeight = measurement is not null && nextLine < measurement.Lines.Length ? measurement.Lines[nextLine].Height : 1;
+                var minimumWidth = 16 + inset;
+                var region = WrapExclusionGeometry.Resolve(column, _y, lineHeight, exclusions, minimumWidth);
+                ExactLine? line = null;
+                // A wider interval can pull a tall inline object onto this line. Retain the
+                // largest observed band while reshaping so widths cannot oscillate around it.
+                for (var pass = 0; pass <= exclusions.Length * 2 + 4; pass++)
+                {
+                    _y = region.Y;
+                    var width = Math.Max(16, region.Width - inset);
+                    if (measurement is null || Math.Abs(measurement.Width - width) > .01)
+                    { measurement = Measure(paragraph, width, offset); nextLine = 0; }
+                    if (nextLine >= measurement.Lines.Length) break;
+                    line = measurement.Lines[nextLine];
+                    lineHeight = Math.Max(lineHeight, line.Height);
+                    using (var lease = measurement.Layout.Acquire(line.Window))
+                        minimumWidth = Math.Max(minimumWidth, lease.Layout.TextLines[line.Index].Width + line.Window.XOffset + inset);
+                    var actual = WrapExclusionGeometry.Resolve(column, _y, lineHeight, exclusions, minimumWidth);
+                    if (Math.Abs(actual.Width - region.Width) < .01 && Math.Abs(actual.X - region.X) < .01 && Math.Abs(actual.Y - region.Y) < .01)
+                    { region = actual; break; }
+                    region = actual;
+                }
+                _y = region.Y;
+                if (_y >= Column.Bottom - .01 && !options.Draft) { Advance(); measurement = null; continue; }
+                if (line is null) break;
+                if (line.Height > Remaining + .01 && !AtTop) { Advance(); measurement = null; continue; }
+                var oldPage = _pages.Count; var oldColumn = _column;
+                PrepareNotes(source, line.Start, line.End, line.Height);
+                if (oldPage != _pages.Count || oldColumn != _column) { measurement = null; continue; }
+                var origin = new Point(region.Left + leadingReserve + indent + line.Window.XOffset, _y);
+                var fragment = Fragment(_index.ById(source.Id), measurement!, line, origin, Math.Max(16, region.Width - inset) - line.Window.XOffset,
+                    new Rect(region.Left, _y, region.Width, line.Height).Intersect(Column), first ? marker?.Text : null);
+                _fragments.Add(fragment);
+                if (style.Shading is not null || style.Borders is not null)
+                    _decorations.Add((_pages.Count - 1, new(fragment.Bounds, DocumentLayout.Brush(style.Shading), border, false, style.Borders, Column)));
+                if (item.Decoration is { } decoration)
+                    _decorations.Add((_pages.Count - 1, new(fragment.Bounds, DocumentLayout.Brush(decoration.Background),
+                        DocumentLayout.Brush(decoration.BorderColor), true, decoration.Borders, Column)));
+                _y += line.Height; offset = line.End; nextLine++; first = false;
+                if (nextLine >= measurement!.Lines.Length) break;
+            }
+            _y += style.SpaceAfter;
+        }
+
+        private void PlacePositionedTable(Table table, Item item)
+        {
+            var position = table.Position!;
+            var flowY = _y;
+            var width = Math.Max(16, Column.Width - item.Left - item.Right - position.X);
+            var groups = MeasureTable(table, width);
+            var height = groups.Sum(g => g.Select(c => c.GroupHeight).DefaultIfEmpty().Max());
+            var x = Column.Left + item.Left + position.X;
+            _y = Column.Top + position.Y;
+            var top = _y;
+            foreach (var group in groups)
+            {
+                var groupHeight = group.Select(c => c.GroupHeight).DefaultIfEmpty().Max();
+                EmitTableSlice(group, 0, groupHeight, x, null);
+                _y += groupHeight;
+            }
+            var cells = groups.SelectMany(g => g).ToArray();
+            var left = x + cells.Select(c => c.X).DefaultIfEmpty().Min();
+            var right = x + cells.Select(c => c.X + c.Width).DefaultIfEmpty().Max();
+            var bounds = new Rect(left, top, Math.Max(0, right - left), height);
+            if (!Column.Contains(bounds))
+                _layoutDiagnostics.Add($"Positioned table {table.Id} exceeds its anchor column and is clipped without adding overflow pages.");
+            _wrapExclusions.Add((_pages.Count - 1, _column, bounds.Inflate(position.Distance)));
+            _y = flowY;
         }
 
         private static IEnumerable<Paragraph> CellParagraphs(IEnumerable<Block> blocks)
@@ -629,18 +814,16 @@ public sealed partial class PaginationEngine : IDisposable
             if (endRow < 0) endRow = table.Rows.Length;
             var cells = new List<CellContent>();
             var heights = new double[table.Rows.Length];
-            var resolved = _resolver.ResolveTableStyle(table);
             for (var r = firstRow; r < endRow; r++)
             {
                 var sizing = table.RowSizing.IsEmpty ? new TableRowSizing() : table.RowSizing[r];
                 for (var c = 0; c < table.ColumnCount; c++)
                 {
                     if (table.IsCovered(r, c)) continue;
-                    var original = table.Rows[r][c];
-                    var cell = original with { Padding = original.Padding ?? resolved.Padding, Background = original.Background ?? resolved.Background, Borders = original.Borders ?? resolved.Borders };
+                    var cell = _resolver.ResolveTableCell(table, r, c);
                     var value = new CellContent { Table = table, Row = r, Column = c, Cell = cell,
-                        X = LayoutHeightIndex.ColumnOffset(table, width, c), Width = LayoutHeightIndex.ColumnWidth(table, width, c, cell.ColumnSpan),
-                        LastColumnWidth = LayoutHeightIndex.ColumnWidth(table, width, c + cell.ColumnSpan - 1) };
+                        X = LayoutHeightIndex.ColumnOffset(table, width, c, cell.ColumnSpan, _resolver, engine._environment!.Font, engine._environment.Fonts), Width = LayoutHeightIndex.ColumnWidth(table, width, c, cell.ColumnSpan, _resolver, engine._environment!.Font, engine._environment.Fonts),
+                        LastColumnWidth = LayoutHeightIndex.ColumnWidth(table, width, c + cell.ColumnSpan - 1, resolver: _resolver, font: engine._environment!.Font, fonts: engine._environment.Fonts) };
                     var paragraphs = CellParagraphs(cell.Blocks).ToArray();
                     var pending = progress is null || paragraphs.Any(p => !progress.TryGetValue(p.Id, out var offset) || offset >= 0);
                     if (pending)
@@ -649,7 +832,7 @@ public sealed partial class PaginationEngine : IDisposable
                         heights[r] = Math.Max(heights[r], sizing.Mode == TableRowHeightMode.Auto ? continued ? 0 : 36 : sizing.Height);
                         var padding = LayoutHeightIndex.CellPadding(cell);
                         value.Height = MeasureLocal(cell.Blocks, padding.Left, continued ? 0 : padding.Top,
-                            Math.Max(16, value.Width - padding.Left - padding.Right), value, progress) + padding.Bottom;
+                            Math.Max(16, value.Width - padding.Left - padding.Right), value, progress, cell.TextDirection) + padding.Bottom;
                         if (cell.RowSpan == 1 && sizing.Mode != TableRowHeightMode.Exact) heights[r] = Math.Max(heights[r], value.Height);
                     }
                     cells.Add(value);
@@ -674,17 +857,20 @@ public sealed partial class PaginationEngine : IDisposable
                 foreach (var cell in group)
                 {
                     cell.Top = offsets[cell.Row] - offsets[start];
+                    var contentHeight = cell.Height;
                     cell.Height = offsets[cell.Row + cell.Cell.RowSpan] - offsets[cell.Row];
+                    var verticalShift = Math.Max(0, cell.Height - contentHeight) * (cell.Cell.VerticalAlignment switch
+                    { TableCellVerticalAlignment.Center => .5, TableCellVerticalAlignment.Bottom => 1, _ => 0 });
                     cell.GroupHeight = offsets[end] - offsets[start];
                     cell.LastRowHeight = heights[cell.Row + cell.Cell.RowSpan - 1];
                     var exact = !table.RowSizing.IsEmpty && Enumerable.Range(cell.Row, cell.Cell.RowSpan).All(r => table.RowSizing[r].Mode == TableRowHeightMode.Exact);
-                    if (exact) cell.Lines.RemoveAll(l => l.Y >= cell.Height);
-                    for (var i = 0; i < cell.Lines.Count; i++) cell.Lines[i] = cell.Lines[i] with { Y = cell.Lines[i].Y + cell.Top,
-                        Clip = cell.Lines[i].Clip?.Translate(new Vector(0, cell.Top)) };
+                    if (exact) cell.Lines.RemoveAll(l => l.Y + verticalShift >= cell.Height);
+                    for (var i = 0; i < cell.Lines.Count; i++) cell.Lines[i] = cell.Lines[i] with { Y = cell.Lines[i].Y + cell.Top + verticalShift,
+                        Clip = cell.Lines[i].Clip?.Translate(new Vector(0, cell.Top + verticalShift)) };
                     for (var i = 0; i < cell.Decorations.Count; i++) cell.Decorations[i] = cell.Decorations[i] with
-                    { Bounds = cell.Decorations[i].Bounds.Translate(new Vector(0, cell.Top)) };
+                    { Bounds = cell.Decorations[i].Bounds.Translate(new Vector(0, cell.Top + verticalShift)) };
                     for (var i = 0; i < cell.Cells.Count; i++) cell.Cells[i] = cell.Cells[i] with
-                    { Bounds = cell.Cells[i].Bounds.Translate(new Vector(0, cell.Top)) };
+                    { Bounds = cell.Cells[i].Bounds.Translate(new Vector(0, cell.Top + verticalShift)) };
                 }
                 groups.Add(group); start = end;
             }
@@ -692,7 +878,7 @@ public sealed partial class PaginationEngine : IDisposable
         }
 
         private double MeasureLocal(IEnumerable<Block> blocks, double x, double y, double width, CellContent target,
-            Dictionary<Guid, int>? progress = null)
+            Dictionary<Guid, int>? progress = null, TableCellTextDirection direction = TableCellTextDirection.Inherit)
         {
             foreach (var block in blocks)
                 switch (block)
@@ -701,7 +887,10 @@ public sealed partial class PaginationEngine : IDisposable
                     {
                         var offset = 0;
                         if (progress is not null && progress.TryGetValue(source.Id, out offset) && offset < 0) break;
-                        var paragraph = DisplayParagraph(Grid(Resolve(source))); var indent = Indent(paragraph);
+                        var paragraph = DisplayParagraph(Grid(Resolve(source)));
+                        if (direction != TableCellTextDirection.Inherit) paragraph = paragraph with
+                        { Style = paragraph.Style with { RightToLeft = direction == TableCellTextDirection.RightToLeft } };
+                        var indent = Indent(paragraph);
                         var available = Math.Max(16, width - indent - paragraph.Style.RightIndent);
                         var measurement = Measure(paragraph, available, offset);
                         if (offset == 0) y += paragraph.Style.SpaceBefore;
@@ -715,11 +904,16 @@ public sealed partial class PaginationEngine : IDisposable
                     case Section section:
                     {
                         var padding = LayoutHeightIndex.SectionPadding(section); var top = y;
-                        y = MeasureLocal(section.Blocks, x + padding.Left, y + padding.Top, Math.Max(16, width - padding.Left - padding.Right), target, progress) + padding.Bottom;
+                        y = MeasureLocal(section.Blocks, x + padding.Left, y + padding.Top, Math.Max(16, width - padding.Left - padding.Right), target, progress, direction) + padding.Bottom;
                         target.Decorations.Add(new(new Rect(x, top, width, y - top), DocumentLayout.Brush(section.Background),
                             DocumentLayout.Brush(section.BorderColor), true, section.Borders)); break;
                     }
                     case Table table:
+                        if (table.RepeatHeaderRows > 0)
+                        {
+                            var diagnostic = $"Nested table {table.Id} flows inside its parent cell; only the outer table repeats headers across pages.";
+                            if (!_layoutDiagnostics.Contains(diagnostic)) _layoutDiagnostics.Add(diagnostic);
+                        }
                         foreach (var row in MeasureTable(table, width, progress))
                         {
                             var height = row.Select(c => c.GroupHeight).DefaultIfEmpty(0).Max();

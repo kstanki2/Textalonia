@@ -30,7 +30,11 @@ internal static class DocumentStyleValidation
             Text(style.TextFormatting.Apply(TextStyle.Default), document);
             Paragraph(style.Formatting.Apply(ParagraphStyle.Default), document);
         }
-        foreach (var style in document.Styles.Tables.Values) Table(style.Formatting.Apply(new TableStyle()));
+        foreach (var style in document.Styles.Tables.Values)
+        {
+            Table(style.Formatting.Apply(new TableStyle()));
+            foreach (var condition in style.Conditions.Values) Table(condition.Apply(new TableStyle()));
+        }
     }
 
     internal static void Text(TextStyle style, FlowDocument document)
@@ -71,6 +75,13 @@ internal static class DocumentStyleValidation
     {
         DocumentStyleCatalog.Reference(document.Styles.Paragraphs, style.StyleId);
         ListNumbering.ValidateStyle(style);
+        if (style.ListDefinition is { } definition)
+            foreach (var level in definition.Levels)
+            {
+                DocumentStyleCatalog.Reference(document.Styles.Paragraphs, level.ParagraphStyleId);
+                DocumentStyleCatalog.Reference(document.Styles.Characters, level.CharacterStyleId);
+                Text(level.MarkerFormatting.Apply(TextStyle.Default), document);
+            }
         if (!Enum.IsDefined(style.Alignment) || !Enum.IsDefined(style.List) ||
             style.HeadingLevel is < 0 or > 6 || style.ListLevel is < 0 or > 8 ||
             !double.IsFinite(style.Indent) || style.Indent is < 0 or > 1000 ||
@@ -109,7 +120,10 @@ internal static class DocumentStyleValidation
 
     internal static void Table(TableStyle style)
     {
-        FlowDocument.ValidateColor(style.Background); Borders(style.Borders);
+        FlowDocument.ValidateColor(style.Background); Borders(style.Borders); Borders(style.OutsideBorders);
+        Borders(new(style.InsideVertical, style.InsideHorizontal));
+        if (!Enum.IsDefined(style.VerticalAlignment) || !Enum.IsDefined(style.TextDirection))
+            throw new FormatException("Invalid cell alignment or direction.");
         if (style.Padding is { } padding)
             foreach (var value in new[] { padding.Left, padding.Top, padding.Right, padding.Bottom })
                 if (!double.IsFinite(value) || value is < 0 or > 1000) throw new FormatException("Invalid table style padding.");
@@ -121,7 +135,7 @@ internal static class DocumentStyleValidation
         foreach (var side in new[] { borders.Left, borders.Top, borders.Right, borders.Bottom })
         {
             if (side is null) continue;
-            if (!double.IsFinite(side.Width) || side.Width is < 0 or > 1000) throw new FormatException("Invalid border width.");
+            if (!double.IsFinite(side.Width) || side.Width is < 0 or > 1000 || !Enum.IsDefined(side.Kind)) throw new FormatException("Invalid border width.");
             FlowDocument.ValidateColor(side.Color);
         }
     }

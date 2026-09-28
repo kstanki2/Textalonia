@@ -232,6 +232,11 @@ Highlights use snapshot offsets: update or clear them after edits. Ctrl/Cmd-clic
 
 ## Table behavior
 
+Preferred widths and AutoFit, RTL column order, conditional styles, repeated page
+headers, row splitting and list marker formatting are described in the
+[table/list guide](docs/TABLES.md). Use **Table properties** for table and cell
+settings and **Styles** for reusable table shading and bands.
+
 Table text participates in normal selection, formatting, and undo. Insert/delete rows and columns through merged spans, merge/split cells, and change cell backgrounds through the toolbar or model APIs. Cell `Blocks` can contain nested tables and sections; table commands target the innermost cell. Persisted column widths, row sizing, cell padding and independent borders are available through model APIs.
 
 Merging retains original cells. Splitting an unedited merge restores them exactly. If a merged cell was edited, splitting keeps its edited blocks in the anchor cell and restores the other original cells. Undo always restores the exact previous state. See [document semantics](docs/DOCUMENT-MODEL.md) for structural deletion rules, current native schema, list restart/continuation, mixed-selection state and typography APIs. See [headers, footers and notes](docs/STORIES.md) for story editing, shared undo,

@@ -20,14 +20,14 @@ public class NativeSchemaTests
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
-    [InlineData(9)]
+    [InlineData(10)]
     [InlineData(int.MaxValue)]
     public void Unsupported_versions_are_reported_before_decoding_future_members(int version)
     {
         var error = Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(
             JsonSerializer.Serialize(new { version, futureEnvelope = true, document = new { futureNode = new { arbitrary = 42 } } })));
         Assert.Contains(version.ToString(), error.Message);
-        Assert.Equal($"Document version {version} is not supported. Supported version is 8.", error.Message);
+        Assert.Equal($"Document version {version} is not supported. Supported version is 9.", error.Message);
     }
 
     [Theory]
@@ -54,7 +54,7 @@ public class NativeSchemaTests
         var json = Encode(document);
         Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"columnSpan\": 1", "\"columnSpan\": 1, \"paragraphs\": []")));
         Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"columnSpan\": 1", "\"columnSpan\": 1, \"mergeOriginal\": []")));
-        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 8", "\"version\": 8, \"unknown\": true")));
+        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 9", "\"version\": 9, \"unknown\": true")));
         using var parsed = JsonDocument.Parse(json);
         var cell = parsed.RootElement.GetProperty("document").GetProperty("blocks")[0].GetProperty("rows")[0][0];
         Assert.False(cell.TryGetProperty("paragraphs", out _));

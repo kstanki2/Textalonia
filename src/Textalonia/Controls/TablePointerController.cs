@@ -73,7 +73,7 @@ internal sealed class TablePointerController : IDisposable
             var cell = context.Surface.GeometryHitTestTableCell(point, _anchor.Table.Id);
             if (cell is not null) context.Editor.SelectTableCells(_anchor.Table.Id, _anchor.Row, _anchor.Column, cell.Row, cell.Column);
         }
-        else context.Editor.PreviewTableResize(_initialSize + (_axis == TableResizeAxis.Column ? (point.X - _start.X) / context.Surface.ViewZoom : (point.Y - _start.Y) / context.Surface.ViewZoom));
+        else context.Editor.PreviewTableResize(_initialSize + (_axis == TableResizeAxis.Column ? (point.X - _start.X) * (_anchor.Table.RightToLeft ? -1 : 1) / context.Surface.ViewZoom : (point.Y - _start.Y) / context.Surface.ViewZoom));
         e.Handled = true; return true;
     }
 
@@ -101,7 +101,7 @@ internal sealed class TablePointerController : IDisposable
         cell.VisibleBounds.Inflate(5).Contains(point) && ResizeAxis(cell, point) is not null);
     private static TableResizeAxis? ResizeAxis(TableCellVisual cell, Point point)
     {
-        if (cell.Table.ColumnCount > 1 && cell.Column + cell.Cell.ColumnSpan < cell.Table.ColumnCount && Math.Abs(point.X - cell.Bounds.Right) <= 5) return TableResizeAxis.Column;
+        if (cell.Table.ColumnCount > 1 && cell.Column + cell.Cell.ColumnSpan < cell.Table.ColumnCount && Math.Abs(point.X - (cell.Table.RightToLeft ? cell.Bounds.Left : cell.Bounds.Right)) <= 5) return TableResizeAxis.Column;
         if (Math.Abs(point.Y - cell.Bounds.Bottom) <= 5) return TableResizeAxis.Row;
         return null;
     }
@@ -116,7 +116,7 @@ internal sealed class TablePointerController : IDisposable
         if (current is null) return;
         var bounds = current.VisibleBounds;
         var pen = new Pen(Brushes.DodgerBlue, 2);
-        if (current.Column + current.Cell.ColumnSpan < current.Table.ColumnCount) drawing.DrawLine(pen, bounds.TopRight, bounds.BottomRight);
+        if (current.Column + current.Cell.ColumnSpan < current.Table.ColumnCount) drawing.DrawLine(pen, current.Table.RightToLeft ? bounds.TopLeft : bounds.TopRight, current.Table.RightToLeft ? bounds.BottomLeft : bounds.BottomRight);
         drawing.DrawLine(pen, bounds.BottomLeft, bounds.BottomRight);
     }
     public void Dispose() { context.Session.Changed -= SessionChanged; Cancel(); _hover = null; }

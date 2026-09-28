@@ -58,6 +58,7 @@ public sealed record TableStyleDefinition
     public string? Name { get; init; }
     public string? BasedOn { get; init; }
     public TableStyleOverrides Formatting { get; init; } = new();
+    public ImmutableDictionary<TableStyleRegion, TableStyleOverrides> Conditions { get; init; } = ImmutableDictionary<TableStyleRegion, TableStyleOverrides>.Empty;
 }
 
 /// <summary>Immutable named formatting. Identifiers are scoped to their style kind.</summary>
@@ -90,7 +91,8 @@ public sealed record DocumentStyleCatalog
             Reference(Characters, style.LinkedStyle); Reference(Paragraphs, style.NextStyle);
         }
         foreach (var style in Tables.Values)
-            if (style.Formatting is null) throw new FormatException("Missing table style formatting.");
+            if (style.Formatting is null || style.Conditions is null || style.Conditions.Any(pair => !Enum.IsDefined(pair.Key) || pair.Value is null))
+                throw new FormatException("Invalid table style formatting or conditional regions.");
     }
 
     private static void ValidateGraph<T>(ImmutableDictionary<string, T> styles, Func<T, string> id, Func<T, string?> parent)
@@ -118,9 +120,14 @@ public sealed record DocumentStyleCatalog
     }
 }
 
-/// <summary>Table-wide cell formatting. Conditional table styles are a separate feature.</summary>
+/// <summary>Effective table and cell formatting after the style cascade.</summary>
 public sealed record TableStyle
 {
+    public BlockBorders? OutsideBorders { get; init; }
+    public BorderSide? InsideHorizontal { get; init; }
+    public BorderSide? InsideVertical { get; init; }
+    public TableCellVerticalAlignment VerticalAlignment { get; init; }
+    public TableCellTextDirection TextDirection { get; init; }
     public string? Background { get; init; }
     public EdgeInsets? Padding { get; init; }
     public BlockBorders? Borders { get; init; }
@@ -128,11 +135,21 @@ public sealed record TableStyle
 
 public sealed record TableStyleOverrides
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<BlockBorders?> OutsideBorders { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<BorderSide?> InsideHorizontal { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<BorderSide?> InsideVertical { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<TableCellVerticalAlignment> VerticalAlignment { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<TableCellTextDirection> TextDirection { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<string?> Background { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<EdgeInsets?> Padding { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<BlockBorders?> Borders { get; init; }
     public TableStyle Apply(TableStyle value) => value with
     {
+        OutsideBorders = OutsideBorders.IsSet ? OutsideBorders.Value : value.OutsideBorders,
+        InsideHorizontal = InsideHorizontal.IsSet ? InsideHorizontal.Value : value.InsideHorizontal,
+        InsideVertical = InsideVertical.IsSet ? InsideVertical.Value : value.InsideVertical,
+        VerticalAlignment = VerticalAlignment.IsSet ? VerticalAlignment.Value : value.VerticalAlignment,
+        TextDirection = TextDirection.IsSet ? TextDirection.Value : value.TextDirection,
         Background = Background.IsSet ? Background.Value : value.Background,
         Padding = Padding.IsSet ? Padding.Value : value.Padding,
         Borders = Borders.IsSet ? Borders.Value : value.Borders
@@ -150,6 +167,9 @@ public sealed partial record TextStyle
     public ThemeColorReference? ThemeBackground { get; init; }
 }
 
+internal readonly record struct DocumentFormattingKey(DocumentStyleCatalog Styles, DocumentDefaults Defaults,
+    DocumentTheme Theme, ImmutableArray<DocumentFontDefinition> Fonts, object? ResourcesIdentity);
+
 /// <summary>
 /// Resolves document defaults, default named styles, inherited/applied styles and direct
 /// overrides, in that order. Theme references are evaluated after the cascade. Legacy
@@ -162,6 +182,10 @@ public sealed class DocumentStyleResolver
     private readonly Dictionary<string, TextStyle> _paragraphText = new(StringComparer.Ordinal);
     private readonly Dictionary<string, TableStyle> _tables = new(StringComparer.Ordinal);
     public DocumentStyleResolver(FlowDocument document) => _document = document ?? throw new ArgumentNullException(nameof(document));
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ImmutableDictionary<string, DocumentResource>, object> ResourceIdentities = new();
+    // Layout caches retain formatting identity, never the document/paragraph tree.
+    internal DocumentFormattingKey FormattingKey => new(_document.Styles, _document.Defaults, _document.Theme, _document.Fonts,
+        _document.Fonts.IsEmpty ? null : ResourceIdentities.GetValue(_document.Resources, _ => new object()));
 
     private IEnumerable<T> Chain<T>(ImmutableDictionary<string, T> styles, string? id, Func<T, string?> parent)
     {
@@ -216,6 +240,14 @@ public sealed class DocumentStyleResolver
         return ResolveTheme(result) with { StyleId = null, Overrides = null };
     }
 
+    /// <summary>Resolves marker-only character formatting without changing the list's body runs.</summary>
+    public TextStyle ResolveListMarkerStyle(Paragraph paragraph, ListLevelDefinition level)
+    {
+        var style = ResolveText(paragraph, paragraph.DefaultStyle);
+        if (level.CharacterStyleId is { } id) style = ApplyCharacter(style, id);
+        return ResolveTheme(level.MarkerFormatting.Apply(style)) with { StyleId = null, Overrides = null };
+    }
+
     private TextStyle ApplyParagraphText(TextStyle basis, string id)
     {
         if (_paragraphText.TryGetValue(id, out var cached)) return cached;
@@ -239,6 +271,78 @@ public sealed class DocumentStyleResolver
         return table.StyleOverrides?.Apply(result) ?? result;
     }
 
+    /// <summary>Resolves bands, edges and headers in enum order, followed by table and cell direct overrides.</summary>
+    public TableCell ResolveTableCell(Table table, int row, int column)
+    {
+        var cell = table.Rows[row][column];
+        var style = new TableStyle();
+        ApplyFormatting(_document.Styles.DefaultTableStyleId);
+        ApplyFormatting(table.StyleId);
+        void ApplyFormatting(string? id)
+        {
+            foreach (var definition in Chain(_document.Styles.Tables, id, x => x.BasedOn)) Apply(definition.Formatting);
+        }
+        // Resolve grid borders at each cascade layer so a conditional/direct border
+        // overrides the corresponding whole-table edge instead of losing its provenance.
+        void Apply(TableStyleOverrides formatting)
+        {
+            style = formatting.Apply(style);
+            if (!formatting.OutsideBorders.IsSet && !formatting.InsideHorizontal.IsSet && !formatting.InsideVertical.IsSet) return;
+            var borders = style.Borders ?? new();
+            var first = column == 0; var last = column + cell.ColumnSpan == table.ColumnCount;
+            var left = table.RightToLeft ? last : first; var right = table.RightToLeft ? first : last;
+            if (formatting.OutsideBorders.IsSet)
+                borders = borders with
+                {
+                    Left = left ? formatting.OutsideBorders.Value?.Left : borders.Left,
+                    Right = right ? formatting.OutsideBorders.Value?.Right : borders.Right,
+                    Top = row == 0 ? formatting.OutsideBorders.Value?.Top : borders.Top,
+                    Bottom = row + cell.RowSpan == table.Rows.Length ? formatting.OutsideBorders.Value?.Bottom : borders.Bottom
+                };
+            if (formatting.InsideVertical.IsSet) borders = borders with
+            { Left = !left ? formatting.InsideVertical.Value : borders.Left, Right = !right ? formatting.InsideVertical.Value : borders.Right };
+            if (formatting.InsideHorizontal.IsSet) borders = borders with
+            { Top = row > 0 ? formatting.InsideHorizontal.Value : borders.Top,
+                Bottom = row + cell.RowSpan < table.Rows.Length ? formatting.InsideHorizontal.Value : borders.Bottom };
+            style = style with { Borders = borders };
+        }
+        foreach (var region in Enum.GetValues<TableStyleRegion>())
+        {
+            var applies = region switch
+            {
+                TableStyleRegion.OddColumnBand => column % 2 == 0,
+                TableStyleRegion.EvenColumnBand => column % 2 == 1,
+                TableStyleRegion.OddRowBand => (row - table.RepeatHeaderRows) % 2 == 0 && row >= table.RepeatHeaderRows,
+                TableStyleRegion.EvenRowBand => (row - table.RepeatHeaderRows) % 2 == 1 && row >= table.RepeatHeaderRows,
+                TableStyleRegion.FirstColumn => column == 0,
+                TableStyleRegion.LastColumn => column + cell.ColumnSpan == table.ColumnCount,
+                TableStyleRegion.FirstRow => row == 0,
+                TableStyleRegion.LastRow => row + cell.RowSpan == table.Rows.Length,
+                TableStyleRegion.HeaderRow => row < table.RepeatHeaderRows,
+                _ => false
+            };
+            if (!applies) continue;
+            ApplyConditions(_document.Styles.DefaultTableStyleId);
+            ApplyConditions(table.StyleId);
+            void ApplyConditions(string? id)
+            {
+                foreach (var definition in Chain(_document.Styles.Tables, id, x => x.BasedOn))
+                    if (definition.Conditions.TryGetValue(region, out var condition)) Apply(condition);
+            }
+        }
+        if (table.StyleOverrides is { } directTable) Apply(directTable);
+        style = style with
+        {
+            Background = cell.Background ?? style.Background, Padding = cell.Padding ?? style.Padding,
+            Borders = cell.Borders ?? style.Borders,
+            VerticalAlignment = cell.VerticalAlignment != TableCellVerticalAlignment.Top ? cell.VerticalAlignment : style.VerticalAlignment,
+            TextDirection = cell.TextDirection != TableCellTextDirection.Inherit ? cell.TextDirection : style.TextDirection
+        };
+        if (cell.StyleOverrides is { } directCell) Apply(directCell);
+        return cell with { Background = style.Background, Padding = style.Padding, Borders = style.Borders,
+            VerticalAlignment = style.VerticalAlignment, TextDirection = style.TextDirection, StyleOverrides = null };
+    }
+
     private TableStyle ApplyTable(TableStyle basis, string id)
     {
         if (_tables.TryGetValue(id, out var cached)) return cached;
@@ -259,22 +363,30 @@ public sealed class DocumentStyleResolver
     {
         ImmutableArray<Block> Visit(ImmutableArray<Block> blocks) => blocks.Select<Block, Block>(block => block switch
         {
-            Paragraph paragraph => ResolveParagraph(paragraph),
+            Paragraph paragraph => ResolveListParagraph(paragraph),
             Section section => section with { Blocks = Visit(section.Blocks) },
             Table table => ResolveTable(table),
             _ => block
         }).ToImmutableArray();
+        Paragraph ResolveListParagraph(Paragraph paragraph)
+        {
+            var resolved = ResolveParagraph(paragraph);
+            if (resolved.Style.ListDefinition is not { } definition) return resolved;
+            return resolved with { Style = resolved.Style with { ListDefinition = definition with
+            { Levels = definition.Levels.Select(level => level with { ParagraphStyleId = null, CharacterStyleId = null,
+                MarkerFormatting = level.CharacterStyleId is null && !level.MarkerFormatting.ThemeFont.IsSet &&
+                    !level.MarkerFormatting.ThemeForeground.IsSet && !level.MarkerFormatting.ThemeBackground.IsSet &&
+                    !level.MarkerFormatting.EastAsianThemeFont.IsSet && !level.MarkerFormatting.ComplexScriptThemeFont.IsSet
+                    ? level.MarkerFormatting : TextStyleOverrides.FromStyle(ResolveListMarkerStyle(paragraph, level)) }).ToImmutableArray() } } };
+        }
         Table ResolveTable(Table table)
         {
-            var style = ResolveTableStyle(table);
             return table with
             {
                 StyleId = null, StyleOverrides = null,
-                Rows = table.Rows.Select(row => row.Select(cell => cell with
+                Rows = table.Rows.Select((row, r) => row.Select((cell, c) => ResolveTableCell(table, r, c) with
                 {
-                    Background = cell.Background ?? style.Background, Padding = cell.Padding ?? style.Padding,
-                    Borders = cell.Borders ?? style.Borders, Blocks = Visit(cell.Blocks),
-                    MergeOriginalBlocks = Visit(cell.MergeOriginalBlocks)
+                    Blocks = Visit(cell.Blocks), MergeOriginalBlocks = Visit(cell.MergeOriginalBlocks)
                 }).ToImmutableArray()).ToImmutableArray()
             };
         }

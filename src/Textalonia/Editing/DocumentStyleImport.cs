@@ -37,13 +37,15 @@ internal static class DocumentStyleImport
             map[id] = replacement;
             return true;
         }
+        bool ListLinksMoved(ListDefinition? definition) => definition?.Levels.Any(level =>
+            Moved(paragraphs, level.ParagraphStyleId) || Moved(characters, level.CharacterStyleId)) == true;
         bool changed;
         do
         {
             changed = false;
             foreach (var style in source.Styles.Paragraphs.Values)
                 if (destination.Styles.Paragraphs.ContainsKey(style.Id) &&
-                    (Moved(paragraphs, style.BasedOn) || Moved(paragraphs, style.NextStyle) || Moved(characters, style.LinkedStyle)))
+                    (Moved(paragraphs, style.BasedOn) || Moved(paragraphs, style.NextStyle) || Moved(characters, style.LinkedStyle) || ListLinksMoved(style.Formatting.ListDefinition.Value)))
                     changed |= Remap(paragraphs, style.Id);
             foreach (var style in source.Styles.Characters.Values)
                 if (destination.Styles.Characters.ContainsKey(style.Id) &&
@@ -53,13 +55,18 @@ internal static class DocumentStyleImport
                 if (destination.Styles.Tables.ContainsKey(style.Id) && Moved(tables, style.BasedOn))
                     changed |= Remap(tables, style.Id);
         } while (changed);
+        ListDefinition? List(ListDefinition? definition) => definition is null ? null : definition with
+        { Levels = definition.Levels.Select(level => level with
+            { CharacterStyleId = Id(characters, level.CharacterStyleId), ParagraphStyleId = Id(paragraphs, level.ParagraphStyleId) }).ToImmutableArray() };
+        ParagraphStyleOverrides Formatting(ParagraphStyleOverrides value) => value.ListDefinition.IsSet
+            ? value with { ListDefinition = new(List(value.ListDefinition.Value)) } : value;
         var catalog = destination.Styles with
         {
             Paragraphs = destination.Styles.Paragraphs.SetItems(source.Styles.Paragraphs.Values.Select(style =>
                 new KeyValuePair<string, ParagraphStyleDefinition>(paragraphs[style.Id], style with
                 {
                     Id = paragraphs[style.Id], BasedOn = Id(paragraphs, style.BasedOn),
-                    LinkedStyle = Id(characters, style.LinkedStyle), NextStyle = Id(paragraphs, style.NextStyle)
+                    LinkedStyle = Id(characters, style.LinkedStyle), NextStyle = Id(paragraphs, style.NextStyle), Formatting = Formatting(style.Formatting)
                 }))),
             Characters = destination.Styles.Characters.SetItems(source.Styles.Characters.Values.Select(style =>
                 new KeyValuePair<string, CharacterStyleDefinition>(characters[style.Id], style with
@@ -77,7 +84,8 @@ internal static class DocumentStyleImport
             Paragraph p => p with
             {
                 Style = p.Style with { StyleId = Id(paragraphs, p.Style.StyleId ??
-                    (p.Style.Overrides is not null ? source.Styles.DefaultParagraphStyleId : null)) },
+                    (p.Style.Overrides is not null ? source.Styles.DefaultParagraphStyleId : null)),
+                    ListDefinition = List(p.Style.ListDefinition), Overrides = p.Style.Overrides is { } overrides ? Formatting(overrides) : null },
                 DefaultStyle = Text(p.DefaultStyle), Runs = p.Runs.Select(run => run with { Style = Text(run.Style) }).ToImmutableArray()
             },
             Section section => section with { Blocks = Visit(section.Blocks) },

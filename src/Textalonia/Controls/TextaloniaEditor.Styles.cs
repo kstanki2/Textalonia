@@ -178,6 +178,9 @@ public partial class TextaloniaEditor
         bold.IsThreeState = true;
         var spacing = dialog.NumberField("Space after (blank inherits)", new FormattingValue<double>(default, true), 0, 1000, _ => { });
         var shading = dialog.TextField("Table shading (blank inherits)", new FormattingValue<string?>(null), _ => { });
+        var headerShading = dialog.TextField("Header row shading (blank inherits)", new FormattingValue<string?>(null), _ => { });
+        var oddShading = dialog.TextField("Odd row band shading (blank inherits)", new FormattingValue<string?>(null), _ => { });
+        var evenShading = dialog.TextField("Even row band shading (blank inherits)", new FormattingValue<string?>(null), _ => { });
         void Load()
         {
             if (choose.SelectedItem is not StyleChoice choice) return;
@@ -197,6 +200,11 @@ public partial class TextaloniaEditor
             spacing.IsEnabled = choice.Kind == "Paragraph";
             shading.Text = table?.Formatting.Background is { IsSet: true } background ? background.Value : null;
             shading.IsEnabled = choice.Kind == "Table";
+            string? RegionColor(TableStyleRegion region) => table?.Conditions.GetValueOrDefault(region)?.Background is { IsSet: true } color ? color.Value : null;
+            headerShading.Text = RegionColor(TableStyleRegion.HeaderRow);
+            oddShading.Text = RegionColor(TableStyleRegion.OddRowBand);
+            evenShading.Text = RegionColor(TableStyleRegion.EvenRowBand);
+            headerShading.IsEnabled = oddShading.IsEnabled = evenShading.IsEnabled = choice.Kind == "Table";
         }
         choose.SelectionChanged += (_, _) => Load(); Load();
         dialog.Button("Apply selected saved style", () =>
@@ -206,7 +214,7 @@ public partial class TextaloniaEditor
             {
                 if (choice.Kind == "Paragraph") ApplyNamedParagraphStyle(saved);
                 else if (choice.Kind == "Character") ApplyNamedCharacterStyle(saved);
-                else Session.UpdateCurrentTable((table, _, _) => table with { StyleId = saved, StyleOverrides = new() });
+                else ApplyNamedTableStyle(saved);
             });
         });
         return ShowFormattingDialog(dialog, () =>
@@ -227,9 +235,16 @@ public partial class TextaloniaEditor
             }
             else
             {
-                var oldTable = choice.Id is { } existing ? catalog.Tables[existing].Formatting : new TableStyleOverrides();
-                catalog = catalog with { Tables = catalog.Tables.SetItem(styleId, new() { Id = styleId, Name = Clean(name.Text), BasedOn = Clean(parent.Text),
-                    Formatting = oldTable with { Background = Clean(shading.Text) is { } color ? new(color) : default } }) };
+                var oldDefinition = choice.Id is { } existing ? catalog.Tables[existing] : new TableStyleDefinition { Id = styleId };
+                var conditions = oldDefinition.Conditions;
+                foreach (var (region, field) in new[] { (TableStyleRegion.HeaderRow, headerShading), (TableStyleRegion.OddRowBand, oddShading), (TableStyleRegion.EvenRowBand, evenShading) })
+                {
+                    var prior = conditions.GetValueOrDefault(region) ?? new TableStyleOverrides();
+                    var nextCondition = prior with { Background = Clean(field.Text) is { } regionColor ? new(regionColor) : default };
+                    conditions = nextCondition == new TableStyleOverrides() ? conditions.Remove(region) : conditions.SetItem(region, nextCondition);
+                }
+                catalog = catalog with { Tables = catalog.Tables.SetItem(styleId, oldDefinition with { Id = styleId, Name = Clean(name.Text), BasedOn = Clean(parent.Text), Conditions = conditions,
+                    Formatting = oldDefinition.Formatting with { Background = Clean(shading.Text) is { } color ? new(color) : default } }) };
             }
             Session.SetStyles(catalog);
         });

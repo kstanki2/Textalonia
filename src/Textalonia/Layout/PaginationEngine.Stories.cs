@@ -110,8 +110,11 @@ public sealed partial class PaginationEngine
             _storyRegions.Add(new(measure.Story.Id, measure.Story.Kind, page, region, start, end, continued, marker, Context(page))
                 { SeparatorText = separator });
             var shift = new Vector(region.Left, region.Top - from);
+            var storyDocument = document.GetStoryDocument(measure.Story.Id);
             foreach (var local in lines)
             {
+                var list = local.Line.Start == 0 && (local != lines[0] || marker is null)
+                    ? ListNumbering.GetMarker(storyDocument, local.Position.Paragraph.Id) : null;
                 var origin = new Point(local.X + shift.X, local.Y + shift.Y);
                 _storyFragments.Add(new()
                 {
@@ -123,7 +126,9 @@ public sealed partial class PaginationEngine
                     Baseline = origin.Y + local.Line.Baseline, Measurement = local.Measurement, Line = local.Line,
                     Position = local.Position, Origin = origin, ColumnBounds = region,
                     SourceStart = local.Position.Start + local.Measurement.Offset + local.Line.Window.Start,
-                    Marker = local == lines[0] ? marker : null
+                    Marker = list?.Text ?? (local == lines[0] ? marker : null),
+                    MarkerDefinition = list?.LevelDefinition,
+                    MarkerStyle = list is null ? null : _resolver.ResolveListMarkerStyle(local.Position.Paragraph, list.LevelDefinition)
                 });
             }
             foreach (var decoration in content.Decorations)

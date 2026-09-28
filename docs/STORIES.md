@@ -116,8 +116,8 @@ The engine remains synchronous on the Avalonia shaping thread.
 
 ## Persistence and format boundaries
 
-Native JSON writes v7 and reads v4-v7. Data XAML writes v2 and reads v1/v2 in the
-existing data namespace. Clipboard writes v3 and reads v1/v2/v3. Native/XAML
+Native JSON writes v9 and reads v4-v9. Data XAML writes v4 and reads v1/v2/v3/v4 in the
+existing data namespace. Clipboard writes v5 and reads v1/v2/v3/v4/v5. Native/XAML
 retain the complete supported story model, including dormant variants.
 
 DOCX supports rich header/footer parts and references, linkage, first/even

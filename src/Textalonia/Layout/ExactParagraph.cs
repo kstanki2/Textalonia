@@ -26,6 +26,7 @@ internal sealed class ExactParagraph
     private int _references = 1;
     private readonly ShapingEnvironment _environment;
     public Paragraph Paragraph { get; }
+    internal DocumentFontService Fonts => _environment.Fonts;
     public Paragraph Source { get; }
     public double Width { get; }
     public int MaxCharacters { get; }

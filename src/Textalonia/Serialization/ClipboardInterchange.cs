@@ -42,7 +42,7 @@ internal static class ClipboardInterchange
         }
         if (version.ValueKind != JsonValueKind.Number || !version.TryGetInt32(out var number))
             throw new FormatException("Clipboard version must be an integer.");
-        if (number is not (1 or 2 or DocumentFragment.CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {number} is not supported.");
+        if (number is not (1 or 2 or 3 or 4 or DocumentFragment.CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {number} is not supported.");
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (var property in root.EnumerateObject())
             if (!names.Add(property.Name) || property.Name is not ("fragmentVersion" or "startsInsideParagraph" or "endsInsideParagraph" or "nativeDocument"))

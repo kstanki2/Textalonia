@@ -35,7 +35,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         var xml = XDocument.Load(input, LoadOptions.SetLineInfo | LoadOptions.PreserveWhitespace);
         var root = xml.Root ?? throw new FormatException("Missing Document element.");
         if (root.Name != Ns + "Document") throw new FormatException("Expected a Textalonia Document in " + NamespaceUri + ".");
-        if (Required(root, "Version") is not ("1" or "2" or "3")) throw new NotSupportedException("Only Textalonia XAML data versions 1, 2 and 3 are supported.");
+        if (Required(root, "Version") is not ("1" or "2" or "3" or "4")) throw new NotSupportedException("Only Textalonia XAML data versions 1, 2, 3 and 4 are supported.");
         foreach (var instruction in xml.DescendantNodes().OfType<XProcessingInstruction>())
             Report("xaml.processing-instruction", instruction.Target, "Processing instruction was ignored.", instruction);
         Check(root, "Version", "Resources Blocks Styles Defaults Theme Fonts Sections Stories Notes FootnoteSettings EndnoteSettings Bookmarks Fields Properties");
@@ -63,7 +63,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
     {
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
-        var root = Element("Document", Attr("Version", 3),
+        var root = Element("Document", Attr("Version", 4),
             WriteData("Styles", document.Styles), WriteData("Defaults", document.Defaults), WriteData("Theme", document.Theme), WriteData("Fonts", document.Fonts), WriteData("Sections", document.Sections),
             WriteData("Stories", document.Stories), WriteData("Notes", document.Notes), WriteData("FootnoteSettings", document.FootnoteSettings), WriteData("EndnoteSettings", document.EndnoteSettings),
             WriteData("Bookmarks", document.Bookmarks), WriteData("Fields", document.Fields), WriteData("Properties", document.Properties),
@@ -170,7 +170,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
 
     private static Table ReadTable(XElement element)
     {
-        Check(element, "Id StyleId", "ColumnWidths RowSizing Rows StyleOverrides");
+        Check(element, "Id StyleId AutoFit Alignment Indent RightToLeft RepeatHeaderRows", "ColumnWidths RowSizing Rows StyleOverrides PreferredWidth Position");
         var columns = Child(element, "ColumnWidths");
         if (columns is not null) Check(columns, "", "Column");
         var sizes = Child(element, "RowSizing");
@@ -180,13 +180,16 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         return new Table
         {
             Id = Identity(element), StyleId = Value(element, "StyleId"),
+            PreferredWidth = ReadData<TablePreferredWidth>(Child(element, "PreferredWidth")) ?? new(), Position = ReadData<TablePosition>(Child(element, "Position")),
+            AutoFit = EnumValue(element, "AutoFit", TableAutoFit.Legacy), Alignment = EnumValue(element, "Alignment", TableAlignment.Left),
+            Indent = Number(element, "Indent", 0), RightToLeft = Boolean(element, "RightToLeft"), RepeatHeaderRows = Integer(element, "RepeatHeaderRows", 0),
             StyleOverrides = ReadData<TableStyleOverrides>(Child(element, "StyleOverrides")),
             ColumnWidths = columns?.Elements(Ns + "Column").Select(column =>
             { Check(column, "Width", ""); return Number(column, "Width", 1); }).ToImmutableArray() ?? [],
             RowSizing = sizes?.Elements(Ns + "RowSize").Select(size =>
             {
-                Check(size, "Mode Height", "");
-                return new TableRowSizing { Mode = EnumValue(size, "Mode", TableRowHeightMode.Auto), Height = Number(size, "Height", 0) };
+                Check(size, "Mode Height AllowSplit", "");
+                return new TableRowSizing { Mode = EnumValue(size, "Mode", TableRowHeightMode.Auto), Height = Number(size, "Height", 0), AllowSplit = Value(size, "AllowSplit") is null || Boolean(size, "AllowSplit") };
             }).ToImmutableArray() ?? [],
             Rows = rows?.Elements(Ns + "Row").Select(row =>
             { Check(row, "", "Cell"); return row.Elements(Ns + "Cell").Select(ReadCell).ToImmutableArray(); }).ToImmutableArray() ?? []
@@ -195,10 +198,12 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
 
     private static TableCell ReadCell(XElement element)
     {
-        Check(element, "Id ColumnSpan RowSpan Background", "Padding Borders Blocks MergeOriginalBlocks");
+        Check(element, "Id ColumnSpan RowSpan Background VerticalAlignment TextDirection", "Padding Borders Blocks MergeOriginalBlocks PreferredWidth StyleOverrides");
         return new TableCell
         {
             Id = Identity(element), ColumnSpan = Integer(element, "ColumnSpan", 1), RowSpan = Integer(element, "RowSpan", 1),
+            PreferredWidth = ReadData<TablePreferredWidth>(Child(element, "PreferredWidth")) ?? new(), StyleOverrides = ReadData<TableStyleOverrides>(Child(element, "StyleOverrides")),
+            VerticalAlignment = EnumValue(element, "VerticalAlignment", TableCellVerticalAlignment.Top), TextDirection = EnumValue(element, "TextDirection", TableCellTextDirection.Inherit),
             Background = Value(element, "Background"), Padding = ReadEdges(Child(element, "Padding")), Borders = ReadBorders(Child(element, "Borders")),
             Blocks = ReadBlocks(Child(element, "Blocks")), MergeOriginalBlocks = ReadBlocks(Child(element, "MergeOriginalBlocks"), false)
         };
@@ -339,8 +344,8 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         {
             var side = Child(element, name);
             if (side is null) return null;
-            Check(side, "Width Color", "");
-            return new(Number(side, "Width", 0), Value(side, "Color"));
+            Check(side, "Width Color Kind", "");
+            return new(Number(side, "Width", 0), Value(side, "Color")) { Kind = EnumValue(side, "Kind", BorderKind.Solid) };
         }
         return new(Side("Left"), Side("Top"), Side("Right"), Side("Bottom"));
     }
@@ -353,10 +358,14 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         Section s => Element("Section", Attr("Id", s.Id), Attr("Background", s.Background), Attr("BorderColor", s.BorderColor), Attr("Padding", s.Padding),
             Attr("Semantic", s.Semantic), Attr("CodeLanguage", s.CodeLanguage), WriteEdges("PaddingEdges", s.PaddingEdges), WriteBorders(s.Borders), WriteBlocks("Blocks", s.Blocks)),
         Table t => Element("Table", Attr("Id", t.Id), Attr("StyleId", t.StyleId),
+            Attr("AutoFit", t.AutoFit), Attr("Alignment", t.Alignment), Attr("Indent", t.Indent), Attr("RightToLeft", t.RightToLeft), Attr("RepeatHeaderRows", t.RepeatHeaderRows),
+            WriteData("PreferredWidth", t.PreferredWidth), t.Position is null ? null : WriteData("Position", t.Position),
             t.StyleOverrides is null ? null : WriteData("StyleOverrides", t.StyleOverrides), Element("ColumnWidths", t.ColumnWidths.Select(width => Element("Column", Attr("Width", width)))),
-            Element("RowSizing", t.RowSizing.Select(size => Element("RowSize", Attr("Mode", size.Mode), Attr("Height", size.Height)))),
+            Element("RowSizing", t.RowSizing.Select(size => Element("RowSize", Attr("Mode", size.Mode), Attr("Height", size.Height), Attr("AllowSplit", size.AllowSplit)))),
             Element("Rows", t.Rows.Select(row => Element("Row", row.Select(cell => Element("Cell", Attr("Id", cell.Id), Attr("ColumnSpan", cell.ColumnSpan),
                 Attr("RowSpan", cell.RowSpan), Attr("Background", cell.Background), WriteEdges("Padding", cell.Padding), WriteBorders(cell.Borders),
+                WriteData("PreferredWidth", cell.PreferredWidth), Attr("VerticalAlignment", cell.VerticalAlignment), Attr("TextDirection", cell.TextDirection),
+                cell.StyleOverrides is null ? null : WriteData("StyleOverrides", cell.StyleOverrides),
                 WriteBlocks("Blocks", cell.Blocks), WriteBlocks("MergeOriginalBlocks", cell.MergeOriginalBlocks))))))),
         _ => throw new FormatException("Unsupported block type.")
     };
@@ -384,6 +393,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         Attr("Hyperlink", style.Hyperlink), Attr("Baseline", style.Baseline), Attr("IsCode", style.IsCode));
 
     private static XElement WriteParagraphStyle(ParagraphStyle style) =>
+        style.ListDefinition?.Levels.Any(level => level.MarkerFormatting != new TextStyleOverrides() || level.CharacterStyleId is not null || level.ParagraphStyleId is not null || level.TextIndent is not null || level.MarkerIndent is not null || level.TabPosition is not null || level.FollowCharacter != ListFollowCharacter.Tab) == true ||
         HasExtended(style, ParagraphStyle.Default, "alignment list listLevel listId listStart listRestart headingLevel spaceBefore spaceAfter indent rightIndent firstLineIndent lineHeight letterSpacing rightToLeft listDefinition")
         ? Element("ParagraphStyle", WriteData("Data", style)) : Element("ParagraphStyle",
         Attr("Alignment", style.Alignment), Attr("List", style.List), Attr("ListLevel", style.ListLevel), Attr("ListId", style.ListId), Attr("ListStart", style.ListStart),
@@ -397,7 +407,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         Element(name, Attr("Left", edges.Left), Attr("Top", edges.Top), Attr("Right", edges.Right), Attr("Bottom", edges.Bottom));
     private static XElement? WriteBorders(BlockBorders? borders)
     {
-        XElement? Side(string name, BorderSide? side) => side is null ? null : Element(name, Attr("Width", side.Width), Attr("Color", side.Color));
+        XElement? Side(string name, BorderSide? side) => side is null ? null : Element(name, Attr("Width", side.Width), Attr("Color", side.Color), Attr("Kind", side.Kind));
         return borders is null ? null : Element("Borders", Side("Left", borders.Left), Side("Top", borders.Top), Side("Right", borders.Right), Side("Bottom", borders.Bottom));
     }
 

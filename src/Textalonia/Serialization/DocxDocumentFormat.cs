@@ -472,25 +472,24 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             var table = Table.Create(rows.Length, columns);
             if (grid.Length == columns && grid.All(c => Dimension(c, W + "w", 0) > 0))
                 table = table with { ColumnWidths = grid.Select(c => Dimension(c, W + "w", 0) / 15).ToImmutableArray() };
-            if (grid.Length == 0 && rows.SelectMany(r => r.Elements(W + "tc")).Any(c => c.Element(W + "tcPr")?.Element(W + "tcW") is not null))
-                Loss("cell-width", "Cell widths without a table grid", "Equal relative columns applied.", element);
-            var sizing = rows.Select(r => r.Element(W + "trPr")?.Element(W + "trHeight")).Select(h => new TableRowSizing
+
+            var sizing = rows.Select(r => r.Element(W + "trPr")).Select(properties => { var h = properties?.Element(W + "trHeight"); return new TableRowSizing
             {
                 Mode = h is null || Number(h) <= 0 ? TableRowHeightMode.Auto : (string?)h.Attribute(W + "hRule") == "exact" ? TableRowHeightMode.Exact : TableRowHeightMode.AtLeast,
-                Height = h is null ? 0 : Math.Max(0, Number(h) / 15d)
-            }).ToImmutableArray();
-            if (sizing.Any(s => s.Mode != TableRowHeightMode.Auto)) table = table with { RowSizing = sizing };
+                Height = h is null ? 0 : Math.Max(0, Number(h) / 15d), AllowSplit = !On(properties?.Element(W + "cantSplit"))
+            }; }).ToImmutableArray();
+            if (sizing.Any(s => s.Mode != TableRowHeightMode.Auto || !s.AllowSplit)) table = table with { RowSizing = sizing };
             var tblPr = element.Element(W + "tblPr");
             var tableStyleId = Value(tblPr?.Element(W + "tblStyle"));
             if (tableStyleId is not null && catalog.Tables.ContainsKey(tableStyleId)) table = table with { StyleId = tableStyleId };
             else if (tableStyleId is not null) Loss("style-missing", "Missing table style definition", "Direct table formatting retained.", tblPr);
             table = table with { StyleOverrides = ReadTableFormatting(tblPr) };
+            table = ReadTableProperties(table, tblPr, rows);
             var tablePadding = ReadPadding(tblPr?.Element(W + "tblCellMar"));
             foreach (var property in tblPr?.Elements() ?? [])
-                if (property.Name != W + "tblW" && property.Name != W + "tblBorders" && property.Name != W + "tblCellMar" && property.Name != W + "tblStyle" && property.Name != W + "shd")
+                if (property.Name != W + "tblW" && property.Name != W + "tblBorders" && property.Name != W + "tblCellMar" && property.Name != W + "tblStyle" && property.Name != W + "shd" && property.Name != W + "tblLayout" && property.Name != W + "jc" &&
+                    property.Name != W + "tblInd" && property.Name != W + "bidiVisual" && property.Name != W + "tblLook" && property.Name != W + "tblpPr")
                     Loss("table-property", property.Name.LocalName, "Table grid and direct cell formatting retained.", property);
-            if (tblPr?.Element(W + "tblW") is { } tableWidth && (string?)tableWidth.Attribute(W + "type") is not (null or "auto") && Dimension(tableWidth, W + "w") != 0)
-                Loss("table-width", "Fixed or percentage table width", "Relative column proportions retained; table fills available width.", tableWidth);
             var vertical = new Dictionary<int, (int Row, int Column, int Span)>();
             for (var r = 0; r < rows.Length; r++)
             {
@@ -503,15 +502,10 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                     var properties = cell.Element(W + "tcPr");
                     foreach (var property in properties?.Elements() ?? [])
                         if (property.Name != W + "tcW" && property.Name != W + "gridSpan" && property.Name != W + "vMerge" && property.Name != W + "hMerge" &&
-                            property.Name != W + "shd" && property.Name != W + "tcMar" && property.Name != W + "tcBorders")
+                            property.Name != W + "shd" && property.Name != W + "tcMar" && property.Name != W + "tcBorders" && property.Name != W + "vAlign" && property.Name != W + "textDirection")
                             Loss("cell-property", property.Name.LocalName, "Cell content, sizing, and supported direct formatting retained.", property);
                     var span = Number(properties?.Element(W + "gridSpan"), 1);
                     if (span is < 1 or > 100 || column > columns - span) throw new FormatException("Invalid DOCX grid span.");
-                    var width = properties?.Element(W + "tcW");
-                    if (width is not null && (string?)width.Attribute(W + "type") != "auto" && Dimension(width, W + "w") != 0 &&
-                        ((string?)width.Attribute(W + "type") is not (null or "dxa") || grid.Length != columns ||
-                        Math.Abs(Dimension(width, W + "w") - grid.Skip(column).Take(span).Sum(c => Dimension(c, W + "w"))) > .000001))
-                        Loss("cell-width", "Cell width inconsistent with the shared grid", "Table grid proportions retained.", width);
                     var merge = properties?.Element(W + "vMerge");
                     if (merge is not null && Value(merge) != "restart")
                     {
@@ -525,15 +519,14 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                     {
                         var blocks = ReadBlocks(cell.Elements(), depth + 1).ToImmutableArray();
                         var borders = ReadBorders(properties?.Element(W + "tcBorders"));
-                        if (borders is null && tblPr?.Element(W + "tblBorders") is { } tableBorders)
-                            borders = new BlockBorders(ReadBorder(tableBorders.Element(W + (column == 0 ? "left" : "insideV"))),
-                                ReadBorder(tableBorders.Element(W + (r == 0 ? "top" : "insideH"))), ReadBorder(tableBorders.Element(W + (column + span == columns ? "right" : "insideV"))),
-                                ReadBorder(tableBorders.Element(W + (r == rows.Length - 1 ? "bottom" : "insideH"))));
                         table = table.SetCell(r, column, new TableCell
                         {
                             Blocks = blocks.IsEmpty ? [new Paragraph()] : blocks, ColumnSpan = span,
                             Background = ReadColor((string?)properties?.Element(W + "shd")?.Attribute(W + "fill")),
-                            Padding = ReadPadding(properties?.Element(W + "tcMar")) ?? tablePadding, Borders = borders
+                            Padding = ReadPadding(properties?.Element(W + "tcMar")) ?? tablePadding, Borders = borders,
+                            PreferredWidth = ReadPreferredWidth(properties?.Element(W + "tcW")), VerticalAlignment = ReadCellVerticalAlignment(properties),
+                            TextDirection = ReadCellTextDirection(properties),
+                            StyleOverrides = Value(properties?.Element(W + "vAlign")) == "top" ? new() { VerticalAlignment = TableCellVerticalAlignment.Top } : null
                         });
                         if (merge is not null) nextVertical[column] = (r, column, span);
                     }
@@ -755,7 +748,21 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         if (text.Length > 100 || prefix.Length > 100 || suffix.Length > 100) throw new FormatException("DOCX list marker exceeds model limits.");
         if (level.Element(W + "lvlRestart") is { } restart && Number(restart) != index) Loss("numbering-restart-rule", "Custom numbering restart rule", "Deeper levels restart after their parent changes.", restart);
         return new() { Kind = marker == ListMarkerStyle.Bullet ? ListKind.Bullet : ListKind.Numbered, Marker = marker, Text = marker == ListMarkerStyle.Bullet ? text : null,
-            Start = start, Prefix = prefix, Suffix = suffix, IncludeAncestors = index > 0 && pattern == ancestors };
+            Start = start, Prefix = prefix, Suffix = suffix, IncludeAncestors = index > 0 && pattern == ancestors,
+            MarkerFormatting = ReadTextOverrides(level.Element(W + "rPr")),
+            CharacterStyleId = Value(level.Element(W + "rPr")?.Element(W + "rStyle")),
+            ParagraphStyleId = Value(level.Element(W + "pStyle")),
+            TextIndent = ListDimension(level.Element(W + "pPr")?.Element(W + "ind"), "left"),
+            MarkerIndent = ListMarkerIndent(level.Element(W + "pPr")?.Element(W + "ind")),
+            TabPosition = ListDimension(level.Element(W + "pPr")?.Element(W + "tabs")?.Elements(W + "tab").FirstOrDefault(e => (string?)e.Attribute(W + "val") == "num"), "pos"),
+            FollowCharacter = Value(level.Element(W + "suff")) switch { "space" => ListFollowCharacter.Space, "nothing" => ListFollowCharacter.Nothing, _ => ListFollowCharacter.Tab } };
+        static double? ListDimension(XElement? element, string name) => element?.Attribute(W + name) is { } attribute
+            ? double.Parse(attribute.Value, CultureInfo.InvariantCulture) / 15 : null;
+        static double? ListMarkerIndent(XElement? indent)
+        {
+            var left = ListDimension(indent, "left");
+            return left is null ? null : Math.Max(0, left.Value - (ListDimension(indent, "hanging") ?? 0) + (ListDimension(indent, "firstLine") ?? 0));
+        }
     }
     private static string? Value(XElement? element) => (string?)element?.Attribute(W + "val");
     private static int Number(XElement? element, int fallback = 0) => Value(element) is not { } value ? fallback :
@@ -799,9 +806,10 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
     {
         if (property is null) return null;
         var type = Value(property);
-        if (type is "nil" or "none") return new();
-        if (type is not ("single" or null)) Loss("border-style", "Non-solid border", "Solid border retained.", property);
-        return new(Bounded(Dimension(property, W + "sz", 4) / 6, 0, 1000, property), ReadColor((string?)property.Attribute(W + "color")));
+        if (type is "nil" or "none") return new() { Kind = BorderKind.None };
+        if (type is not ("single" or "dashed" or "dotted" or "double" or null)) Loss("border-style", "Unsupported border style: " + type, "Solid border retained.", property);
+        return new(Bounded(Dimension(property, W + "sz", 4) / 6, 0, 1000, property), ReadColor((string?)property.Attribute(W + "color")))
+        { Kind = type switch { "dashed" => BorderKind.Dashed, "dotted" => BorderKind.Dotted, "double" => BorderKind.Double, _ => BorderKind.Solid } };
     }
     private static BlockBorders? ReadBorders(XElement? properties) => properties is null ? null : new(ReadBorder(properties.Element(W + "left")), ReadBorder(properties.Element(W + "top")), ReadBorder(properties.Element(W + "right")), ReadBorder(properties.Element(W + "bottom")));
     private static TextStyle ReadTextStyle(XElement? properties, TextStyle style)
@@ -982,10 +990,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         return (int)rounded;
     }
     private static XElement WriteBorders(BlockBorders borders, Guid id) => new(W + "tcBorders",
-        new[] { ("top", borders.Top), ("left", borders.Left), ("bottom", borders.Bottom), ("right", borders.Right) }.Select(s =>
-            new XElement(W + s.Item1, new XAttribute(W + "val", s.Item2?.Width > 0 ? "single" : "nil"),
-                s.Item2?.Width > 0 ? new XAttribute(W + "sz", BorderUnits(s.Item2.Width, id)) : null,
-                s.Item2?.Color is { } color ? new XAttribute(W + "color", Color(color, id)) : null)));
+        new[] { ("top", borders.Top), ("left", borders.Left), ("bottom", borders.Bottom), ("right", borders.Right) }.Select(s => WriteBorder(s.Item1, s.Item2, id)));
     private static byte[] Write(FlowDocument document, CancellationToken token)
     {
         document = MapStyleIdentifiers(document);
@@ -1039,7 +1044,16 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                             var text = marker == ListMarkerStyle.Bullet ? format.Text ?? "â€¢" : format.Prefix +
                                 (format.IncludeAncestors ? string.Join(".", Enumerable.Range(1, level + 1).Select(i => $"%{i}")) : $"%{level + 1}") + format.Suffix;
                             return new XElement(W + "lvl", new XAttribute(W + "ilvl", level), Val("start", format.Start),
-                                Val("numFmt", marker switch { ListMarkerStyle.Bullet => "bullet", ListMarkerStyle.LowerLetter => "lowerLetter", ListMarkerStyle.UpperLetter => "upperLetter", ListMarkerStyle.LowerRoman => "lowerRoman", ListMarkerStyle.UpperRoman => "upperRoman", _ => "decimal" }), Val("lvlText", text));
+                                Val("numFmt", marker switch { ListMarkerStyle.Bullet => "bullet", ListMarkerStyle.LowerLetter => "lowerLetter", ListMarkerStyle.UpperLetter => "upperLetter", ListMarkerStyle.LowerRoman => "lowerRoman", ListMarkerStyle.UpperRoman => "upperRoman", _ => "decimal" }),
+                                format.ParagraphStyleId is { } linked ? Val("pStyle", linked) : null,
+                                Val("suff", format.FollowCharacter switch { ListFollowCharacter.Space => "space", ListFollowCharacter.Nothing => "nothing", _ => "tab" }), Val("lvlText", text),
+                                new XElement(W + "pPr",
+                                    format.TextIndent is not null || format.MarkerIndent is not null ? new XElement(W + "ind",
+                                        new XAttribute(W + "left", Twips(format.TextIndent ?? 28 + level * 24)),
+                                        new XAttribute(W + ((format.TextIndent ?? 28 + level * 24) >= (format.MarkerIndent ?? 4 + level * 24) ? "hanging" : "firstLine"),
+                                            Twips(Math.Abs((format.TextIndent ?? 28 + level * 24) - (format.MarkerIndent ?? 4 + level * 24))))) : null,
+                                    format.TabPosition is { } tab ? new XElement(W + "tabs", new XElement(W + "tab", new XAttribute(W + "val", "num"), new XAttribute(W + "pos", Twips(tab)))) : null),
+                                WriteTextStyle(TextStyle.ForStyle(format.CharacterStyleId) with { Overrides = format.MarkerFormatting }, paragraph.Id));
                         })));
                     current = (abstractId, 0, definition, ps.List);
                 }
@@ -1091,6 +1105,18 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 var inheritedTabs = paragraph.Style.Overrides?.TabStops.IsSet == true ? resolver.ResolveParagraphStyle(paragraph.Style with { Overrides = paragraph.Style.Overrides with { TabStops = default } }).TabStops : [];
                 var pp = WriteParagraphProperties(paragraph.Style, paragraph.Id, inheritedTabs, document.Defaults.Paragraph.DefaultTabWidth > 0 ? document.Defaults.Paragraph.DefaultTabWidth : 48);
                 if (ps.List != ListKind.None && (paragraph.Style.Overrides is null || paragraph.Style.Overrides.List.IsSet || paragraph.Style.Overrides.ListId.IsSet || paragraph.Style.Overrides.ListLevel.IsSet)) pp.Add(new XElement(W + "numPr", Val("ilvl", ps.ListLevel), Val("numId", NumberFor(paragraph with { Style = ps }, anonymousIdentity))));
+                if (ps.List != ListKind.None)
+                {
+                    var definition = ps.ListDefinition ?? identities.GetValueOrDefault(ps.ListId ?? anonymousIdentity).Definition;
+                    var level = definition?.Level(ps.ListLevel, ps.List);
+                    if (level is not null && (level.TextIndent is not null || level.MarkerIndent is not null || level.TabPosition is not null))
+                    {
+                        if (ps.Indent == 0 && ps.FirstLineIndent == 0)
+                            pp.Element(W + "ind")?.Attributes().Where(a => a.Name == W + "left" || a.Name == W + "hanging" || a.Name == W + "firstLine").Remove();
+                        else Loss("numbering-paragraph-indent", "Combined direct paragraph and list-level indentation",
+                            "Retained both properties; Word gives direct paragraph indentation precedence instead of adding the list indentation.", id: paragraph.Id);
+                    }
+                }
                 if (ps.List == ListKind.None && paragraph.Style.Overrides?.List.IsSet == true) pp.Add(new XElement(W + "numPr", Val("numId", 0)));
                 pp.Add(WriteTextStyle(paragraph.DefaultStyle, paragraph.Id, ps.LetterSpacing));
                 var p = new XElement(W + "p", pp);
@@ -1151,22 +1177,35 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                     else if (block is Table table)
                     {
                         var widths = table.ColumnWidths.IsEmpty ? Enumerable.Repeat(600d / table.ColumnCount, table.ColumnCount).ToArray() : table.ColumnWidths.ToArray();
-                        var scale = 9000d / widths.Sum(); var gridWidths = widths.Select(width => Math.Max(1, (int)Math.Round(width * scale))).ToArray();
-                        if (widths.Select((width, i) => Math.Abs(width * scale - gridWidths[i])).Any(delta => delta > .000001)) Loss("dimension-precision", "Relative column width precision", "Column proportions rounded to a 9000-twip grid.", id: table.Id);
-                        var t = new XElement(W + "tbl", new XElement(W + "tblPr", table.StyleId is { } tableStyle ? Val("tblStyle", tableStyle) : null, new XElement(W + "tblW", new XAttribute(W + "w", 0), new XAttribute(W + "type", "auto"))),
+                        var gridExtent = table.PreferredWidth.Unit == TableWidthUnit.Absolute ? table.PreferredWidth.Value * 15 : 9000d;
+                        var scale = gridExtent / widths.Sum(); var gridWidths = widths.Select(width => Math.Max(1, (int)Math.Round(width * scale))).ToArray();
+                        if (widths.Select((width, i) => Math.Abs(width * scale - gridWidths[i])).Any(delta => delta > .000001)) Loss("dimension-precision", "Relative column width precision", "Column proportions rounded to the exported twip grid.", id: table.Id);
+                        var t = new XElement(W + "tbl", new XElement(W + "tblPr", table.StyleId is { } tableStyle ? Val("tblStyle", tableStyle) : null, WritePreferredWidth("tblW", table.PreferredWidth, table.Id)),
                             new XElement(W + "tblGrid", gridWidths.Select(width => new XElement(W + "gridCol", new XAttribute(W + "w", width)))));
                         if (table.StyleOverrides is { } tableOverrides) t.Element(W + "tblPr")!.Add(WriteTableStyle(tableOverrides).Elements());
+                        WriteTableProperties(t.Element(W + "tblPr")!, table);
+                        var flattenCellFormatting = table.StyleOverrides is { } directTable &&
+                            (directTable.Borders.IsSet || directTable.VerticalAlignment.IsSet || directTable.TextDirection.IsSet);
+                        if (flattenCellFormatting) Loss("table-cell-formatting", "Table-wide cell formatting overrides", "Effective cell formatting retained as direct cell properties.", id: table.Id);
+                        var tableResolver = new DocumentStyleResolver(document);
                         for (var row = 0; row < table.Rows.Length; row++)
                         {
                             var tr = new XElement(W + "tr");
-                            if (!table.RowSizing.IsEmpty && table.RowSizing[row] is { Mode: not TableRowHeightMode.Auto } sizing)
-                                tr.Add(new XElement(W + "trPr", new XElement(W + "trHeight", new XAttribute(W + "val", Twips(sizing.Height)), new XAttribute(W + "hRule", sizing.Mode == TableRowHeightMode.Exact ? "exact" : "atLeast"))));
+                            var sizing = table.RowSizing.IsEmpty ? new TableRowSizing() : table.RowSizing[row];
+                            tr.Add(new XElement(W + "trPr", row < table.RepeatHeaderRows ? new XElement(W + "tblHeader") : null,
+                                !sizing.AllowSplit ? new XElement(W + "cantSplit") : null,
+                                sizing.Mode != TableRowHeightMode.Auto ? new XElement(W + "trHeight", new XAttribute(W + "val", Twips(sizing.Height)), new XAttribute(W + "hRule", sizing.Mode == TableRowHeightMode.Exact ? "exact" : "atLeast")) : null));
                             for (var col = 0; col < table.ColumnCount; col++)
                             {
                                 var owner = table.OwnerOf(row, col); if (owner.Column != col) continue;
                                 var cell = table.Rows[owner.Row][owner.Column]; var continuation = owner.Row != row;
+                                var explicitVerticalAlignment = cell.StyleOverrides?.VerticalAlignment.IsSet == true || table.StyleOverrides?.VerticalAlignment.IsSet == true;
+                                ReportCellFormattingLosses(cell);
+                                if (flattenCellFormatting || cell.StyleOverrides is not null)
+                                    cell = tableResolver.ResolveTableCell(table, owner.Row, owner.Column);
                                 var tc = new XElement(W + "tc", new XElement(W + "tcPr",
-                                    new XElement(W + "tcW", new XAttribute(W + "w", gridWidths.Skip(col).Take(cell.ColumnSpan).Sum()), new XAttribute(W + "type", "dxa")),
+                                    WritePreferredWidth("tcW", cell.PreferredWidth, cell.Id),
+                                    cell.VerticalAlignment != TableCellVerticalAlignment.Top || explicitVerticalAlignment ? Val("vAlign", cell.VerticalAlignment switch { TableCellVerticalAlignment.Center => "center", TableCellVerticalAlignment.Bottom => "bottom", _ => "top" }) : null,
                                     cell.ColumnSpan > 1 ? Val("gridSpan", cell.ColumnSpan) : null, cell.RowSpan > 1 ? Val("vMerge", continuation ? "continue" : "restart") : null,
                                     cell.Borders is not null ? WriteBorders(cell.Borders, cell.Id) : null,
                                     cell.Background is not null ? new XElement(W + "shd", new XAttribute(W + "val", "clear"), new XAttribute(W + "fill", Color(cell.Background, cell.Id))) : null,

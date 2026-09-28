@@ -70,6 +70,8 @@ internal sealed class DocumentNode(object? source, StorageTree<OrderKey, Documen
         if (Source is TableCell { Background: { } background }) visit(background);
         if (Source is TableCell styledCell)
         {
+            visit(styledCell.PreferredWidth);
+            if (styledCell.StyleOverrides is not null) visit(styledCell.StyleOverrides);
             if (styledCell.Borders is not null) visit(styledCell.Borders);
             if (styledCell.Padding is not null) visit(styledCell.Padding);
         }
@@ -81,6 +83,8 @@ internal sealed class DocumentNode(object? source, StorageTree<OrderKey, Documen
     }
     internal static void VisitTableSizing(Table table, Action<object> visit)
     {
+        visit(table.PreferredWidth);
+        if (table.Position is not null) visit(table.Position);
         if (table.StyleId is not null) visit(table.StyleId);
         if (table.StyleOverrides is not null) visit(table.StyleOverrides);
         if (!table.ColumnWidths.IsDefaultOrEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(table.ColumnWidths)!);
