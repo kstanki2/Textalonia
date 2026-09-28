@@ -36,11 +36,15 @@ public sealed record InlineImageOptions
     public int MaximumDimension { get; init; } = 8192;
     public int MaximumCacheEntries { get; init; } = 32;
     public int MaximumConcurrentLoads { get; init; } = 2;
+    public int MaximumVectorElements { get; init; } = 4096;
+    public int MaximumVectorDepth { get; init; } = 32;
+    public int MaximumVectorPathCharacters { get; init; } = 65536;
 
     internal void Validate()
     {
         if (MaximumEncodedBytes < 1 || MaximumDecodedPixels < 1 || MaximumDimension < 1 ||
-            MaximumCacheEntries < 1 || MaximumConcurrentLoads < 1)
+            MaximumCacheEntries < 1 || MaximumConcurrentLoads < 1 || MaximumVectorElements < 1 ||
+            MaximumVectorDepth < 1 || MaximumVectorPathCharacters < 1)
             throw new ArgumentOutOfRangeException(nameof(InlineImageOptions), "Image limits must be positive.");
     }
 }
@@ -161,10 +165,7 @@ public sealed class InlineImageCache : IDisposable
             {
                 using var encoded = await ReadBoundedAsync(stream, token).ConfigureAwait(false);
                 token.ThrowIfCancellationRequested();
-                var (width, height) = ImageDimensions.Read(encoded.GetBuffer().AsSpan(0, checked((int)encoded.Length)));
-                CheckDimensions(width, height);
-                bitmap = new Bitmap(encoded);
-                CheckDimensions(bitmap.PixelSize.Width, bitmap.PixelSize.Height);
+                bitmap = BoundedImageDecoder.Decode(encoded.GetBuffer().AsMemory(0, checked((int)encoded.Length)), entry.Resource?.MediaType, _options);
                 token.ThrowIfCancellationRequested();
             }
         }
@@ -207,13 +208,6 @@ public sealed class InlineImageCache : IDisposable
             }
         }
         Changed?.Invoke(this, EventArgs.Empty);
-    }
-
-    private void CheckDimensions(int width, int height)
-    {
-        if (width < 1 || height < 1 || width > _options.MaximumDimension || height > _options.MaximumDimension ||
-            (long)width * height > _options.MaximumDecodedPixels)
-            throw new InvalidDataException("The decoded image exceeds its dimension or pixel limit.");
     }
 
     private async Task<MemoryStream> ReadBoundedAsync(Stream stream, CancellationToken token)
@@ -287,7 +281,38 @@ internal static class ImageDimensions
                 position += length;
             }
         }
-        throw new InvalidDataException("Unsupported or malformed image header. Use PNG, JPEG, GIF, BMP or WebP.");
+        if (bytes.Length >= 6 && bytes[..4].SequenceEqual(new byte[] { 0, 0, 1, 0 }))
+        {
+            var count = BinaryPrimitives.ReadUInt16LittleEndian(bytes[4..]);
+            if (count == 0 || count > (bytes.Length - 6) / 16) throw new InvalidDataException("Malformed ICO directory.");
+            var width = 0;
+            var height = 0;
+            for (var index = 0; index < count; index++)
+            {
+                var entry = bytes[(6 + index * 16)..];
+                width = Math.Max(width, entry[0] == 0 ? 256 : entry[0]);
+                height = Math.Max(height, entry[1] == 0 ? 256 : entry[1]);
+                var length = BinaryPrimitives.ReadUInt32LittleEndian(entry[8..]);
+                var offset = BinaryPrimitives.ReadUInt32LittleEndian(entry[12..]);
+                if (offset < 6 + count * 16 || length == 0 || offset > bytes.Length || length > bytes.Length - offset)
+                    throw new InvalidDataException("Malformed ICO image offset.");
+                var frame = bytes.Slice((int)offset, (int)length);
+                if (frame.Length >= 24 && frame[..8].SequenceEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }))
+                {
+                    var dimensions = Read(frame);
+                    // ICO directory dimensions must describe the payload; do not let a small
+                    // directory entry bypass the native decoder's allocation preflight.
+                    if (dimensions.Width != (entry[0] == 0 ? 256 : entry[0]) || dimensions.Height != (entry[1] == 0 ? 256 : entry[1]))
+                        throw new InvalidDataException("ICO frame dimensions differ from its directory.");
+                }
+                else if (frame.Length < 40 || BinaryPrimitives.ReadUInt32LittleEndian(frame) != 40 ||
+                    BinaryPrimitives.ReadInt32LittleEndian(frame[4..]) != (entry[0] == 0 ? 256 : entry[0]) ||
+                    BinaryPrimitives.ReadInt32LittleEndian(frame[8..]) != 2 * (entry[1] == 0 ? 256 : entry[1]))
+                    throw new InvalidDataException("Unsupported or malformed ICO bitmap frame.");
+            }
+            return (width, height);
+        }
+        throw new InvalidDataException("Unsupported or malformed image header. Use PNG, JPEG, GIF, BMP, WebP, ICO or supported SVG. EMF/WMF originals require a supplied preview or host conversion.");
     }
 
     private static int ReadBig(ReadOnlySpan<byte> bytes) => checked((int)BinaryPrimitives.ReadUInt32BigEndian(bytes));

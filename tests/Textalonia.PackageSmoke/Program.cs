@@ -45,7 +45,7 @@ internal static class Program
         if (saved.Report.HasLoss || loaded.Report.HasLoss || DocumentFormats.Json.Serialize(loaded.Document) != DocumentFormats.Json.Serialize(document))
             throw new InvalidOperationException("Packaged strict native conversion failed.");
         var envelope = System.Text.Json.Nodes.JsonNode.Parse(DocumentFormats.Json.Serialize(document))!;
-        foreach (var version in new[] { 1, 2, 3, 10 })
+        foreach (var version in new[] { 1, 2, 3, 11 })
         {
             envelope["version"] = version;
             try
@@ -96,6 +96,7 @@ internal static class Program
 
     public static void Main()
     {
+        ImageExample.Verify();
         VerifyInterchange();
         VerifyIntegrationCodecs();
         var fieldSession = new Textalonia.Editing.EditorSession(FlowDocument.FromText("cached"));
@@ -222,7 +223,7 @@ internal static class Program
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
                 await StoryExample.VerifyAsync(editor, window);
                 await ExtensionExamples.VerifyAsync(window);
-                Console.WriteLine("Package consumer passed: general fields/bookmarks, custom codecs/resources/input/viewer lifecycle, compiled XAML, themes, input, formatting, native v9, DX-06 table/list formatting and repeated headers, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, editable header/note stories, DOCX stories, page regions, and rendering.");
+                Console.WriteLine("Package consumer passed: general fields/bookmarks, custom codecs/resources/input/viewer lifecycle, compiled XAML, themes, input, formatting, native v10, DX-07 image/watermark/OLE round trips, DX-06 table/list formatting and repeated headers, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, editable header/note stories, DOCX stories, page regions, and rendering.");
             }
             finally { window.Close(); }
             return true;

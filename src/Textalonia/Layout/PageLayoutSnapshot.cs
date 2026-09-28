@@ -63,6 +63,7 @@ public sealed partial class PageLayoutSnapshot : IDisposable
     private readonly ImmutableArray<ExactParagraph> _measurements;
     private readonly ImmutableArray<BlockDecoration> _decorations;
     private readonly ImmutableArray<TableCellVisual> _cells;
+    private readonly ImmutableArray<InlineVisual> _positionedImages;
     private readonly FontFamily _font;
     private readonly IBrush _foreground;
     private readonly DocumentIndex _index;
@@ -83,8 +84,9 @@ public sealed partial class PageLayoutSnapshot : IDisposable
         IReadOnlyList<DocumentFontDiagnostic> diagnostics,
         ImmutableArray<LineFragment> storyFragments = default, ImmutableArray<StoryRegion> storyRegions = default,
         ImmutableArray<(Guid StoryId, int Page, TableCellVisual Cell)> storyCells = default,
-        ImmutableArray<string> layoutDiagnostics = default)
+        ImmutableArray<string> layoutDiagnostics = default, ImmutableArray<InlineVisual> positionedImages = default)
     {
+        _positionedImages = positionedImages.IsDefault ? [] : positionedImages;
         Document = document; _index = new(document); Pages = pages; Fragments = fragments;
         _decorations = decorations; _cells = cells; _font = font; _foreground = foreground;
         StoryFragments = storyFragments.IsDefault ? [] : storyFragments;
@@ -99,7 +101,7 @@ public sealed partial class PageLayoutSnapshot : IDisposable
     }
 
     public void Draw(DrawingContext context, Rect? viewport = null)
-    { DrawBackgrounds(context, viewport); DrawContent(context, viewport); }
+    { DrawBackgrounds(context, viewport); DrawWatermarks(context, viewport); DrawContent(context, viewport); }
 
     public void DrawBackgrounds(DrawingContext context, Rect? viewport = null)
     {
@@ -240,6 +242,7 @@ public sealed partial class PageLayoutSnapshot : IDisposable
     internal IEnumerable<InlineVisual> InlineVisuals()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        foreach (var visual in _positionedImages) yield return visual;
         foreach (var fragment in Fragments.Concat(StoryFragments))
         {
             if (!fragment.Position.Paragraph.Runs.Any(r => r.Inline is not null)) continue;
@@ -247,7 +250,7 @@ public sealed partial class PageLayoutSnapshot : IDisposable
             var line = lease.Layout.TextLines[fragment.Line.Index];
             foreach (var bounds in line.GetTextBounds(line.FirstTextSourceIndex, line.Length))
                 foreach (var run in bounds.TextRunBounds)
-                    if (run.TextRun is InlineObjectRun inline)
+                    if (run.TextRun is InlineObjectRun inline && inline.Size.Width > 0 && inline.Size.Height > 0)
                     {
                         // Avalonia's native line aligns superscript/subscript at the line's top/bottom;
                         // our typography line additionally includes its measured rise and run offset.

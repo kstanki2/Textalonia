@@ -1,7 +1,7 @@
-# Document semantics and schema v9
+# Document semantics and schema v10
 
 The document model is independent of Avalonia controls. Native JSON reads and
-writes schema version 9. Versions 4, 5, 6, 7 and 8 remain readable; version 4 migrates concrete styles as
+writes schema version 10. Versions 4, 5, 6, 7, 8 and 9 remain readable; version 4 migrates concrete styles as
 explicit direct formatting. Versions 1-3 were unused development formats and have no migration support. See [integration semantics](INTEGRATIONS.md)
 for quote/code metadata and [inline content](INLINE-CONTENT.md) for descriptors,
 resources and the coordinate/export contract. The version is checked before
@@ -154,3 +154,6 @@ references, section header/footer linkage and note settings. Main-body accessors
 remain unchanged; session editing addresses `ActiveStoryId`/`ActiveDocument` with
 one full-document undo stack. See [STORIES.md](STORIES.md) for selection, identity,
 clipboard, resource ownership, layout and serialization contracts.
+
+See [pictures, watermarks and embedded objects](IMAGES.md) for DX-07 placement,
+preview resources, section background ownership and editing contracts.

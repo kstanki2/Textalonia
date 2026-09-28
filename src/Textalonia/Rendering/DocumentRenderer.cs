@@ -61,6 +61,7 @@ public sealed class DocumentRenderer : IDisposable
 {
     private readonly bool _ownsSnapshot;
     private readonly Dictionary<Guid, IInlinePrintRepresentation> _representations = [];
+    private readonly Dictionary<string, IInlinePrintRepresentation> _watermarkImages = new(StringComparer.Ordinal);
     private bool _disposed;
     public PageLayoutSnapshot Snapshot { get; }
     public int PageCount => Snapshot.Pages.Length;
@@ -88,54 +89,51 @@ public sealed class DocumentRenderer : IDisposable
             foreach (var visual in snapshot.InlineVisuals().DistinctBy(v => v.Descriptor.Id))
             {
                 var descriptor = visual.Descriptor;
-                if (descriptor.Payload is not (ImageInlinePayload or ControlInlinePayload)) continue;
+                if (descriptor.Payload is not (ImageInlinePayload or OleInlinePayload or ControlInlinePayload)) continue;
                 var representation = options.InlineProvider?.TryCreateRepresentation(snapshot.Document, descriptor);
-                if (representation is null && descriptor.Payload is ImageInlinePayload image &&
-                    snapshot.Document.Resources.TryGetValue(image.ResourceId, out var resource) && resource.Kind == DocumentResourceKind.Embedded)
-                {
-                    try
-                    {
-                        if (embeddedImages.TryGetValue(image.ResourceId, out var shared))
-                        {
-                            _representations.Add(descriptor.Id, shared);
-                            continue;
-                        }
-                        if (resource.Data.Length > options.ImageLimits.MaximumEncodedBytes)
-                            throw new InvalidDataException("Encoded image exceeds the output byte limit.");
-                        var (width, height) = ImageDimensions.Read(resource.Data.AsSpan());
-                        CheckSize(width, height);
-                        using var stream = new MemoryStream(resource.Data.ToArray(), false);
-                        var bitmap = new Bitmap(stream);
-                        try { CheckSize(bitmap.PixelSize.Width, bitmap.PixelSize.Height); }
-                        catch { bitmap.Dispose(); throw; }
-                        decodedPixels += (long)bitmap.PixelSize.Width * bitmap.PixelSize.Height;
-                        representation = new BitmapRepresentation(bitmap);
-                        embeddedImages.Add(image.ResourceId, representation);
-                    }
-                    catch (Exception error) when (error is ArgumentException or InvalidDataException or NotSupportedException or InvalidOperationException)
-                    { diagnostics.Add(new("output.image.unavailable", "Image cannot be printed: " + error.Message, visual.PageIndex)); }
-                }
+                if (representation is null && ImageDrawing.ResourceId(descriptor) is { } resourceId)
+                    representation = Decode(resourceId, visual.PageIndex);
                 if (representation is not null) _representations.Add(descriptor.Id, representation);
                 else diagnostics.Add(new(descriptor.Payload is ControlInlinePayload ? "output.control.unsupported" : "output.image.unsupported",
                     "No print representation is available for inline '" + descriptor.AltText + "' (" + descriptor.Id + ").", visual.PageIndex));
             }
+            foreach (var visual in snapshot.Watermarks())
+                if (visual.Watermark.ResourceId is { } resourceId && !_watermarkImages.ContainsKey(resourceId))
+                {
+                    if (Decode(resourceId, visual.Page.Index) is { } representation) _watermarkImages.Add(resourceId, representation);
+                    else diagnostics.Add(new("output.watermark.unsupported", "No print representation is available for watermark '" + resourceId + "'.", visual.Page.Index));
+                }
             Diagnostics = diagnostics.ToImmutable();
             if (snapshot.IsDraft || options.UnsupportedContent == UnsupportedContentPolicy.Strict && !Diagnostics.IsEmpty)
                 throw new PagedOutputException(Diagnostics);
         }
         catch
         {
-            foreach (var representation in _representations.Values.Distinct<IInlinePrintRepresentation>(ReferenceEqualityComparer.Instance)) representation.Dispose();
-            _representations.Clear();
+            foreach (var representation in _representations.Values.Concat(_watermarkImages.Values).Distinct<IInlinePrintRepresentation>(ReferenceEqualityComparer.Instance)) representation.Dispose();
+            _representations.Clear(); _watermarkImages.Clear();
             // Ownership transfers only after successful construction.
             throw;
         }
 
-        void CheckSize(int width, int height)
+        IInlinePrintRepresentation? Decode(string resourceId, int pageIndex)
         {
-            if (width < 1 || height < 1 || width > options.ImageLimits.MaximumDimension || height > options.ImageLimits.MaximumDimension ||
-                (long)width * height > options.ImageLimits.MaximumDecodedPixels - decodedPixels)
-                throw new InvalidDataException("Decoded images exceed the output pixel limit.");
+            if (embeddedImages.TryGetValue(resourceId, out var shared)) return shared;
+            if (!snapshot.Document.Resources.TryGetValue(resourceId, out var resource) || resource.Kind != DocumentResourceKind.Embedded) return null;
+            try
+            {
+                var limits = options.ImageLimits with { MaximumDecodedPixels = options.ImageLimits.MaximumDecodedPixels - decodedPixels };
+                if (limits.MaximumDecodedPixels < 1) throw new InvalidDataException("Decoded images exceed the output pixel limit.");
+                var bitmap = BoundedImageDecoder.Decode(resource.Data.ToArray(), resource.MediaType, limits);
+                decodedPixels += (long)bitmap.PixelSize.Width * bitmap.PixelSize.Height;
+                var representation = new BitmapRepresentation(bitmap);
+                embeddedImages.Add(resourceId, representation);
+                return representation;
+            }
+            catch (Exception error) when (error is ArgumentException or InvalidDataException or NotSupportedException or InvalidOperationException or System.Xml.XmlException or FormatException)
+            {
+                diagnostics.Add(new("output.image.unavailable", "Image cannot be printed: " + error.Message, pageIndex));
+                return null;
+            }
         }
     }
 
@@ -155,13 +153,31 @@ public sealed class DocumentRenderer : IDisposable
         using var transform = context.PushTransform(Matrix.CreateTranslation(-page.Bounds.X, -page.Bounds.Y));
         using var scope = new InlineOutputScope((descriptor, _, _) => _representations.ContainsKey(descriptor.Id));
         Snapshot.DrawBackgrounds(context, page.Bounds);
+        Snapshot.DrawWatermarks(context, page.Bounds, (drawing, resourceId, bounds) =>
+        {
+            if (_watermarkImages.TryGetValue(resourceId, out var representation)) representation.Draw(drawing, bounds);
+        }, textRenderer);
+        DrawImages(true);
         Snapshot.DrawContentForOutput(context, page.Bounds, textRenderer);
-        foreach (var visual in Snapshot.InlineVisuals().Where(v => v.PageIndex == pageIndex))
-            if (_representations.TryGetValue(visual.Descriptor.Id, out var representation))
-            {
-                using var clip = context.PushClip((visual.Clip ?? page.Bounds).Intersect(page.Bounds));
-                representation.Draw(context, visual.Bounds);
-            }
+        DrawImages(false);
+        void DrawImages(bool behindText)
+        {
+            foreach (var visual in Snapshot.InlineVisuals().Where(v => v.PageIndex == pageIndex && (v.IsPositioned && ImageDrawing.BehindText(v.Descriptor)) == behindText))
+                if (_representations.TryGetValue(visual.Descriptor.Id, out var representation))
+                {
+                    using var clip = context.PushClip((visual.Clip ?? page.Bounds).Intersect(page.Bounds));
+                    if (representation is BitmapRepresentation bitmap) bitmap.DrawImage(context, visual.Bounds, visual.Descriptor.Placement);
+                    else
+                    {
+                        ImageDrawing.DrawRepresentation(context, representation, visual.Bounds, visual.Descriptor.Placement);
+                    }
+                }
+                else if (visual.IsPositioned)
+                {
+                    using var clip = context.PushClip((visual.Clip ?? page.Bounds).Intersect(page.Bounds));
+                    ImageDrawing.DrawPlaceholder(context, visual.Descriptor, visual.Bounds);
+                }
+        }
     }
 
     public ImmutableArray<PageLink> GetLinks(int pageIndex)
@@ -217,14 +233,15 @@ public sealed class DocumentRenderer : IDisposable
         if (_disposed) return;
         Dispatcher.UIThread.VerifyAccess();
         _disposed = true;
-        foreach (var representation in _representations.Values.Distinct<IInlinePrintRepresentation>(ReferenceEqualityComparer.Instance)) representation.Dispose();
-        _representations.Clear();
+        foreach (var representation in _representations.Values.Concat(_watermarkImages.Values).Distinct<IInlinePrintRepresentation>(ReferenceEqualityComparer.Instance)) representation.Dispose();
+        _representations.Clear(); _watermarkImages.Clear();
         if (_ownsSnapshot) Snapshot.Dispose();
     }
 
     private sealed class BitmapRepresentation(Bitmap bitmap) : IInlinePrintRepresentation
     {
         public void Draw(DrawingContext context, Rect bounds) => context.DrawImage(bitmap, new Rect(bitmap.Size), bounds);
+        public void DrawImage(DrawingContext context, Rect bounds, ImagePlacement? placement) => ImageDrawing.Draw(context, bitmap, bounds, placement);
         public void Dispose() => bitmap.Dispose();
     }
 }

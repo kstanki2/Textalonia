@@ -2,6 +2,8 @@
 
 ## 0.1.0-preview.1
 
+- Added DX-07 image placement/crop/rotation and wrapping, section text/image watermarks, bounded image decoding, OLE package/preview APIs and picture editing UI. Native v10, XAML v5 and clipboard v6 retain the model; DOCX maps supported objects and other formats diagnose losses. See [image contracts](docs/IMAGES.md) for support and qualification boundaries.
+
 - Added DX-06 preferred table/cell widths, AutoFit, RTL grids, conditional styles and border kinds, repeating headers and row split policies, positioned table wrapping, formatted/style-linked list markers, and table-property UI. Native v9, XAML v4 and clipboard v5 retain the model; external formats preserve mapped settings or report losses. See `docs/TABLES.md` for behavior and qualification boundaries.
 
 - Added DX-05 anchored bookmarks and internal links, rich general fields and deterministic evaluation, TOCs/captions with bounded pagination, outline/bookmark navigation and story-aware transactional find/replace. Native v8, XAML v3 and clipboard v4 plus DOCX/RTF field interchange; see `docs/FIELDS.md` for supported families and qualification limits.

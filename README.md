@@ -312,6 +312,9 @@ Use `DocumentFormats.Xaml` for Textalonia's versioned, data-only `.txaml`/`.xaml
 vocabulary and `DocumentFormats.Markdown` for the documented `.md`/`.markdown`
 dialect. `MarkdownViewer` adds asynchronous source updates and optional host-provided
 code highlighting while reusing selection, themes, links and resource services.
-No new dependencies are required. Native JSON writes schema v7 and reads v4/v5/v6/v7;
+No new dependencies are required. Native JSON writes schema v10 and reads v4–v10;
 other versions are rejected. V4 formatting loads as explicit direct formatting. See [integration boundaries and examples](docs/INTEGRATIONS.md),
 [Markdown dialect](docs/MARKDOWN.md), and [XAML vocabulary](docs/XAML.md).
+
+Image placement, cropping, section watermarks and OLE previews are documented in
+[pictures and objects](docs/IMAGES.md), including toolbar authoring and interchange limits.

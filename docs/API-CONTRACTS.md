@@ -42,10 +42,10 @@ are covered; native screen-reader text navigation remains unqualified.
 
 ## Current native schema
 
-Native JSON writes **schema v9** and reads **v4, v5, v6, v7, v8 and v9**. The full model includes
+Native JSON writes **schema v10** and reads **v4, v5, v6, v7, v8, v9 and v10**. The full model includes
 named style definitions, sparse overrides, document themes/fonts, nested cells and
 merge backups, inline descriptors and resources, semantic metadata, merge fields, physical sections, secondary stories, anchored bookmarks/general fields,
-internal hyperlinks and string document properties.
+internal hyperlinks, string document properties, image placement/crop/rotation, section watermarks and OLE package/preview descriptors. See [image contracts](IMAGES.md) for migration examples and resource ownership.
 Version 4 concrete formatting remains explicit when loaded. Versions 1-3 remain
 unsupported. See [style contracts](STYLES.md).
 
@@ -57,7 +57,7 @@ versions 1-3 remain unsupported. Establish a compatibility policy for published
 data before making future release commitments.
 
 The `.textalonia`, `.json`, and `.art` extensions all select the current native
-codec. The data XAML vocabulary writes v4 and reads v1/v2/v3/v4; it is neither Avalonia
+codec. The data XAML vocabulary writes v5 and reads v1/v2/v3/v4/v5; it is neither Avalonia
 object XAML nor another editor's format.
 
 For nested cell data use cell.Blocks and cell.MergeOriginalBlocks instead of the

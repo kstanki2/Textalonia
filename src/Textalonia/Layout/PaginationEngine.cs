@@ -121,6 +121,7 @@ public sealed partial class PaginationEngine : IDisposable
         private readonly List<(int Page, BlockDecoration Decoration)> _decorations = [];
         private readonly List<(int Page, TableCellVisual Cell)> _cells = [];
         private readonly List<(int Page, int Column, Rect Bounds)> _wrapExclusions = [];
+        private readonly List<InlineVisual> _positionedImages = [];
         private bool _hasPositionedTables;
         private readonly HashSet<ExactParagraph> _held = [];
         private readonly Dictionary<Guid, Paragraph> _resolved = [];
@@ -143,7 +144,8 @@ public sealed partial class PaginationEngine : IDisposable
             foreach (var section in document.Sections)
                 if (section.StartParagraphId != Guid.Empty) _sections.Add(section.StartParagraphId, section);
             Flatten(document.Blocks, 0, 0, null);
-            _hasPositionedTables = _items.Any(i => i.Block is Table { Position: not null });
+            _hasPositionedTables = _items.Any(i => i.Block is Table { Position: not null } ||
+                i.Block is Paragraph p && p.Runs.Any(r => r.Inline?.Placement is { Anchor: not ImageAnchorKind.Inline }));
             Run();
             // Binary search the final occupied page of each multicolumn section. Every trial reruns exact
             // line layout at the actual (possibly unequal) column widths; estimates never choose breaks.
@@ -167,6 +169,11 @@ public sealed partial class PaginationEngine : IDisposable
                 }
             }
             CompleteStories();
+            foreach (var descriptor in _fragments.Concat(_storyFragments).SelectMany(f => f.Measurement.Paragraph.Runs)
+                .Select(r => r.Inline).OfType<InlineDescriptor>().Where(d => d.Width > 0 && d.Placement is { Anchor: not ImageAnchorKind.Inline }).DistinctBy(d => d.Id))
+                _layoutDiagnostics.Add($"Image {descriptor.Id} uses inline placement in Draft view, tables, frames or secondary stories.");
+            if (options.Draft && document.Sections.Any(s => s.Watermark is not null))
+                _layoutDiagnostics.Add("Section watermarks are shown only in physical page views and output.");
             var result = Finish();
             var retained = _fragments.Concat(_storyFragments).Select(f => f.Measurement).ToHashSet();
             foreach (var measurement in _held.Where(m => !retained.Contains(m)).ToArray()) { measurement.Release(); _held.Remove(measurement); }
@@ -176,7 +183,7 @@ public sealed partial class PaginationEngine : IDisposable
 
         private void Run()
         {
-            _pages.Clear(); _fragments.Clear(); _decorations.Clear(); _cells.Clear(); _wrapExclusions.Clear();
+            _pages.Clear(); _fragments.Clear(); _decorations.Clear(); _cells.Clear(); _wrapExclusions.Clear(); _positionedImages.Clear();
             ResetStories();
             _checkpoints.Clear(); engine.ReusedCheckpoints = 0; engine.ReflowedBlocks = 0;
             _column = 0;
@@ -218,7 +225,7 @@ public sealed partial class PaginationEngine : IDisposable
         }
         private bool TryReuse(Item item, ImmutableArray<Block> dependencies, State before)
         {
-            if (_hasPositionedTables || !document.Notes.IsEmpty || !document.Stories.IsEmpty || _prior is null || _prior._options != options || !Equals(_prior._border, border) ||
+            if (_hasPositionedTables || _prior?._hasPositionedTables == true || !document.Notes.IsEmpty || !document.Stories.IsEmpty || _prior is null || _prior._options != options || !Equals(_prior._border, border) ||
                 !_prior._source.Sections.SequenceEqual(document.Sections) || _balanceLimits.Count != 0 || _prior._balanceLimits.Count != 0 ||
                 !_prior._checkpoints.TryGetValue(item.Block.Id, out var checkpoint) || checkpoint.Item != item ||
                 !checkpoint.Dependencies.SequenceEqual(dependencies) ||
@@ -368,6 +375,23 @@ public sealed partial class PaginationEngine : IDisposable
                 if (style.PageBreakBefore && (occupied || _column != 0)) Advance(true);
                 else if (style.ColumnBreakBefore && occupied) Advance();
             }
+            var hasPositionedImages = !options.Draft && style.Frame is null &&
+                source.Runs.Any(r => r.Inline?.Placement is { Anchor: not ImageAnchorKind.Inline });
+            var imageFragmentStart = _fragments.Count;
+            if (hasPositionedImages)
+            {
+                paragraph = SuppressPositionedImages(paragraph);
+                if (source.Runs.Any(r => r.Inline?.Placement is { Anchor: not ImageAnchorKind.Inline,
+                    Wrap: not (ImageWrapKind.BehindText or ImageWrapKind.InFrontOfText) }))
+                {
+                    var firstLine = Measure(paragraph, Math.Max(16, Column.Width - item.Left - item.Right - Indent(paragraph) - style.RightIndent)).Lines.FirstOrDefault();
+                    if (!AtTop && style.SpaceBefore + (firstLine?.Height ?? 1) > Remaining) Advance();
+                    PlaceImages(source, paragraph, item);
+                    // The paragraph is the stable anchor; wrapping and keep rules cannot move its image independently.
+                    PlaceWrappedParagraph(source, paragraph, item);
+                    return;
+                }
+            }
             if (style.Frame is { } frame)
             {
                 var shaped = Measure(paragraph, Math.Max(16, frame.Width - Indent(paragraph) - style.RightIndent));
@@ -386,7 +410,12 @@ public sealed partial class PaginationEngine : IDisposable
             }
             if (_wrapExclusions.Any(e => e.Page == _pages.Count - 1 && e.Column == _column && e.Bounds.Bottom > _y &&
                 e.Bounds.Right > Column.Left && e.Bounds.Left < Column.Right))
-            { PlaceWrappedParagraph(source, paragraph, item); return; }
+            {
+                PlaceWrappedParagraph(source, paragraph, item);
+                if (hasPositionedImages && _fragments.Count > imageFragmentStart)
+                    PlaceImages(source, paragraph, item, _fragments[imageFragmentStart]);
+                return;
+            }
             var indent = Indent(paragraph);
             double Width() => Math.Max(16, Column.Width - item.Left - item.Right - indent - style.RightIndent);
             var measurement = Measure(paragraph, Width());
@@ -467,6 +496,8 @@ public sealed partial class PaginationEngine : IDisposable
                 { ContinueInNextColumn(); }
             }
             _y += after;
+            if (hasPositionedImages && _fragments.Count > imageFragmentStart)
+                PlaceImages(source, paragraph, item, _fragments[imageFragmentStart]);
         }
         private LineFragment Fragment(ParagraphPosition position, ExactParagraph measurement, ExactLine line, Point origin,
             double width, Rect clip, string? marker = null)
@@ -698,7 +729,7 @@ public sealed partial class PaginationEngine : IDisposable
         {
             var style = paragraph.Style;
             if (style.KeepTogether || style.KeepWithNext || style.WidowControl)
-                _layoutDiagnostics.Add($"Paragraph {source.Id} prioritizes positioned-table wrapping over paragraph keep and widow/orphan constraints.");
+                _layoutDiagnostics.Add($"Paragraph {source.Id} prioritizes positioned-object wrapping over paragraph keep and widow/orphan constraints.");
             var indent = Indent(paragraph);
             var leadingReserve = Math.Max(0, -indent - style.FirstLineIndent);
             var marker = style.List == ListKind.None ? null : ListNumbering.GetMarker(document, source.Id);
@@ -964,7 +995,9 @@ public sealed partial class PaginationEngine : IDisposable
                 _storyFragments.Select(f => ShiftStoryFragment(f, positions[f.PageIndex])).ToImmutableArray(),
                 _storyRegions.Select(r => r with { Bounds = r.Bounds.Translate(positions[r.PageIndex]) }).ToImmutableArray(),
                 _storyCells.Select(c => (c.StoryId, c.Page, c.Cell with { Bounds = c.Cell.Bounds.Translate(positions[c.Page]), Clip = c.Cell.Clip?.Translate(positions[c.Page]) })).ToImmutableArray(),
-                _layoutDiagnostics.ToImmutableArray()) { IsDraft = options.Draft };
+                _layoutDiagnostics.ToImmutableArray(),
+                _positionedImages.Select(v => v with { Bounds = v.Bounds.Translate(positions[v.PageIndex]),
+                    Clip = v.Clip?.Translate(positions[v.PageIndex]) }).ToImmutableArray()) { IsDraft = options.Draft };
         }
         public void Release() { foreach (var measurement in _held) measurement.Release(); _held.Clear(); _prior = null; }
     }

@@ -32,6 +32,9 @@ public class TextaloniaToolbar : WrapPanel
     private NumericUpDown? _pageNumber;
     private TextBlock? _pageStatus;
     private TextBlock? _storyStatus;
+    private Button? _pictureProperties;
+    private Button? _pictureRemove;
+    private Button? _objectExtract;
     private bool _updating;
     private readonly List<(NumericUpDown Control, Func<SelectionFormattingState, FormattingValue<double?>> Read)> _numericFormatting = [];
     public TextaloniaEditor? Editor { get => GetValue(EditorProperty); set => SetValue(EditorProperty, value); }
@@ -64,6 +67,7 @@ public class TextaloniaToolbar : WrapPanel
         if (_findPanel is not null) _findPanel.Editor = null;
         Children.Clear(); _toggles.Clear(); _editingControls.Clear(); _numericFormatting.Clear();
         _mergeFieldUpdate = null; _mergeFieldId = null; _storyStatus = null;
+        _pictureProperties = null; _pictureRemove = null; _objectExtract = null;
         _viewMode = null; _zoom = null; _pagesPerRow = null; _pageGap = null; _pageNumber = null; _pageStatus = null;
         if (Editor is not { } editor) return;
         _heading = Choice(["Body", "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6"], 128, "Paragraph style");
@@ -98,6 +102,7 @@ public class TextaloniaToolbar : WrapPanel
         viewButton.Flyout!.Opened += (_, _) => Refresh();
         AddOutputFlyout();
         AddFlyout("Insert", "Insert link or table", InsertMenu());
+        AddPicturesFlyout();
         DialogButton("Table\u2026", "Table properties", editor.ShowTablePropertiesDialogAsync);
         AddFlyout("Stories", "Headers, footers and notes", StoriesMenu(), editing: false);
         AddMergeFieldFlyout();
@@ -151,6 +156,34 @@ public class TextaloniaToolbar : WrapPanel
         Children.Add(button); if (editing) _editingControls.Add(button); return button;
     }
     private static TextBlock Label(string text) => new() { Text = text, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 6) };
+
+    private void AddPicturesFlyout()
+    {
+        var panel = new StackPanel { Width = 290, Spacing = 4 };
+        var button = AddFlyout("Pictures", "Pictures, watermarks and embedded objects", panel, editing: false);
+        button.Flyout!.Opened += (_, _) => Refresh();
+        panel.Children.Add(Label("Pictures"));
+        AddDialog("Insert picture…", () => Editor!.ShowInsertImageDialogAsync());
+        _pictureProperties = AddDialog("Picture or preview properties…", () => Editor!.ShowImagePropertiesDialogAsync());
+        _pictureRemove = MenuAction("Remove selected picture or object", () => Editor!.RemoveCurrentImageOrOle());
+        panel.Children.Add(_pictureRemove);
+        panel.Children.Add(Label("Section watermark"));
+        AddDialog("Watermark settings…", () => Editor!.ShowWatermarkDialogAsync());
+        AddDialog("Insert image watermark…", () => Editor!.ShowImageWatermarkDialogAsync());
+        panel.Children.Add(MenuAction("Remove watermark from section", () => Editor!.RemoveWatermark()));
+        panel.Children.Add(Label("Embedded objects"));
+        AddDialog("Insert embedded file and preview…", () => Editor!.ShowInsertOleDialogAsync());
+        _objectExtract = AddDialog("Extract selected embedded file…", () => Editor!.ShowExtractOleDialogAsync(), editing: false);
+
+        Button AddDialog(string label, Func<Task<bool>> show, bool editing = true)
+        {
+            var command = MakeButton(label, label);
+            command.Click += async (_, _) => { button.Flyout.Hide(); await show(); };
+            panel.Children.Add(command);
+            if (editing) _editingControls.Add(command);
+            return command;
+        }
+    }
 
     private void AddOutputFlyout()
     {
@@ -609,6 +642,9 @@ public class TextaloniaToolbar : WrapPanel
             var state = editor.FormattingState;
             foreach (var (button, read) in _toggles) button.IsChecked = read(state);
             foreach (var control in _editingControls) control.IsEnabled = !editor.IsReadOnly;
+            if (_pictureProperties is not null) _pictureProperties.IsEnabled = !editor.IsReadOnly && editor.CurrentImageOrOle is not null;
+            if (_pictureRemove is not null) _pictureRemove.IsEnabled = !editor.IsReadOnly && editor.CurrentImageOrOle is not null;
+            if (_objectExtract is not null) _objectExtract.IsEnabled = editor.CurrentOleObject is not null;
             if (_mergeFieldUpdate is not null)
                 _mergeFieldUpdate.IsEnabled = !editor.IsReadOnly && _mergeFieldId is not null && editor.CurrentMergeField?.Id == _mergeFieldId;
             foreach (var (control, read) in _numericFormatting)

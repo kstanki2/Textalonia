@@ -67,7 +67,9 @@ internal sealed class RetentionGraph
         ImmutableDictionary<TableStyleRegion, TableStyleOverrides> conditions => 56 + conditions.Count * 64L,
         TableStyleOverrides => 192,
         DocumentResource => 64,
-        InlineDescriptor => 80,
+        InlineDescriptor => 88,
+        ImagePlacement placement => 112 + placement.Contour.Length * 16L,
+        DocumentWatermark => 104,
         TableCell[] cells => 24 + cells.Length * 8L,
         double[] widths => 24 + widths.Length * 8L,
         TableRowSizing[] sizing => 24 + sizing.Length * 8L,
@@ -101,7 +103,7 @@ internal sealed class RetentionGraph
         switch (value)
         {
             case DocumentSection[] sections: foreach (var section in sections) visit(section); break;
-            case DocumentSection section: visit(section.PageSettings); visit(section.HeaderFooter); break;
+            case DocumentSection section: visit(section.PageSettings); visit(section.HeaderFooter); if (section.Watermark is { } sectionWatermark) visit(sectionWatermark); break;
             case ImmutableDictionary<Guid, DocumentStory> stories: foreach (var story in stories.Values) visit(story); break;
             case DocumentStory story: foreach (var block in story.Blocks) visit(DocumentNode.HiddenBlock(block)); break;
             case DocumentNote[] notes: foreach (var note in notes) visit(note); break;
@@ -172,11 +174,19 @@ internal sealed class RetentionGraph
                 if (!resource.Data.IsDefaultOrEmpty) visit(ImmutableCollectionsMarshal.AsArray(resource.Data)!);
                 break;
             case InlineDescriptor inline:
-                visit(inline.AltText); visit(inline.Payload);
+                visit(inline.AltText); visit(inline.Payload); if (inline.Placement is { } inlinePlacement) visit(inlinePlacement);
                 break;
             case ImageInlinePayload image:
-                visit(image.ResourceId);
+                visit(image.ResourceId); if (image.PreviewResourceId is { } preview) visit(preview);
                 break;
+            case OleInlinePayload ole:
+                visit(ole.ResourceId); visit(ole.PreviewResourceId); visit(ole.ProgramId); visit(ole.FileName);
+                break;
+            case ImagePlacement placement: visit(placement.Crop); break;
+            case DocumentWatermark watermark:
+                if (watermark.Text is { } text) visit(text);
+                if (watermark.ResourceId is { } resourceId) visit(resourceId);
+                visit(watermark.FontFamily); visit(watermark.Color); break;
             case MergeFieldInlinePayload field:
                 visit(field.Name);
                 if (field.Format is not null) visit(field.Format);

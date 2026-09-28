@@ -2,7 +2,7 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **implementation plan; DX-01 through DX-06 implementation and
+candidate. Status: **implementation plan; DX-01 through DX-07 implementation and
 qualification status is recorded below. Other workstreams remain proposed unless explicitly noted.**
 
 The audit tables in sections 2-3 describe the baseline commit above; the DX-01
@@ -17,6 +17,8 @@ The DX-05 implementation entry and [field/navigation guide](FIELDS.md) supersede
 baseline findings for bookmarks, general fields, contents and navigation.
 The DX-06 implementation entry and [table/list guide](TABLES.md) supersede baseline
 findings for table layout, conditional styles, table pagination and marker formatting.
+The DX-07 implementation entry and [image/object guide](IMAGES.md) supersede baseline
+findings for images, watermarks and OLE previews.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -510,6 +512,29 @@ formatting. DOCX/RTF preserve the supported settings or report precise losses.
 
 ### DX-07 — Images, watermarks and OLE previews
 
+**Implementation status (2026-09-27):** image placement, aspect-aware sizing,
+crop/rotation and square/top-bottom/behind/in-front/contour wrapping are implemented
+with shared table exclusion geometry. Section text/image watermarks render behind
+page content. Supplied OLE previews share image rendering while opaque package
+resources support insertion, extraction, removal, clipboard and undo. Picture,
+watermark and OLE controls are available through the toolbar. Native v10, data
+XAML v5 and clipboard v6 retain the model; DOCX maps supported pictures, watermark
+headers and OLE package/preview relationships. Other codecs report explicit losses.
+See [image/object contracts](IMAGES.md).
+
+Managed validation: **1,113 tests passed, 3 existing native-bidi tests skipped**.
+Release packing and the isolated NuGet consumer passed, including DX-07 API
+round trips and extraction/removal/undo. Public API baselines retain existing
+members and record the additive APIs and clipboard schema increase.
+
+The default decoder supports bounded raster images including ICO and a static SVG
+subset. EMF/WMF originals can be retained with a supplied preview; native EMF/WMF
+and TIFF decoding are not claimed. Contours use at most 64 conservative bands.
+Simple view displays positioned images inline; table-cell, frame, secondary-story and Draft
+floats have a diagnosed inline fallback. Page overflow clips with a diagnostic.
+Continuous sections share the owning page's watermark. External Office/DevExpress
+rendering, native interaction/DPI and native printing remain DX-14 qualification
+gates, separate from managed implementation validation.
 **Priority: core images, then OLE interchange. Size: L. Dependencies: DX-00/02/03.**
 
 Extend `InlineContent.cs`, resource handling, surface interaction and DOCX picture

@@ -194,6 +194,7 @@ internal sealed class InlineObjectRun : DrawableTextRun
 
     public override void Draw(DrawingContext context, Point origin)
     {
+        if (Size.Width <= 0 || Size.Height <= 0) return;
         var bounds = new Rect(origin, Size);
         using var clip = context.PushClip(bounds);
         if (Rendering.InlineOutputScope.Current?.Invoke(Descriptor, context, bounds) == true) return;
@@ -223,6 +224,7 @@ internal sealed class InlineObjectRun : DrawableTextRun
 
 internal sealed record InlineVisual(InlineDescriptor Descriptor, int Position, Rect Bounds, Rect? Clip)
 {
+    public bool IsPositioned { get; init; }
     public Guid StoryId { get; init; }
     public int PageIndex { get; init; } = -1;
     public (Guid Id, Guid StoryId, int PageIndex) Key => (Descriptor.Id, StoryId, PageIndex);

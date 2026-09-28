@@ -62,7 +62,7 @@ and clipboard operations. The demo shows conversion reports after file operation
 All external formats omit hidden physical cells and merge restoration backups with
 `conversion.merge-history`. Resources without supported references produce
 `conversion.unused-resource` (DOCX also recognizes embedded-font references). Native
-JSON v8 preserves the full model and reads v4/v5/v6/v7/v8; earlier versions remain rejected.
+JSON v10 preserves the full model and reads v4/v5/v6/v7/v8/v9/v10; earlier versions remain rejected.
 Plain text retains visible text/paragraph separators and inline alternative text;
 its `text.*` diagnostics describe discarded formatting, containers and resources.
 
@@ -100,7 +100,7 @@ strict rejection, boundary merging, destination shells and fallback order.
 
 ## Anchored fields, bookmarks and internal links
 
-Native JSON v9 and data XAML v4 retain range identities, story/paragraph anchors,
+Native JSON v10 and data XAML v5 retain range identities, story/paragraph anchors,
 boundary affinity, instructions, lock/dirty/show-code flags, internal-link metadata
 and the string property catalog. Data XAML also reads v1/v2. Existing atomic
 `MERGEFIELD` and page-field descriptors remain supported.
@@ -153,7 +153,7 @@ or desktop interoperability evidence.
 
 ## Fragment transfer
 
-`DocumentFragment` version 5 (readers also accept v1/v2/v3/v4) contains a native document and paragraph boundary
+`DocumentFragment` version 6 (readers also accept v1/v2/v3/v4/v5) contains a native document and paragraph boundary
 flags. `EditorSession.CopyFragment`, `CopyCells`, and `InsertFragment` work without
 a control, and can also be used by a future drag/drop adapter. `CopySelection` and
 `InsertDocument` remain available as document-based compatibility APIs.
@@ -210,3 +210,18 @@ is outside the declared subset.
 
 DX-06 table/list format mappings and precise loss boundaries are listed in the
 [table/list guide](TABLES.md#persistence-and-evidence).
+
+## DX-07 pictures, watermarks and OLE
+
+Native v10, XAML v5 and clipboard v6 preserve placement, crop/rotation, supplied
+previews, package resources and section watermarks. DOCX maps image anchors/wraps,
+crop/rotation and OLE image/package relationships; section watermarks are visible
+VML header content with Textalonia metadata for reconstruction. Original image
+bytes and separately supplied previews are retained independently.
+
+Unsupported external features report `conversion.image-placement`,
+`conversion.image-preview`, `conversion.watermark` and `conversion.ole`. Positioned
+OLE metadata survives DOCX but its external preview displays inline, reported as
+`docx.ole-placement`. Unsupported import positioning/mirroring/wrap distances also
+produce specific `docx.image-*` diagnostics. Strict conversion rejects diagnosed
+loss before writing. See [image support and limits](IMAGES.md).

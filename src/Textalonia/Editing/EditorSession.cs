@@ -620,7 +620,7 @@ public sealed partial class EditorSession
             {
                 var end = offset + run.Storage.Length;
                 if (offset >= range.End) break;
-                if (end > range.Start && run.Inline?.Payload is ImageInlinePayload) return true;
+                if (end > range.Start && run.Inline?.Payload is (ImageInlinePayload or OleInlinePayload)) return true;
                 offset = end;
             }
         }

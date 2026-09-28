@@ -6,7 +6,7 @@ namespace Textalonia.Editing;
 /// <summary>A versioned, self-contained clipboard fragment. Partial containers retain their formatting.</summary>
 public sealed record DocumentFragment
 {
-    public const int CurrentVersion = 5;
+    public const int CurrentVersion = 6;
     public int Version { get; init; } = CurrentVersion;
     public FlowDocument Document { get; init; } = new();
     /// <summary>Whether the first paragraph edge merges when pasted inside destination text.</summary>
@@ -16,7 +16,7 @@ public sealed record DocumentFragment
 
     public void Validate()
     {
-        if (Version is not (1 or 2 or 3 or 4 or CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {Version} is not supported.");
+        if (Version is not (1 or 2 or 3 or 4 or 5 or CurrentVersion)) throw new NotSupportedException($"Clipboard fragment version {Version} is not supported.");
         if (Document is null) throw new FormatException("Missing clipboard document.");
         Document.Validate();
     }
@@ -364,8 +364,9 @@ internal static class DocumentFragments
                         if (payload is ImageInlinePayload image)
                         {
                             var target = Resource(image.ResourceId);
-                            payload = image with { ResourceId = target };
+                            payload = image with { ResourceId = target, PreviewResourceId = image.PreviewResourceId is { } preview ? Resource(preview) : null };
                         }
+                        if (payload is OleInlinePayload ole) payload = ole with { ResourceId = Resource(ole.ResourceId), PreviewResourceId = Resource(ole.PreviewResourceId) };
                         if (payload is NoteInlinePayload note) payload = note with { NoteId = noteIds[note.NoteId] };
                         return run with { Inline = inline with { Id = Guid.NewGuid(), Payload = payload } };
                     }).ToImmutableArray() };
@@ -386,7 +387,7 @@ internal static class DocumentFragments
                 var reference = settings.GetReference(footer, variant);
                 if (reference.StoryId is { } id) settings = settings.WithReference(footer, variant, reference with { StoryId = storyIds[id] });
             }
-            return section with { HeaderFooter = settings };
+            return section with { HeaderFooter = settings, Watermark = section.Watermark is { ResourceId: { } watermarkId } watermark ? watermark with { ResourceId = Resource(watermarkId) } : section.Watermark };
         }).ToImmutableArray();
         string RemapInstruction(string instruction)
         {

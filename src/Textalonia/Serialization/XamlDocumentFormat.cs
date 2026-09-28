@@ -35,7 +35,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         var xml = XDocument.Load(input, LoadOptions.SetLineInfo | LoadOptions.PreserveWhitespace);
         var root = xml.Root ?? throw new FormatException("Missing Document element.");
         if (root.Name != Ns + "Document") throw new FormatException("Expected a Textalonia Document in " + NamespaceUri + ".");
-        if (Required(root, "Version") is not ("1" or "2" or "3" or "4")) throw new NotSupportedException("Only Textalonia XAML data versions 1, 2, 3 and 4 are supported.");
+        if (Required(root, "Version") is not ("1" or "2" or "3" or "4" or "5")) throw new NotSupportedException("Only Textalonia XAML data versions 1 through 5 are supported.");
         foreach (var instruction in xml.DescendantNodes().OfType<XProcessingInstruction>())
             Report("xaml.processing-instruction", instruction.Target, "Processing instruction was ignored.", instruction);
         Check(root, "Version", "Resources Blocks Styles Defaults Theme Fonts Sections Stories Notes FootnoteSettings EndnoteSettings Bookmarks Fields Properties");
@@ -63,7 +63,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
     {
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
-        var root = Element("Document", Attr("Version", 4),
+        var root = Element("Document", Attr("Version", 5),
             WriteData("Styles", document.Styles), WriteData("Defaults", document.Defaults), WriteData("Theme", document.Theme), WriteData("Fonts", document.Fonts), WriteData("Sections", document.Sections),
             WriteData("Stories", document.Stories), WriteData("Notes", document.Notes), WriteData("FootnoteSettings", document.FootnoteSettings), WriteData("EndnoteSettings", document.EndnoteSettings),
             WriteData("Bookmarks", document.Bookmarks), WriteData("Fields", document.Fields), WriteData("Properties", document.Properties),
@@ -215,19 +215,26 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         var style = ReadTextStyle(Child(element, "Style"));
         var inline = Child(element, "Inline");
         if (inline is null) return new RichRun(Value(element, "Text") ?? "", style);
-        Check(inline, "Id AltText Width Height", "Image Control MergeField Note PageField");
+        Check(inline, "Id AltText Width Height", "Image Ole Control MergeField Note PageField Placement");
         var image = Child(inline, "Image");
+        var ole = Child(inline, "Ole");
         var control = Child(inline, "Control");
         var mergeField = Child(inline, "MergeField");
         var note = Child(inline, "Note");
         var pageField = Child(inline, "PageField");
-        if ((image is not null ? 1 : 0) + (control is not null ? 1 : 0) + (mergeField is not null ? 1 : 0) + (note is not null ? 1 : 0) + (pageField is not null ? 1 : 0) > 1)
+        if ((image is not null ? 1 : 0) + (ole is not null ? 1 : 0) + (control is not null ? 1 : 0) + (mergeField is not null ? 1 : 0) + (note is not null ? 1 : 0) + (pageField is not null ? 1 : 0) > 1)
             throw new FormatException("Inline must contain exactly one payload.");
         InlinePayload payload;
         if (image is not null)
         {
-            Check(image, "ResourceId", "");
-            payload = new ImageInlinePayload(Required(image, "ResourceId"));
+            Check(image, "ResourceId PreviewResourceId", "");
+            payload = new ImageInlinePayload(Required(image, "ResourceId")) { PreviewResourceId = Value(image, "PreviewResourceId") };
+        }
+        else if (ole is not null)
+        {
+            Check(ole, "ResourceId PreviewResourceId ProgramId FileName", "");
+            payload = new OleInlinePayload(Required(ole, "ResourceId"), Required(ole, "PreviewResourceId"))
+            { ProgramId = Value(ole, "ProgramId") ?? "", FileName = Value(ole, "FileName") ?? "" };
         }
         else if (control is not null)
         {
@@ -270,7 +277,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         return new RichRun(new InlineDescriptor
         {
             Id = Identity(inline), AltText = Value(inline, "AltText") ?? (payload is MergeFieldInlinePayload field ? "\u00AB" + field.Name + "\u00BB" : ""), Width = Number(inline, "Width", 32),
-            Height = Number(inline, "Height", 32), Payload = payload
+            Height = Number(inline, "Height", 32), Payload = payload, Placement = ReadData<ImagePlacement>(Child(inline, "Placement"))
         }, style);
     }
 
@@ -373,9 +380,11 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
     private static XElement? WriteInline(InlineDescriptor? inline)
     {
         if (inline is null) return null;
-        return Element("Inline", Attr("Id", inline.Id), Attr("AltText", inline.AltText), Attr("Width", inline.Width), Attr("Height", inline.Height), inline.Payload switch
+        return Element("Inline", Attr("Id", inline.Id), Attr("AltText", inline.AltText), Attr("Width", inline.Width), Attr("Height", inline.Height),
+            inline.Placement is null ? null : WriteData("Placement", inline.Placement), inline.Payload switch
         {
-            ImageInlinePayload image => Element("Image", Attr("ResourceId", image.ResourceId)),
+            ImageInlinePayload image => Element("Image", Attr("ResourceId", image.ResourceId), Attr("PreviewResourceId", image.PreviewResourceId)),
+            OleInlinePayload ole => Element("Ole", Attr("ResourceId", ole.ResourceId), Attr("PreviewResourceId", ole.PreviewResourceId), Attr("ProgramId", ole.ProgramId), Attr("FileName", ole.FileName)),
             NoteInlinePayload note => Element("Note", Attr("NoteId", note.NoteId)),
             PageFieldInlinePayload page => Element("PageField", Attr("Field", page.Field)),
             MergeFieldInlinePayload field => Element("MergeField", Attr("Name", field.Name), Attr("Format", field.Format), Attr("FallbackText", field.FallbackText)),

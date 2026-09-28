@@ -16,6 +16,7 @@ public sealed record DocumentSection
     public int? PageNumberStart { get; init; }
     public PageNumberFormat PageNumberFormat { get; init; }
     public HeaderFooterSettings HeaderFooter { get; init; } = new();
+    public DocumentWatermark? Watermark { get; init; }
 
     internal static void Validate(FlowDocument document, HashSet<Guid> ids)
     {
@@ -34,6 +35,7 @@ public sealed record DocumentSection
                 throw new FormatException("Invalid physical section.");
             section.PageSettings.Validate();
             section.HeaderFooter.Validate(document);
+            section.Watermark?.Validate();
             int start;
             if (i == 0)
             {

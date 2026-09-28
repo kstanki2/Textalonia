@@ -144,7 +144,7 @@ public partial class DocumentSurface
         { Bounds = ToSurface(cell.Bounds), Clip = cell.Clip is { } clip ? ToSurface(clip) : null }).ToArray();
     internal TableCellVisual? GeometryHitTestTableCell(Point point, Guid? tableId = null) => GeometryTableCells()
         .LastOrDefault(cell => (tableId is null || cell.Table.Id == tableId) && cell.VisibleBounds.Contains(point));
-    private IEnumerable<InlineVisual> GeometryInlineVisuals() =>
+    internal IEnumerable<InlineVisual> GeometryInlineVisuals() =>
         (_pagedLayout is { } pages ? pages.InlineVisuals() : _layout.InlineVisuals()).Select(visual => visual with
         { Bounds = ToSurface(visual.Bounds), Clip = visual.Clip is { } clip ? ToSurface(clip) : null });
 }

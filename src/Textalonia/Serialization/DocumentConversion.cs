@@ -132,6 +132,22 @@ public static class DocumentFormatExtensions
 
     internal static void ReportExportLosses(IDocumentFormat format, FlowDocument document)
     {
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat))
+        {
+            foreach (var section in document.Sections.Where(section => section.Watermark is not null))
+                ConversionDiagnostics.Report("conversion.watermark", "Section text or image watermark", "Watermark omitted; supported document content retained.", section.Id);
+            var imageParagraphs = new DocumentIndex(document).Paragraphs.AsEnumerable();
+            foreach (var story in document.Stories.Values) imageParagraphs = imageParagraphs.Concat(new DocumentIndex(new FlowDocument(story.Blocks)).Paragraphs);
+            foreach (var inline in imageParagraphs.SelectMany(entry => entry.Paragraph.Runs).Select(run => run.Inline).OfType<InlineDescriptor>())
+            {
+                if (inline.Placement is not null)
+                    ConversionDiagnostics.Report("conversion.image-placement", "Image anchoring, wrapping, crop, rotation and aspect lock", format is PlainTextDocumentFormat ? "Image replaced by alternative text; placement settings omitted." : "Supported image bytes and display dimensions retained as an untransformed inline image; placement settings omitted.", inline.Id);
+                if (inline.Payload is ImageInlinePayload { PreviewResourceId: not null })
+                    ConversionDiagnostics.Report("conversion.image-preview", "Separate image original and preview", "Only the supported original image is exported; preview relationship omitted.", inline.Id);
+                if (inline.Payload is OleInlinePayload)
+                    ConversionDiagnostics.Report("conversion.ole", "Embedded OLE package, preview and object metadata", "Object replaced with alternative text; embedded data and preview relationship omitted.", inline.Id);
+            }
+        }
         if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat))
         {
             if (!document.Fields.IsEmpty) ConversionDiagnostics.Report("conversion.fields", "General fields", "Cached rich results retained; instructions and update semantics omitted.");
@@ -270,7 +286,17 @@ public static class DocumentFormatExtensions
         foreach (var story in document.Stories.Values) paragraphs = paragraphs.Concat(new DocumentIndex(new FlowDocument(story.Blocks)).Paragraphs);
         var visible = new HashSet<string>(paragraphs.SelectMany(p => p.Paragraph.Runs)
             .Select(r => r.Inline?.Payload).OfType<ImageInlinePayload>().Select(p => p.ResourceId), StringComparer.Ordinal);
-        if (includeFonts) visible.UnionWith(document.Fonts.Select(font => font.ResourceId));
+        if (includeFonts)
+        {
+            visible.UnionWith(document.Fonts.Select(font => font.ResourceId));
+            visible.UnionWith(document.Sections.Select(section => section.Watermark?.ResourceId).OfType<string>());
+            foreach (var payload in paragraphs.SelectMany(p => p.Paragraph.Runs).Select(run => run.Inline?.Payload))
+                switch (payload)
+                {
+                    case ImageInlinePayload { PreviewResourceId: { } preview }: visible.Add(preview); break;
+                    case OleInlinePayload ole: visible.Add(ole.ResourceId); visible.Add(ole.PreviewResourceId); break;
+                }
+        }
         foreach (var resource in document.Resources.Keys.Order(StringComparer.Ordinal))
             if (!visible.Contains(resource))
                 ConversionDiagnostics.Report("conversion.unused-resource", "Resource without a visible image reference",

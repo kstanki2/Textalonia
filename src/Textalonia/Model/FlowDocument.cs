@@ -76,7 +76,15 @@ public sealed record FlowDocument
                 {
                     case Paragraph paragraph:
                         foreach (var run in paragraph.Runs)
-                            if (run.Inline?.Payload is ImageInlinePayload image) used.Add(image.ResourceId);
+                            switch (run.Inline?.Payload)
+                            {
+                                case ImageInlinePayload image:
+                                    used.Add(image.ResourceId);
+                                    if (image.PreviewResourceId is { } preview) used.Add(preview);
+                                    break;
+                                case OleInlinePayload ole:
+                                    used.Add(ole.ResourceId); used.Add(ole.PreviewResourceId); break;
+                            }
                         break;
                     case Section section: Visit(section.Blocks); break;
                     case Table table:
@@ -88,6 +96,7 @@ public sealed record FlowDocument
         Visit(Blocks);
         foreach (var story in Stories.Values) Visit(story.Blocks);
         foreach (var font in Fonts) used.Add(font.ResourceId);
+        foreach (var section in Sections) if (section.Watermark?.ResourceId is { } watermark) used.Add(watermark);
         var resources = Resources.RemoveRange(Resources.Keys.Where(key => !used.Contains(key)));
         return ReferenceEquals(resources, Resources) ? this : this with { Resources = resources };
     }

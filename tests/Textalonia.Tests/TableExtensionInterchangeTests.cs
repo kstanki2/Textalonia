@@ -56,9 +56,9 @@ public class TableExtensionInterchangeTests
             Assert.Equal(DocumentFormats.Json.Serialize(document), DocumentFormats.Json.Serialize(format.Parse(format.Serialize(document))));
         var payload = ClipboardInterchange.Serialize(new() { Document = document });
         Assert.Equal(DocumentFormats.Json.Serialize(document), DocumentFormats.Json.Serialize(ClipboardInterchange.Parse(payload).Document));
-        Assert.Contains("\"version\": 9", DocumentFormats.Json.Serialize(document));
-        Assert.Contains("Version=\"4\"", DocumentFormats.Xaml.Serialize(document));
-        Assert.Contains("\"fragmentVersion\":5", payload);
+        Assert.Contains("\"version\": 10", DocumentFormats.Json.Serialize(document));
+        Assert.Contains("Version=\"5\"", DocumentFormats.Xaml.Serialize(document));
+        Assert.Contains("\"fragmentVersion\":6", payload);
     }
 
     [Fact]

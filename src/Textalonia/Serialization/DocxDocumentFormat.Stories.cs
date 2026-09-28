@@ -82,7 +82,7 @@ public sealed partial class DocxDocumentFormat
                 var variant = (string?)reference.Attribute(W + "type") switch { "first" => HeaderFooterVariant.First, "even" => HeaderFooterVariant.Even, _ => HeaderFooterVariant.Primary };
                 header = header.WithReference(footer, variant, readReference(reference, footer));
             }
-        foreach (var child in source.Elements().Where(e => e.Name.LocalName is not ("pgSz" or "pgMar" or "cols" or "type" or "pgNumType" or "titlePg" or "headerReference" or "footerReference")))
+        foreach (var child in source.Elements().Where(e => e.Name != Tx + "watermark" && e.Name.LocalName is not ("pgSz" or "pgMar" or "cols" or "type" or "pgNumType" or "titlePg" or "headerReference" or "footerReference")))
             Loss("section-property", child.Name.LocalName, "Supported section and header/footer settings retained.", child);
         return new DocumentSection
         {

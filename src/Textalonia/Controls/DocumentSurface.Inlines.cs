@@ -7,6 +7,8 @@ using Avalonia.VisualTree;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Textalonia.Model;
+using Textalonia.Rendering;
+using ImageDrawing = Textalonia.Rendering.ImageDrawing;
 
 namespace Textalonia.Controls;
 
@@ -125,20 +127,28 @@ public partial class DocumentSurface
         }
         _inlineVisuals.Clear();
         var viewport = _viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, 0, Math.Max(1, Bounds.Width), 500);
-        _inlineVisuals.AddRange(GeometryInlineVisuals().Where(v => v.Bounds.Intersects(viewport) &&
-            (v.Clip is null || v.Clip.Value.Intersects(v.Bounds))));
+        _inlineVisuals.AddRange(GeometryInlineVisuals().Where(v => ImageDrawing.RotatedBounds(v.Bounds, v.Descriptor.Placement?.Rotation ?? 0).Intersects(viewport) &&
+            (v.Clip is null || v.Clip.Value.Intersects(ImageDrawing.RotatedBounds(v.Bounds, v.Descriptor.Placement?.Rotation ?? 0)))));
         var visibleControls = _inlineVisuals.Where(v => v.Descriptor.Payload is ControlInlinePayload).Select(v => v.Key).ToHashSet();
         foreach (var pair in _inlineChildren.ToArray())
             if (!visibleControls.Contains(pair.Key)) { _inlineChildren.Remove(pair.Key); ReleaseInlineChild(pair.Value); }
-        var resources = _inlineVisuals.Select(v => v.Descriptor.Payload).OfType<ImageInlinePayload>().Select(p => p.ResourceId).ToHashSet(StringComparer.Ordinal);
+        var resources = _inlineVisuals.Select(v => ImageDrawing.ResourceId(v.Descriptor)).OfType<string>().ToHashSet(StringComparer.Ordinal);
+        if (_pagedLayout is { } pages)
+            foreach (var watermark in pages.Watermarks())
+                if (watermark.Watermark.ResourceId is { } resourceId && ToSurface(watermark.Page.Bounds).Intersects(viewport))
+                {
+                    resources.Add(resourceId);
+                    Editor.Document.Resources.TryGetValue(resourceId, out var resource);
+                    _inlineImages.Request(resourceId, resource);
+                }
         _inlineImages.Retain(resources);
         foreach (var visual in _inlineVisuals)
         {
             var descriptor = visual.Descriptor;
-            if (descriptor.Payload is ImageInlinePayload image)
+            if (ImageDrawing.ResourceId(descriptor) is { } resourceId)
             {
-                Editor.Document.Resources.TryGetValue(image.ResourceId, out var resource);
-                _inlineImages.Request(image.ResourceId, resource);
+                Editor.Document.Resources.TryGetValue(resourceId, out var resource);
+                _inlineImages.Request(resourceId, resource);
             }
             else if (descriptor.Payload is ControlInlinePayload control)
             {
@@ -232,30 +242,43 @@ public partial class DocumentSurface
             }
     }
 
+    internal InlineVisual? HitTestImage(Point point) => GeometryInlineVisuals().LastOrDefault(visual =>
+        visual.Descriptor.Payload is ImageInlinePayload or OleInlinePayload &&
+        visual.StoryId == GeometryStoryId && (GeometryStoryPage < 0 || visual.PageIndex == GeometryStoryPage) &&
+        (visual.Clip is null || visual.Clip.Value.Contains(point)) &&
+        visual.Bounds.Contains(point.Transform(ImageDrawing.Rotation(visual.Bounds, -(visual.Descriptor.Placement?.Rotation ?? 0)))));
+
     internal bool IsInlineSelected(InlineVisual visual) => Editor is not null && !HasComposition &&
         visual.StoryId == (_pagedLayout is null ? Guid.Empty : GeometryStoryId) &&
         (_pagedLayout is null || GeometryStoryPage < 0 || visual.PageIndex == GeometryStoryPage) &&
         Editor.Session.Selection.Start <= visual.Position && Editor.Session.Selection.End > visual.Position;
 
-    private void DrawInlineImages(DrawingContext context, Rect viewport)
+    private void DrawInlineImages(DrawingContext context, Rect viewport, bool behindText = false)
     {
         if (Editor is null || _inlineImages is null) return;
         foreach (var visual in _inlineVisuals)
         {
-            if (!visual.Bounds.Intersects(viewport)) continue;
-            if (visual.Descriptor.Payload is ImageInlinePayload image)
+            if (!ImageDrawing.RotatedBounds(visual.Bounds, visual.Descriptor.Placement?.Rotation ?? 0).Intersects(viewport) ||
+                (visual.IsPositioned && ImageDrawing.BehindText(visual.Descriptor)) != behindText) continue;
+            if (ImageDrawing.ResourceId(visual.Descriptor) is { } resourceId)
             {
-                Editor.Document.Resources.TryGetValue(image.ResourceId, out var resource);
-                if (_inlineImages.Request(image.ResourceId, resource) is { } bitmap)
+                Editor.Document.Resources.TryGetValue(resourceId, out var resource);
+                if (_inlineImages.Request(resourceId, resource) is { } bitmap)
                 {
-                    using var clip = context.PushClip(visual.Clip?.Intersect(visual.Bounds) ?? visual.Bounds);
-                    context.DrawImage(bitmap, new Rect(bitmap.Size), visual.Bounds);
+                    using var clip = context.PushClip(visual.Clip ?? viewport);
+                    ImageDrawing.Draw(context, bitmap, visual.Bounds, visual.Descriptor.Placement);
+                }
+                else if (visual.IsPositioned)
+                {
+                    using var clip = context.PushClip(visual.Clip ?? viewport);
+                    ImageDrawing.DrawPlaceholder(context, visual.Descriptor, visual.Bounds);
                 }
             }
             var selected = IsInlineSelected(visual);
             if (selected)
             {
                 using var selectionClip = context.PushClip(visual.Clip ?? viewport);
+                using var selectionRotation = context.PushTransform(ImageDrawing.Rotation(visual.Bounds, visual.Descriptor.Placement?.Rotation ?? 0));
                 context.DrawRectangle(null, new Pen(Editor.SelectionBrush, 3), visual.Bounds.Inflate(1.5));
             }
         }

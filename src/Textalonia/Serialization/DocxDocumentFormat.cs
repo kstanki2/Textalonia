@@ -173,41 +173,64 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             { Loss("style-cycle", "Cyclic character style inheritance", "Inherited paragraph formatting retained.", style); return basis; }
             return ReadTextStyle(style.Element(W + "rPr"), CharacterStyle(Value(style.Element(W + "basedOn")), basis, visited));
         }
+        string? ReadResource(string? relationshipId, string kind, XElement source)
+        {
+            if (relationshipId is null || !relationships.TryGetValue(relationshipId, out var relationship) ||
+                ((string?)relationship.Attribute("Type"))?.EndsWith("/" + kind, StringComparison.Ordinal) != true || (string?)relationship.Attribute("TargetMode") == "External")
+            { Loss(kind + "-unavailable", "Missing, external or unsupported " + kind + " relationship", "Alternative text retained; no resource fetched.", source); return null; }
+            var part = ResolvePart((string?)relationship.Attribute("Target") ?? "", currentPart);
+            if (part is null || archive.GetEntry(part) is not { } entry)
+            { Loss(kind + "-unavailable", "Missing or unsafe " + kind + " package part", "Alternative text retained.", source); return null; }
+            var mediaType = (string?)contentTypes?.Elements(Ct + "Override").FirstOrDefault(e => (string?)e.Attribute("PartName") == "/" + part)?.Attribute("ContentType") ??
+                (string?)contentTypes?.Elements(Ct + "Default").FirstOrDefault(e => string.Equals((string?)e.Attribute("Extension"), Path.GetExtension(part).TrimStart('.'), StringComparison.OrdinalIgnoreCase))?.Attribute("ContentType") ??
+                (kind == "image" ? ImageMediaType(Path.GetExtension(part)) : "application/octet-stream");
+            if (kind == "image" && ImageExtension(mediaType) is null)
+            { Loss("image-format", "Unsupported image encoding", "Alternative text retained.", source); return null; }
+            if (!imageResources.TryGetValue(part, out var resourceId))
+            {
+                if (entry.Length > DocumentResource.MaximumEmbeddedBytes || resourceBytes + entry.Length > DocumentResource.MaximumDocumentEmbeddedBytes)
+                    throw new FormatException("DOCX embedded resources exceed resource limits.");
+                var data = ReadPart(entry, (int)Math.Min(DocumentResource.MaximumEmbeddedBytes, DocumentResource.MaximumDocumentEmbeddedBytes - resourceBytes));
+                resourceBytes += data.Length;
+                resourceId = $"docx-resource-{imageResources.Count + 1}";
+                imageResources.Add(part, resourceId);
+                resources.Add(resourceId, new DocumentResource { MediaType = mediaType!, Data = ImmutableArray.CreateRange(data) });
+            }
+            return resourceId;
+        }
         RichRun ReadDrawing(XElement drawing, TextStyle style)
         {
             var picture = drawing.Descendants(Wp + "docPr").FirstOrDefault();
             var alt = (string?)picture?.Attribute("descr") ?? (string?)picture?.Attribute("title") ?? "";
             if (alt.Length > 16384) throw new FormatException("DOCX image alternative text is too long.");
-            var relationshipId = (string?)drawing.Descendants(A + "blip").FirstOrDefault()?.Attribute(R + "embed");
-            if (relationshipId is null || !relationships.TryGetValue(relationshipId, out var relationship) ||
-                ((string?)relationship.Attribute("Type"))?.EndsWith("/image", StringComparison.Ordinal) != true || (string?)relationship.Attribute("TargetMode") == "External")
-            { Loss("image-unavailable", "External or unsupported image relationship", "Alternative text retained; no resource fetched.", drawing); return new RichRun(alt, style); }
-            var part = ResolvePart((string?)relationship.Attribute("Target") ?? "", currentPart);
-            if (part is null || archive.GetEntry(part) is not { } entry)
-            { Loss("image-unavailable", "Missing or unsafe image package part", "Alternative text retained.", drawing); return new RichRun(alt, style); }
-            var mediaType = (string?)contentTypes?.Elements(Ct + "Override").FirstOrDefault(e => (string?)e.Attribute("PartName") == "/" + part)?.Attribute("ContentType") ??
-                (string?)contentTypes?.Elements(Ct + "Default").FirstOrDefault(e => string.Equals((string?)e.Attribute("Extension"), Path.GetExtension(part).TrimStart('.'), StringComparison.OrdinalIgnoreCase))?.Attribute("ContentType") ?? ImageMediaType(Path.GetExtension(part));
-            if (ImageExtension(mediaType) is null)
-            { Loss("image-format", "Unsupported image encoding", "Alternative text retained.", drawing); return new RichRun(alt, style); }
-            if (!imageResources.TryGetValue(part, out var resourceId))
-            {
-                if (entry.Length > DocumentResource.MaximumEmbeddedBytes || resourceBytes + entry.Length > DocumentResource.MaximumDocumentEmbeddedBytes)
-                    throw new FormatException("DOCX embedded images exceed resource limits.");
-                var data = ReadPart(entry, (int)Math.Min(DocumentResource.MaximumEmbeddedBytes, DocumentResource.MaximumDocumentEmbeddedBytes - resourceBytes));
-                resourceBytes += data.Length;
-                resourceId = $"docx-image-{imageResources.Count + 1}";
-                imageResources.Add(part, resourceId);
-                resources.Add(resourceId, new DocumentResource { MediaType = mediaType!, Data = ImmutableArray.CreateRange(data) });
-            }
-            if (drawing.Descendants(Wp + "anchor").Any()) Loss("floating-image", "Floating image position and wrapping", "Image placed inline.", drawing);
-            if (drawing.Descendants(A + "srcRect").Any(e => e.Attributes().Any(a => a.Value != "0")) ||
-                drawing.Descendants(A + "xfrm").Any(e => e.Attributes().Any(a => a.Name.LocalName is "rot" or "flipH" or "flipV" && a.Value is not ("0" or "false"))))
-                Loss("image-transform", "Image cropping, rotation, or mirroring", "Untransformed image retained at its display size.", drawing);
+            var blip = drawing.Descendants(A + "blip").FirstOrDefault();
+            var original = blip?.Descendants().FirstOrDefault(e => e.Name == Svg + "svgBlip" || e.Name == Tx + "original");
+            var fallbackId = (string?)blip?.Attribute(R + "embed");
+            var resourceId = ReadResource((string?)original?.Attribute(R + "embed") ?? fallbackId, "image", drawing);
+            if (resourceId is null) return new RichRun(alt, style);
+            var previewId = original is null ? null : ReadResource(fallbackId, "image", drawing);
             var extent = drawing.Descendants(Wp + "extent").FirstOrDefault();
             var width = Dimension(extent, "cx", 32 * 9525) / 9525;
             var height = Dimension(extent, "cy", 32 * 9525) / 9525;
             if (width is <= 0 or > 10000 || height is <= 0 or > 10000) throw new FormatException("Invalid DOCX image dimensions.");
-            return new RichRun(new InlineDescriptor { AltText = alt, Width = width, Height = height, Payload = new ImageInlinePayload(resourceId) }, style);
+            return new RichRun(new InlineDescriptor { AltText = alt, Width = width, Height = height,
+                Placement = ReadImagePlacement(drawing), Payload = new ImageInlinePayload(resourceId) { PreviewResourceId = previewId } }, style);
+        }
+        RichRun ReadOle(XElement source, TextStyle style)
+        {
+            var shape = source.Element(V + "shape");
+            var alt = (string?)shape?.Attribute("alt") ?? "Embedded object";
+            var data = source.Element(O + "OLEObject");
+            if (data is null || (string?)data.Attribute("Type") != "Embed")
+            { Loss("ole-linked", "Linked or unsupported OLE object", "Alternative text retained; no linked data accessed.", source); return new RichRun(alt, style); }
+            var resourceId = ReadResource((string?)data.Attribute(R + "id"), "oleObject", source);
+            var previewId = ReadResource((string?)shape?.Element(V + "imagedata")?.Attribute(R + "id"), "image", source);
+            if (resourceId is null || previewId is null) return new RichRun(alt, style);
+            var width = Dimension(source, W + "dxaOrig", 480) / 15;
+            var height = Dimension(source, W + "dyaOrig", 480) / 15;
+            return new RichRun(new InlineDescriptor { AltText = alt, Width = width, Height = height,
+                Placement = source.Attribute(Tx + "placement") is { } placement ? System.Text.Json.JsonSerializer.Deserialize<ImagePlacement>(placement.Value, JsonDocumentFormat.Options) : null,
+                Payload = new OleInlinePayload(resourceId, previewId) { ProgramId = (string?)data.Attribute("ProgID") ?? "", FileName = (string?)source.Attribute(Tx + "fileName") ?? "" } }, style);
         }
         Paragraph ReadParagraph(XElement element)
         {
@@ -399,6 +422,8 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                     }
                     else if (content.Name == W + "footnoteRef" || content.Name == W + "endnoteRef") { }
                     else if (content.Name == W + "drawing") AddRun(ReadDrawing(content, style));
+                    else if (content.Name == W + "object") AddRun(ReadOle(content, style));
+                    else if (content.Name == W + "pict" && content.Descendants().Any(e => e.Attribute(Tx + "watermark") is not null)) { }
                     else if (content.Name == W + "t") AddRun(new RichRun(content.Value.Replace('\n', '\u2028').Replace("\r", ""), style));
                     else if (content.Name == W + "tab") AddRun(new RichRun("\t", style));
                     else if (content.Name == W + "br" || content.Name == W + "cr")
@@ -615,6 +640,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         // Enumerate before freezing resources, which are populated while reading inline drawings.
         var blocks = ReadBlocks(body.Elements(), 0).ToArray();
         var importedStoryParts = new Dictionary<(string, bool), Guid>();
+        var watermarkHeaderStories = new Dictionary<string, Guid>();
         StoryReference ReadHeaderFooter(XElement reference, bool footer)
         {
             var relationshipId = (string?)reference.Attribute(R + "id") ?? "";
@@ -627,7 +653,14 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             {
                 var root = Xml(part)?.Root;
                 if (root is null) { Loss("header-footer-reference", "Missing header/footer part", "Unlinked empty story applied.", reference); return new() { LinkToPrevious = false }; }
+                if (root.Attribute(Tx + "watermarkHeader") is { } originalHeader)
+                {
+                    if (originalHeader.Value == "none") return new() { LinkToPrevious = false };
+                    if (watermarkHeaderStories.TryGetValue(originalHeader.Value, out var existingStory)) return new() { StoryId = existingStory, LinkToPrevious = false };
+                }
+                root.Elements(W + "p").Where(paragraph => paragraph.Descendants().Any(element => element.Attribute(Tx + "watermark") is not null)).Remove();
                 var story = new DocumentStory { Kind = footer ? DocumentStoryKind.Footer : DocumentStoryKind.Header, Blocks = ReadStoryBlocks(part, root) };
+                if (root.Attribute(Tx + "watermarkHeader") is { } key) watermarkHeaderStories[key.Value] = story.Id;
                 stories.Add(story.Id, story); identity = story.Id; importedStoryParts.Add((part, footer), identity);
             }
             return new() { StoryId = identity, LinkToPrevious = false };
@@ -640,6 +673,21 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             if (!properties.HasElements && properties.Parent == body && sections.Count == 0) continue;
             var section = ReadPhysicalSection(properties, sectionStart, On(settings?.Root?.Element(W + "evenAndOddHeaders")), ReadHeaderFooter);
             section = section with { PageSettings = section.PageSettings with { MirrorMargins = On(settings?.Root?.Element(W + "mirrorMargins")) } };
+            if (properties.Attribute(Tx + "headerLinks") is { } links)
+            {
+                var values = links.Value.Split(',');
+                foreach (var variant in Enum.GetValues<HeaderFooterVariant>())
+                    if ((int)variant < values.Length && values[(int)variant] == "1")
+                        section = section with { HeaderFooter = section.HeaderFooter.WithReference(false, variant, new StoryReference { LinkToPrevious = true }) };
+            }
+            if (properties.Element(Tx + "watermark") is { } watermarkElement)
+            {
+                var watermark = System.Text.Json.JsonSerializer.Deserialize<DocumentWatermark>((string?)watermarkElement.Attribute("data") ?? "", JsonDocumentFormat.Options)
+                    ?? throw new FormatException("Invalid DOCX watermark data.");
+                if (watermark.ResourceId is not null)
+                    watermark = watermark with { ResourceId = ReadResource((string?)watermarkElement.Attribute(R + "embed"), "image", watermarkElement) };
+                if (watermark.ResourceId is not null || watermark.Text is not null) { watermark.Validate(); section = section with { Watermark = watermark }; }
+            }
             sections.Add(section);
             if (properties.Parent?.Parent is { } p && p.Name == W + "p")
             {
@@ -788,8 +836,8 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         }
         return string.Join('/', parts);
     }
-    private static string? ImageExtension(string? type) => type?.ToLowerInvariant() switch { "image/png" => "png", "image/jpeg" => "jpg", "image/gif" => "gif", "image/bmp" => "bmp", "image/tiff" => "tif", _ => null };
-    private static string? ImageMediaType(string extension) => extension.ToLowerInvariant() switch { ".png" => "image/png", ".jpg" or ".jpeg" => "image/jpeg", ".gif" => "image/gif", ".bmp" => "image/bmp", ".tif" or ".tiff" => "image/tiff", _ => null };
+    private static string? ImageExtension(string? type) => type?.ToLowerInvariant() switch { "image/png" => "png", "image/jpeg" => "jpg", "image/gif" => "gif", "image/bmp" => "bmp", "image/tiff" => "tif", "image/svg+xml" => "svg", "image/x-emf" or "image/emf" => "emf", "image/x-wmf" or "image/wmf" => "wmf", "image/webp" => "webp", "image/x-icon" or "image/vnd.microsoft.icon" => "ico", _ => null };
+    private static string? ImageMediaType(string extension) => extension.ToLowerInvariant() switch { ".png" => "image/png", ".jpg" or ".jpeg" => "image/jpeg", ".gif" => "image/gif", ".bmp" => "image/bmp", ".tif" or ".tiff" => "image/tiff", ".svg" => "image/svg+xml", ".emf" => "image/x-emf", ".wmf" => "image/x-wmf", ".webp" => "image/webp", ".ico" => "image/x-icon", _ => null };
     private static EdgeInsets? ReadPadding(XElement? properties)
     {
         if (properties is null) return null;
@@ -999,7 +1047,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         {
             void Part(string name, XElement element)
             {
-                if (element.DescendantsAndSelf().Any(e => e.Attributes().Any(a => a.Name.Namespace == Tx)))
+                if (element.DescendantsAndSelf().Any(e => e.Name.Namespace == Tx || e.Attributes().Any(a => a.Name.Namespace == Tx)))
                 {
                     XNamespace compatibility = "http://schemas.openxmlformats.org/markup-compatibility/2006";
                     element.SetAttributeValue(XNamespace.Xmlns + "tx", Tx.NamespaceName);
@@ -1072,31 +1120,36 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 identities[identity] = current;
                 return current.Number;
             }
+            string? WriteResource(string resourceId, bool image)
+            {
+                if (!document.Resources.TryGetValue(resourceId, out var resource) || resource.Kind != DocumentResourceKind.Embedded ||
+                    image && ImageExtension(resource.MediaType) is null) return null;
+                if (imageIds.TryGetValue(resourceId, out var existing)) return existing;
+                var extension = image ? ImageExtension(resource.MediaType)! : "bin";
+                var relationshipId = (image ? "image" : "ole") + imageIds.Count;
+                var name = (image ? "media/" : "embeddings/") + relationshipId + "." + extension;
+                using (var target = archive.CreateEntry("word/" + name, CompressionLevel.Optimal).Open()) target.Write(resource.Data.AsSpan());
+                relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", relationshipId), new XAttribute("Type", R.NamespaceName + (image ? "/image" : "/oleObject")), new XAttribute("Target", name)));
+                imageIds[resourceId] = relationshipId;
+                storyContentTypes.Add(new XElement(Ct + "Override", new XAttribute("PartName", "/word/" + name), new XAttribute("ContentType", resource.MediaType)));
+                return relationshipId;
+            }
             XElement? WriteImage(InlineDescriptor inline)
             {
-                if (inline.Payload is not ImageInlinePayload image || !document.Resources.TryGetValue(image.ResourceId, out var resource) ||
-                    resource.Kind != DocumentResourceKind.Embedded || ImageExtension(resource.MediaType) is not { } extension)
-                { Loss("inline-fallback", "Control or unavailable image resource", "Alternative text retained; no resource fetched.", id: inline.Id); return null; }
-                if (!imageIds.TryGetValue(image.ResourceId, out var relationshipId))
+                if (inline.Payload is OleInlinePayload ole)
                 {
-                    relationshipId = "image" + imageIds.Count;
-                    var name = "media/" + relationshipId + "." + extension;
-                    using (var target = archive.CreateEntry("word/" + name, CompressionLevel.Optimal).Open()) target.Write(resource.Data.AsSpan());
-                    relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", relationshipId), new XAttribute("Type", R.NamespaceName + "/image"), new XAttribute("Target", name)));
-                    imageIds[image.ResourceId] = relationshipId; mediaTypes[extension] = resource.MediaType;
+                    if (inline.Placement is not null) Loss("ole-placement", "OLE preview placement, crop and rotation", "Placement retained in a Textalonia extension; other editors show an inline untransformed preview.", id: inline.Id);
+                    if (WriteResource(ole.ResourceId, false) is { } packageId && WriteResource(ole.PreviewResourceId, true) is { } olePreviewId)
+                        return WriteOleObject(inline, ole, packageId, olePreviewId, ++drawingId);
+                    Loss("ole-unavailable", "Unavailable embedded OLE data or preview", "Alternative text retained; no resource fetched.", id: inline.Id); return null;
                 }
-                if (Math.Abs(inline.Width * 9525 - Math.Round(inline.Width * 9525)) > .000001 || Math.Abs(inline.Height * 9525 - Math.Round(inline.Height * 9525)) > .000001) Loss("dimension-precision", "Sub-EMU image size", "Image dimensions rounded to the nearest EMU.", id: inline.Id);
-                var id = ++drawingId; var cx = (long)Math.Round(inline.Width * 9525); var cy = (long)Math.Round(inline.Height * 9525);
-                return new XElement(W + "drawing", new XElement(Wp + "inline",
-                    new XAttribute("distT", 0), new XAttribute("distB", 0), new XAttribute("distL", 0), new XAttribute("distR", 0),
-                    new XElement(Wp + "extent", new XAttribute("cx", cx), new XAttribute("cy", cy)),
-                    new XElement(Wp + "docPr", new XAttribute("id", id), new XAttribute("name", "Image " + id), new XAttribute("descr", inline.AltText)),
-                    new XElement(Wp + "cNvGraphicFramePr", new XElement(A + "graphicFrameLocks", new XAttribute("noChangeAspect", 1))),
-                    new XElement(A + "graphic", new XElement(A + "graphicData", new XAttribute("uri", Pic.NamespaceName),
-                        new XElement(Pic + "pic", new XElement(Pic + "nvPicPr", new XElement(Pic + "cNvPr", new XAttribute("id", id), new XAttribute("name", "Image " + id)), new XElement(Pic + "cNvPicPr")),
-                            new XElement(Pic + "blipFill", new XElement(A + "blip", new XAttribute(R + "embed", relationshipId)), new XElement(A + "stretch", new XElement(A + "fillRect"))),
-                            new XElement(Pic + "spPr", new XElement(A + "xfrm", new XElement(A + "off", new XAttribute("x", 0), new XAttribute("y", 0)), new XElement(A + "ext", new XAttribute("cx", cx), new XAttribute("cy", cy))),
-                                new XElement(A + "prstGeom", new XAttribute("prst", "rect"), new XElement(A + "avLst"))))))));
+                if (inline.Payload is not ImageInlinePayload image || WriteResource(image.ResourceId, true) is not { } relationshipId)
+                { Loss("inline-fallback", "Control or unavailable image resource", "Alternative text retained; no resource fetched.", id: inline.Id); return null; }
+                var previewId = image.PreviewResourceId is null ? null : WriteResource(image.PreviewResourceId, true);
+                if (image.PreviewResourceId is not null && previewId is null) Loss("image-preview", "Unavailable image preview", "Original image retained without the supplied preview.", id: inline.Id);
+                if (Math.Abs(inline.Width * 9525 - Math.Round(inline.Width * 9525)) > .000001 || Math.Abs(inline.Height * 9525 - Math.Round(inline.Height * 9525)) > .000001)
+                    Loss("dimension-precision", "Sub-EMU image size", "Image dimensions rounded to the nearest EMU.", id: inline.Id);
+                return WriteImageDrawing(inline, relationshipId, ++drawingId, previewId, document.Resources[image.ResourceId].MediaType == "image/svg+xml");
             }
             XElement WriteParagraph(Paragraph paragraph, Guid anonymousIdentity)
             {
@@ -1239,14 +1292,26 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 if (section.HeaderFooter.GetReference(footer, variant).StoryId is { } storyId) usedStories.Add(storyId);
             foreach (var story in document.Stories.Values.Where(s => !usedStories.Contains(s.Id)))
                 Loss("unreferenced-story", "Secondary story without an owning reference", "Unreferenced story omitted.", id: story.Id);
-            var headerRelationships = new Dictionary<(Guid?, bool), string>();
+            var hasWatermarks = document.Sections.Any(section => section.Watermark is not null);
+            DocumentWatermark? currentWatermark = null;
+            var headerRelationships = new Dictionary<(Guid?, bool, DocumentWatermark?), string>();
             string HeaderRelationship(StoryReference reference, bool footer)
             {
-                var key = (reference.StoryId, footer);
+                var key = (reference.StoryId, footer, footer ? null : currentWatermark);
                 if (headerRelationships.TryGetValue(key, out var existing)) return existing;
                 var name = (footer ? "footer" : "header") + (headerRelationships.Count + 1);
                 var blocks = reference.StoryId is { } id ? document.Stories[id].Blocks : [new Paragraph()];
                 var root = new XElement(W + (footer ? "ftr" : "hdr"), new XAttribute(XNamespace.Xmlns + "w", W), new XAttribute(XNamespace.Xmlns + "r", R), WriteBlocks(blocks));
+                if (!footer && hasWatermarks)
+                {
+                    root.SetAttributeValue(Tx + "watermarkHeader", reference.StoryId?.ToString() ?? "none");
+                    if (currentWatermark is { } watermark)
+                    {
+                        var imageId = watermark.ResourceId is null ? null : WriteResource(watermark.ResourceId, true);
+                        if (watermark.ResourceId is null || imageId is not null) root.Add(WriteWatermarkPicture(watermark, imageId, ++drawingId));
+                        else Loss("watermark-image", "Unavailable watermark image", "Watermark omitted; header text retained.");
+                    }
+                }
                 StoryPart(name, root, footer ? "footer" : "header");
                 relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", name), new XAttribute("Type", R.NamespaceName + (footer ? "/footer" : "/header")), new XAttribute("Target", name + ".xml")));
                 headerRelationships.Add(key, name); return name;
@@ -1257,7 +1322,22 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             {
                 for (var index = 0; index < document.Sections.Length; index++)
                 {
-                    var properties = WritePhysicalSection(document.Sections[index], HeaderRelationship);
+                    var section = document.Sections[index];
+                    currentWatermark = section.Watermark;
+                    var exportSection = section;
+                    if (hasWatermarks)
+                        foreach (var variant in Enum.GetValues<HeaderFooterVariant>())
+                            exportSection = exportSection with { HeaderFooter = exportSection.HeaderFooter.WithReference(false, variant,
+                                new StoryReference { LinkToPrevious = false, StoryId = document.ResolveHeaderFooter(index, false, variant)?.Id }) };
+                    var properties = WritePhysicalSection(exportSection, HeaderRelationship);
+                    if (hasWatermarks) properties.SetAttributeValue(Tx + "headerLinks", string.Join(',', Enum.GetValues<HeaderFooterVariant>().Select(variant => section.HeaderFooter.GetReference(false, variant).LinkToPrevious ? "1" : "0")));
+                    if (section.Watermark is { } watermark)
+                    {
+                        var imageId = watermark.ResourceId is null ? null : WriteResource(watermark.ResourceId, true);
+                        if (watermark.ResourceId is null || imageId is not null)
+                            properties.Add(new XElement(Tx + "watermark", new XAttribute("data", System.Text.Json.JsonSerializer.Serialize(watermark, JsonDocumentFormat.Options)),
+                                imageId is null ? null : new XAttribute(R + "embed", imageId)));
+                    }
                     if (index == document.Sections.Length - 1) body.Add(properties);
                     else
                     {

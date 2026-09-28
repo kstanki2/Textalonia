@@ -12,7 +12,7 @@ requires updating these notes before creating the publication candidate.
 Immutable documents and editing sessions; formatting, lists, nested/merged
 tables and undo; editor, selectable viewer and replaceable toolbar/input;
 inline image/control descriptors and host resource services; diagnosed
-text/HTML/RTF/DOCX interchange; native JSON v9 (v4-v9 readable); data XAML v4;
+text/HTML/RTF/DOCX interchange; native JSON v10 (v4-v10 readable); data XAML v5;
 bounded Markdown codec/viewer and optional host highlighting. The core package is
 Textalonia; PDF export is available through optional Textalonia.Pdf.Skia.
 The core editor does not require that backend or a desktop host.
@@ -51,7 +51,7 @@ are included in the same package. Use the independent PackageSmoke program as a
 compiling example for extension services and input replacement.
 
 Read [API contracts](API-CONTRACTS.md) before attaching mutable sessions/services
-to controls. Native JSON writes schema v9 and reads v4/v5/v6/v7/v8/v9; other versions are rejected. Earlier development schemas were never published or used
+to controls. Native JSON writes schema v10 and reads v4/v5/v6/v7/v8/v9/v10; other versions are rejected. Earlier development schemas were never published or used
 and have no migration support. Use strict conversion reports when export loss
 matters.
 
@@ -79,7 +79,7 @@ Font/paragraph/tabs/style dialogs are available from the toolbar. Advanced run
 shaping, tab stops/leaders, paragraph spacing and decorations share hit-test and
 caret geometry. DX-02 subsequently added pagination for page/keep/widow and grid metadata.
 
-DX-01 introduced native v5; the current native schema is v8 as described above.
+DX-01 introduced native v5; the current native schema is v10 as described above.
 XAML and clipboard retain the new model;
 DOCX retains mapped styles/themes/fonts. Other formats report flattened style
 identity and unsupported typography. See [support details](STYLES.md).
@@ -120,3 +120,10 @@ formatted/style-linked list markers. Table properties and band shading can be
 edited through the toolbar dialogs. Native v9, data XAML v4 and clipboard v5 retain
 the metadata, with earlier supported versions still readable. See [table/list
 contracts](TABLES.md) for format coverage and explicit layout limitations.
+
+## DX-07 pictures and objects
+
+Image placement/crop/rotation, section text/image watermarks and OLE packages with
+supplied previews are available through focused APIs and the Pictures toolbar menu.
+Native v10, XAML v5 and clipboard v6 retain the expanded model. See [image contracts](IMAGES.md)
+for format/rendering support and qualification boundaries.

@@ -248,6 +248,13 @@ public partial class DocumentSurface : Control
             return;
         }
         var documentViewport = ToDocument(viewport);
+        // Loaded transparent images must reveal document content, not the loading placeholder.
+        using var imageScope = new Rendering.InlineOutputScope((descriptor, _, _) =>
+        {
+            if (Rendering.ImageDrawing.ResourceId(descriptor) is not { } resourceId) return false;
+            Editor.Document.Resources.TryGetValue(resourceId, out var resource);
+            return _inlineImages?.Request(resourceId, resource) is not null;
+        });
         using (context.PushTransform(Matrix.CreateScale(ViewZoom, ViewZoom)))
         {
             if (_pagedLayout is { } pages)
@@ -258,6 +265,15 @@ public partial class DocumentSurface : Control
             }
             else foreach (var decoration in _layout.Decorations)
                 if (decoration.Bounds.Intersects(documentViewport)) decoration.Draw(context);
+            if (_pagedLayout is { } watermarkPages)
+                watermarkPages.DrawWatermarks(context, documentViewport, (drawing, resourceId, bounds) =>
+                {
+                    Editor.Document.Resources.TryGetValue(resourceId, out var resource);
+                    if (_inlineImages?.Request(resourceId, resource) is { } bitmap)
+                        drawing.DrawImage(bitmap, new Rect(bitmap.Size), bounds);
+                });
+            using (context.PushTransform(Matrix.CreateScale(1 / ViewZoom, 1 / ViewZoom)))
+                DrawInlineImages(context, viewport, true);
             DrawStoryOverlay(context);
             foreach (var highlight in Editor.Highlights.Where(h => h.Start >= 0 && h.Length >= 0 && h.Start <= Editor.Session.Index.Length - h.Length))
                 foreach (var rect in GeometrySelectionRects(highlight.Start, highlight.Length))
