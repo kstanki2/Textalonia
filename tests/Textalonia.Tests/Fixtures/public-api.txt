@@ -478,6 +478,10 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Boolean NavigateToOutline(Textalonia.Editing.DocumentOutlineEntry entry)
   method public System.Boolean NavigateToSearchResult(Textalonia.Editing.DocumentSearchResult result)
   method public System.Boolean ResizeCurrentTableTrack(Textalonia.Controls.TableResizeAxis axis, System.Double delta)
+  method public System.Boolean SelectContentControl(System.Guid id)
+  method public System.Boolean SelectNextContentControl(System.Boolean backwards = False)
+  method public System.Boolean SetContentControlValue(System.Guid id, System.String value)
+  method public System.Boolean ToggleContentControl(System.Guid id)
   method public System.Collections.Immutable.ImmutableArray<Textalonia.Editing.DocumentOutlineEntry> GetOutline(System.Boolean allStories = False)
   method public System.Collections.Immutable.ImmutableArray<Textalonia.Editing.DocumentSearchResult> Search(System.String query, System.Boolean matchCase = False, System.Boolean allStories = True)
   method public System.Int32 ReplaceAll(System.String find, System.String replace, System.Boolean matchCase = False)
@@ -487,6 +491,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Threading.Tasks.Task PasteAsync()
   method public System.Threading.Tasks.Task SaveAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task<System.Boolean> QuickPrintAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowContentControlValueDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowExportPdfDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowExtractOleDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowFontDialogAsync()
@@ -629,6 +634,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property Textalonia.Editing.EditorSession Session { public get; }
   property Textalonia.Editing.SelectionFormattingState FormattingState { public get; }
   property Textalonia.Export.IPagedDocumentExporter PdfExporter { public get; public set; }
+  property Textalonia.Model.DocumentContentControl CurrentContentControl { public get; }
   property Textalonia.Model.Fields.FieldEvaluationOptions OutputFieldOptions { public get; public set; }
   property Textalonia.Model.FlowDocument Document { public get; public set; }
   property Textalonia.Model.InlineDescriptor CurrentImage { public get; }
@@ -727,6 +733,15 @@ type Textalonia.Controls.TextaloniaViewer : Textalonia.Controls.TextaloniaEditor
   interface System.ComponentModel.ISupportInitialize
   ctor public ()
   property System.Type StyleKeyOverride { protected get; }
+type Textalonia.Editing.CommandCapability : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Editing.CommandCapability Disabled static = 1
+  field Textalonia.Editing.CommandCapability Enabled static = 0
+  field Textalonia.Editing.CommandCapability Hidden static = 2
 type Textalonia.Editing.DocumentFragment : System.Object sealed
   interface System.IEquatable<Textalonia.Editing.DocumentFragment>
   ctor public ()
@@ -783,16 +798,60 @@ type Textalonia.Editing.DocumentSearchResult : System.Object sealed
   property System.Int32 Start { public get; }
   property System.String Text { public get; }
   property Textalonia.Editing.TextSelection Selection { public get; }
+type Textalonia.Editing.EditIdentity : System.Object sealed
+  interface System.IEquatable<Textalonia.Editing.EditIdentity>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Editing.EditIdentity other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Editing.EditIdentity <Clone>$()
+  property System.Collections.Immutable.ImmutableHashSet<System.String> Groups { public get; public set; }
+  property System.String User { public get; public set; }
+type Textalonia.Editing.EditOperation : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Editing.EditOperation Clipboard static = 7
+  field Textalonia.Editing.EditOperation Formatting static = 1
+  field Textalonia.Editing.EditOperation Forms static = 4
+  field Textalonia.Editing.EditOperation InlineObjects static = 3
+  field Textalonia.Editing.EditOperation Metadata static = 6
+  field Textalonia.Editing.EditOperation Redo static = 9
+  field Textalonia.Editing.EditOperation Structure static = 5
+  field Textalonia.Editing.EditOperation Tables static = 2
+  field Textalonia.Editing.EditOperation Text static = 0
+  field Textalonia.Editing.EditOperation Undo static = 8
+type Textalonia.Editing.EditPolicy : System.Object sealed
+  interface System.IEquatable<Textalonia.Editing.EditPolicy>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Editing.EditPolicy other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Editing.CommandCapability GetCapability(Textalonia.Editing.EditOperation operation)
+  method public Textalonia.Editing.EditPolicy <Clone>$()
+  property System.Collections.Immutable.ImmutableDictionary<Textalonia.Editing.EditOperation,Textalonia.Editing.CommandCapability> Commands { public get; public set; }
 type Textalonia.Editing.EditorSession : System.Object sealed
   ctor public ()
   ctor public (Textalonia.Model.FlowDocument document)
   event System.EventHandler Changed
+  method public System.Boolean ApplyContentControlBinding(System.Guid controlId, System.String storeItemId, System.String xml)
   method public System.Boolean FindNext(System.String query, System.Boolean matchCase = False)
   method public System.Boolean IsCurrentSearchResult(Textalonia.Editing.DocumentSearchResult result)
   method public System.Boolean NavigateToBookmark(System.String name)
   method public System.Boolean NavigateToOutline(Textalonia.Editing.DocumentOutlineEntry entry)
+  method public System.Boolean Protect(Textalonia.Model.DocumentProtection protection, System.String password = )
+  method public System.Boolean RemoveContentControl(System.Guid controlId)
+  method public System.Boolean SelectContentControl(System.Guid controlId)
+  method public System.Boolean SelectNextContentControl(System.Boolean backwards = False)
   method public System.Boolean SelectSearchResult(Textalonia.Editing.DocumentSearchResult result)
+  method public System.Boolean SetContentControlValue(System.Guid controlId, System.String value)
+  method public System.Boolean ToggleContentControl(System.Guid controlId)
   method public System.Boolean TryResolvePosition(Textalonia.Editing.DocumentPosition position, System.Int32& offset)
+  method public System.Boolean TryUnprotect(System.String password = )
   method public System.Collections.Generic.IEnumerable<Textalonia.Editing.TextSelection> FindAll(System.String query, System.Boolean matchCase = False)
   method public System.Collections.Immutable.ImmutableArray<Textalonia.Editing.DocumentOutlineEntry> GetOutline(System.Boolean allStories = False)
   method public System.Collections.Immutable.ImmutableArray<Textalonia.Editing.DocumentSearchResult> Search(System.String query, System.Boolean matchCase = False, System.Boolean allStories = True)
@@ -869,10 +928,12 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Void UpdateImage(System.Guid id, Textalonia.Model.ImagePlacement placement, System.Nullable<System.Double> width = , System.Nullable<System.Double> height = )
   method public System.Void UpdateInline(System.Guid id, System.Func<Textalonia.Model.InlineDescriptor,Textalonia.Model.InlineDescriptor> update)
   method public System.Void UpdateMergeField(System.Guid id, System.String name, System.String format = , System.String fallbackText = )
+  method public Textalonia.Editing.CommandCapability GetCapability(Textalonia.Editing.EditOperation operation)
   method public Textalonia.Editing.DocumentFragment CopyCells(System.Guid tableId, System.Int32 row, System.Int32 column, System.Int32 rowCount, System.Int32 columnCount)
   method public Textalonia.Editing.DocumentFragment CopyFragment()
   method public Textalonia.Editing.DocumentPosition CreatePosition(System.Int32 offset)
   method public Textalonia.Model.DocumentBookmark AddBookmark(System.String name)
+  method public Textalonia.Model.DocumentContentControl InsertContentControl(Textalonia.Model.DocumentContentControl control)
   method public Textalonia.Model.DocumentField InsertField(System.String instruction, Textalonia.Model.FlowDocument cachedResult = )
   method public Textalonia.Model.DocumentNote InsertNote(Textalonia.Model.DocumentNoteKind kind, System.String customMark = )
   method public Textalonia.Model.DocumentResource ExtractOle(System.Guid id)
@@ -887,8 +948,11 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   property System.Int64 HistoryByteLimit { public get; public set; }
   property System.Int64 RetainedHistoryBytes { public get; }
   property System.String SelectedText { public get; }
+  property Textalonia.Editing.EditIdentity Identity { public get; public set; }
+  property Textalonia.Editing.EditPolicy EditPolicy { public get; public set; }
   property Textalonia.Editing.SelectionFormattingState FormattingState { public get; }
   property Textalonia.Editing.TextSelection Selection { public get; }
+  property Textalonia.Model.DocumentContentControl CurrentContentControl { public get; }
   property Textalonia.Model.DocumentIndex Index { public get; }
   property Textalonia.Model.DocumentSection CurrentSection { public get; }
   property Textalonia.Model.FlowDocument ActiveDocument { public get; }
@@ -1275,6 +1339,44 @@ type Textalonia.Model.CharacterStyleDefinition : System.Object sealed
   property System.String LinkedStyle { public get; public set; }
   property System.String Name { public get; public set; }
   property Textalonia.Model.TextStyleOverrides Formatting { public get; public set; }
+type Textalonia.Model.ContentControlBinding : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.ContentControlBinding>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.ContentControlBinding other) virtual
+  method public System.Boolean TryReadValue(System.String xml, System.String& value)
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.ContentControlBinding <Clone>$()
+  property System.String PrefixMappings { public get; public set; }
+  property System.String StoreItemId { public get; public set; }
+  property System.String XPath { public get; public set; }
+type Textalonia.Model.ContentControlItem : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.ContentControlItem>
+  ctor public (System.String DisplayText, System.String Value)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.ContentControlItem other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& DisplayText, System.String& Value)
+  method public Textalonia.Model.ContentControlItem <Clone>$()
+  property System.String DisplayText { public get; public set; }
+  property System.String Value { public get; public set; }
+type Textalonia.Model.ContentControlKind : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.ContentControlKind BuildingBlockGallery static = 8
+  field Textalonia.Model.ContentControlKind CheckBox static = 2
+  field Textalonia.Model.ContentControlKind ComboBox static = 3
+  field Textalonia.Model.ContentControlKind Date static = 5
+  field Textalonia.Model.ContentControlKind DropDown static = 4
+  field Textalonia.Model.ContentControlKind Picture static = 6
+  field Textalonia.Model.ContentControlKind PlainText static = 0
+  field Textalonia.Model.ContentControlKind RepeatingSection static = 7
+  field Textalonia.Model.ContentControlKind RichText static = 1
 type Textalonia.Model.ControlInlinePayload : Textalonia.Model.InlinePayload sealed
   interface System.IEquatable<Textalonia.Model.ControlInlinePayload>
   interface System.IEquatable<Textalonia.Model.InlinePayload>
@@ -1314,6 +1416,34 @@ type Textalonia.Model.DocumentBookmark : System.Object sealed
   method public Textalonia.Model.DocumentBookmark <Clone>$()
   property System.Guid Id { public get; public set; }
   property System.String Name { public get; public set; }
+  property Textalonia.Model.DocumentAnchor End { public get; public set; }
+  property Textalonia.Model.DocumentAnchor Start { public get; public set; }
+type Textalonia.Model.DocumentContentControl : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentContentControl>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentContentControl other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.String ValidateValue(System.String value)
+  method public Textalonia.Model.DocumentContentControl <Clone>$()
+  property System.Boolean IsAtomic { public get; }
+  property System.Boolean IsChecked { public get; public set; }
+  property System.Boolean IsLegacyFormField { public get; public set; }
+  property System.Boolean LockContents { public get; public set; }
+  property System.Boolean LockControl { public get; public set; }
+  property System.Boolean SupportsInteraction { public get; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Model.ContentControlItem> Items { public get; public set; }
+  property System.Collections.Immutable.ImmutableDictionary<System.String,System.String> Data { public get; public set; }
+  property System.Guid Id { public get; public set; }
+  property System.String DateFormat { public get; public set; }
+  property System.String DisplayText { public get; }
+  property System.String Placeholder { public get; public set; }
+  property System.String Tag { public get; public set; }
+  property System.String Title { public get; public set; }
+  property System.String Value { public get; public set; }
+  property Textalonia.Model.ContentControlBinding Binding { public get; public set; }
+  property Textalonia.Model.ContentControlKind Kind { public get; public set; }
   property Textalonia.Model.DocumentAnchor End { public get; public set; }
   property Textalonia.Model.DocumentAnchor Start { public get; public set; }
 type Textalonia.Model.DocumentDefaults : System.Object sealed
@@ -1390,6 +1520,55 @@ type Textalonia.Model.DocumentNoteKind : System.Enum sealed
 type Textalonia.Model.DocumentNoteNumbering : System.Object sealed abstract
   method public static System.String Format(System.Int32 number, Textalonia.Model.PageNumberFormat format)
   method public static System.String GetMark(Textalonia.Model.FlowDocument document, System.Guid noteId, System.Collections.Generic.IReadOnlyDictionary<System.Guid,System.Int32> notePages = )
+type Textalonia.Model.DocumentPermissionRange : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentPermissionRange>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentPermissionRange other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentPermissionRange <Clone>$()
+  property System.Boolean IsReadOnly { public get; public set; }
+  property System.Guid Id { public get; public set; }
+  property System.String Group { public get; public set; }
+  property System.String User { public get; public set; }
+  property Textalonia.Model.DocumentAnchor End { public get; public set; }
+  property Textalonia.Model.DocumentAnchor Start { public get; public set; }
+type Textalonia.Model.DocumentProtection : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentProtection>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentProtection other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentProtection <Clone>$()
+  property System.Boolean Enforce { public get; public set; }
+  property System.Collections.Immutable.ImmutableArray<System.Guid> ProtectedSectionIds { public get; public set; }
+  property Textalonia.Model.DocumentProtectionMode Mode { public get; public set; }
+  property Textalonia.Model.DocumentProtectionPassword Password { public get; public set; }
+type Textalonia.Model.DocumentProtectionMode : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.DocumentProtectionMode FormsOnly static = 2
+  field Textalonia.Model.DocumentProtectionMode None static = 0
+  field Textalonia.Model.DocumentProtectionMode ReadOnly static = 1
+type Textalonia.Model.DocumentProtectionPassword : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentProtectionPassword>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentProtectionPassword other) virtual
+  method public System.Boolean Verify(System.String password)
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentProtectionPassword <Clone>$()
+  method public static Textalonia.Model.DocumentProtectionPassword Create(System.String password)
+  property System.Int32 Iterations { public get; public set; }
+  property System.String Algorithm { public get; public set; }
+  property System.String Hash { public get; public set; }
+  property System.String Salt { public get; public set; }
 type Textalonia.Model.DocumentResource : System.Object sealed
   interface System.IEquatable<Textalonia.Model.DocumentResource>
   ctor public ()
@@ -1754,9 +1933,11 @@ type Textalonia.Model.FlowDocument : System.Object sealed
   method public static Textalonia.Model.FlowDocument FromText(System.String text, Textalonia.Model.TextStyle style = )
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.Block> Blocks { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentBookmark> Bookmarks { public get; public set; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentContentControl> ContentControls { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentField> Fields { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentFontDefinition> Fonts { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentNote> Notes { public get; public set; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentPermissionRange> PermissionRanges { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentSection> Sections { public get; public set; }
   property System.Collections.Immutable.ImmutableDictionary<System.Guid,Textalonia.Model.DocumentStory> Stories { public get; public set; }
   property System.Collections.Immutable.ImmutableDictionary<System.String,System.String> Properties { public get; public set; }
@@ -1764,6 +1945,7 @@ type Textalonia.Model.FlowDocument : System.Object sealed
   property System.String PlainText { public get; }
   property System.String Text { public get; }
   property Textalonia.Model.DocumentDefaults Defaults { public get; public set; }
+  property Textalonia.Model.DocumentProtection Protection { public get; public set; }
   property Textalonia.Model.DocumentStyleCatalog Styles { public get; public set; }
   property Textalonia.Model.DocumentTheme Theme { public get; public set; }
   property Textalonia.Model.NoteSettings EndnoteSettings { public get; public set; }
@@ -1783,6 +1965,20 @@ type Textalonia.Model.FontEmbeddingRights : System.Enum sealed
   field Textalonia.Model.FontEmbeddingRights NoSubsetting static = 256
   field Textalonia.Model.FontEmbeddingRights PreviewAndPrint static = 4
   field Textalonia.Model.FontEmbeddingRights Restricted static = 2
+type Textalonia.Model.FormControlInlinePayload : Textalonia.Model.InlinePayload sealed
+  interface System.IEquatable<Textalonia.Model.FormControlInlinePayload>
+  interface System.IEquatable<Textalonia.Model.InlinePayload>
+  ctor public (System.Guid ControlId)
+  method protected System.Boolean PrintMembers(System.Text.StringBuilder builder) virtual
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.FormControlInlinePayload other) virtual
+  method public System.Boolean Equals(Textalonia.Model.InlinePayload other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Guid& ControlId)
+  method public Textalonia.Model.FormControlInlinePayload <Clone>$() virtual
+  property System.Guid ControlId { public get; public set; }
+  property System.Type EqualityContract { protected get; }
 type Textalonia.Model.HeaderFooterSettings : System.Object sealed
   interface System.IEquatable<Textalonia.Model.HeaderFooterSettings>
   ctor public ()

@@ -41,7 +41,7 @@ public class BaselineCorpusTests
         var json = File.ReadAllText(path).Replace("\r\n", "\n").TrimEnd();
         var loaded = DocumentFormats.Json.Parse(json);
         var encoded = Encode(loaded);
-        Assert.Contains("\"version\": 10", encoded);
+        Assert.Contains("\"version\": 11", encoded);
         Assert.Contains("\"version\": 4", json); // Retained v4 fixture migrates to v5; compare its complete model below.
         Assert.Equal(encoded, Encode(DocumentFormats.Json.Parse(encoded)));
         Assert.Equal(Encode(BaselineDocuments.Structured()), Encode(loaded));

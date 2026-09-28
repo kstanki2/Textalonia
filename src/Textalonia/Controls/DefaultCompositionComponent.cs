@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Input;
 using Avalonia.Input.TextInput;
 using Textalonia.Model;
+using Textalonia.Editing;
 using ImeSelection = Avalonia.Input.TextInput.TextSelection;
 
 namespace Textalonia.Controls;
@@ -39,7 +40,7 @@ public class DefaultCompositionComponent : DocumentInputComponent, ICompositionC
     public virtual void Refresh()
     {
         if (AttachedContext is null) return;
-        if (IsComposing && (Context.Editor.IsReadOnly || !ReferenceEquals(_baseDocument, Context.Editor.Document) ||
+        if (IsComposing && (Context.Session.GetCapability(EditOperation.Text) != CommandCapability.Enabled || !ReferenceEquals(_baseDocument, Context.Editor.Document) ||
             _baseSelection != Context.Session.Selection || _baseStoryId != Context.Session.ActiveStoryId))
         {
             Clear();
@@ -51,20 +52,22 @@ public class DefaultCompositionComponent : DocumentInputComponent, ICompositionC
     public virtual void SetPreedit(string? text, int? cursor)
     {
         if (AttachedContext is null) return;
-        if (Context.Editor.IsReadOnly) text = null;
+        if (Context.Session.GetCapability(EditOperation.Text) != CommandCapability.Enabled) text = null;
         if (string.IsNullOrEmpty(text) && _preedit is null) return;
         _preedit = string.IsNullOrEmpty(text) ? null : text;
         _cursor = cursor;
         if (_preedit is null) Clear();
         else
         {
-            var preview = new Editing.EditorSession(Context.Editor.Document);
+            var preview = new Editing.EditorSession(Context.Editor.Document)
+            { EditPolicy = Context.Session.EditPolicy, Identity = Context.Session.Identity };
             preview.SwitchStory(Context.Session.ActiveStoryId);
             preview.Select(Context.Session.Selection.Anchor, Context.Session.Selection.Active);
             var paragraph = Context.Session.Index.At(Context.Session.Selection.Active).Paragraph;
             var typing = new DocumentStyleResolver(Context.Session.Document).ResolveText(paragraph, Context.Session.TypingStyle);
-            preview.ApplyStyle(_ => typing with { Underline = true, UnderlineKind = UnderlineKind.None });
             preview.InsertText(_preedit);
+            preview.Select(Context.Session.Selection.Start, Context.Session.Selection.Start + _preedit.Length);
+            preview.ApplyStyle(_ => typing with { Underline = true, UnderlineKind = UnderlineKind.None });
             PreviewDocument = preview.Document;
             _baseDocument = Context.Editor.Document;
             _baseSelection = Context.Session.Selection;
@@ -74,7 +77,7 @@ public class DefaultCompositionComponent : DocumentInputComponent, ICompositionC
     }
     public virtual void TextInput(TextInputEventArgs e)
     {
-        if (e.Handled || AttachedContext is null || Context.Editor.IsReadOnly || string.IsNullOrEmpty(e.Text)) return;
+        if (e.Handled || AttachedContext is null || Context.Session.GetCapability(EditOperation.Text) != CommandCapability.Enabled || string.IsNullOrEmpty(e.Text)) return;
         SetPreedit(null, null);
         Context.Session.InsertText(e.Text, true);
         Context.PreferredCaretX = null;

@@ -1,7 +1,7 @@
-# Document semantics and schema v10
+# Document semantics and schema v11
 
 The document model is independent of Avalonia controls. Native JSON reads and
-writes schema version 10. Versions 4, 5, 6, 7, 8 and 9 remain readable; version 4 migrates concrete styles as
+writes schema version 11. Versions 4, 5, 6, 7, 8, 9 and 10 remain readable; version 4 migrates concrete styles as
 explicit direct formatting. Versions 1-3 were unused development formats and have no migration support. See [integration semantics](INTEGRATIONS.md)
 for quote/code metadata and [inline content](INLINE-CONTENT.md) for descriptors,
 resources and the coordinate/export contract. The version is checked before

@@ -2,6 +2,7 @@
 
 ## 0.1.0-preview.1
 
+- Added DX-09 protected editing and structured forms: host capabilities/identity, atomic session enforcement, permission ranges, typed values and locks, keyboard/value-dialog interaction, native v11/XAML v6 and supported DOCX mappings. See [forms contracts](docs/FORMS.md) for interoperability and qualification limits.
 - Added DX-07 image placement/crop/rotation and wrapping, section text/image watermarks, bounded image decoding, OLE package/preview APIs and picture editing UI. Native v10, XAML v5 and clipboard v6 retain the model; DOCX maps supported objects and other formats diagnose losses. See [image contracts](docs/IMAGES.md) for support and qualification boundaries.
 
 - Added DX-06 preferred table/cell widths, AutoFit, RTL grids, conditional styles and border kinds, repeating headers and row split policies, positioned table wrapping, formatted/style-linked list markers, and table-property UI. Native v9, XAML v4 and clipboard v5 retain the model; external formats preserve mapped settings or report losses. See `docs/TABLES.md` for behavior and qualification boundaries.

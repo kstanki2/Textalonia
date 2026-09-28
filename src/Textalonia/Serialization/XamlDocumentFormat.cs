@@ -35,10 +35,10 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         var xml = XDocument.Load(input, LoadOptions.SetLineInfo | LoadOptions.PreserveWhitespace);
         var root = xml.Root ?? throw new FormatException("Missing Document element.");
         if (root.Name != Ns + "Document") throw new FormatException("Expected a Textalonia Document in " + NamespaceUri + ".");
-        if (Required(root, "Version") is not ("1" or "2" or "3" or "4" or "5")) throw new NotSupportedException("Only Textalonia XAML data versions 1 through 5 are supported.");
+        if (Required(root, "Version") is not ("1" or "2" or "3" or "4" or "5" or "6")) throw new NotSupportedException("Only Textalonia XAML data versions 1 through 6 are supported.");
         foreach (var instruction in xml.DescendantNodes().OfType<XProcessingInstruction>())
             Report("xaml.processing-instruction", instruction.Target, "Processing instruction was ignored.", instruction);
-        Check(root, "Version", "Resources Blocks Styles Defaults Theme Fonts Sections Stories Notes FootnoteSettings EndnoteSettings Bookmarks Fields Properties");
+        Check(root, "Version", "Resources Blocks Styles Defaults Theme Fonts Sections Stories Notes FootnoteSettings EndnoteSettings Bookmarks Fields Properties ContentControls Protection PermissionRanges");
         var document = new FlowDocument(ReadBlocks(Child(root, "Blocks")))
         {
             Resources = ReadResources(Child(root, "Resources")),
@@ -52,6 +52,9 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
             Bookmarks = (ReadData<DocumentBookmark[]>(Child(root, "Bookmarks")) ?? []).ToImmutableArray(),
             Fields = (ReadData<DocumentField[]>(Child(root, "Fields")) ?? []).ToImmutableArray(),
             Properties = ReadData<ImmutableDictionary<string, string>>(Child(root, "Properties")) ?? ImmutableDictionary<string, string>.Empty,
+            ContentControls = (ReadData<DocumentContentControl[]>(Child(root, "ContentControls")) ?? []).ToImmutableArray(),
+            Protection = ReadData<DocumentProtection>(Child(root, "Protection")) ?? new(),
+            PermissionRanges = (ReadData<DocumentPermissionRange[]>(Child(root, "PermissionRanges")) ?? []).ToImmutableArray(),
             FootnoteSettings = ReadData<NoteSettings>(Child(root, "FootnoteSettings")) ?? new(),
             EndnoteSettings = ReadData<NoteSettings>(Child(root, "EndnoteSettings")) ?? new() { Placement = NotePlacement.DocumentEnd }
         };
@@ -63,10 +66,11 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
     {
         ArgumentNullException.ThrowIfNull(document);
         document.Validate();
-        var root = Element("Document", Attr("Version", 5),
+        var root = Element("Document", Attr("Version", 6),
             WriteData("Styles", document.Styles), WriteData("Defaults", document.Defaults), WriteData("Theme", document.Theme), WriteData("Fonts", document.Fonts), WriteData("Sections", document.Sections),
             WriteData("Stories", document.Stories), WriteData("Notes", document.Notes), WriteData("FootnoteSettings", document.FootnoteSettings), WriteData("EndnoteSettings", document.EndnoteSettings),
             WriteData("Bookmarks", document.Bookmarks), WriteData("Fields", document.Fields), WriteData("Properties", document.Properties),
+            WriteData("ContentControls", document.ContentControls), WriteData("Protection", document.Protection), WriteData("PermissionRanges", document.PermissionRanges),
             Element("Resources", document.Resources.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p =>
                 Element("Resource", Attr("Key", p.Key), Attr("Kind", p.Value.Kind), Attr("MediaType", p.Value.MediaType),
                     Attr("Location", p.Value.Location), Element("Data", Convert.ToBase64String(p.Value.Data.AsSpan()))))),
@@ -215,14 +219,15 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
         var style = ReadTextStyle(Child(element, "Style"));
         var inline = Child(element, "Inline");
         if (inline is null) return new RichRun(Value(element, "Text") ?? "", style);
-        Check(inline, "Id AltText Width Height", "Image Ole Control MergeField Note PageField Placement");
+        Check(inline, "Id AltText Width Height", "Image Ole Control MergeField Note PageField Placement FormControl");
         var image = Child(inline, "Image");
         var ole = Child(inline, "Ole");
         var control = Child(inline, "Control");
         var mergeField = Child(inline, "MergeField");
         var note = Child(inline, "Note");
         var pageField = Child(inline, "PageField");
-        if ((image is not null ? 1 : 0) + (ole is not null ? 1 : 0) + (control is not null ? 1 : 0) + (mergeField is not null ? 1 : 0) + (note is not null ? 1 : 0) + (pageField is not null ? 1 : 0) > 1)
+        var formControl = Child(inline, "FormControl");
+        if ((image is not null ? 1 : 0) + (ole is not null ? 1 : 0) + (control is not null ? 1 : 0) + (mergeField is not null ? 1 : 0) + (note is not null ? 1 : 0) + (pageField is not null ? 1 : 0) + (formControl is not null ? 1 : 0) > 1)
             throw new FormatException("Inline must contain exactly one payload.");
         InlinePayload payload;
         if (image is not null)
@@ -248,6 +253,11 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
                 if (properties.Count > 128) throw new FormatException("Too many inline properties.");
             }
             payload = new ControlInlinePayload(Required(control, "Type")) { Properties = properties.ToImmutable() };
+        }
+        else if (formControl is not null)
+        {
+            Check(formControl, "ControlId", "");
+            payload = new FormControlInlinePayload(Guid.Parse(Required(formControl, "ControlId")));
         }
         else if (note is not null)
         {
@@ -387,6 +397,7 @@ public sealed class XamlDocumentFormat : TextDocumentFormat
             OleInlinePayload ole => Element("Ole", Attr("ResourceId", ole.ResourceId), Attr("PreviewResourceId", ole.PreviewResourceId), Attr("ProgramId", ole.ProgramId), Attr("FileName", ole.FileName)),
             NoteInlinePayload note => Element("Note", Attr("NoteId", note.NoteId)),
             PageFieldInlinePayload page => Element("PageField", Attr("Field", page.Field)),
+            FormControlInlinePayload form => Element("FormControl", Attr("ControlId", form.ControlId)),
             MergeFieldInlinePayload field => Element("MergeField", Attr("Name", field.Name), Attr("Format", field.Format), Attr("FallbackText", field.FallbackText)),
             ControlInlinePayload control => Element("Control", Attr("Type", control.Type), control.Properties.OrderBy(p => p.Key, StringComparer.Ordinal)
                 .Select(p => Element("Property", Attr("Name", p.Key), Attr("Value", p.Value)))),

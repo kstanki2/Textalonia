@@ -40,7 +40,7 @@ public sealed partial class EditorSession
             story = new DocumentStory { Kind = footer ? DocumentStoryKind.Footer : DocumentStoryKind.Header };
             var settings = sections[at].HeaderFooter.WithReference(footer, variant, new() { LinkToPrevious = false, StoryId = story.Id });
             document = document with { Stories = document.Stories.Add(story.Id, story), Sections = sections.SetItem(at, sections[at] with { HeaderFooter = settings }) };
-            document.Validate(); Commit(document, Selection, wholeDocument: true);
+            document.Validate(); if (!Commit(document, Selection, wholeDocument: true)) return;
         }
         SwitchStory(story.Id);
     }
@@ -77,7 +77,9 @@ public sealed partial class EditorSession
                 Stories = document.Stories.Add(story.Id, story), Resources = inherited is null ? document.Resources : copy.Resources,
                 Styles = inherited is null ? document.Styles : copy.Styles, Fonts = inherited is null ? document.Fonts : copy.Fonts,
                 Bookmarks = document.Bookmarks.AddRange(copy.Bookmarks.Select(bookmark => bookmark with { Start = Own(bookmark.Start), End = Own(bookmark.End) })),
-                Fields = document.Fields.AddRange(copy.Fields.Select(field => field with { Start = Own(field.Start), End = Own(field.End) }))
+                Fields = document.Fields.AddRange(copy.Fields.Select(field => field with { Start = Own(field.Start), End = Own(field.End) })),
+                ContentControls = document.ContentControls.AddRange(copy.ContentControls.Select(control => control with { Start = Own(control.Start), End = Own(control.End) })),
+                PermissionRanges = document.PermissionRanges.AddRange(copy.PermissionRanges.Select(range => range with { Start = Own(range.Start), End = Own(range.End) }))
             };
             reference = new() { LinkToPrevious = false, StoryId = story.Id };
         }
@@ -151,6 +153,8 @@ public sealed partial class EditorSession
         return removed.Length == 0 ? document : document with
         { Notes = document.Notes.Where(n => referenced.Contains(n.Id)).ToImmutableArray(), Stories = document.Stories.RemoveRange(removed.Select(n => n.StoryId)),
             Bookmarks = document.Bookmarks.Where(bookmark => !removed.Any(note => note.StoryId == bookmark.Start.StoryId)).ToImmutableArray(),
-            Fields = document.Fields.Where(field => !removed.Any(note => note.StoryId == field.Start.StoryId)).ToImmutableArray() };
+            Fields = document.Fields.Where(field => !removed.Any(note => note.StoryId == field.Start.StoryId)).ToImmutableArray(),
+            ContentControls = document.ContentControls.Where(control => !removed.Any(note => note.StoryId == control.Start.StoryId)).ToImmutableArray(),
+            PermissionRanges = document.PermissionRanges.Where(range => !removed.Any(note => note.StoryId == range.Start.StoryId)).ToImmutableArray() };
     }
 }

@@ -160,7 +160,7 @@ public sealed class TextaloniaFindReplacePanel : StackPanel
 
     public int ReplaceSelected()
     {
-        if (Editor is not { } editor || editor.IsReadOnly || _current is not { } current ||
+        if (Editor is not { } editor || !editor.CanEdit(EditOperation.Text) || _current is not { } current ||
             !editor.Session.IsCurrentSearchResult(current) || editor.ActiveStoryId != current.StoryId || editor.Session.Selection != current.Selection) return 0;
         var count = 0;
         editor.Run(() => count = editor.Session.ReplaceSearchResults([current], Replacement), focusDocument: false);
@@ -169,7 +169,7 @@ public sealed class TextaloniaFindReplacePanel : StackPanel
 
     public int ReplaceAll()
     {
-        if (Editor is not { } editor || editor.IsReadOnly) return 0;
+        if (Editor is not { } editor || editor.IsReadOnly || editor.Session.EditPolicy.GetCapability(EditOperation.Text) != CommandCapability.Enabled) return 0;
         RefreshResults();
         var count = 0;
         editor.Run(() => count = editor.Session.ReplaceSearchResults(_matches, Replacement), focusDocument: false);
@@ -178,8 +178,10 @@ public sealed class TextaloniaFindReplacePanel : StackPanel
 
     private void RefreshButtons()
     {
-        _replaceAll.IsEnabled = Editor is { IsReadOnly: false } && !_matches.IsEmpty;
-        _replace.IsEnabled = Editor is { IsReadOnly: false } editor && _current is { } current &&
+        var visibility = Editor?.Session.EditPolicy.GetCapability(EditOperation.Text) ?? CommandCapability.Disabled;
+        _replacement.IsVisible = _replace.IsVisible = _replaceAll.IsVisible = visibility != CommandCapability.Hidden;
+        _replaceAll.IsEnabled = Editor is { IsReadOnly: false } && visibility == CommandCapability.Enabled && !_matches.IsEmpty;
+        _replace.IsEnabled = Editor is { } editor && editor.CanEdit(EditOperation.Text) && _current is { } current &&
             editor.Session.IsCurrentSearchResult(current) && current.StoryId == editor.ActiveStoryId && editor.Session.Selection == current.Selection;
     }
     private string StoryName(Guid id) => id == Guid.Empty ? "Body" : Editor?.Document.Stories.GetValueOrDefault(id)?.Kind.ToString() ?? "Story";

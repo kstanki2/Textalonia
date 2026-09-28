@@ -66,15 +66,15 @@ public partial class TextaloniaEditor : TemplatedControl
         InitializeNavigationCommands();
         Session.Changed += OnSessionChanged;
         Highlights.CollectionChanged += (_, _) => _surface?.InvalidateVisual();
-        BoldCommand = Command(ToggleSelectedBold);
-        ItalicCommand = Command(ToggleSelectedItalic);
-        UnderlineCommand = Command(ToggleSelectedUnderline);
-        StrikethroughCommand = Command(ToggleSelectedStrikethrough);
-        UndoCommand = Command(Session.Undo, () => Session.CanUndo);
-        RedoCommand = Command(Session.Redo, () => Session.CanRedo);
-        CutCommand = AsyncCommand(CutAsync, () => !IsReadOnly && (!Session.Selection.IsEmpty || CellSelection is not null));
+        BoldCommand = Command(ToggleSelectedBold, () => CanEdit(EditOperation.Formatting));
+        ItalicCommand = Command(ToggleSelectedItalic, () => CanEdit(EditOperation.Formatting));
+        UnderlineCommand = Command(ToggleSelectedUnderline, () => CanEdit(EditOperation.Formatting));
+        StrikethroughCommand = Command(ToggleSelectedStrikethrough, () => CanEdit(EditOperation.Formatting));
+        UndoCommand = Command(Session.Undo, () => Session.CanUndo && CanEdit(EditOperation.Undo));
+        RedoCommand = Command(Session.Redo, () => Session.CanRedo && CanEdit(EditOperation.Redo));
+        CutCommand = AsyncCommand(CutAsync, () => CanEdit(EditOperation.Clipboard) && (!Session.Selection.IsEmpty || CellSelection is not null));
         CopyCommand = AsyncCommand(CopyAsync, () => !Session.Selection.IsEmpty || CellSelection is not null);
-        PasteCommand = AsyncCommand(PasteAsync, () => !IsReadOnly);
+        PasteCommand = AsyncCommand(PasteAsync, () => CanEdit(EditOperation.Clipboard));
         SelectAllCommand = Command(Session.SelectAll, () => true);
         SetCurrentValue(DocumentProperty, Session.Document);
     }
@@ -276,11 +276,11 @@ public partial class TextaloniaEditor : TemplatedControl
 
     public async Task CutAsync()
     {
-        if (IsReadOnly) return;
+        if (!CanEdit(EditOperation.Clipboard)) return;
         var revision = Session.Revision;
         var selection = Session.Selection;
         var cells = CellSelection;
-        if (await CopyCoreAsync() && !IsReadOnly && Session.Revision == revision && Session.Selection == selection && CellSelection == cells)
+        if (await CopyCoreAsync() && CanEdit(EditOperation.Clipboard) && Session.Revision == revision && Session.Selection == selection && CellSelection == cells)
         {
             if (cells is not null) ClearSelectedTableCellContents();
             else Session.InsertText("");
@@ -289,7 +289,7 @@ public partial class TextaloniaEditor : TemplatedControl
 
     public async Task PasteAsync()
     {
-        if (IsReadOnly || Clipboard is not { } clipboard) return;
+        if (!CanEdit(EditOperation.Clipboard) || Clipboard is not { } clipboard) return;
         var revision = Session.Revision;
         var selection = Session.Selection;
         using var diagnostics = ConversionDiagnostics.Begin();
@@ -324,7 +324,7 @@ public partial class TextaloniaEditor : TemplatedControl
             }
         }
         var text = fragment is null ? await data.TryGetTextAsync() : null;
-        if (IsReadOnly || revision != Session.Revision || Session.Selection != selection) return;
+        if (!CanEdit(EditOperation.Clipboard) || revision != Session.Revision || Session.Selection != selection) return;
         if (fragment is not null) Session.InsertFragment(fragment);
         else if (text is not null) Session.InsertText(text);
         PublishConversion(diagnostics.ToReport());
@@ -353,6 +353,8 @@ public partial class TextaloniaEditor : TemplatedControl
         try { LastError = null; action(); if (focusDocument) FocusDocument(); }
         catch (Exception ex) { ReportError(ex); }
     }
+    internal bool CanEdit(EditOperation operation) => Session.GetCapability(operation) == CommandCapability.Enabled;
+
     private EditorCommand Command(Action execute, Func<bool>? canExecute = null) =>
         AsyncCommand(() => { execute(); return Task.CompletedTask; }, canExecute ?? (() => !IsReadOnly));
     private EditorCommand AsyncCommand(Func<Task> execute, Func<bool> canExecute)

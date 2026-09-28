@@ -56,13 +56,17 @@ internal static class DocumentAnchors
             Bookmarks = document.Bookmarks.Where(b => b.Start.StoryId != storyId).Concat(projection.Bookmarks.Select(b => b with
                 { Start = b.Start with { StoryId = storyId }, End = b.End with { StoryId = storyId } })).ToImmutableArray(),
             Fields = document.Fields.Where(f => f.Start.StoryId != storyId).Concat(projection.Fields.Select(f => f with
-                { Start = f.Start with { StoryId = storyId }, End = f.End with { StoryId = storyId } })).ToImmutableArray()
+                { Start = f.Start with { StoryId = storyId }, End = f.End with { StoryId = storyId } })).ToImmutableArray(),
+            ContentControls = document.ContentControls.Where(c => c.Start.StoryId != storyId).Concat(projection.ContentControls.Select(c => c with
+                { Start = c.Start with { StoryId = storyId }, End = c.End with { StoryId = storyId } })).ToImmutableArray(),
+            PermissionRanges = document.PermissionRanges.Where(r => r.Start.StoryId != storyId).Concat(projection.PermissionRanges.Select(r => r with
+                { Start = r.Start with { StoryId = storyId }, End = r.End with { StoryId = storyId } })).ToImmutableArray()
         };
     }
 
     internal static FlowDocument Transform(FlowDocument before, FlowDocument after, Guid storyId, int start, int removedLength, int insertedLength)
     {
-        if (before.Bookmarks.IsEmpty && before.Fields.IsEmpty) return after;
+        if (before.Bookmarks.IsEmpty && before.Fields.IsEmpty && before.ContentControls.IsEmpty && before.PermissionRanges.IsEmpty) return after;
         var index = after.GetStoryIndex(storyId);
         DocumentAnchor Map(DocumentAnchor anchor)
         {
@@ -78,22 +82,30 @@ internal static class DocumentAnchors
         }
         var oldBookmarks = before.Bookmarks.ToDictionary(b => b.Id);
         var oldFields = before.Fields.ToDictionary(f => f.Id);
-        return after with
+        var oldControls = before.ContentControls.ToDictionary(c => c.Id);
+        var oldPermissions = before.PermissionRanges.ToDictionary(r => r.Id);
+        return ContentControlValidation.SynchronizeValues(ContentControlValidation.ReconcileAtomicRanges(after with
         {
             Bookmarks = after.Bookmarks.Select(b => oldBookmarks.TryGetValue(b.Id, out var old) && b == old
                 ? b with { Start = Map(b.Start), End = Map(b.End) } : b).ToImmutableArray(),
             Fields = after.Fields.Select(f => oldFields.TryGetValue(f.Id, out var old) && f == old
-                ? f with { Start = Map(f.Start), End = Map(f.End), IsDirty = f.IsDirty || removedLength != 0 || insertedLength != 0 } : f).ToImmutableArray()
-        };
+                ? f with { Start = Map(f.Start), End = Map(f.End), IsDirty = f.IsDirty || removedLength != 0 || insertedLength != 0 } : f).ToImmutableArray(),
+            ContentControls = after.ContentControls.Select(c => oldControls.TryGetValue(c.Id, out var old) && c == old
+                ? c with { Start = Map(c.Start), End = Map(c.End) } : c).ToImmutableArray(),
+            PermissionRanges = after.PermissionRanges.Select(r => oldPermissions.TryGetValue(r.Id, out var old) && r == old
+                ? r with { Start = Map(r.Start), End = Map(r.End) } : r).ToImmutableArray()
+        }));
     }
 
     // Unmapped application/structural edits preserve paragraph identities; a deleted boundary
     // collapses into the changed span. Explicit range operations use Transform instead.
     internal static FlowDocument Reconcile(FlowDocument before, FlowDocument after)
     {
-        if (before.Bookmarks.IsEmpty && before.Fields.IsEmpty) return after;
+        if (before.Bookmarks.IsEmpty && before.Fields.IsEmpty && before.ContentControls.IsEmpty && before.PermissionRanges.IsEmpty) return after;
         var oldBookmarks = before.Bookmarks.ToDictionary(b => b.Id);
         var oldFields = before.Fields.ToDictionary(f => f.Id);
+        var oldControls = before.ContentControls.ToDictionary(c => c.Id);
+        var oldPermissions = before.PermissionRanges.ToDictionary(r => r.Id);
         var cache = new Dictionary<Guid, (DocumentIndex Before, DocumentIndex After)>();
         var clones = new Dictionary<Guid, Dictionary<Guid, Guid>>();
         var contentChanged = before.Blocks != after.Blocks || before.Stories != after.Stories;
@@ -111,6 +123,14 @@ internal static class DocumentAnchors
             {
                 var next = pair.After.ById(targetId);
                 if (ReferenceEquals(oldEntry.Paragraph, next.Paragraph)) return anchor;
+                // A split keeps the original identity on the first paragraph, while its
+                // trailing anchors belong to a newly created paragraph. A local diff
+                // would incorrectly collapse those anchors at the end of the first piece.
+                if (targetId == anchor.ParagraphId && pair.Before.ParagraphCount != pair.After.ParagraphCount)
+                {
+                    var mapped = MapText(pair.Before.Text, pair.After.Text, oldEntry.Start + anchor.Offset, anchor.Affinity);
+                    return DocumentAnchor.Create(after, anchor.StoryId, Snap(pair.After, mapped, anchor.Affinity), anchor.Affinity);
+                }
                 var offset = MapText(oldEntry.Paragraph.Text, next.Paragraph.Text, anchor.Offset, anchor.Affinity);
                 var snapped = Snap(pair.After, next.Start + offset, anchor.Affinity);
                 return DocumentAnchor.Create(after, anchor.StoryId, snapped, anchor.Affinity);
@@ -119,13 +139,17 @@ internal static class DocumentAnchors
             return DocumentAnchor.Create(after, anchor.StoryId, Snap(pair.After, absolute, anchor.Affinity), anchor.Affinity);
         }
         bool Exists(DocumentAnchor a) => a.StoryId == Guid.Empty || after.Stories.ContainsKey(a.StoryId);
-        return after with
+        return ContentControlValidation.SynchronizeValues(ContentControlValidation.ReconcileAtomicRanges(after with
         {
             Bookmarks = after.Bookmarks.Where(b => Exists(b.Start)).Select(b => oldBookmarks.TryGetValue(b.Id, out var old) && b == old
                 ? b with { Start = Map(b.Start), End = Map(b.End) } : b).ToImmutableArray(),
             Fields = after.Fields.Where(f => Exists(f.Start)).Select(f => oldFields.TryGetValue(f.Id, out var old) && f == old
-                ? f with { Start = Map(f.Start), End = Map(f.End), IsDirty = f.IsDirty || contentChanged } : f).ToImmutableArray()
-        };
+                ? f with { Start = Map(f.Start), End = Map(f.End), IsDirty = f.IsDirty || contentChanged } : f).ToImmutableArray(),
+            ContentControls = after.ContentControls.Where(c => Exists(c.Start)).Select(c => oldControls.TryGetValue(c.Id, out var old) && c == old
+                ? c with { Start = Map(c.Start), End = Map(c.End) } : c).ToImmutableArray(),
+            PermissionRanges = after.PermissionRanges.Where(r => Exists(r.Start)).Select(r => oldPermissions.TryGetValue(r.Id, out var old) && r == old
+                ? r with { Start = Map(r.Start), End = Map(r.End) } : r).ToImmutableArray()
+        }));
     }
 
     // Merged-cell content is cloned so hidden restoration backups retain distinct IDs.

@@ -90,6 +90,12 @@ internal sealed class RetentionGraph
         DocumentField[] fields => 24 + fields.Length * 8L,
         DocumentBookmark => 64,
         DocumentField => 88,
+        DocumentContentControl[] controls => 24 + controls.Length * 8L,
+        DocumentPermissionRange[] ranges => 24 + ranges.Length * 8L,
+        ContentControlItem[] items => 24 + items.Length * 8L,
+        DocumentContentControl => 192,
+        DocumentPermissionRange => 80,
+        DocumentProtection protection => 48 + protection.ProtectedSectionIds.Length * 16L,
         DocumentAnchor => 64,
         InternalLinkDestination => 40,
         DocumentFontDefinition[] fonts => 24 + fonts.Length * 8L,
@@ -128,6 +134,24 @@ internal sealed class RetentionGraph
                 if (settings.Grid is not null) visit(settings.Grid);
                 if (settings.LineNumbering is not null) visit(settings.LineNumbering);
                 break;
+            case DocumentContentControl[] controls:
+                foreach (var control in controls) visit(control); break;
+            case DocumentPermissionRange[] ranges:
+                foreach (var range in ranges) visit(range); break;
+            case DocumentPermissionRange range:
+                visit(range.Start); visit(range.End);
+                if (range.User is not null) visit(range.User);
+                if (range.Group is not null) visit(range.Group); break;
+            case DocumentContentControl control:
+                visit(control.Start); visit(control.End); visit(control.Tag); visit(control.Title); visit(control.Placeholder);
+                visit(control.Value); visit(control.DateFormat); visit(control.Data);
+                if (control.Binding is not null) visit(control.Binding);
+                if (!control.Items.IsDefaultOrEmpty) visit(ImmutableCollectionsMarshal.AsArray(control.Items)!); break;
+            case ContentControlItem[] items: foreach (var item in items) visit(item); break;
+            case ContentControlItem item: visit(item.DisplayText); visit(item.Value); break;
+            case ContentControlBinding binding: visit(binding.StoreItemId); visit(binding.XPath); visit(binding.PrefixMappings); break;
+            case DocumentProtection protection: if (protection.Password is not null) visit(protection.Password); break;
+            case DocumentProtectionPassword password: visit(password.Algorithm); visit(password.Salt); visit(password.Hash); break;
             case DocumentStyleCatalog catalog:
                 foreach (var pair in catalog.Characters) { visit(pair.Key); visit(pair.Value); }
                 foreach (var pair in catalog.Paragraphs) { visit(pair.Key); visit(pair.Value); }

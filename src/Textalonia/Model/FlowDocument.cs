@@ -20,6 +20,9 @@ public sealed record FlowDocument
     public ImmutableArray<DocumentNote> Notes { get; init; } = [];
     public ImmutableArray<DocumentBookmark> Bookmarks { get; init; } = [];
     public ImmutableArray<DocumentField> Fields { get; init; } = [];
+    public ImmutableArray<DocumentContentControl> ContentControls { get; init; } = [];
+    public DocumentProtection Protection { get; init; } = new();
+    public ImmutableArray<DocumentPermissionRange> PermissionRanges { get; init; } = [];
     public ImmutableDictionary<string, string> Properties { get; init; } = ImmutableDictionary<string, string>.Empty;
     public NoteSettings FootnoteSettings { get; init; } = new();
     public NoteSettings EndnoteSettings { get; init; } = new() { Placement = NotePlacement.DocumentEnd };
@@ -31,7 +34,12 @@ public sealed record FlowDocument
             Bookmarks = Bookmarks.Where(b => b.Start.StoryId == storyId).Select(b => b with
                 { Start = b.Start with { StoryId = Guid.Empty }, End = b.End with { StoryId = Guid.Empty } }).ToImmutableArray(),
             Fields = Fields.Where(f => f.Start.StoryId == storyId).Select(f => f with
-                { Start = f.Start with { StoryId = Guid.Empty }, End = f.End with { StoryId = Guid.Empty } }).ToImmutableArray() } :
+                { Start = f.Start with { StoryId = Guid.Empty }, End = f.End with { StoryId = Guid.Empty } }).ToImmutableArray(),
+            ContentControls = ContentControls.Where(c => c.Start.StoryId == storyId).Select(c => c with
+                { Start = c.Start with { StoryId = Guid.Empty }, End = c.End with { StoryId = Guid.Empty } }).ToImmutableArray(),
+            PermissionRanges = PermissionRanges.Where(r => r.Start.StoryId == storyId).Select(r => r with
+                { Start = r.Start with { StoryId = Guid.Empty }, End = r.End with { StoryId = Guid.Empty } }).ToImmutableArray(),
+            Protection = Protection with { ProtectedSectionIds = [] } } :
         throw new ArgumentException("The document story does not exist.", nameof(storyId));
 
     public DocumentIndex GetStoryIndex(Guid storyId) => new(GetStoryDocument(storyId));
@@ -150,6 +158,7 @@ public sealed record FlowDocument
         DocumentStyleValidation.Validate(this);
         DocumentFontValidation.Validate(this);
         DocumentAnchors.Validate(this);
+        DocumentProtectionValidation.Validate(this);
         var resolver = new DocumentStyleResolver(this);
         var ids = new HashSet<Guid>();
         var noteReferences = new HashSet<Guid>();
@@ -213,6 +222,8 @@ public sealed record FlowDocument
                             if (run.Inline is { } inline)
                             {
                                 inline.Validate(); Identify(inline.Id);
+                                if (inline.Payload is FormControlInlinePayload && ContentControls.IsDefaultOrEmpty)
+                                    throw new FormatException("A form inline requires content-control metadata.");
                                 if (inline.Payload is NoteInlinePayload note)
                                 {
                                     if (secondary) throw new FormatException("Notes can only be referenced from the main story.");
@@ -319,6 +330,7 @@ public sealed record FlowDocument
         }
         if (noteReferences.Any(id => !noteIds.Contains(id))) throw new FormatException("A note reference is detached from its note.");
         DocumentSection.Validate(this, ids);
+        ContentControlValidation.Validate(this);
     }
 
     private static void ValidateEdges(EdgeInsets? edges)

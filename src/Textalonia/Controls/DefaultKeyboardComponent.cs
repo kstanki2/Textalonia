@@ -17,6 +17,31 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
         var command = e.KeyModifiers.HasFlag(primary) && !e.KeyModifiers.HasFlag(KeyModifiers.Alt);
         var word = OperatingSystem.IsMacOS() ? e.KeyModifiers.HasFlag(KeyModifiers.Alt) : command;
         var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        if (!command)
+        {
+            if (e.Key == Key.Tab && session.SelectNextContentControl(shift))
+            {
+                Context.CancelComposition();
+                Context.PreferredCaretX = null;
+                e.Handled = true;
+                return;
+            }
+            if (!Context.IsComposing && session.CurrentContentControl is { } control)
+            {
+                if (e.Key == Key.Space && control.Kind == ContentControlKind.CheckBox)
+                {
+                    session.ToggleContentControl(control.Id);
+                    e.Handled = true;
+                    return;
+                }
+                if (e.Key == Key.Enter && control.Kind is ContentControlKind.ComboBox or ContentControlKind.DropDown or ContentControlKind.Date)
+                {
+                    _ = Context.Editor.ShowContentControlValueDialogAsync();
+                    e.Handled = true;
+                    return;
+                }
+            }
+        }
         void Move(int position)
         {
             Context.CancelComposition();

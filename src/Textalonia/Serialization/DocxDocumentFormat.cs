@@ -102,6 +102,8 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             var xml = XDocument.Load(reader, LoadOptions.SetLineInfo);
             xml.AddAnnotation(path);
             if (xml.Descendants().Any(e => e.Ancestors().Take(129).Count() > 128)) throw new FormatException("DOCX XML nesting exceeds the limit.");
+            PreparePermissionMarkers(xml);
+            PrepareLegacyForms(xml);
             PrepareGeneralFields(xml);
             return xml;
         }
@@ -110,6 +112,11 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         var mainRelationships = relationships;
         var currentPart = "word/document.xml";
         var settings = Xml("word/settings.xml");
+        var glossaryRelationship = relationships.Values.FirstOrDefault(e => ((string?)e.Attribute("Type"))?.EndsWith("/glossaryDocument", StringComparison.Ordinal) == true && (string?)e.Attribute("TargetMode") != "External");
+        var glossaryPart = glossaryRelationship is null ? null : ResolvePart((string?)glossaryRelationship.Attribute("Target") ?? "");
+        var placeholderTexts = (glossaryPart is null ? null : Xml(glossaryPart))?.Descendants(W + "docPart").Where(e => Value(e.Element(W + "docPartPr")?.Element(W + "name")) is not null)
+            .GroupBy(e => Value(e.Element(W + "docPartPr")?.Element(W + "name"))!, StringComparer.Ordinal).ToDictionary(g => g.Key, g => string.Concat(g.First().Element(W + "docPartBody")?.Descendants(W + "t").Select(e => e.Value) ?? []), StringComparer.Ordinal) ?? [];
+        if (placeholderTexts.Count > 10000 || placeholderTexts.Values.Any(value => value.Length > 16384)) throw new FormatException("DOCX placeholder glossary exceeds its limits.");
         var stories = ImmutableDictionary.CreateBuilder<Guid, DocumentStory>();
         var notes = new Dictionary<(bool Endnote, string Id), DocumentNote>();
         var referencedNotes = new HashSet<Guid>();
@@ -117,6 +124,10 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         var paragraphSources = new Dictionary<XElement, Guid>();
         var bookmarks = new List<DocumentBookmark>();
         var generalFields = new List<DocumentField>();
+        var contentControls = new List<DocumentContentControl>();
+        var permissionRanges = new List<DocumentPermissionRange>();
+        var permissionStarts = new Dictionary<(string, string), DocumentPermissionRange>();
+        var controlStarts = new Dictionary<(string, string), DocumentContentControl>();
         var bookmarkStarts = new Dictionary<(string, string), DocumentBookmark>();
         var bookmarkNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var footnoteSettings = ReadNoteSettings(settings?.Root?.Element(W + "footnotePr"), false);
@@ -237,7 +248,8 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             token.ThrowIfCancellationRequested();
             foreach (var child in element.Elements().Where(e => e.Annotation<FieldBoundary>() is null && e.Name != W + "pPr" && e.Name != W + "r" && e.Name != W + "hyperlink" &&
                 e.Name != W + "ins" && e.Name != W + "del" && e.Name != W + "moveFrom" && e.Name != W + "moveTo" &&
-                e.Name != W + "bookmarkStart" && e.Name != W + "bookmarkEnd" && e.Name != W + "proofErr" && e.Name != W + "fldSimple"))
+                e.Name != W + "bookmarkStart" && e.Name != W + "bookmarkEnd" && e.Name != W + "proofErr" && e.Name != W + "fldSimple" && e.Name != W + "sdt" &&
+                e.Name != W + "permStart" && e.Name != W + "permEnd" && e.Name.Namespace != Tx))
                 Loss("paragraph-content", child.Name.LocalName, "Recognized run content retained; unsupported paragraph content omitted.", child);
             var pp = element.Element(W + "pPr");
             var styleId = Value(pp?.Element(W + "pStyle")) ?? defaultParagraphId;
@@ -255,6 +267,35 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             bool ReadRangeBoundary(XElement node)
             {
                 var anchor = new DocumentAnchor { ParagraphId = paragraphId, Offset = runs.Sum(r => r.Storage.Length) };
+                if (node.Name == Tx + "controlStart")
+                {
+                    var control = RangeInterchange.Decode<DocumentContentControl>((string?)node.Attribute("data") ?? "");
+                    controlStarts[(currentPart, (string?)node.Attribute("id") ?? "")] = control with { Start = anchor with { Affinity = control.Start.Affinity } };
+                    return true;
+                }
+                if (node.Name == Tx + "controlEnd")
+                {
+                    if (!controlStarts.Remove((currentPart, (string?)node.Attribute("id") ?? ""), out var control)) throw new FormatException("Unmatched content-control boundary.");
+                    contentControls.Add(control with { End = anchor with { Affinity = control.End.Affinity } }); return true;
+                }
+                if (node.Name == W + "permStart" || node.Name == Tx + "permissionStart")
+                {
+                    var permission = node.Attribute(Tx + "permission") is { } encoded ? RangeInterchange.Decode<DocumentPermissionRange>(encoded.Value) :
+                        new DocumentPermissionRange { Start = anchor, End = anchor, User = (string?)node.Attribute(W + "ed"), Group = (string?)node.Attribute(W + "edGrp") };
+                    if (node.Attribute(W + "colFirst") is not null || node.Attribute(W + "colLast") is not null)
+                    {
+                        permission = permission with { IsReadOnly = true, User = null, Group = null };
+                        Loss("permission-columns", "Column-scoped table permission", "Applied read-only restrictions to the enclosing range conservatively; column-specific edit exceptions are unavailable.", node);
+                    }
+                    if (!permissionStarts.TryAdd((currentPart, (string?)node.Attribute(W + "id") ?? ""), permission with { Start = anchor with { Affinity = permission.Start.Affinity } }))
+                        throw new FormatException("Duplicate permission boundary.");
+                    return true;
+                }
+                if (node.Name == W + "permEnd" || node.Name == Tx + "permissionEnd")
+                {
+                    if (!permissionStarts.Remove((currentPart, (string?)node.Attribute(W + "id") ?? ""), out var permission)) throw new FormatException("Unmatched permission boundary.");
+                    permissionRanges.Add(permission with { End = anchor with { Affinity = permission.End.Affinity } }); return true;
+                }
                 if (node.Annotation<FieldBoundary>() is { } boundary)
                 {
                     if (boundary.Start) { boundary.Field.Field = boundary.Field.Field with { Start = anchor with { Affinity = boundary.Field.Field.Start.Affinity } }; boundary.Field.Started = true; }
@@ -364,6 +405,25 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             {
                 if (ReadRangeBoundary(node)) return;
                 if (node.Name == W + "del" || node.Name == W + "moveFrom" || node.Name == W + "pPr" || node.Name == W + "p") return;
+                if (node.Name == W + "sdt")
+                {
+                    var control = ReadContentControl(node, name => placeholderTexts.GetValueOrDefault(name));
+                    var start = new DocumentAnchor { ParagraphId = paragraphId, Offset = runs.Sum(r => r.Storage.Length), Affinity = control.Start.Affinity };
+                    if (control.IsAtomic)
+                    {
+                        if (node.Element(W + "sdtContent")?.Descendants().Any(e => e.Name == W + "sdt" || e.Name == W + "permStart" || e.Name == W + "permEnd") == true)
+                            throw new FormatException("An atomic content control cannot contain nested controls or permissions.");
+                        if (node.Element(W + "sdtContent")?.Descendants().Any(e => e.Name == W + "drawing" || e.Name == W + "object" || e.Annotation<FieldBoundary>() is not null) == true)
+                            Loss("atomic-control-content", "Rich object or dynamic field inside an atomic form control", "Retained the typed form state and text display; embedded result semantics omitted.", node, control.Id);
+                        if (fields.Count != 0) throw new FormatException("Atomic form controls inside atomic fields are unsupported.");
+                        var controlStyle = ReadTextStyle(node.Element(W + "sdtContent")?.Descendants(W + "rPr").FirstOrDefault(), paragraphText);
+                        AddRun(new RichRun(new InlineDescriptor { AltText = ControlDisplay(control), Payload = new FormControlInlinePayload(control.Id) }, controlStyle));
+                    }
+                    else if (!On(node.Element(W + "sdtPr")?.Element(W + "showingPlcHdr")))
+                        foreach (var child in node.Element(W + "sdtContent")?.Elements() ?? []) ReadInline(child);
+                    control = control with { Start = start, End = new DocumentAnchor { ParagraphId = paragraphId, Offset = runs.Sum(r => r.Storage.Length), Affinity = control.End.Affinity } };
+                    contentControls.Add(control); return;
+                }
                 if (node.Name == W + "fldSimple")
                 {
                     BeginField(node, paragraphText, (string?)node.Attribute(W + "instr") ?? "");
@@ -577,8 +637,24 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 else if (element.Name == W + "sdt")
                 {
                     var children = ReadBlocks(element.Element(W + "sdtContent")?.Elements() ?? [], depth + 1).ToImmutableArray();
-                    if (Value(element.Element(W + "sdtPr")?.Element(W + "tag")) != SectionTag) Loss("content-control", "Content control behavior", "Content retained as a section.", element);
-                    if (!children.IsEmpty) yield return new Section { Blocks = children, Padding = 0 };
+                    if (Value(element.Element(W + "sdtPr")?.Element(W + "tag")) == SectionTag)
+                    { if (!children.IsEmpty) yield return new Section { Blocks = children, Padding = 0 }; continue; }
+                    var control = ReadContentControl(element, name => placeholderTexts.GetValueOrDefault(name));
+                    children = FlowDocument.EnsureBlocks(children);
+                    var entries = new DocumentIndex(new FlowDocument(children)).Paragraphs;
+                    if (control.IsAtomic)
+                    {
+                        if (entries.Length != 1 || contentControls.Any(c => entries.Any(p => p.Paragraph.Id == c.Start.ParagraphId)))
+                            throw new FormatException("Block atomic form control must contain one paragraph without nested controls.");
+                        var first = entries[0].Paragraph;
+                        var paragraph = first with { Runs = [new RichRun(new InlineDescriptor { AltText = ControlDisplay(control), Payload = new FormControlInlinePayload(control.Id) }, first.Runs.FirstOrDefault()?.Style ?? first.DefaultStyle)] };
+                        control = control with { Start = new DocumentAnchor { ParagraphId = paragraph.Id, Affinity = control.Start.Affinity }, End = new DocumentAnchor { ParagraphId = paragraph.Id, Offset = 1, Affinity = control.End.Affinity } };
+                        children = [paragraph];
+                    }
+                    else control = control with { Start = new DocumentAnchor { ParagraphId = entries[0].Paragraph.Id, Affinity = control.Start.Affinity },
+                        End = new DocumentAnchor { ParagraphId = entries[^1].Paragraph.Id, Offset = entries[^1].Paragraph.Length, Affinity = control.End.Affinity } };
+                    contentControls.Add(control);
+                    foreach (var child in children) yield return child;
                 }
                 else if (element.Name == W + "ins" || element.Name == W + "moveTo" || element.Name == W + "customXml")
                 { foreach (var block in ReadBlocks(element.Elements(), depth)) yield return block; }
@@ -736,7 +812,21 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 if (!theme.Fonts.ContainsKey(attribute.Value)) Loss("theme-font", "Unresolved theme font reference", "Reference retained with explicit fallback font.", property);
         }
         foreach (var unfinished in bookmarkStarts.Values) Loss("bookmark", "Unclosed bookmark", "Omitted the detached bookmark.", id: unfinished.Id);
-        document = RangeInterchange.ResolveStories(document with { Bookmarks = bookmarks.ToImmutableArray(), Fields = generalFields.ToImmutableArray() });
+        if (permissionStarts.Count != 0 || controlStarts.Count != 0) throw new FormatException("Unclosed form or permission boundary.");
+        var protection = ReadProtection(settings?.Root);
+        var sectionProperties = body.Descendants(W + "sectPr").Where(p => !p.Ancestors(W + "tbl").Any()).ToArray();
+        if (settings?.Root?.Element(W + "documentProtection")?.Attribute(Tx + "protectedSections") is { } protectedSections)
+        {
+            var selectedSections = protectedSections.Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(value => int.Parse(value, CultureInfo.InvariantCulture)).ToArray();
+            if (selectedSections.Any(index => index < 0 || index >= document.Sections.Length)) throw new FormatException("Invalid protected section index.");
+            protection = protection with { ProtectedSectionIds = selectedSections.Select(index => document.Sections[index].Id).ToImmutableArray() };
+        }
+        else if (sectionProperties.Any(p => p.Element(W + "formProt") is not null))
+            protection = protection with { ProtectedSectionIds = document.Sections.Where((section, index) => index < sectionProperties.Length && On(sectionProperties[index].Element(W + "formProt"))).Select(section => section.Id).ToImmutableArray() };
+        else protection = protection with { ProtectedSectionIds = [] };
+        document = RangeInterchange.ResolveStories(document with { Bookmarks = bookmarks.ToImmutableArray(), Fields = generalFields.ToImmutableArray(),
+            ContentControls = contentControls.ToImmutableArray(), PermissionRanges = permissionRanges.ToImmutableArray(), Protection = protection });
+        document = ContentControlValidation.SynchronizeValues(document);
         document.Validate();
         return document;
     }
@@ -1047,12 +1137,21 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         {
             void Part(string name, XElement element)
             {
+                WrapContentControls(element);
                 if (element.DescendantsAndSelf().Any(e => e.Name.Namespace == Tx || e.Attributes().Any(a => a.Name.Namespace == Tx)))
                 {
                     XNamespace compatibility = "http://schemas.openxmlformats.org/markup-compatibility/2006";
                     element.SetAttributeValue(XNamespace.Xmlns + "tx", Tx.NamespaceName);
                     element.SetAttributeValue(XNamespace.Xmlns + "mc", compatibility.NamespaceName);
                     element.SetAttributeValue(compatibility + "Ignorable", "tx");
+                }
+                var extensionNamespaces = new[] { (Prefix: "w14", Namespace: W14), (Prefix: "w15", Namespace: W15) }.Where(pair => element.DescendantsAndSelf().Any(e => e.Name.Namespace == pair.Namespace)).ToArray();
+                if (extensionNamespaces.Length != 0)
+                {
+                    XNamespace compatibility = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+                    element.SetAttributeValue(XNamespace.Xmlns + "mc", compatibility.NamespaceName);
+                    foreach (var pair in extensionNamespaces) element.SetAttributeValue(XNamespace.Xmlns + pair.Prefix, pair.Namespace.NamespaceName);
+                    element.SetAttributeValue(compatibility + "Ignorable", string.Join(" ", new[] { (string?)element.Attribute(compatibility + "Ignorable") }.Where(v => v is not null).Concat(extensionNamespaces.Select(p => p.Prefix))));
                 }
                 token.ThrowIfCancellationRequested();
                 using var stream = archive.CreateEntry(name, CompressionLevel.Optimal).Open();
@@ -1065,6 +1164,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             };
             var noteNumbers = document.Notes.Select((note, index) => (note.Id, Number: index + 1)).ToDictionary(n => n.Id, n => n.Number);
             var writtenParagraphs = new Dictionary<Guid, XElement>();
+            var permissionIds = document.PermissionRanges.Select((permission, index) => (permission.Id, index)).ToDictionary(p => p.Id, p => p.index);
             var bookmarkIds = document.Bookmarks.Select((bookmark, index) => (bookmark.Id, index)).ToDictionary(p => p.Id, p => p.index);
             var storyContentTypes = new List<XElement>();
             var resolver = new DocumentStyleResolver(document);
@@ -1174,9 +1274,9 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 pp.Add(WriteTextStyle(paragraph.DefaultStyle, paragraph.Id, ps.LetterSpacing));
                 var p = new XElement(W + "p", pp);
                 writtenParagraphs[paragraph.Id] = p;
-                foreach (var item in RangeInterchange.Items(document, paragraph))
+                foreach (var item in RangeInterchange.Items(document, paragraph, includeForms: true))
                 {
-                    if (item.Run is not { } run) { p.Add(WriteRangeBoundary(item, bookmarkIds)); continue; }
+                    if (item.Run is not { } run) { p.Add(item.ContentControl is not null || item.Permission is not null ? [WriteFormBoundary(item, permissionIds)] : WriteRangeBoundary(item, bookmarkIds)); continue; }
                     var r = new XElement(W + "r", WriteTextStyle(run.Style, paragraph.Id, ps.LetterSpacing));
                     var mergeField = run.Inline?.Payload as MergeFieldInlinePayload;
                     if (mergeField is not null) MergeFieldInstructions.ReportExportOptions("docx", run.Inline!, mergeField);
@@ -1188,13 +1288,15 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                             new XAttribute(W + "id", noteNumbers[note.Id]), note.CustomMark is not null ? new XAttribute(W + "customMarkFollows", 1) : null));
                         if (note.CustomMark is not null) r.Add(new XElement(W + "t", note.CustomMark));
                     }
-                    else if (mergeField is null && pageField is null && run.Inline is { } inline && WriteImage(inline) is { } drawing) r.Add(drawing);
+                    else if (mergeField is null && pageField is null && run.Inline is { Payload: not FormControlInlinePayload } inline && WriteImage(inline) is { } drawing) r.Add(drawing);
                     else foreach (var segment in Regex.Split(run.PlainText, "([\t\u2028])"))
                         if (segment == "\t") r.Add(new XElement(W + "tab"));
                         else if (segment == "\u2028") r.Add(new XElement(W + "br"));
                         else if (segment.Length > 0) r.Add(new XElement(W + "t", new XAttribute(XNamespace.Xml + "space", "preserve"), segment));
                     var content = pageField is not null ? new XElement(W + "fldSimple", new XAttribute(W + "instr", pageField.Field switch { PageFieldKind.NumPages => "NUMPAGES", PageFieldKind.SectionPages => "SECTIONPAGES", _ => "PAGE" }), r) :
                         mergeField is null ? r : new XElement(W + "fldSimple", new XAttribute(W + "instr", MergeFieldInstructions.Write(mergeField.Name)), r);
+                    if (run.Inline?.Payload is FormControlInlinePayload form)
+                        content = new XElement(W + "sdt", WriteContentControlProperties(document.ContentControls.First(c => c.Id == form.ControlId)), new XElement(W + "sdtContent", content));
                     var resolvedStyle = resolver.ResolveText(paragraph, run.Style);
                     if (resolvedStyle.InternalLink is { } destination)
                         p.Add(new XElement(W + "hyperlink", new XAttribute(W + "anchor", destination.BookmarkName),
@@ -1330,6 +1432,8 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                             exportSection = exportSection with { HeaderFooter = exportSection.HeaderFooter.WithReference(false, variant,
                                 new StoryReference { LinkToPrevious = false, StoryId = document.ResolveHeaderFooter(index, false, variant)?.Id }) };
                     var properties = WritePhysicalSection(exportSection, HeaderRelationship);
+                    if (document.Protection.Mode == DocumentProtectionMode.FormsOnly && !document.Protection.ProtectedSectionIds.IsEmpty)
+                        properties.Add(Val("formProt", document.Protection.ProtectedSectionIds.Contains(section.Id) ? 1 : 0));
                     if (hasWatermarks) properties.SetAttributeValue(Tx + "headerLinks", string.Join(',', Enum.GetValues<HeaderFooterVariant>().Select(variant => section.HeaderFooter.GetReference(false, variant).LinkToPrevious ? "1" : "0")));
                     if (section.Watermark is { } watermark)
                     {
@@ -1375,12 +1479,22 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 StoryPart(name, root, name);
                 relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", name), new XAttribute("Type", R.NamespaceName + "/" + name), new XAttribute("Target", name + ".xml")));
             }
+            var placeholders = document.ContentControls.Where(control => control.Placeholder.Length > 0).ToArray();
+            if (placeholders.Length != 0)
+            {
+                Part("word/glossary/document.xml", new XElement(W + "glossaryDocument", new XElement(W + "docParts", placeholders.Select(control =>
+                    new XElement(W + "docPart", new XElement(W + "docPartPr", Val("name", "Textalonia.Placeholder." + control.Id.ToString("N")),
+                        new XElement(W + "category", Val("name", "General"), Val("gallery", "placeholder"))),
+                        new XElement(W + "docPartBody", new XElement(W + "p", new XElement(W + "r", new XElement(W + "t", control.Placeholder)))))))));
+                relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", "glossary"), new XAttribute("Type", R.NamespaceName + "/glossaryDocument"), new XAttribute("Target", "glossary/document.xml")));
+                storyContentTypes.Add(new XElement(Ct + "Override", new XAttribute("PartName", "/word/glossary/document.xml"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml")));
+            }
             var stylesXml = WriteStyles(document, style => NumberFor(new Paragraph() { Style = style }, style.ListId ?? Guid.NewGuid()));
             Part("word/document.xml", new XElement(W + "document", new XAttribute(XNamespace.Xmlns + "w", W), new XAttribute(XNamespace.Xmlns + "r", R), body));
             Part("_rels/.rels", new XElement(Rel + "Relationships", new XElement(Rel + "Relationship", new XAttribute("Id", "document"), new XAttribute("Type", R.NamespaceName + "/officeDocument"), new XAttribute("Target", "word/document.xml")),
                 document.Properties.Count == 0 ? null : new XElement(Rel + "Relationship", new XAttribute("Id", "properties"), new XAttribute("Type", R.NamespaceName + "/custom-properties"), new XAttribute("Target", "docProps/custom.xml"))));
             if (document.Properties.Count != 0) Part("docProps/custom.xml", WriteDocumentProperties(document.Properties));
-            Part("word/settings.xml", new XElement(W + "settings", document.Defaults.Paragraph.DefaultTabWidth > 0 ? Val("defaultTabStop", Twips(document.Defaults.Paragraph.DefaultTabWidth)) : null,
+            Part("word/settings.xml", new XElement(W + "settings", WriteProtection(document), document.Defaults.Paragraph.DefaultTabWidth > 0 ? Val("defaultTabStop", Twips(document.Defaults.Paragraph.DefaultTabWidth)) : null,
                 document.Sections.Any(s => s.HeaderFooter.DifferentOddEvenPages) ? new XElement(W + "evenAndOddHeaders") : null,
                 document.Sections.Any(s => s.PageSettings.MirrorMargins) ? new XElement(W + "mirrorMargins") : null,
                 WriteNoteSettings(document.FootnoteSettings, false, document.Notes.Any(n => n.Kind == DocumentNoteKind.Footnote)), WriteNoteSettings(document.EndnoteSettings, true, document.Notes.Any(n => n.Kind == DocumentNoteKind.Endnote))));

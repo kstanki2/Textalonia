@@ -45,6 +45,7 @@ public partial class MainWindow : Window
         SaveButton.Click += async (_, _) => await SaveAsync();
         IntegrationsButton.Click += (_, _) => new IntegrationWindow().Show(this);
         MailMergeButton.Click += (_, _) => new MailMergeWindow(Editor.Document).Show(this);
+        FormsButton.Click += (_, _) => new FormWindow().Show(this);
         Closing += async (_, e) =>
         {
             if (!_dirty || e.IsProgrammatic) return;

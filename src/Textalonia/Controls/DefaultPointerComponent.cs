@@ -79,6 +79,16 @@ public class DefaultPointerComponent : DocumentInputComponent, IPointerComponent
             if (position < session.Selection.Start || position > session.Selection.End) session.Select(position, position);
             return;
         }
+        if (Context.Surface.HitTestContentControl(e.GetPosition(Context.Surface)) is { } formId)
+        {
+            session.SelectContentControl(formId);
+            if (session.CurrentContentControl is { Kind: ContentControlKind.CheckBox }) session.ToggleContentControl(formId);
+            else if (e.ClickCount >= 2) _ = Context.Editor.ShowContentControlValueDialogAsync();
+            Context.PreferredCaretX = null;
+            Context.ActivateInputPane();
+            e.Handled = true;
+            return;
+        }
         var paragraph = session.Index.At(position);
         var linkStyle = new DocumentStyleResolver(session.Document).ResolveText(paragraph.Paragraph,
             paragraph.Paragraph.StyleAt(position - paragraph.Start));

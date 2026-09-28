@@ -1,11 +1,11 @@
 # Textalonia XAML data vocabulary
 
-`DocumentFormats.Xaml` writes **Textalonia XAML data version 5** and reads versions 1/2/3/4/5. The namespace is `urn:textalonia:document:1`; the root is `Document` with `Version="5"`. `.txaml` is the recommended extension; `.xaml` also selects this codec through `DocumentFormats.ForPath`. Native JSON and its `.textalonia`, `.json`, and `.art` extensions remain supported independently.
+`DocumentFormats.Xaml` writes **Textalonia XAML data version 6** and reads versions 1/2/3/4/5/6. The namespace is `urn:textalonia:document:1`; the root is `Document` with `Version="6"`. `.txaml` is the recommended extension; `.xaml` also selects this codec through `DocumentFormats.ForPath`. Native JSON and its `.textalonia`, `.json`, and `.art` extensions remain supported independently.
 
 This is an XML data format, implemented using the .NET XML reader and explicit model constructors in the main Textalonia package. It adds no dependency. It does not implement Avalonia XAML, WPF FlowDocument XAML, or another editor's vocabulary; those documents require an explicit converter and fixtures.
 
 ```xml
-<Document xmlns="urn:textalonia:document:1" Version="5">
+<Document xmlns="urn:textalonia:document:1" Version="6">
   <Resources>
     <Resource Key="logo" Kind="Host" MediaType="image/png" Location="app:logo" />
   </Resources>
@@ -114,3 +114,6 @@ the same allowlisted payloads. See [story contracts](STORIES.md).
 
 Version 5 adds image placement/crop/rotation, original/preview resource references,
 OLE descriptors and section watermarks; see [image contracts](IMAGES.md).
+
+Version 6 adds structured controls, form inline values, protection settings and
+permission ranges. See [forms/protection](FORMS.md) for supported semantics.

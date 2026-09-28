@@ -16,7 +16,7 @@ public class TextaloniaToolbar : WrapPanel
     public static readonly StyledProperty<TextaloniaEditor?> EditorProperty =
         AvaloniaProperty.Register<TextaloniaToolbar, TextaloniaEditor?>(nameof(Editor));
     private readonly List<(ToggleButton Button, Func<SelectionFormattingState, bool?> Read)> _toggles = [];
-    private readonly List<Control> _editingControls = [];
+    private readonly Dictionary<Control, EditOperation> _editingControls = [];
     private ComboBox? _font;
     private ComboBox? _size;
     private ComboBox? _heading;
@@ -35,6 +35,7 @@ public class TextaloniaToolbar : WrapPanel
     private Button? _pictureProperties;
     private Button? _pictureRemove;
     private Button? _objectExtract;
+    private Button? _formValue;
     private bool _updating;
     private readonly List<(NumericUpDown Control, Func<SelectionFormattingState, FormattingValue<double?>> Read)> _numericFormatting = [];
     public TextaloniaEditor? Editor { get => GetValue(EditorProperty); set => SetValue(EditorProperty, value); }
@@ -67,7 +68,7 @@ public class TextaloniaToolbar : WrapPanel
         if (_findPanel is not null) _findPanel.Editor = null;
         Children.Clear(); _toggles.Clear(); _editingControls.Clear(); _numericFormatting.Clear();
         _mergeFieldUpdate = null; _mergeFieldId = null; _storyStatus = null;
-        _pictureProperties = null; _pictureRemove = null; _objectExtract = null;
+        _pictureProperties = null; _pictureRemove = null; _objectExtract = null; _formValue = null;
         _viewMode = null; _zoom = null; _pagesPerRow = null; _pageGap = null; _pageNumber = null; _pageStatus = null;
         if (Editor is not { } editor) return;
         _heading = Choice(["Body", "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6"], 128, "Paragraph style");
@@ -96,14 +97,14 @@ public class TextaloniaToolbar : WrapPanel
         DialogButton("Font…", "Font dialog", editor.ShowFontDialogAsync);
         DialogButton("Paragraph…", "Paragraph dialog", editor.ShowParagraphDialogAsync);
         DialogButton("Tabs…", "Tabs dialog", editor.ShowTabsDialogAsync);
-        DialogButton("Page setup…", "Page setup dialog", editor.ShowPageSetupDialogAsync);
-        DialogButton("Page numbering…", "Page numbering dialog", editor.ShowPageNumberingDialogAsync);
+        DialogButton("Page setup…", "Page setup dialog", editor.ShowPageSetupDialogAsync, EditOperation.Structure);
+        DialogButton("Page numbering…", "Page numbering dialog", editor.ShowPageNumberingDialogAsync, EditOperation.Structure);
         var viewButton = AddFlyout("View", "Document view, zoom and page navigation", ViewMenu(), editing: false);
         viewButton.Flyout!.Opened += (_, _) => Refresh();
         AddOutputFlyout();
-        AddFlyout("Insert", "Insert link or table", InsertMenu());
+        AddFlyout("Insert", "Insert link or table", InsertMenu(), editing: false);
         AddPicturesFlyout();
-        DialogButton("Table\u2026", "Table properties", editor.ShowTablePropertiesDialogAsync);
+        DialogButton("Table\u2026", "Table properties", editor.ShowTablePropertiesDialogAsync, EditOperation.Tables);
         AddFlyout("Stories", "Headers, footers and notes", StoriesMenu(), editing: false);
         AddMergeFieldFlyout();
         ActionButton("Clear", "Clear character formatting", () => editor.ApplyStyle(_ => TextStyle.Default));
@@ -114,46 +115,48 @@ public class TextaloniaToolbar : WrapPanel
         _findPanel.CloseRequested += (_, _) => _findButton.Flyout?.Hide();
         AddNavigationFlyout();
         AddFieldsFlyout();
+        AddFormsFlyout();
     }
 
     private ComboBox Choice(string[] values, double width, string name)
     {
         var box = new ComboBox { ItemsSource = values, Width = width, Margin = new Thickness(2), MinHeight = 32, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
         ToolTip.SetTip(box, name); AutomationProperties.SetName(box, name);
-        Children.Add(box); _editingControls.Add(box); return box;
+        Children.Add(box); _editingControls.Add(box, EditOperation.Formatting); return box;
     }
     private ToggleButton Toggle(string text, string name, System.Windows.Input.ICommand command, Func<SelectionFormattingState, bool?> read)
     {
         var button = new ToggleButton { Content = text, Command = command, IsThreeState = true, MinWidth = 32, MinHeight = 32, Margin = new Thickness(2), Padding = new Thickness(8, 4) };
         ToolTip.SetTip(button, name); AutomationProperties.SetName(button, name);
-        Children.Add(button); _toggles.Add((button, read)); return button;
+        Children.Add(button); _editingControls.Add(button, EditOperation.Formatting); _toggles.Add((button, read)); return button;
     }
     private Button CommandButton(string text, string name, System.Windows.Input.ICommand command)
     {
-        var button = MakeButton(text, name); button.Command = command; Children.Add(button); return button;
+        var button = MakeButton(text, name); button.Command = command; Children.Add(button);
+        _editingControls.Add(button, text == "Undo" ? EditOperation.Undo : EditOperation.Redo); return button;
     }
     private Button ActionButton(string text, string name, Action action)
     {
         var button = MakeButton(text, name);
         button.Click += (_, _) => Editor?.Run(action);
-        Children.Add(button); _editingControls.Add(button); return button;
+        Children.Add(button); _editingControls.Add(button, EditOperation.Formatting); return button;
     }
-    private void DialogButton(string text, string name, Func<Task<bool>> show)
+    private void DialogButton(string text, string name, Func<Task<bool>> show, EditOperation operation = EditOperation.Formatting)
     {
         var button = MakeButton(text, name);
         button.Click += async (_, _) => await show();
-        Children.Add(button); _editingControls.Add(button);
+        Children.Add(button); _editingControls.Add(button, operation);
     }
     private static Button MakeButton(string text, string name)
     {
         var button = new Button { Content = text, MinHeight = 32, FontSize = 13, Margin = new Thickness(2), Padding = new Thickness(7, 4) };
         ToolTip.SetTip(button, name); AutomationProperties.SetName(button, name); return button;
     }
-    private Button AddFlyout(string text, string name, Control content, bool editing = true)
+    private Button AddFlyout(string text, string name, Control content, bool editing = true, EditOperation operation = EditOperation.Formatting)
     {
         var button = MakeButton(text, name);
         button.Flyout = new Flyout { Content = content };
-        Children.Add(button); if (editing) _editingControls.Add(button); return button;
+        Children.Add(button); if (editing) _editingControls.Add(button, operation); return button;
     }
     private static TextBlock Label(string text) => new() { Text = text, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 6) };
 
@@ -165,12 +168,12 @@ public class TextaloniaToolbar : WrapPanel
         panel.Children.Add(Label("Pictures"));
         AddDialog("Insert picture…", () => Editor!.ShowInsertImageDialogAsync());
         _pictureProperties = AddDialog("Picture or preview properties…", () => Editor!.ShowImagePropertiesDialogAsync());
-        _pictureRemove = MenuAction("Remove selected picture or object", () => Editor!.RemoveCurrentImageOrOle());
+        _pictureRemove = MenuAction("Remove selected picture or object", () => Editor!.RemoveCurrentImageOrOle(), operation: EditOperation.InlineObjects);
         panel.Children.Add(_pictureRemove);
         panel.Children.Add(Label("Section watermark"));
         AddDialog("Watermark settings…", () => Editor!.ShowWatermarkDialogAsync());
         AddDialog("Insert image watermark…", () => Editor!.ShowImageWatermarkDialogAsync());
-        panel.Children.Add(MenuAction("Remove watermark from section", () => Editor!.RemoveWatermark()));
+        panel.Children.Add(MenuAction("Remove watermark from section", () => Editor!.RemoveWatermark(), operation: EditOperation.InlineObjects));
         panel.Children.Add(Label("Embedded objects"));
         AddDialog("Insert embedded file and preview…", () => Editor!.ShowInsertOleDialogAsync());
         _objectExtract = AddDialog("Extract selected embedded file…", () => Editor!.ShowExtractOleDialogAsync(), editing: false);
@@ -180,7 +183,7 @@ public class TextaloniaToolbar : WrapPanel
             var command = MakeButton(label, label);
             command.Click += async (_, _) => { button.Flyout.Hide(); await show(); };
             panel.Children.Add(command);
-            if (editing) _editingControls.Add(command);
+            if (editing) _editingControls.Add(command, EditOperation.InlineObjects);
             return command;
         }
     }
@@ -211,11 +214,11 @@ public class TextaloniaToolbar : WrapPanel
         quick.Click += async (_, _) => { button.Flyout.Hide(); if (Editor is { } editor) await editor.QuickPrintAsync(); };
     }
 
-    private Button MenuAction(string text, Action action, bool editing = true)
+    private Button MenuAction(string text, Action action, bool editing = true, EditOperation operation = EditOperation.Formatting)
     {
         var button = MakeButton(text, text); button.HorizontalAlignment = HorizontalAlignment.Stretch;
         button.Click += (_, _) => Editor?.Run(action);
-        if (editing) _editingControls.Add(button);
+        if (editing) _editingControls.Add(button, operation);
         return button;
     }
 
@@ -281,7 +284,7 @@ public class TextaloniaToolbar : WrapPanel
             var control = Number(name, minimum, minimum, maximum);
             control.ValueChanged += (_, _) => { if (!_updating && control.Value is { } value) Editor?.Run(() => apply((double)value), focusDocument: false); };
             control.LostFocus += (_, _) => Refresh();
-            _numericFormatting.Add((control, read)); _editingControls.Add(control); panel.Children.Add(control);
+            _numericFormatting.Add((control, read)); _editingControls.Add(control, EditOperation.Formatting); panel.Children.Add(control);
         }
     }
     private static FormattingValue<double?> AsNullable(FormattingValue<double> value) => new(value.Value, value.IsMixed);
@@ -289,28 +292,29 @@ public class TextaloniaToolbar : WrapPanel
 
     private Control StoriesMenu()
     {
+        Button MenuActionForOperation(string text, Action action, bool editing = true) => MenuAction(text, action, editing, EditOperation.Structure);
         var panel = new StackPanel { Width = 280, Spacing = 4 };
         _storyStatus = new TextBlock(); AutomationProperties.SetName(_storyStatus, "Active story"); panel.Children.Add(_storyStatus);
         panel.Children.Add(Label("Headers and footers"));
         foreach (var variant in Enum.GetValues<HeaderFooterVariant>())
         {
-            panel.Children.Add(MenuAction("Edit " + variant.ToString().ToLowerInvariant() + " header", () => Editor!.EditHeaderFooter(false, variant), editing: false));
-            panel.Children.Add(MenuAction("Edit " + variant.ToString().ToLowerInvariant() + " footer", () => Editor!.EditHeaderFooter(true, variant), editing: false));
+            panel.Children.Add(MenuActionForOperation("Edit " + variant.ToString().ToLowerInvariant() + " header", () => Editor!.EditHeaderFooter(false, variant), editing: false));
+            panel.Children.Add(MenuActionForOperation("Edit " + variant.ToString().ToLowerInvariant() + " footer", () => Editor!.EditHeaderFooter(true, variant), editing: false));
         }
-        panel.Children.Add(MenuAction("Link to previous", () => Editor!.LinkHeaderFooterToPrevious(true)));
-        panel.Children.Add(MenuAction("Unlink from previous", () => Editor!.LinkHeaderFooterToPrevious(false)));
+        panel.Children.Add(MenuActionForOperation("Link to previous", () => Editor!.LinkHeaderFooterToPrevious(true)));
+        panel.Children.Add(MenuActionForOperation("Unlink from previous", () => Editor!.LinkHeaderFooterToPrevious(false)));
         AddDialog("Header and footer options…", () => Editor!.ShowHeaderFooterDialogAsync());
         panel.Children.Add(new Separator());
-        panel.Children.Add(MenuAction("Return to document (Esc)", () => Editor!.CloseStory(), editing: false));
+        panel.Children.Add(MenuActionForOperation("Return to document (Esc)", () => Editor!.CloseStory(), editing: false));
         panel.Children.Add(Label("Page fields"));
         foreach (var field in Enum.GetValues<PageFieldKind>())
-            panel.Children.Add(MenuAction("Insert " + field, () => Editor!.InsertPageField(field)));
+            panel.Children.Add(MenuActionForOperation("Insert " + field, () => Editor!.InsertPageField(field)));
         panel.Children.Add(Label("Notes"));
         var mark = new TextBox { PlaceholderText = "Custom mark (blank for numbering)" };
         AutomationProperties.SetName(mark, "Custom note mark"); panel.Children.Add(mark);
-        panel.Children.Add(MenuAction("Insert footnote", () => Editor!.InsertFootnote(string.IsNullOrEmpty(mark.Text) ? null : mark.Text)));
-        panel.Children.Add(MenuAction("Insert endnote", () => Editor!.InsertEndnote(string.IsNullOrEmpty(mark.Text) ? null : mark.Text)));
-        panel.Children.Add(MenuAction("Delete active note", () =>
+        panel.Children.Add(MenuActionForOperation("Insert footnote", () => Editor!.InsertFootnote(string.IsNullOrEmpty(mark.Text) ? null : mark.Text)));
+        panel.Children.Add(MenuActionForOperation("Insert endnote", () => Editor!.InsertEndnote(string.IsNullOrEmpty(mark.Text) ? null : mark.Text)));
+        panel.Children.Add(MenuActionForOperation("Delete active note", () =>
         {
             var note = Editor!.Document.Notes.FirstOrDefault(n => n.StoryId == Editor.ActiveStoryId);
             if (note is not null) Editor.Session.RemoveNote(note.Id);
@@ -323,7 +327,7 @@ public class TextaloniaToolbar : WrapPanel
         {
             var button = MakeButton(label, label);
             button.Click += async (_, _) => await show();
-            _editingControls.Add(button); panel.Children.Add(button);
+            _editingControls.Add(button, EditOperation.Structure); panel.Children.Add(button);
         }
     }
 
@@ -331,10 +335,10 @@ public class TextaloniaToolbar : WrapPanel
     {
         var panel = new StackPanel { Width = 260, Spacing = 4 };
         panel.Children.Add(Label("Breaks"));
-        panel.Children.Add(MenuAction("Insert page break", () => Editor!.Session.InsertPageBreak()));
-        panel.Children.Add(MenuAction("Insert column break", () => Editor!.Session.InsertColumnBreak()));
+        panel.Children.Add(MenuAction("Insert page break", () => Editor!.Session.InsertPageBreak(), operation: EditOperation.Structure));
+        panel.Children.Add(MenuAction("Insert column break", () => Editor!.Session.InsertColumnBreak(), operation: EditOperation.Structure));
         foreach (var kind in Enum.GetValues<SectionBreakKind>())
-            panel.Children.Add(MenuAction("Insert section: " + kind, () => Editor!.Session.InsertSectionBreak(kind)));
+            panel.Children.Add(MenuAction("Insert section: " + kind, () => Editor!.Session.InsertSectionBreak(kind), operation: EditOperation.Structure));
         panel.Children.Add(new Separator());
         panel.Children.Add(Label("Hyperlink"));
         var url = new TextBox { PlaceholderText = "https://example.com", Margin = new Thickness(2) };
@@ -358,25 +362,26 @@ public class TextaloniaToolbar : WrapPanel
         var columns = new NumericUpDown { Value = 3, Minimum = 1, Maximum = 12, Width = 115, FormatString = "0", PlaceholderText = "Columns" };
         AutomationProperties.SetName(rows, "Table rows"); AutomationProperties.SetName(columns, "Table columns");
         dimensions.Children.Add(rows); dimensions.Children.Add(columns); panel.Children.Add(dimensions);
-        panel.Children.Add(MenuAction("Insert table", () => Editor!.InsertTable((int)(rows.Value ?? 3), (int)(columns.Value ?? 3))));
-        panel.Children.Add(MenuAction("Add row below", () => Editor!.InsertTableRow()));
-        panel.Children.Add(MenuAction("Add column after", () => Editor!.InsertTableColumn()));
-        panel.Children.Add(MenuAction("Select current cell", () => Editor!.SelectCurrentTableCell()));
-        panel.Children.Add(MenuAction("Extend selection right", () => Editor!.ExtendTableCellSelection(0, 1)));
-        panel.Children.Add(MenuAction("Extend selection down", () => Editor!.ExtendTableCellSelection(1, 0)));
-        panel.Children.Add(MenuAction("Merge selected cells", () => Editor!.MergeSelectedTableCells()));
-        panel.Children.Add(MenuAction("Merge with cell on right", () => Editor!.Session.UpdateCurrentTable((t, r, c) => t.MergeCells(r, c, 1, 2))));
-        panel.Children.Add(MenuAction("Merge with cell below", () => Editor!.Session.UpdateCurrentTable((t, r, c) => t.MergeCells(r, c, 2, 1))));
-        panel.Children.Add(MenuAction("Split cell", () => Editor!.SplitSelectedTableCells()));
-        panel.Children.Add(MenuAction("Shade cell", () => Editor!.SetTableCellBackground("#D9E9FA")));
-        panel.Children.Add(MenuAction("Delete row", () => Editor!.DeleteTableRows()));
-        panel.Children.Add(MenuAction("Delete column", () => Editor!.DeleteTableColumns()));
-        panel.Children.Add(MenuAction("Delete table", () => Editor!.DeleteSelectedTable()));
+        Button TableAction(string text, Action action) => MenuAction(text, action, operation: EditOperation.Tables);
+        panel.Children.Add(TableAction("Insert table", () => Editor!.InsertTable((int)(rows.Value ?? 3), (int)(columns.Value ?? 3))));
+        panel.Children.Add(TableAction("Add row below", () => Editor!.InsertTableRow()));
+        panel.Children.Add(TableAction("Add column after", () => Editor!.InsertTableColumn()));
+        panel.Children.Add(MenuAction("Select current cell", () => Editor!.SelectCurrentTableCell(), editing: false));
+        panel.Children.Add(MenuAction("Extend selection right", () => Editor!.ExtendTableCellSelection(0, 1), editing: false));
+        panel.Children.Add(MenuAction("Extend selection down", () => Editor!.ExtendTableCellSelection(1, 0), editing: false));
+        panel.Children.Add(TableAction("Merge selected cells", () => Editor!.MergeSelectedTableCells()));
+        panel.Children.Add(TableAction("Merge with cell on right", () => Editor!.Session.UpdateCurrentTable((t, r, c) => t.MergeCells(r, c, 1, 2))));
+        panel.Children.Add(TableAction("Merge with cell below", () => Editor!.Session.UpdateCurrentTable((t, r, c) => t.MergeCells(r, c, 2, 1))));
+        panel.Children.Add(TableAction("Split cell", () => Editor!.SplitSelectedTableCells()));
+        panel.Children.Add(TableAction("Shade cell", () => Editor!.SetTableCellBackground("#D9E9FA")));
+        panel.Children.Add(TableAction("Delete row", () => Editor!.DeleteTableRows()));
+        panel.Children.Add(TableAction("Delete column", () => Editor!.DeleteTableColumns()));
+        panel.Children.Add(TableAction("Delete table", () => Editor!.DeleteSelectedTable()));
         panel.Children.Add(new Separator());
         panel.Children.Add(Label("Cell borders and padding"));
         var padding = Number("Cell padding", 8, 0, 1000);
         panel.Children.Add(padding);
-        panel.Children.Add(MenuAction("Apply cell padding", () =>
+        panel.Children.Add(TableAction("Apply cell padding", () =>
         {
             var value = (double)(padding.Value ?? 8); Editor!.SetTableCellPadding(new(value, value, value, value));
         }));
@@ -386,25 +391,25 @@ public class TextaloniaToolbar : WrapPanel
         AutomationProperties.SetName(borderKind, "Cell border kind"); panel.Children.Add(borderKind);
         var borderColor = new TextBox { Text = "#808080", PlaceholderText = "Border color" };
         AutomationProperties.SetName(borderColor, "Cell border color"); panel.Children.Add(borderColor);
-        panel.Children.Add(MenuAction("Apply cell borders", () =>
+        panel.Children.Add(TableAction("Apply cell borders", () =>
         {
             var side = new BorderSide((double)(borderWidth.Value ?? 1), borderColor.Text) { Kind = (BorderKind)borderKind.SelectedItem! };
             Editor!.SetTableCellBorders(new(side, side, side, side));
         }));
-        panel.Children.Add(MenuAction("Remove cell borders", () => Editor!.SetTableCellBorders(new())));
+        panel.Children.Add(TableAction("Remove cell borders", () => Editor!.SetTableCellBorders(new())));
         panel.Children.Add(Label("Table sizing"));
-        panel.Children.Add(MenuAction("Narrow column", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Column, -8)));
-        panel.Children.Add(MenuAction("Widen column", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Column, 8)));
-        panel.Children.Add(MenuAction("Shorten row", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Row, -8)));
-        panel.Children.Add(MenuAction("Taller row", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Row, 8)));
+        panel.Children.Add(TableAction("Narrow column", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Column, -8)));
+        panel.Children.Add(TableAction("Widen column", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Column, 8)));
+        panel.Children.Add(TableAction("Shorten row", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Row, -8)));
+        panel.Children.Add(TableAction("Taller row", () => Editor!.ResizeCurrentTableTrack(TableResizeAxis.Row, 8)));
         var columnWidth = Number("Relative column width", 1, .001m, 100000);
         panel.Children.Add(columnWidth);
-        panel.Children.Add(MenuAction("Apply column width", () => Editor!.SetTableColumnWidth((double)(columnWidth.Value ?? 1))));
+        panel.Children.Add(TableAction("Apply column width", () => Editor!.SetTableColumnWidth((double)(columnWidth.Value ?? 1))));
         var rowHeight = Number("Row height", 36, 1, 100000);
         panel.Children.Add(rowHeight);
         var rowMode = new ComboBox { ItemsSource = Enum.GetValues<TableRowHeightMode>(), SelectedItem = TableRowHeightMode.AtLeast };
         AutomationProperties.SetName(rowMode, "Row height policy"); panel.Children.Add(rowMode);
-        panel.Children.Add(MenuAction("Apply row height", () => Editor!.SetTableRowHeight((double)(rowHeight.Value ?? 36), (TableRowHeightMode)rowMode.SelectedItem!)));
+        panel.Children.Add(TableAction("Apply row height", () => Editor!.SetTableRowHeight((double)(rowHeight.Value ?? 36), (TableRowHeightMode)rowMode.SelectedItem!)));
         panel.Children.Add(new TextBlock { Text = "Alt+drag: select cells. Alt+Shift+arrows: extend selection. Drag cell edges to resize. Escape: cancel.", TextWrapping = TextWrapping.Wrap });
         return new ScrollViewer { Content = panel, MaxHeight = 520 };
     }
@@ -449,6 +454,7 @@ public class TextaloniaToolbar : WrapPanel
 
     private void AddMergeFieldFlyout()
     {
+        Button MenuActionForOperation(string text, Action action, bool editing = true) => MenuAction(text, action, editing, EditOperation.InlineObjects);
         var panel = new StackPanel { Width = 280, Spacing = 6 };
         panel.Children.Add(Label("Merge field"));
         var name = new TextBox { PlaceholderText = "CustomerName" };
@@ -464,9 +470,9 @@ public class TextaloniaToolbar : WrapPanel
         useFallback.IsCheckedChanged += (_, _) => fallback.IsEnabled = useFallback.IsChecked == true;
         string? ValueFormat() => string.IsNullOrEmpty(format.Text) ? null : format.Text;
         string? Fallback() => useFallback.IsChecked == true ? fallback.Text ?? "" : null;
-        var insert = MenuAction("Insert merge field", () => Editor!.InsertMergeField(name.Text ?? "", ValueFormat(), Fallback()));
+        var insert = MenuActionForOperation("Insert merge field", () => Editor!.InsertMergeField(name.Text ?? "", ValueFormat(), Fallback()));
         panel.Children.Add(insert);
-        var update = MenuAction("Update selected merge field", () =>
+        var update = MenuActionForOperation("Update selected merge field", () =>
         {
             if (_mergeFieldId is { } id && Editor?.CurrentMergeField?.Id == id)
                 Editor.UpdateMergeField(id, name.Text ?? "", ValueFormat(), Fallback());
@@ -478,7 +484,7 @@ public class TextaloniaToolbar : WrapPanel
             Text = "Select a field or place the caret beside it to edit its definition. Field names must match your recipient data.",
             TextWrapping = TextWrapping.Wrap, FontSize = 12
         });
-        var button = AddFlyout("Merge field", "Insert or edit a merge field", panel);
+        var button = AddFlyout("Merge field", "Insert or edit a merge field", panel, operation: EditOperation.InlineObjects);
         button.Flyout!.Opened += (_, _) =>
         {
             var current = Editor?.CurrentMergeField;
@@ -492,7 +498,7 @@ public class TextaloniaToolbar : WrapPanel
             {
                 name.Text = ""; format.Text = ""; useFallback.IsChecked = false; fallback.Text = "";
             }
-            update.IsEnabled = _mergeFieldId is not null && Editor?.IsReadOnly == false;
+            update.IsEnabled = _mergeFieldId is not null && Editor?.CanEdit(EditOperation.InlineObjects) == true;
             name.Focus();
         };
         insert.Click += (_, _) => { if (Editor?.LastError is null) button.Flyout.Hide(); };
@@ -529,9 +535,9 @@ public class TextaloniaToolbar : WrapPanel
         panel.Children.Add(Label("Bookmarks")); panel.Children.Add(bookmarks); panel.Children.Add(name);
         bookmarks.SelectionChanged += (_, _) => { if (bookmarks.SelectedItem is string selected) name.Text = selected; };
         panel.Children.Add(MenuAction("Go to bookmark", () => { if (bookmarks.SelectedItem is string selected) Editor!.NavigateToBookmark(selected); }, false));
-        panel.Children.Add(MenuAction("Add bookmark at selection", () => { Editor!.AddBookmark(name.Text ?? ""); Refresh(); }));
-        panel.Children.Add(MenuAction("Rename bookmark", () => { if (bookmarks.SelectedItem is string selected) { Editor!.RenameBookmark(selected, name.Text ?? ""); Refresh(); } }));
-        panel.Children.Add(MenuAction("Delete bookmark", () => { if (bookmarks.SelectedItem is string selected) { Editor!.DeleteBookmark(selected); Refresh(); } }));
+        panel.Children.Add(MenuAction("Add bookmark at selection", () => { Editor!.AddBookmark(name.Text ?? ""); Refresh(); }, operation: EditOperation.Metadata));
+        panel.Children.Add(MenuAction("Rename bookmark", () => { if (bookmarks.SelectedItem is string selected) { Editor!.RenameBookmark(selected, name.Text ?? ""); Refresh(); } }, operation: EditOperation.Metadata));
+        panel.Children.Add(MenuAction("Delete bookmark", () => { if (bookmarks.SelectedItem is string selected) { Editor!.DeleteBookmark(selected); Refresh(); } }, operation: EditOperation.Metadata));
         panel.Children.Add(Label("Internal link on selection")); panel.Children.Add(tooltip); panel.Children.Add(activation);
         panel.Children.Add(MenuAction("Link selection to bookmark", () =>
         {
@@ -556,6 +562,7 @@ public class TextaloniaToolbar : WrapPanel
 
     private void AddFieldsFlyout()
     {
+        Button MenuActionForOperation(string text, Action action, bool editing = true) => MenuAction(text, action, editing, EditOperation.Metadata);
         var panel = new StackPanel { Width = 310, Spacing = 6 };
         var instruction = new TextBox { PlaceholderText = "Field instruction, e.g. DATE or TOC", Text = "DATE" };
         var fields = new ComboBox { HorizontalAlignment = HorizontalAlignment.Stretch, PlaceholderText = "Field" };
@@ -569,8 +576,8 @@ public class TextaloniaToolbar : WrapPanel
         AutomationProperties.SetName(instruction, "Field instruction"); AutomationProperties.SetName(fields, "Document fields");
         AutomationProperties.SetName(status, "Field update status");
         panel.Children.Add(Label("Fields")); panel.Children.Add(instruction);
-        panel.Children.Add(MenuAction("Insert field", () => { Editor!.Session.InsertField(instruction.Text ?? ""); Refresh(); }));
-        panel.Children.Add(MenuAction("Update fields", () =>
+        panel.Children.Add(MenuActionForOperation("Insert field", () => { Editor!.Session.InsertField(instruction.Text ?? ""); Refresh(); }));
+        panel.Children.Add(MenuActionForOperation("Update fields", () =>
         {
             var result = Editor!.UpdateFieldsWithLayout(new() { Clock = DateTimeOffset.Now, Culture = System.Globalization.CultureInfo.CurrentCulture });
             status.Text = $"{result.UpdatedCount} field(s) updated" + (result.Diagnostics.IsEmpty ? "" : Environment.NewLine + string.Join(Environment.NewLine, result.Diagnostics.Select(d => d.Message).Distinct().Take(5)));
@@ -581,20 +588,20 @@ public class TextaloniaToolbar : WrapPanel
         previewCodes.IsCheckedChanged += (_, _) => RefreshPreview();
         preview.PropertyChanged += (_, change) => { if (change.Property == Expander.IsExpandedProperty) RefreshPreview(); };
         fields.SelectionChanged += (_, _) => { if (fields.SelectedItem is FieldItem item) instruction.Text = item.Instruction; };
-        panel.Children.Add(MenuAction("Apply field instruction", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.SetFieldInstruction(item.Id, instruction.Text ?? ""); Refresh(); } }));
-        panel.Children.Add(MenuAction("Lock field", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.SetFieldLocked(item.Id, true); Refresh(); } }));
-        panel.Children.Add(MenuAction("Unlock field", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.SetFieldLocked(item.Id, false); Refresh(); } }));
-        panel.Children.Add(MenuAction("Remove field, keep result", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.RemoveField(item.Id); Refresh(); } }));
+        panel.Children.Add(MenuActionForOperation("Apply field instruction", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.SetFieldInstruction(item.Id, instruction.Text ?? ""); Refresh(); } }));
+        panel.Children.Add(MenuActionForOperation("Lock field", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.SetFieldLocked(item.Id, true); Refresh(); } }));
+        panel.Children.Add(MenuActionForOperation("Unlock field", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.SetFieldLocked(item.Id, false); Refresh(); } }));
+        panel.Children.Add(MenuActionForOperation("Remove field, keep result", () => { if (fields.SelectedItem is FieldItem item) { Editor!.Session.RemoveField(item.Id); Refresh(); } }));
         panel.Children.Add(Label("Contents and captions"));
-        panel.Children.Add(MenuAction("Insert table of contents", () => { Editor!.Session.InsertField("TOC \\o \"1-3\" \\h"); Refresh(); }));
-        panel.Children.Add(MenuAction("Insert list of figures", () => { Editor!.Session.InsertField("TOC \\c \"Figure\" \\h"); Refresh(); }));
-        panel.Children.Add(MenuAction("Insert list of tables", () => { Editor!.Session.InsertField("TOC \\c \"Table\" \\h"); Refresh(); }));
+        panel.Children.Add(MenuActionForOperation("Insert table of contents", () => { Editor!.Session.InsertField("TOC \\o \"1-3\" \\h"); Refresh(); }));
+        panel.Children.Add(MenuActionForOperation("Insert list of figures", () => { Editor!.Session.InsertField("TOC \\c \"Figure\" \\h"); Refresh(); }));
+        panel.Children.Add(MenuActionForOperation("Insert list of tables", () => { Editor!.Session.InsertField("TOC \\c \"Table\" \\h"); Refresh(); }));
         var label = new TextBox { Text = "Figure", PlaceholderText = "Caption label" };
         var caption = new TextBox { PlaceholderText = "Caption text" };
         AutomationProperties.SetName(label, "Caption label"); AutomationProperties.SetName(caption, "Caption text");
         panel.Children.Add(label); panel.Children.Add(caption);
-        panel.Children.Add(MenuAction("Insert caption", () => { Editor!.Session.InsertCaption(label.Text ?? "Figure", caption.Text ?? ""); Refresh(); }));
-        _editingControls.AddRange([instruction, label, caption]);
+        panel.Children.Add(MenuActionForOperation("Insert caption", () => { Editor!.Session.InsertCaption(label.Text ?? "Figure", caption.Text ?? ""); Refresh(); }));
+        foreach (var input in new Control[] { instruction, label, caption }) _editingControls.Add(input, EditOperation.Metadata);
         var button = AddFlyout("Fields", "Insert and update document fields", new ScrollViewer { Content = panel, MaxHeight = 560 }, editing: false);
         button.Flyout!.Opened += (_, _) => Refresh();
         void Refresh()
@@ -629,6 +636,20 @@ public class TextaloniaToolbar : WrapPanel
         Editor.ApplyStyle(s => s with { Baseline = selected });
     }
 
+    private void AddFormsFlyout()
+    {
+        var panel = new StackPanel { Width = 270, Spacing = 4 };
+        panel.Children.Add(new TextBlock { Text = "Tab moves between fields. Space toggles a checkbox. Enter edits a selected list or date value.", TextWrapping = TextWrapping.Wrap });
+        panel.Children.Add(MenuAction("Previous form field", () => Editor!.SelectNextContentControl(true), editing: false));
+        panel.Children.Add(MenuAction("Next form field", () => Editor!.SelectNextContentControl(), editing: false));
+        _formValue = MakeButton("Edit form value\u2026", "Edit form value");
+        _editingControls.Add(_formValue, EditOperation.Forms);
+        panel.Children.Add(_formValue);
+        var button = AddFlyout("Forms", "Fill document form fields", panel, editing: false);
+        _formValue.Click += async (_, _) => { button.Flyout!.Hide(); if (Editor is { } editor) await editor.ShowContentControlValueDialogAsync(); };
+        button.Flyout!.Opened += (_, _) => Refresh();
+    }
+
     private static bool? Indicator(FormattingValue<bool> value) => value.IsMixed ? null : value.Value;
 
     private void Refresh()
@@ -641,12 +662,18 @@ public class TextaloniaToolbar : WrapPanel
                 ? "Editing " + activeStory.Kind.ToString().ToLowerInvariant() : "Editing document body";
             var state = editor.FormattingState;
             foreach (var (button, read) in _toggles) button.IsChecked = read(state);
-            foreach (var control in _editingControls) control.IsEnabled = !editor.IsReadOnly;
-            if (_pictureProperties is not null) _pictureProperties.IsEnabled = !editor.IsReadOnly && editor.CurrentImageOrOle is not null;
-            if (_pictureRemove is not null) _pictureRemove.IsEnabled = !editor.IsReadOnly && editor.CurrentImageOrOle is not null;
+            foreach (var (control, operation) in _editingControls)
+            {
+                var capability = editor.Session.GetCapability(operation);
+                control.IsVisible = capability != CommandCapability.Hidden;
+                control.IsEnabled = capability == CommandCapability.Enabled;
+            }
+            if (_formValue is not null) _formValue.IsEnabled = editor.CanEdit(EditOperation.Forms) && editor.CurrentContentControl is { SupportsInteraction: true, LockContents: false };
+            if (_pictureProperties is not null) _pictureProperties.IsEnabled = editor.CanEdit(EditOperation.InlineObjects) && editor.CurrentImageOrOle is not null;
+            if (_pictureRemove is not null) _pictureRemove.IsEnabled = editor.CanEdit(EditOperation.InlineObjects) && editor.CurrentImageOrOle is not null;
             if (_objectExtract is not null) _objectExtract.IsEnabled = editor.CurrentOleObject is not null;
             if (_mergeFieldUpdate is not null)
-                _mergeFieldUpdate.IsEnabled = !editor.IsReadOnly && _mergeFieldId is not null && editor.CurrentMergeField?.Id == _mergeFieldId;
+                _mergeFieldUpdate.IsEnabled = editor.CanEdit(EditOperation.InlineObjects) && _mergeFieldId is not null && editor.CurrentMergeField?.Id == _mergeFieldId;
             foreach (var (control, read) in _numericFormatting)
             {
                 if (control.IsKeyboardFocusWithin) continue;

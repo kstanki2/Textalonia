@@ -248,6 +248,12 @@ public partial class DocumentSurface
         (visual.Clip is null || visual.Clip.Value.Contains(point)) &&
         visual.Bounds.Contains(point.Transform(ImageDrawing.Rotation(visual.Bounds, -(visual.Descriptor.Placement?.Rotation ?? 0)))));
 
+    internal Guid? HitTestContentControl(Point point) =>
+        (GeometryInlineVisuals().LastOrDefault(visual => visual.Descriptor.Payload is FormControlInlinePayload &&
+            visual.StoryId == GeometryStoryId && (GeometryStoryPage < 0 || visual.PageIndex == GeometryStoryPage) &&
+            (visual.Clip is null || visual.Clip.Value.Contains(point)) && visual.Bounds.Contains(point))?.Descriptor.Payload
+            as FormControlInlinePayload)?.ControlId;
+
     internal bool IsInlineSelected(InlineVisual visual) => Editor is not null && !HasComposition &&
         visual.StoryId == (_pagedLayout is null ? Guid.Empty : GeometryStoryId) &&
         (_pagedLayout is null || GeometryStoryPage < 0 || visual.PageIndex == GeometryStoryPage) &&

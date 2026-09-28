@@ -35,6 +35,7 @@ public sealed record InlineDescriptor
         {
             case NoteInlinePayload note when note.NoteId != Guid.Empty: break;
             case PageFieldInlinePayload field when Enum.IsDefined(field.Field): break;
+            case FormControlInlinePayload form when form.ControlId != Guid.Empty: break;
             case ImageInlinePayload image when ValidKey(image.ResourceId) &&
                 (image.PreviewResourceId is null || ValidKey(image.PreviewResourceId)): break;
             case OleInlinePayload ole when ValidKey(ole.ResourceId) && ValidKey(ole.PreviewResourceId) &&
@@ -59,7 +60,11 @@ public sealed record InlineDescriptor
 [JsonDerivedType(typeof(NoteInlinePayload), "note")]
 [JsonDerivedType(typeof(PageFieldInlinePayload), "pageField")]
 [JsonDerivedType(typeof(OleInlinePayload), "ole")]
+[JsonDerivedType(typeof(FormControlInlinePayload), "formControl")]
 public abstract record InlinePayload;
+
+/// <summary>Atomic checkbox, list or date value owned by DocumentContentControl metadata.</summary>
+public sealed record FormControlInlinePayload(Guid ControlId) : InlinePayload;
 
 public sealed record ImageInlinePayload(string ResourceId) : InlinePayload
 {

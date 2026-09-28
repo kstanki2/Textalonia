@@ -42,10 +42,12 @@ are covered; native screen-reader text navigation remains unqualified.
 
 ## Current native schema
 
-Native JSON writes **schema v10** and reads **v4, v5, v6, v7, v8, v9 and v10**. The full model includes
+Native JSON writes **schema v11** and reads **v4, v5, v6, v7, v8, v9, v10 and v11**. The full model includes
 named style definitions, sparse overrides, document themes/fonts, nested cells and
 merge backups, inline descriptors and resources, semantic metadata, merge fields, physical sections, secondary stories, anchored bookmarks/general fields,
-internal hyperlinks, string document properties, image placement/crop/rotation, section watermarks and OLE package/preview descriptors. See [image contracts](IMAGES.md) for migration examples and resource ownership.
+internal hyperlinks, string document properties, image placement/crop/rotation, section watermarks, OLE package/preview descriptors, structured form controls,
+protection settings and permission ranges. See [forms contracts](FORMS.md) for
+policy and value APIs. See [image contracts](IMAGES.md) for migration examples and resource ownership.
 Version 4 concrete formatting remains explicit when loaded. Versions 1-3 remain
 unsupported. See [style contracts](STYLES.md).
 

@@ -91,7 +91,7 @@ internal static class DocumentFragments
         if (selection.End > 0 && index.CharAt(selection.End - 1) == '\n' &&
             !new FlowDocument(blocks).Text.EndsWith('\n')) blocks = blocks.Add(new Paragraph());
         var first = index.At(selection.Start); var last = index.At(selection.End);
-        var result = document with { Blocks = blocks.Select(BlockOperations.CloneWithNewIds).ToImmutableArray() };
+        var result = document with { Blocks = blocks.Select(BlockOperations.CloneWithNewIds).ToImmutableArray(), Protection = new() };
         result = result with { Sections = CopySections(document, index, blocks, result.Blocks, selection.Start) };
         result = CopyRanges(document, PruneStories(result), blocks, selection.Start, selection.End).PruneUnusedResources();
         result.Validate();
@@ -108,7 +108,7 @@ internal static class DocumentFragments
         var bottom = row + rowCount - 1; var right = column + columnCount - 1;
         ExpandRectangle(table, ref row, ref column, ref bottom, ref right);
         var cropped = Crop(table, row, column, bottom, right, (r, c) => table.Rows[r][c]);
-        var result = PruneStories(document with { Blocks = [BlockOperations.CloneWithNewIds(cropped)], Sections = [] });
+        var result = PruneStories(document with { Blocks = [BlockOperations.CloneWithNewIds(cropped)], Sections = [], Protection = new() });
         result = CopyRanges(document, result, [cropped], 0).PruneUnusedResources();
         result.Validate();
         return new() { Document = result };
@@ -152,13 +152,35 @@ internal static class DocumentFragments
         }
         DocumentAnchor Remap(DocumentAnchor anchor) => anchor.StoryId != Guid.Empty ? anchor : anchor with
         { ParagraphId = paragraphs[anchor.ParagraphId].Paragraph.Id, Offset = anchor.Offset - paragraphs[anchor.ParagraphId].Removed };
-        return fragment with
+        var controls = source.ContentControls.Where(control => Included(control.Start, control.End)).ToArray();
+        var controlIds = controls.ToDictionary(control => control.Id, _ => Guid.NewGuid());
+        return RemapFormInlines(fragment with
         {
             Bookmarks = source.Bookmarks.Where(bookmark => Included(bookmark.Start, bookmark.End)).Select(bookmark => bookmark with
             { Id = Guid.NewGuid(), Start = Remap(bookmark.Start), End = Remap(bookmark.End) }).ToImmutableArray(),
             Fields = source.Fields.Where(field => Included(field.Start, field.End)).Select(field => field with
-            { Id = Guid.NewGuid(), Start = Remap(field.Start), End = Remap(field.End) }).ToImmutableArray()
-        };
+            { Id = Guid.NewGuid(), Start = Remap(field.Start), End = Remap(field.End) }).ToImmutableArray(),
+            ContentControls = controls.Select(control => control with { Id = controlIds[control.Id],
+                Start = Remap(control.Start), End = Remap(control.End) }).ToImmutableArray(),
+            PermissionRanges = source.PermissionRanges.Where(range => Included(range.Start, range.End)).Select(range => range with
+                { Id = Guid.NewGuid(), Start = Remap(range.Start), End = Remap(range.End) }).ToImmutableArray()
+        }, controlIds);
+    }
+
+    private static FlowDocument RemapFormInlines(FlowDocument document, IReadOnlyDictionary<Guid, Guid> ids)
+    {
+        ImmutableArray<Block> Rewrite(ImmutableArray<Block> blocks) => blocks.Select<Block, Block>(block => block switch
+        {
+            Paragraph paragraph => paragraph with { Runs = paragraph.Runs.Select(run => run.Inline?.Payload is not FormControlInlinePayload form ? run :
+                ids.TryGetValue(form.ControlId, out var id) ? run with { Inline = run.Inline with { Payload = form with { ControlId = id } } } :
+                new RichRun(run.Inline.AltText, run.Style)).ToImmutableArray() },
+            Section section => section with { Blocks = Rewrite(section.Blocks) },
+            Table table => table with { Rows = table.Rows.Select(row => row.Select(cell => cell with
+                { Blocks = Rewrite(cell.Blocks), MergeOriginalBlocks = Rewrite(cell.MergeOriginalBlocks) }).ToImmutableArray()).ToImmutableArray() },
+            _ => block
+        }).ToImmutableArray();
+        return document with { Blocks = Rewrite(document.Blocks), Stories = document.Stories.ToImmutableDictionary(pair => pair.Key,
+            pair => pair.Value with { Blocks = Rewrite(pair.Value.Blocks) }) };
     }
 
     // Clipboard fragments carry only note bodies and header/footer stories owned by their copied content.
@@ -294,6 +316,7 @@ internal static class DocumentFragments
         var listIds = new Dictionary<Guid, Guid>();
         var storyIds = fragment.Stories.Keys.ToDictionary(id => id, _ => Guid.NewGuid());
         var noteIds = fragment.Notes.ToDictionary(note => note.Id, _ => Guid.NewGuid());
+        var controlIds = fragment.ContentControls.ToDictionary(control => control.Id, _ => Guid.NewGuid());
         var paragraphIds = new Dictionary<Guid, Guid>();
         var bookmarkNames = new Dictionary<string, string>(StringComparer.Ordinal);
         var destinationNames = (bookmarkNamesInScope ?? destination.Bookmarks.Select(bookmark => bookmark.Name)).ToHashSet(StringComparer.Ordinal);
@@ -368,6 +391,7 @@ internal static class DocumentFragments
                         }
                         if (payload is OleInlinePayload ole) payload = ole with { ResourceId = Resource(ole.ResourceId), PreviewResourceId = Resource(ole.PreviewResourceId) };
                         if (payload is NoteInlinePayload note) payload = note with { NoteId = noteIds[note.NoteId] };
+                        if (payload is FormControlInlinePayload form) payload = form with { ControlId = controlIds[form.ControlId] };
                         return run with { Inline = inline with { Id = Guid.NewGuid(), Payload = payload } };
                     }).ToImmutableArray() };
                 case Section s: return s with { Id = Guid.NewGuid(), Blocks = Clone(s.Blocks) };
@@ -401,7 +425,11 @@ internal static class DocumentFragments
             Bookmarks = fragment.Bookmarks.Select(bookmark => bookmark with { Id = Guid.NewGuid(), Name = bookmarkNames[bookmark.Name],
                 Start = RemapAnchor(bookmark.Start), End = RemapAnchor(bookmark.End) }).ToImmutableArray(),
             Fields = fragment.Fields.Select(field => field with { Id = Guid.NewGuid(), Instruction = RemapInstruction(field.Instruction),
-                Start = RemapAnchor(field.Start), End = RemapAnchor(field.End) }).ToImmutableArray() };
+                Start = RemapAnchor(field.Start), End = RemapAnchor(field.End) }).ToImmutableArray(),
+            ContentControls = fragment.ContentControls.Select(control => control with { Id = controlIds[control.Id],
+                Start = RemapAnchor(control.Start), End = RemapAnchor(control.End) }).ToImmutableArray(),
+            PermissionRanges = fragment.PermissionRanges.Select(range => range with { Id = Guid.NewGuid(),
+                Start = RemapAnchor(range.Start), End = RemapAnchor(range.End) }).ToImmutableArray(), Protection = new() };
     }
 
     internal static (FlowDocument Document, int Caret) Insert(FlowDocument destination, int offset, FlowDocument fragment, bool startsInsideParagraph, bool endsInsideParagraph)
@@ -469,7 +497,11 @@ internal static class DocumentFragments
             Bookmarks = result.Bookmarks.AddRange(fragment.Bookmarks.Select(bookmark => bookmark with
             { Start = Place(bookmark.Start), End = Place(bookmark.End) })),
             Fields = result.Fields.AddRange(fragment.Fields.Select(field => field with
-            { Start = Place(field.Start), End = Place(field.End) }))
+            { Start = Place(field.Start), End = Place(field.End) })),
+            ContentControls = result.ContentControls.AddRange(fragment.ContentControls.Select(control => control with
+            { Start = Place(control.Start), End = Place(control.End) })),
+            PermissionRanges = result.PermissionRanges.AddRange(fragment.PermissionRanges.Select(range => range with
+            { Start = Place(range.Start), End = Place(range.End) }))
         };
         result.Validate();
         return (result, new DocumentIndex(result).ById(caretParagraph).Start + caretLocal);

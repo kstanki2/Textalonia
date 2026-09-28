@@ -159,7 +159,7 @@ internal sealed class InlineObjectRun : DrawableTextRun
     {
         Descriptor = descriptor;
         _properties = properties;
-        if (descriptor.Payload is MergeFieldInlinePayload)
+        if (descriptor.Payload is MergeFieldInlinePayload or FormControlInlinePayload)
         {
             using var label = FieldLabel();
             _size = new(Math.Max(12, label.WidthIncludingTrailingWhitespace + 8), label.Height + 4);
@@ -204,7 +204,7 @@ internal sealed class InlineObjectRun : DrawableTextRun
             using var storyLifetime = Rendering.InlineOutputScope.Retain(storyLabel);
             storyLabel.Draw(context, origin); return;
         }
-        if (Descriptor.Payload is MergeFieldInlinePayload)
+        if (Descriptor.Payload is MergeFieldInlinePayload or FormControlInlinePayload)
         {
             using (context.PushOpacity(.12)) context.DrawRectangle(_properties.ForegroundBrush, null, bounds);
             using (context.PushOpacity(.4)) context.DrawRectangle(null, new Pen(_properties.ForegroundBrush, 1), bounds.Deflate(.5));

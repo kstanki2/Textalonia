@@ -2,7 +2,7 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **implementation plan; DX-01 through DX-07 implementation and
+candidate. Status: **implementation plan; DX-01 through DX-07 and DX-09 implementation and
 qualification status is recorded below. Other workstreams remain proposed unless explicitly noted.**
 
 The audit tables in sections 2-3 describe the baseline commit above; the DX-01
@@ -18,7 +18,9 @@ baseline findings for bookmarks, general fields, contents and navigation.
 The DX-06 implementation entry and [table/list guide](TABLES.md) supersede baseline
 findings for table layout, conditional styles, table pagination and marker formatting.
 The DX-07 implementation entry and [image/object guide](IMAGES.md) supersede baseline
-findings for images, watermarks and OLE previews.
+findings for images, watermarks and OLE previews. The DX-09 implementation entry
+and [forms/protection guide](FORMS.md) supersede baseline findings for protected
+editing and structured form controls.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -559,6 +561,24 @@ text paginates consistently, watermarks respect sections, and OLE previews/resou
 round-trip and print correctly. Only in-scope image/OLE relationships are required.
 
 ### DX-09 — Capability policies, protected editing and forms
+
+**Implementation status (2026-09-28):** implemented for the supported subset in
+[FORMS.md](FORMS.md): host capabilities/identity, session-enforced atomic rejection,
+read-only and permission ranges, document/section forms protection, anchored
+plain/rich text and atomic checkbox/combo/dropdown/date controls, locks, navigation,
+validation, keyboard/IME and value dialogs. Native JSON v11 and data XAML v6 retain
+the model; DOCX maps supported SDTs, protection, permission markers and legacy form
+imports. Bounded host-supplied XML binding evaluation is explicit. Picture/repeating/
+gallery interaction, arbitrary cross-container Word SDTs, custom XML package data,
+legacy password algorithms and encrypted I/O have explicit limits/diagnostics.
+Managed model, policy, codec, control and output tests accompany the implementation;
+external Office corpus and native platform qualification remain open.
+
+**Managed validation:** 1,191 tests pass with three pre-existing pagination skips;
+public API baselines and old-schema readers pass. The independent NuGet consumer
+passes with the packaged assembly, including protected form fill and DOCX password
+verification. Feature coverage is in `ContentControlTests`, `EditPolicyTests`,
+`FormInterchangeTests` and `FormControlsUiTests`.
 
 **Priority: forms/protection. Size: L/XL. Dependencies: DX-00.**
 

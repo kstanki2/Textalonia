@@ -23,7 +23,7 @@ public sealed partial class EditorSession
 
     internal bool CanDropContent(ContentDragSnapshot? source, int offset, int targetRevision)
     {
-        if (IsReadOnly || Revision != targetRevision || offset < 0 || offset > Index.Length) return false;
+        if (IsReadOnly || !Enabled(EditOperation.Clipboard) || Revision != targetRevision || offset < 0 || offset > Index.Length) return false;
         if (source is null) return true;
         if (!source.IsCurrent) return false;
         // Both edges belong to the source range. Copying or moving here is an intentional no-op.
@@ -34,6 +34,7 @@ public sealed partial class EditorSession
         ContentDragSnapshot? source = null, bool move = false)
     {
         ArgumentNullException.ThrowIfNull(fragment);
+        if (!AllowsPlainTextFragment(fragment, offset, offset)) return ContentDropResult.None;
         if (!CanDropContent(source, offset, targetRevision)) return ContentDropResult.None;
         offset = Snap(offset);
         if (!CanDropContent(source, offset, targetRevision)) return ContentDropResult.None;
@@ -83,11 +84,16 @@ public sealed partial class EditorSession
             };
             inserted.Validate();
         }
+        FlowDocument Project(EditorSession session, FlowDocument value) => DocumentAnchors.Reconcile(session.Document,
+            DocumentAnchors.WithStory(session.Document, session.ActiveStoryId, value));
+        if (!AllowsTransaction(Project(this, inserted))) return ContentDropResult.None;
+        if (move && !ReferenceEquals(source!.Source, this) && !source.Source.AllowsTransaction(Project(source.Source, removed!)))
+            move = false;
         // Same-session moves are published exactly once, including their undo and selection state.
         // Consume before publishing: a host Changed handler must not re-enter with the
         // same drag and insert it twice while a cross-editor source is still unchanged.
         if (source is not null) source.Completed = true;
-        Commit(inserted, new(caret, caret));
+        if (!Commit(inserted, new(caret, caret))) return ContentDropResult.None;
         if (source is null) return ContentDropResult.Copy;
         if (move && !ReferenceEquals(source.Source, this))
         {
@@ -96,7 +102,7 @@ public sealed partial class EditorSession
             if (source.Source.Revision == source.Revision && !source.Source.IsReadOnly)
             {
                 var sourceCaret = Math.Min(source.Selection.Start, new DocumentIndex(removed!).Length);
-                source.Source.Commit(removed!, new(sourceCaret, sourceCaret));
+                if (!source.Source.Commit(removed!, new(sourceCaret, sourceCaret))) move = false;
             }
             else move = false;
         }

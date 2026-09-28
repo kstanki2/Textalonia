@@ -18,6 +18,9 @@ public sealed partial class EditorSession
             if (!Document.Notes.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Notes)!);
             if (!Document.Bookmarks.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Bookmarks)!);
             if (!Document.Fields.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.Fields)!);
+            if (!Document.ContentControls.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.ContentControls)!);
+            if (!Document.PermissionRanges.IsEmpty) visit(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(Document.PermissionRanges)!);
+            visit(Document.Protection);
             visit(Document.Properties); visit(Document.FootnoteSettings); visit(Document.EndnoteSettings); visit(StorySelections); visit(TypingStyle); }
     }
     private readonly List<State> _undo = [];
@@ -47,8 +50,8 @@ public sealed partial class EditorSession
             _retained.Remove(_typingStyle, current: true); _typingStyle = value;
         }
     }
-    public bool CanUndo => !IsReadOnly && _undo.Count > 0;
-    public bool CanRedo => !IsReadOnly && _redo.Count > 0;
+    public bool CanUndo => _undo.Count > 0 && CanRestore(_undo[^1], EditOperation.Undo);
+    public bool CanRedo => _redo.Count > 0 && CanRestore(_redo[^1], EditOperation.Redo);
     public string SelectedText => Index.ReadPlainText(Selection.Start, Selection.Length);
     public SelectionFormattingState FormattingState => new(Index, Selection, TypingStyle, new(Document));
     public int Revision { get; private set; }
@@ -155,6 +158,7 @@ public sealed partial class EditorSession
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         if (IsReadOnly) return;
+        if (!RangeAllowed(Document, ActiveStoryId, Selection.Start, Selection.End, EditOperation.InlineObjects)) return;
         descriptor.Validate();
         var source = ActiveDocument;
         if (resource is not null)
@@ -208,7 +212,8 @@ public sealed partial class EditorSession
     public void InsertFragment(DocumentFragment fragment)
     {
         ArgumentNullException.ThrowIfNull(fragment);
-        if (IsReadOnly) return;
+        if (IsReadOnly || !Enabled(EditOperation.Clipboard)) return;
+        if (!AllowsPlainTextFragment(fragment, Selection.Start, Selection.End)) return;
         var (document, caret) = BuildFragmentInsertion(ActiveDocument, Selection, fragment, Document.Bookmarks.Select(bookmark => bookmark.Name));
         Commit(document, new(caret, caret), editedRange: Selection);
     }
@@ -224,8 +229,11 @@ public sealed partial class EditorSession
         if (selection.Start == 0 && selection.End == index.Length &&
             (!selection.IsEmpty || destination.Blocks is [Paragraph { Length: 0 }]))
         {
-            document = prepared.PruneUnusedResources();
+            document = prepared with { Protection = destination.Protection,
+                ContentControls = destination.ContentControls.AddRange(prepared.ContentControls),
+                PermissionRanges = destination.PermissionRanges.AddRange(prepared.PermissionRanges) };
             caret = new DocumentIndex(document).Length;
+            document = DocumentAnchors.Transform(destination, document, Guid.Empty, 0, index.Length, caret).PruneUnusedResources();
         }
         else
         {
@@ -290,7 +298,7 @@ public sealed partial class EditorSession
         var resolver = new DocumentStyleResolver(ActiveDocument);
         var activeParagraph = Index.At(Selection.Active).Paragraph;
         var newStyle = ChangeTextStyle(activeParagraph, TypingStyle, change, resolver);
-        (ActiveDocument with { Blocks = [new Paragraph("", newStyle)], Sections = [], Bookmarks = [], Fields = [] }).Validate();
+        (ActiveDocument with { Blocks = [new Paragraph("", newStyle)], Sections = [], Bookmarks = [], Fields = [], ContentControls = [], PermissionRanges = [], Protection = new() }).Validate();
         if (Selection.IsEmpty)
         {
             Commit(ActiveDocument, Selection, editedRange: Selection, typingStyle: newStyle); return;
@@ -410,7 +418,7 @@ public sealed partial class EditorSession
             if (!Selection.IsEmpty && entry.Start >= Selection.End) break;
             var paragraph = change(entry);
             if (ReferenceEquals(paragraph, entry.Paragraph)) continue;
-            (ActiveDocument with { Blocks = [paragraph], Sections = [], Bookmarks = [], Fields = [] }).Validate();
+            (ActiveDocument with { Blocks = [paragraph], Sections = [], Bookmarks = [], Fields = [], ContentControls = [], PermissionRanges = [], Protection = new() }).Validate();
             replacements.Add(paragraph.Id, [paragraph]);
         }
         return Index.Tree.Rewrite(ActiveDocument, replacements);
@@ -446,8 +454,7 @@ public sealed partial class EditorSession
                 .Blocks.Cast<Paragraph>().Select(p => p with { Style = current.Style }).ToImmutableArray();
             (document, _) = ReplaceRange(document, match, fragment);
         }
-        Commit(document, new(0, 0));
-        return matches.Length;
+        return Commit(document, new(0, 0)) ? matches.Length : 0;
     }
 
     /// <summary>Records an application-defined immutable document operation in the normal undo history.</summary>
@@ -455,6 +462,7 @@ public sealed partial class EditorSession
     {
         if (IsReadOnly) return;
         var document = DocumentAnchors.Reconcile(ActiveDocument, operation(ActiveDocument));
+        if (!AllowsTransaction(DocumentAnchors.WithStory(Document, ActiveStoryId, document))) return;
         document.Validate();
         Commit(document, Selection);
     }
@@ -567,7 +575,7 @@ public sealed partial class EditorSession
         TypingStyle = state.TypingStyle; BreakUndoGroup(); Revision++;
         LastEdit = new(Revision - 1, Revision, 0, 0, Index.Length, [], true);
     }
-    private void Commit(FlowDocument document, TextSelection selection, bool typing = false, TextSelection? editedRange = null, TextStyle? typingStyle = null, bool wholeDocument = false)
+    private bool Commit(FlowDocument document, TextSelection selection, bool typing = false, TextSelection? editedRange = null, TextStyle? typingStyle = null, bool wholeDocument = false, Guid? formControlId = null)
     {
         if (!wholeDocument && ActiveStoryId != Guid.Empty)
             document = DocumentAnchors.WithStory(Document, ActiveStoryId, document);
@@ -576,7 +584,8 @@ public sealed partial class EditorSession
         var previousStories = document.Stories;
         if (!document.Notes.IsEmpty) document = PruneDetachedNotes(document);
         var removedNoteStories = !ReferenceEquals(previousStories, document.Stories);
-        if (!document.Stories.IsEmpty || !document.Bookmarks.IsEmpty || !document.Fields.IsEmpty) document.Validate();
+        if (!AllowsTransaction(document, typingStyle)) return false;
+        if (!document.Stories.IsEmpty || !document.Bookmarks.IsEmpty || !document.Fields.IsEmpty || !document.ContentControls.IsEmpty || !document.PermissionRanges.IsEmpty) document.Validate();
         // Typing formatting can own a named reference even when no run uses it yet.
         // Check before changing history or document roots, including application edits.
         DocumentStyleCatalog.Reference(document.Styles.Characters, (typingStyle ?? TypingStyle).StyleId);
@@ -609,6 +618,7 @@ public sealed partial class EditorSession
         LastEdit = new(Revision - 1, Revision, editedRange?.Start ?? 0, editedRange?.Length ?? oldLength,
             editedRange is { } edit ? Index.Length - oldLength + edit.Length : Index.Length, changed, editedRange is null);
         OnChanged();
+        return true;
     }
     private bool RangeContainsImage(TextSelection range)
     {
@@ -649,6 +659,9 @@ public sealed partial class EditorSession
     private void RetainFormatting(FlowDocument document, bool add)
     {
         void Change(object value) { if (add) _retained.Add(value, current: true); else _retained.Remove(value, current: true); }
+        Change(document.Protection);
+        if (!document.ContentControls.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.ContentControls)!);
+        if (!document.PermissionRanges.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.PermissionRanges)!);
         Change(document.Styles); Change(document.Defaults); Change(document.Theme); Change(document.Properties);
         if (!document.Bookmarks.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Bookmarks)!);
         if (!document.Fields.IsEmpty) Change(System.Runtime.InteropServices.ImmutableCollectionsMarshal.AsArray(document.Fields)!);

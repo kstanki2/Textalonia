@@ -8,9 +8,10 @@ namespace Textalonia.Serialization;
 /// <summary>Splits rich runs only at annotation boundaries; no field instruction occupies visible text.</summary>
 internal static class RangeInterchange
 {
-    internal sealed record Item(RichRun? Run = null, DocumentBookmark? Bookmark = null, DocumentField? Field = null, bool Start = false);
+    internal sealed record Item(RichRun? Run = null, DocumentBookmark? Bookmark = null, DocumentField? Field = null, bool Start = false,
+        DocumentContentControl? ContentControl = null, DocumentPermissionRange? Permission = null);
 
-    internal static IEnumerable<Item> Items(FlowDocument document, Paragraph paragraph)
+    internal static IEnumerable<Item> Items(FlowDocument document, Paragraph paragraph, bool includeForms = false)
     {
         var marks = new SortedDictionary<int, List<Item>>();
         void Add(DocumentAnchor anchor, Item item)
@@ -29,15 +30,31 @@ internal static class RangeInterchange
             Add(field.Start, new(Field: field, Start: true));
             Add(field.End, new(Field: field));
         }
+        if (includeForms)
+        {
+            foreach (var control in document.ContentControls.Where(c => !c.IsAtomic))
+            {
+                Add(control.Start, new(ContentControl: control, Start: true));
+                Add(control.End, new(ContentControl: control));
+            }
+            foreach (var permission in document.PermissionRanges)
+            {
+                Add(permission.Start, new(Permission: permission, Start: true));
+                Add(permission.End, new(Permission: permission));
+            }
+        }
         var emitted = new HashSet<int>();
         IEnumerable<Item> Boundary(int offset)
         {
             if (!emitted.Add(offset) || !marks.TryGetValue(offset, out var items)) return [];
             // Close inner ranges before opening adjacent ranges. Empty ranges open and close together.
-            var empty = items.Where(i => i.Field is { } f && f.Start.ParagraphId == f.End.ParagraphId && f.Start.Offset == f.End.Offset || i.Bookmark is { } b &&
+            var empty = items.Where(i => i.ContentControl is { } c && c.Start.ParagraphId == c.End.ParagraphId && c.Start.Offset == c.End.Offset ||
+                i.Permission is { } p && p.Start.ParagraphId == p.End.ParagraphId && p.Start.Offset == p.End.Offset ||
+                i.Field is { } f && f.Start.ParagraphId == f.End.ParagraphId && f.Start.Offset == f.End.Offset || i.Bookmark is { } b &&
                 b.Start.ParagraphId == b.End.ParagraphId && b.Start.Offset == b.End.Offset).ToArray();
-            return items.Except(empty).Where(i => !i.Start).OrderByDescending(i => i.Field?.Start.Resolve(document) ?? int.MaxValue)
-                .Concat(items.Except(empty).Where(i => i.Start).OrderByDescending(i => i.Field?.End.Resolve(document) ?? int.MaxValue))
+            return items.Except(empty).Where(i => !i.Start).OrderByDescending(i => i.Field?.Start.Resolve(document) ?? i.ContentControl?.Start.Resolve(document) ?? int.MaxValue)
+                .ThenByDescending(i => i.ContentControl is { } control ? document.ContentControls.IndexOf(control) : -1)
+                .Concat(items.Except(empty).Where(i => i.Start).OrderByDescending(i => i.Field?.End.Resolve(document) ?? i.ContentControl?.End.Resolve(document) ?? int.MaxValue))
                 .Concat(empty.OrderByDescending(i => i.Start));
         }
         var position = 0;
@@ -134,7 +151,9 @@ internal static class RangeInterchange
         return document with
         {
             Bookmarks = document.Bookmarks.Select(b => b with { Start = Anchor(b.Start), End = Anchor(b.End) }).ToImmutableArray(),
-            Fields = document.Fields.Select(f => f with { Start = Anchor(f.Start), End = Anchor(f.End) }).ToImmutableArray()
+            Fields = document.Fields.Select(f => f with { Start = Anchor(f.Start), End = Anchor(f.End) }).ToImmutableArray(),
+            ContentControls = document.ContentControls.Select(c => c with { Start = Anchor(c.Start), End = Anchor(c.End) }).ToImmutableArray(),
+            PermissionRanges = document.PermissionRanges.Select(p => p with { Start = Anchor(p.Start), End = Anchor(p.End) }).ToImmutableArray()
         };
     }
 }

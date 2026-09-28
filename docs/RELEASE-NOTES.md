@@ -12,7 +12,7 @@ requires updating these notes before creating the publication candidate.
 Immutable documents and editing sessions; formatting, lists, nested/merged
 tables and undo; editor, selectable viewer and replaceable toolbar/input;
 inline image/control descriptors and host resource services; diagnosed
-text/HTML/RTF/DOCX interchange; native JSON v10 (v4-v10 readable); data XAML v5;
+text/HTML/RTF/DOCX interchange; native JSON v11 (v4-v11 readable); data XAML v6;
 bounded Markdown codec/viewer and optional host highlighting. The core package is
 Textalonia; PDF export is available through optional Textalonia.Pdf.Skia.
 The core editor does not require that backend or a desktop host.
@@ -51,7 +51,7 @@ are included in the same package. Use the independent PackageSmoke program as a
 compiling example for extension services and input replacement.
 
 Read [API contracts](API-CONTRACTS.md) before attaching mutable sessions/services
-to controls. Native JSON writes schema v10 and reads v4/v5/v6/v7/v8/v9/v10; other versions are rejected. Earlier development schemas were never published or used
+to controls. Native JSON writes schema v11 and reads v4/v5/v6/v7/v8/v9/v10/v11; other versions are rejected. Earlier development schemas were never published or used
 and have no migration support. Use strict conversion reports when export loss
 matters.
 
@@ -79,7 +79,7 @@ Font/paragraph/tabs/style dialogs are available from the toolbar. Advanced run
 shaping, tab stops/leaders, paragraph spacing and decorations share hit-test and
 caret geometry. DX-02 subsequently added pagination for page/keep/widow and grid metadata.
 
-DX-01 introduced native v5; the current native schema is v10 as described above.
+DX-01 introduced native v5; the current native schema is v11 as described above.
 XAML and clipboard retain the new model;
 DOCX retains mapped styles/themes/fonts. Other formats report flattened style
 identity and unsupported typography. See [support details](STYLES.md).
@@ -127,3 +127,11 @@ Image placement/crop/rotation, section text/image watermarks and OLE packages wi
 supplied previews are available through focused APIs and the Pictures toolbar menu.
 Native v10, XAML v5 and clipboard v6 retain the expanded model. See [image contracts](IMAGES.md)
 for format/rendering support and qualification boundaries.
+
+## DX-09 protected forms
+
+Session capabilities, permission ranges, protected form values and locks now share
+atomic enforcement across input, clipboard, Execute and history. The demo includes
+a protected form; DOCX/native persistence and static PDF values are covered by
+managed tests. See [forms contracts](FORMS.md) for interoperability limits and
+remaining native/Office qualification.

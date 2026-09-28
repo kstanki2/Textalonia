@@ -72,8 +72,7 @@ public sealed partial class EditorSession
             document = DocumentAnchors.WithStory(document, group.StoryId, projection);
         }
         document.Validate();
-        Commit(document, new(0, 0), wholeDocument: true);
-        return matches.Length;
+        return Commit(document, new(0, 0), wholeDocument: true) ? matches.Length : 0;
     }
 
     public ImmutableArray<DocumentOutlineEntry> GetOutline(bool allStories = false) => DocumentOutline.Create(Document, allStories);

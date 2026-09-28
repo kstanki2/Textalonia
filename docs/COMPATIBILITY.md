@@ -29,8 +29,8 @@ Phase 8 adds public-api-contracts.txt for nested nullability, attributes, access
 
 ## Native schema policy
 
-The writer emits envelope `{ "version": 10, "document": ... }`, and the reader
-accepts v4-v10. Versions 4-6 load with default secondary-story settings; v4 concrete
+The writer emits envelope `{ "version": 11, "document": ... }`, and the reader
+accepts v4-v11. Versions 4-6 load with default secondary-story settings; v4 concrete
 formatting remains explicit. Version checks precede model decoding, unknown members
 are rejected, and unsupported or missing versions throw `NotSupportedException`.
 Versions 1-3 were unused development schemas and have no migration support.

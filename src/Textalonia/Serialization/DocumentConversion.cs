@@ -134,6 +134,7 @@ public static class DocumentFormatExtensions
     {
         if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat))
         {
+            ReportFormLosses(document);
             foreach (var section in document.Sections.Where(section => section.Watermark is not null))
                 ConversionDiagnostics.Report("conversion.watermark", "Section text or image watermark", "Watermark omitted; supported document content retained.", section.Id);
             var imageParagraphs = new DocumentIndex(document).Paragraphs.AsEnumerable();
@@ -243,6 +244,7 @@ public static class DocumentFormatExtensions
 
     private static void ReportPlainTextLoss(FlowDocument document)
     {
+        ReportFormLosses(document);
         StyleConversion.ReportLosses(DocumentFormats.PlainText, document);
         if (!document.Stories.IsEmpty || !document.Notes.IsEmpty) ConversionDiagnostics.Report("conversion.stories", "Headers, footers and note stories", "Secondary stories and note semantics omitted.");
         if (!document.Sections.IsEmpty) ConversionDiagnostics.Report("conversion.page-sections", "Physical page sections",
@@ -274,6 +276,14 @@ public static class DocumentFormatExtensions
         Visit(document.Blocks);
         if (document.Resources.Count != 0)
             ConversionDiagnostics.Report("text.resources", "Document resources", "Resource descriptors and embedded data are discarded.");
+    }
+
+    private static void ReportFormLosses(FlowDocument document)
+    {
+        if (!document.ContentControls.IsEmpty)
+            ConversionDiagnostics.Report("conversion.content-controls", "Structured content controls and legacy forms", "Visible form values retained; types, placeholders, bindings and locks omitted.");
+        if (document.Protection.Mode != DocumentProtectionMode.None || document.Protection.Password is not null || !document.PermissionRanges.IsEmpty)
+            ConversionDiagnostics.Report("conversion.edit-protection", "Document protection and permission ranges", "Editing restrictions and password verifier omitted.");
     }
 
     private static void ReportMergeFieldLoss(InlineDescriptor inline, string format) =>

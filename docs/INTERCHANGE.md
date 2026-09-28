@@ -62,7 +62,7 @@ and clipboard operations. The demo shows conversion reports after file operation
 All external formats omit hidden physical cells and merge restoration backups with
 `conversion.merge-history`. Resources without supported references produce
 `conversion.unused-resource` (DOCX also recognizes embedded-font references). Native
-JSON v10 preserves the full model and reads v4/v5/v6/v7/v8/v9/v10; earlier versions remain rejected.
+JSON v11 preserves the full model and reads v4/v5/v6/v7/v8/v9/v10/v11; earlier versions remain rejected.
 Plain text retains visible text/paragraph separators and inline alternative text;
 its `text.*` diagnostics describe discarded formatting, containers and resources.
 
@@ -100,7 +100,7 @@ strict rejection, boundary merging, destination shells and fallback order.
 
 ## Anchored fields, bookmarks and internal links
 
-Native JSON v10 and data XAML v5 retain range identities, story/paragraph anchors,
+Native JSON v11 and data XAML v6 retain range identities, story/paragraph anchors,
 boundary affinity, instructions, lock/dirty/show-code flags, internal-link metadata
 and the string property catalog. Data XAML also reads v1/v2. Existing atomic
 `MERGEFIELD` and page-field descriptors remain supported.
@@ -225,3 +225,11 @@ OLE metadata survives DOCX but its external preview displays inline, reported as
 `docx.ole-placement`. Unsupported import positioning/mirroring/wrap distances also
 produce specific `docx.image-*` diagnostics. Strict conversion rejects diagnosed
 loss before writing. See [image support and limits](IMAGES.md).
+
+## Protected forms
+
+DX-09 adds structured controls, protection settings and permission ranges. Native
+JSON v11/XAML v6 retain the model; DOCX maps supported SDTs/locks/permissions and
+reports unsupported range, binding and restriction semantics. Other formats emit
+explicit loss diagnostics. See [forms and protection](FORMS.md) for the matrix and
+strict-mode behavior.
