@@ -2,7 +2,7 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **implementation plan; DX-01 through DX-07, DX-09 and DX-10 implementation and
+candidate. Status: **implementation plan; DX-01 through DX-07 and DX-09 through DX-11 implementation and
 qualification status is recorded below. Other workstreams remain proposed unless explicitly noted.**
 
 The audit tables in sections 2-3 describe the baseline commit above; the DX-01
@@ -23,6 +23,8 @@ and [forms/protection guide](FORMS.md) supersede baseline findings for protected
 editing and structured form controls. The DX-10 implementation entry and
 [proofing guide](PROOFING.md) supersede baseline findings for spelling,
 AutoCorrect and hyphenation.
+The DX-11 implementation entry and [mail-merge guide](MAIL-MERGE.md) supersede
+baseline findings for hierarchical recipients, repeating regions and combined output.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -652,6 +654,17 @@ right dictionaries, correction undo is predictable, and hyphenated glyph/selecti
 positions agree in Simple and Print views. Retain dictionary provenance/terms.
 
 ### DX-11 — Rich mail merge and report generation
+
+**Implementation status (2026-09-28):** implemented for the supported subset in
+[MAIL-MERGE.md](MAIL-MERGE.md): host-owned sources with schema, recipient
+selection/filter/sort and lazy hierarchical records; validated nested paragraph
+and table-row regions with scoped fields, cloned IDs, bookmarks, internal links
+and numbering; typed rich/image field callbacks, lifecycle events, diagnostics
+and cancellation; and combined physical sections with header/footer and page
+number policies. The demo previews recipients, generates a nested invoice batch
+and exports combined DOCX/PDF. Final page-field evaluation uses a host completion
+callback after assembly. Repeated note references, ambiguous links from outside
+a repeated region and external application qualification remain open.
 
 **Priority: automation. Size: L. Dependencies: DX-00/05; combined output needs DX-02/03.**
 

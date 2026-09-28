@@ -1,5 +1,7 @@
 using System.Collections.Immutable;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using Textalonia.Editing;
 
 namespace Textalonia.Model.Fields;
@@ -8,7 +10,19 @@ public enum FieldUpdateMode { Ordinary, Page, All }
 public sealed record FieldDiagnostic(Guid FieldId, string Code, string Message);
 public sealed record FieldPageContext(int PageNumber, int PageCount, int SectionPageCount);
 public sealed record FieldResolveContext(FlowDocument Document, DocumentField Field, FieldInstruction Instruction,
-    string Argument, CultureInfo Culture);
+    string Argument, CultureInfo Culture)
+{
+    /// <summary>The recipient or child-row values scoped to this field.</summary>
+    public IReadOnlyDictionary<string, object?> MergeValues { get; init; } = ImmutableDictionary<string, object?>.Empty;
+}
+/// <summary>A host-supplied image result for an INCLUDEPICTURE field. The evaluator never fetches the instruction URI.</summary>
+public sealed record FieldPictureResult(DocumentResource Resource)
+{
+    public string AltText { get; init; } = "";
+    public double Width { get; init; } = 32;
+    public double Height { get; init; } = 32;
+    public ImagePlacement? Placement { get; init; }
+}
 public sealed record FieldPaginationContext(string Signature, Func<DocumentField, FieldPageContext?> ResolvePage,
     Func<DocumentAnchor, int?>? ResolveAnchorPage = null);
 public sealed record FieldEvaluationOptions
@@ -17,7 +31,11 @@ public sealed record FieldEvaluationOptions
     /// <summary>The caller supplies the clock for reproducible results. The default is UnixEpoch.</summary>
     public DateTimeOffset Clock { get; init; } = DateTimeOffset.UnixEpoch;
     public IReadOnlyDictionary<string, object?> MergeValues { get; init; } = ImmutableDictionary<string, object?>.Empty;
+    /// <summary>Supplies values scoped to the current field, including nested MERGEFIELD instructions.</summary>
+    public Func<DocumentField, IReadOnlyDictionary<string, object?>>? MergeValuesResolver { get; init; }
     public Func<FieldResolveContext, FlowDocument?>? DocumentVariableResolver { get; init; }
+    /// <summary>Supplies an image resource and display metadata without following an INCLUDEPICTURE path or URI.</summary>
+    public Func<FieldResolveContext, FieldPictureResult?>? PictureResourceResolver { get; init; }
     public Func<FieldResolveContext, FlowDocument?>? PictureResolver { get; init; }
     public Func<DocumentField, FieldPageContext?>? PageContextResolver { get; init; }
     public Func<DocumentAnchor, int?>? AnchorPageResolver { get; init; }
@@ -65,7 +83,10 @@ public static class FieldEvaluator
         {
             options.CancellationToken.ThrowIfCancellationRequested();
             var layout = paginate(document);
-            var evaluated = Update(document, options with { Mode = FieldUpdateMode.All,
+            // Ordinary fields were resolved before pagination. Replacing a page field may
+            // mark other ranges dirty through anchor reconciliation, but those results
+            // must retain their recipient-specific values during the page-only pass.
+            var evaluated = Update(document, options with { Mode = FieldUpdateMode.Page,
                 PageContextResolver = layout.ResolvePage, AnchorPageResolver = layout.ResolveAnchorPage });
             diagnostics.AddRange(evaluated.Diagnostics); updates += evaluated.UpdatedCount;
             if (evaluated.UpdatedCount == 0 && previousSignature == layout.Signature)
@@ -122,6 +143,8 @@ public static class FieldEvaluator
                 if (!unchanged)
                 {
                     _document = DocumentRangeEditing.Replace(_document, field.Start.StoryId, start, end - start, result);
+                    if (instruction.Code == "INCLUDEPICTURE" && options.PictureResourceResolver is not null)
+                        _document = _document.PruneUnusedResources();
                     _updates++;
                 }
                 var fields = _document.Fields.Select(f => f.Id == id ? f with { IsDirty = false } : f).ToImmutableArray();
@@ -149,6 +172,13 @@ public static class FieldEvaluator
         }
         private static IEnumerable<RichRun> NormalizeRuns(IEnumerable<RichRun> runs) => runs.Select(run =>
             run.Inline is { } inline ? run with { Inline = inline with { Id = Guid.Empty } } : run);
+        private static string PictureResourceId(Guid fieldId, DocumentResource resource)
+        {
+            using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            hash.AppendData(Encoding.UTF8.GetBytes($"{(int)resource.Kind}\0{resource.MediaType}\0{resource.Location}\0"));
+            hash.AppendData(resource.Data.AsSpan());
+            return "field-picture-" + fieldId.ToString("N") + "-" + Convert.ToHexString(hash.GetHashAndReset().AsSpan(0, 16));
+        }
         private static string StructuralKey(ImmutableArray<Block> blocks)
         {
             Block Normalize(Block block) => block switch
@@ -167,12 +197,16 @@ public static class FieldEvaluator
             if (depth >= options.MaximumDepth) throw new FieldFailure("field.depth-limit", "Field nesting exceeds the configured limit.");
             string Argument(int i) => i < instruction.Arguments.Length ? Value(instruction.Arguments[i], field, depth + 1) : "";
             string? Switch(string name) => instruction.Switch(name)?.Argument is { } argument ? Value(argument, field, depth + 1) : null;
+            IReadOnlyDictionary<string, object?> ValuesForField() => options.MergeValuesResolver?.Invoke(field) ?? options.MergeValues;
+            FieldResolveContext ResolveContext() => new(_document, field, instruction, Argument(0), options.Culture)
+            { MergeValues = ValuesForField() };
             ValidateSwitches(instruction);
             object? value;
             switch (instruction.Code)
             {
                 case "MERGEFIELD":
-                    if (!options.MergeValues.TryGetValue(Argument(0), out value) || value is null) value = field.LegacyMergeField?.FallbackText ?? "";
+                    var mergeValues = ValuesForField();
+                    if (!mergeValues.TryGetValue(Argument(0), out value) || value is null) value = field.LegacyMergeField?.FallbackText ?? "";
                     if (field.LegacyMergeField?.Format is { } legacyFormat && value is IFormattable formattable) value = formattable.ToString(legacyFormat, options.Culture);
                     break;
                 case "IF":
@@ -226,12 +260,26 @@ public static class FieldEvaluator
                     return FlowDocument.FromText(label.Length == 0 ? Argument(0) : label, hyperlinkStyle);
                 case "TC": value = ""; break;
                 case "TOC": return Contents(instruction, field, depth);
-                case "DOCVARIABLE": case "INCLUDEPICTURE":
-                    var resolver = instruction.Code == "DOCVARIABLE" ? options.DocumentVariableResolver : options.PictureResolver;
-                    return resolver?.Invoke(new(_document, field, instruction, Argument(0), options.Culture)) ??
-                        throw new FieldFailure("field.host-resolver-required", $"{instruction.Code} requires an explicit host result resolver.");
+                case "DOCVARIABLE":
+                    return options.DocumentVariableResolver?.Invoke(ResolveContext()) ??
+                        throw new FieldFailure("field.host-resolver-required", "DOCVARIABLE requires an explicit host result resolver.");
+                case "INCLUDEPICTURE":
+                    var pictureContext = ResolveContext();
+                    if (options.PictureResourceResolver is { } pictureResolver)
+                    {
+                        var picture = pictureResolver(pictureContext) ?? throw new FieldFailure("field.host-resolver-required", "INCLUDEPICTURE requires an explicit host result resolver.");
+                        if (picture.Resource is null) throw new FieldFailure("field.invalid-result", "INCLUDEPICTURE returned no image resource.");
+                        var resourceId = PictureResourceId(field.Id, picture.Resource);
+                        var image = new InlineDescriptor { Payload = new ImageInlinePayload(resourceId), AltText = picture.AltText,
+                            Width = picture.Width, Height = picture.Height, Placement = picture.Placement };
+                        var pictureStyle = _document.GetStoryIndex(field.Start.StoryId).At(field.Start.Resolve(_document)).Paragraph.StyleAt(field.Start.Offset);
+                        return new FlowDocument([new Paragraph([new RichRun(image, pictureStyle)])])
+                        { Resources = ImmutableDictionary<string, DocumentResource>.Empty.Add(resourceId, picture.Resource) };
+                    }
+                    return options.PictureResolver?.Invoke(pictureContext) ??
+                        throw new FieldFailure("field.host-resolver-required", "INCLUDEPICTURE requires an explicit host result resolver.");
                 case "=": value = new FieldFormula(string.Join(" ", instruction.Arguments.Select(a => Value(a, field, depth + 1))),
-                    name => double.TryParse(Reference(name), NumberStyles.Number, options.Culture, out var number) ? number : throw new FormatException($"Bookmark {name} is not numeric.")).Evaluate(); break;
+                    name => double.TryParse(Reference(name), NumberStyles.Number, options.Culture, out var number) ? number : throw new FormatException($"Bookmark {name} is not numeric."), options.Culture).Evaluate(); break;
                 default: throw new FieldFailure("field.unsupported-code", $"Unsupported field code {instruction.Code}; its instruction and cached result were retained.");
             }
             var text = Format(value, instruction, Switch("#"), Switch("@"));

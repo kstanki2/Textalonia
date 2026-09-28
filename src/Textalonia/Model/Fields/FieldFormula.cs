@@ -3,7 +3,7 @@ using System.Globalization;
 namespace Textalonia.Model.Fields;
 
 /// <summary>Small bounded arithmetic language; never invokes host code.</summary>
-internal sealed class FieldFormula(string source, Func<string, double> reference)
+internal sealed class FieldFormula(string source, Func<string, double> reference, CultureInfo culture)
 {
     private int _position;
     private int _depth;
@@ -55,16 +55,29 @@ internal sealed class FieldFormula(string source, Func<string, double> reference
         {
             if (Take("(")) { var value = Comparison(); Require(")"); return value; }
             White(); var start = _position;
-            if (_position < source.Length && (char.IsDigit(source[_position]) || source[_position] == '.'))
+            var decimalSeparator = culture.NumberFormat.NumberDecimalSeparator;
+            var localeDecimal = decimalSeparator.Length == 1 ? decimalSeparator[0] : '\0';
+            if (_position < source.Length && (char.IsDigit(source[_position]) || source[_position] == '.' || source[_position] == localeDecimal))
             {
-                while (_position < source.Length && (char.IsDigit(source[_position]) || source[_position] == '.')) _position++;
+                var decimalSeen = false;
+                while (_position < source.Length)
+                {
+                    var current = source[_position];
+                    if (char.IsDigit(current)) { _position++; continue; }
+                    if (!decimalSeen && (current == '.' || current == localeDecimal))
+                    { decimalSeen = true; _position++; continue; }
+                    break;
+                }
                 if (_position < source.Length && source[_position] is 'e' or 'E')
                 {
                     _position++;
                     if (_position < source.Length && source[_position] is '+' or '-') _position++;
                     while (_position < source.Length && char.IsDigit(source[_position])) _position++;
                 }
-                if (!double.TryParse(source[start.._position], NumberStyles.Float, CultureInfo.InvariantCulture, out var value)) throw new FormatException("Invalid formula number.");
+                var literal = source[start.._position];
+                if (!double.TryParse(literal, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) &&
+                    !double.TryParse(literal, NumberStyles.Float, culture, out value))
+                    throw new FormatException("Invalid formula number.");
                 if (Take("%")) value /= 100;
                 return value;
             }

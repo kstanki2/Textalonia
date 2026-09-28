@@ -54,7 +54,7 @@ public static class MailMergeProcessor
     {
         ArgumentNullException.ThrowIfNull(data);
         var settings = Prepare(template, options, cancellationToken);
-        return Process(template, data, settings, false, cancellationToken);
+        return ProcessRecord(template, data, settings, false, 0, cancellationToken);
     }
 
     /// <summary>Updates field display text while retaining definitions and IDs, so another record can be previewed.</summary>
@@ -63,7 +63,7 @@ public static class MailMergeProcessor
     {
         ArgumentNullException.ThrowIfNull(data);
         var settings = Prepare(template, options, cancellationToken);
-        return Process(template, data, settings, true, cancellationToken);
+        return ProcessRecord(template, data, settings, true, 0, cancellationToken);
     }
 
     /// <summary>Lazily generates one independent document per record, in enumeration order.</summary>
@@ -84,6 +84,7 @@ public static class MailMergeProcessor
         {
             cancellationToken.ThrowIfCancellationRequested();
             using var enumerator = records.GetEnumerator();
+            var recordIndex = 0;
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -91,9 +92,21 @@ public static class MailMergeProcessor
                 cancellationToken.ThrowIfCancellationRequested();
                 var data = enumerator.Current;
                 ArgumentNullException.ThrowIfNull(data);
-                yield return Process(template, data, settings, false, cancellationToken);
+                yield return ProcessRecord(template, data, settings, false, recordIndex++, cancellationToken);
             }
         }
+    }
+
+    /// <summary>Lazily merges selected recipients from a host-owned source.</summary>
+    /// <remarks>Selection without sorting streams records; a sort buffers the selected batch.</remarks>
+    public static IEnumerable<FlowDocument> MergeFromSource(FlowDocument template,
+        IMailMergeDataSource source, MailMergeRecipientSelection? selection = null,
+        MailMergeOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        var selected = MailMergeDataSources.SelectRecipients(source, selection, cancellationToken)
+            .Select(record => record.ToMergeValues());
+        return MergeMany(template, selected, options, cancellationToken);
     }
 
     private static MailMergeOptions Prepare(FlowDocument template, MailMergeOptions? options, CancellationToken token)
@@ -105,12 +118,32 @@ public static class MailMergeProcessor
         if (!Enum.IsDefined(options.MissingFieldBehavior))
             throw new ArgumentOutOfRangeException(nameof(options), "Unknown missing-field behavior.");
         template.Validate();
+        MailMergeRegions.Validate(template);
         token.ThrowIfCancellationRequested();
         return options with { Culture = CultureInfo.ReadOnly((CultureInfo)options.Culture.Clone()) };
     }
 
+    private static FlowDocument ProcessRecord(FlowDocument template, IReadOnlyDictionary<string, object?> source,
+        MailMergeOptions options, bool preview, int recordIndex, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        options.RecordStarting?.Invoke(new(recordIndex, preview));
+        try
+        {
+            var result = Process(template, source, options, preview, recordIndex, token);
+            token.ThrowIfCancellationRequested();
+            options.RecordCompleted?.Invoke(new(recordIndex, preview));
+            return result;
+        }
+        catch (Exception error) when (error is not OperationCanceledException)
+        {
+            options.RecordDiagnostic?.Invoke(new(recordIndex, "mailmerge.record-failed", error.Message));
+            throw;
+        }
+    }
+
     private static FlowDocument Process(FlowDocument template, IReadOnlyDictionary<string, object?> source,
-        MailMergeOptions options, bool preview, CancellationToken token)
+        MailMergeOptions options, bool preview, int recordIndex, CancellationToken token)
     {
         // Copy once so the record's comparer cannot silently change name matching semantics.
         var data = new Dictionary<string, object?>(StringComparer.Ordinal);
@@ -119,6 +152,8 @@ public static class MailMergeProcessor
             token.ThrowIfCancellationRequested();
             data.Add(pair.Key, pair.Value);
         }
+        var expansion = MailMergeRegions.Expand(template, data, options, token);
+        var expanded = expansion.Document;
 
         ImmutableArray<Block> RewriteBlocks(ImmutableArray<Block> blocks)
         {
@@ -141,13 +176,15 @@ public static class MailMergeProcessor
             {
                 case Paragraph paragraph:
                 {
+                    var scope = expansion.ParagraphValues.TryGetValue(paragraph.Id, out var paragraphValues)
+                        ? paragraphValues : data;
                     ImmutableArray<RichRun>.Builder? changed = null;
                     for (var i = 0; i < paragraph.Runs.Length; i++)
                     {
                         token.ThrowIfCancellationRequested();
                         var run = paragraph.Runs[i];
                         if (run.Inline is not { Payload: MergeFieldInlinePayload field } inline) continue;
-                        var value = Resolve(field, data, options);
+                        var value = Resolve(field, scope, options);
                         token.ThrowIfCancellationRequested();
                         if (value is null || preview && value == inline.AltText) continue;
                         changed ??= paragraph.Runs.ToBuilder();
@@ -188,27 +225,36 @@ public static class MailMergeProcessor
             }
         }
 
-        var blocks = RewriteBlocks(template.Blocks);
-        var stories = template.Stories;
-        foreach (var pair in template.Stories)
+        var blocks = RewriteBlocks(expanded.Blocks);
+        var stories = expanded.Stories;
+        foreach (var pair in expanded.Stories)
         {
             var storyBlocks = RewriteBlocks(pair.Value.Blocks);
             if (storyBlocks != pair.Value.Blocks) stories = stories.SetItem(pair.Key, pair.Value with { Blocks = storyBlocks });
         }
         token.ThrowIfCancellationRequested();
-        var result = blocks == template.Blocks && ReferenceEquals(stories, template.Stories) ? template : template with { Blocks = blocks, Stories = stories };
-        result = DocumentAnchors.Reconcile(template, result);
+        var result = blocks == expanded.Blocks && ReferenceEquals(stories, expanded.Stories) ? expanded : expanded with { Blocks = blocks, Stories = stories };
+        result = DocumentAnchors.Reconcile(expanded, result);
         if (options.FieldOptions is { } fieldOptions)
         {
-            var evaluated = FieldEvaluator.Update(result, fieldOptions with { MergeValues = data, Culture = options.Culture, CancellationToken = token });
-            foreach (var diagnostic in evaluated.Diagnostics) options.FieldDiagnostic?.Invoke(diagnostic);
+            var evaluated = FieldEvaluator.Update(result, fieldOptions with
+            {
+                MergeValues = data, Culture = options.Culture, CancellationToken = token,
+                MergeValuesResolver = field => expansion.FieldValues.TryGetValue(field.Id, out var scoped)
+                    ? scoped : fieldOptions.MergeValuesResolver?.Invoke(field) ?? data
+            });
+            foreach (var diagnostic in evaluated.Diagnostics)
+            {
+                options.FieldDiagnostic?.Invoke(diagnostic);
+                options.RecordDiagnostic?.Invoke(new(recordIndex, diagnostic.Code, diagnostic.Message, diagnostic.FieldId));
+            }
             result = evaluated.Document;
         }
         return result;
     }
 
     // A null result means retain the live field. An empty string is a resolved value.
-    private static string? Resolve(MergeFieldInlinePayload field, Dictionary<string, object?> data, MailMergeOptions options)
+    private static string? Resolve(MergeFieldInlinePayload field, IReadOnlyDictionary<string, object?> data, MailMergeOptions options)
     {
         string text;
         if (!data.TryGetValue(field.Name, out var value))

@@ -1252,6 +1252,77 @@ type Textalonia.Layout.StoryRegion : System.Object sealed
   property System.String SeparatorText { public get; public set; }
   property Textalonia.Layout.PageContext Context { public get; public set; }
   property Textalonia.Model.DocumentStoryKind Kind { public get; public set; }
+type Textalonia.MailMerge.CombinedHeaderFooterPolicy : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.MailMerge.CombinedHeaderFooterPolicy EachRecord static = 0
+  field Textalonia.MailMerge.CombinedHeaderFooterPolicy LinkToPrevious static = 1
+type Textalonia.MailMerge.CombinedMailMergeOptions : System.Object sealed
+  interface System.IEquatable<Textalonia.MailMerge.CombinedMailMergeOptions>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.MailMerge.CombinedMailMergeOptions other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.MailMerge.CombinedMailMergeOptions <Clone>$()
+  property System.Func<Textalonia.Model.FlowDocument,System.Threading.CancellationToken,Textalonia.Model.FlowDocument> CompleteDocument { public get; public set; }
+  property Textalonia.MailMerge.CombinedHeaderFooterPolicy HeaderFooterPolicy { public get; public set; }
+  property Textalonia.MailMerge.CombinedPageNumberPolicy PageNumberPolicy { public get; public set; }
+type Textalonia.MailMerge.CombinedPageNumberPolicy : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.MailMerge.CombinedPageNumberPolicy Continue static = 1
+  field Textalonia.MailMerge.CombinedPageNumberPolicy RestartEachRecord static = 2
+  field Textalonia.MailMerge.CombinedPageNumberPolicy Template static = 0
+type Textalonia.MailMerge.DelegateMailMergeDataSource : System.Object sealed
+  interface Textalonia.MailMerge.IMailMergeDataSource
+  ctor public (Textalonia.MailMerge.MailMergeSchema schema, System.Func<System.Threading.CancellationToken,System.Collections.Generic.IEnumerable<Textalonia.MailMerge.MailMergeRecord>> getRecipients)
+  method public System.Collections.Generic.IEnumerable<Textalonia.MailMerge.MailMergeRecord> GetRecipients(System.Threading.CancellationToken cancellationToken = ) virtual
+  property Textalonia.MailMerge.MailMergeSchema Schema { public get; }
+type Textalonia.MailMerge.DictionaryMailMergeDataSource : System.Object sealed
+  interface Textalonia.MailMerge.IMailMergeDataSource
+  ctor public (System.Collections.Generic.IEnumerable<System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>> records, Textalonia.MailMerge.MailMergeSchema schema)
+  ctor public (System.Collections.Generic.IReadOnlyList<System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>> records)
+  method public System.Collections.Generic.IEnumerable<Textalonia.MailMerge.MailMergeRecord> GetRecipients(System.Threading.CancellationToken cancellationToken = ) virtual
+  property Textalonia.MailMerge.MailMergeSchema Schema { public get; }
+type Textalonia.MailMerge.IMailMergeDataSource : none abstract
+  method public System.Collections.Generic.IEnumerable<Textalonia.MailMerge.MailMergeRecord> GetRecipients(System.Threading.CancellationToken cancellationToken = ) virtual
+  property Textalonia.MailMerge.MailMergeSchema Schema { public get; }
+type Textalonia.MailMerge.MailMergeCombinedProcessor : System.Object sealed abstract
+  method public static Textalonia.Model.FlowDocument Merge(Textalonia.Model.FlowDocument template, System.Collections.Generic.IEnumerable<System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>> records, Textalonia.MailMerge.MailMergeOptions mergeOptions = , Textalonia.MailMerge.CombinedMailMergeOptions combinedOptions = , System.Threading.CancellationToken cancellationToken = )
+  method public static Textalonia.Model.FlowDocument Merge(Textalonia.Model.FlowDocument template, Textalonia.MailMerge.IMailMergeDataSource source, Textalonia.MailMerge.MailMergeRecipientSelection selection = , Textalonia.MailMerge.MailMergeOptions mergeOptions = , Textalonia.MailMerge.CombinedMailMergeOptions combinedOptions = , System.Threading.CancellationToken cancellationToken = )
+type Textalonia.MailMerge.MailMergeDataSources : System.Object sealed abstract
+  method public static System.Collections.Generic.IEnumerable<Textalonia.MailMerge.MailMergeRecord> SelectRecipients(Textalonia.MailMerge.IMailMergeDataSource source, Textalonia.MailMerge.MailMergeRecipientSelection selection = , System.Threading.CancellationToken cancellationToken = )
+type Textalonia.MailMerge.MailMergeDiagnostic : System.Object sealed
+  interface System.IEquatable<Textalonia.MailMerge.MailMergeDiagnostic>
+  ctor public (System.Int32 RecordIndex, System.String Code, System.String Message, System.Nullable<System.Guid> FieldId = )
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.MailMerge.MailMergeDiagnostic other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Int32& RecordIndex, System.String& Code, System.String& Message, System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]& FieldId)
+  method public Textalonia.MailMerge.MailMergeDiagnostic <Clone>$()
+  property System.Int32 RecordIndex { public get; public set; }
+  property System.Nullable<System.Guid> FieldId { public get; public set; }
+  property System.String Code { public get; public set; }
+  property System.String Message { public get; public set; }
+type Textalonia.MailMerge.MailMergeFieldSchema : System.Object sealed
+  interface System.IEquatable<Textalonia.MailMerge.MailMergeFieldSchema>
+  ctor public (System.String Name, System.Type ValueType)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.MailMerge.MailMergeFieldSchema other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Name, System.Type& ValueType)
+  method public Textalonia.MailMerge.MailMergeFieldSchema <Clone>$()
+  property System.String Name { public get; public set; }
+  property System.Type ValueType { public get; public set; }
 type Textalonia.MailMerge.MailMergeOptions : System.Object sealed
   interface System.IEquatable<Textalonia.MailMerge.MailMergeOptions>
   ctor public ()
@@ -1260,15 +1331,66 @@ type Textalonia.MailMerge.MailMergeOptions : System.Object sealed
   method public System.Int32 GetHashCode() virtual
   method public System.String ToString() virtual
   method public Textalonia.MailMerge.MailMergeOptions <Clone>$()
+  property System.Action<Textalonia.MailMerge.MailMergeDiagnostic> RecordDiagnostic { public get; public set; }
+  property System.Action<Textalonia.MailMerge.MailMergeRecordEvent> RecordCompleted { public get; public set; }
+  property System.Action<Textalonia.MailMerge.MailMergeRecordEvent> RecordStarting { public get; public set; }
+  property System.Action<Textalonia.MailMerge.MailMergeRegionEvent> RegionProgress { public get; public set; }
   property System.Action<Textalonia.Model.Fields.FieldDiagnostic> FieldDiagnostic { public get; public set; }
   property System.Globalization.CultureInfo Culture { public get; public set; }
   property Textalonia.MailMerge.MissingFieldBehavior MissingFieldBehavior { public get; public set; }
   property Textalonia.Model.Fields.FieldEvaluationOptions FieldOptions { public get; public set; }
 type Textalonia.MailMerge.MailMergeProcessor : System.Object sealed abstract
+  method public static System.Collections.Generic.IEnumerable<Textalonia.Model.FlowDocument> MergeFromSource(Textalonia.Model.FlowDocument template, Textalonia.MailMerge.IMailMergeDataSource source, Textalonia.MailMerge.MailMergeRecipientSelection selection = , Textalonia.MailMerge.MailMergeOptions options = , System.Threading.CancellationToken cancellationToken = )
   method public static System.Collections.Generic.IEnumerable<Textalonia.Model.FlowDocument> MergeMany(Textalonia.Model.FlowDocument template, System.Collections.Generic.IEnumerable<System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>> records, Textalonia.MailMerge.MailMergeOptions options = , System.Threading.CancellationToken cancellationToken = )
   method public static System.Collections.Immutable.ImmutableArray<System.String> GetFieldNames(Textalonia.Model.FlowDocument template)
   method public static Textalonia.Model.FlowDocument Merge(Textalonia.Model.FlowDocument template, System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> data, Textalonia.MailMerge.MailMergeOptions options = , System.Threading.CancellationToken cancellationToken = )
   method public static Textalonia.Model.FlowDocument Preview(Textalonia.Model.FlowDocument template, System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> data, Textalonia.MailMerge.MailMergeOptions options = , System.Threading.CancellationToken cancellationToken = )
+type Textalonia.MailMerge.MailMergeRecipientSelection : System.Object sealed
+  interface System.IEquatable<Textalonia.MailMerge.MailMergeRecipientSelection>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.MailMerge.MailMergeRecipientSelection other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.MailMerge.MailMergeRecipientSelection <Clone>$()
+  property System.Collections.Generic.IComparer<Textalonia.MailMerge.MailMergeRecord> SortComparer { public get; public set; }
+  property System.Collections.Generic.IReadOnlyCollection<System.Int32> SourceIndexes { public get; public set; }
+  property System.Func<Textalonia.MailMerge.MailMergeRecord,System.Boolean> Filter { public get; public set; }
+type Textalonia.MailMerge.MailMergeRecord : System.Object sealed
+  ctor public (System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> values, System.Collections.Generic.IReadOnlyDictionary<System.String,System.Collections.Generic.IEnumerable<Textalonia.MailMerge.MailMergeRecord>> children = )
+  method public System.Collections.Generic.IEnumerable<Textalonia.MailMerge.MailMergeRecord> GetChildren(System.String name)
+  method public System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> ToMergeValues()
+  property System.Collections.Generic.IReadOnlyDictionary<System.String,System.Collections.Generic.IEnumerable<Textalonia.MailMerge.MailMergeRecord>> Children { public get; }
+  property System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> Values { public get; }
+type Textalonia.MailMerge.MailMergeRecordEvent : System.Object sealed
+  interface System.IEquatable<Textalonia.MailMerge.MailMergeRecordEvent>
+  ctor public (System.Int32 RecordIndex, System.Boolean IsPreview)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.MailMerge.MailMergeRecordEvent other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Int32& RecordIndex, System.Boolean& IsPreview)
+  method public Textalonia.MailMerge.MailMergeRecordEvent <Clone>$()
+  property System.Boolean IsPreview { public get; public set; }
+  property System.Int32 RecordIndex { public get; public set; }
+type Textalonia.MailMerge.MailMergeRegionEvent : System.Object sealed
+  interface System.IEquatable<Textalonia.MailMerge.MailMergeRegionEvent>
+  ctor public (System.String Name, System.Int32 ItemIndex, System.Int32 Depth, System.Boolean IsStarting)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.MailMerge.MailMergeRegionEvent other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Name, System.Int32& ItemIndex, System.Int32& Depth, System.Boolean& IsStarting)
+  method public Textalonia.MailMerge.MailMergeRegionEvent <Clone>$()
+  property System.Boolean IsStarting { public get; public set; }
+  property System.Int32 Depth { public get; public set; }
+  property System.Int32 ItemIndex { public get; public set; }
+  property System.String Name { public get; public set; }
+type Textalonia.MailMerge.MailMergeSchema : System.Object sealed
+  ctor public (System.Collections.Generic.IEnumerable<Textalonia.MailMerge.MailMergeFieldSchema> fields, System.Collections.Generic.IReadOnlyDictionary<System.String,Textalonia.MailMerge.MailMergeSchema> children = )
+  method public static Textalonia.MailMerge.MailMergeSchema Discover(System.Collections.Generic.IEnumerable<System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>> records)
+  property System.Collections.Generic.IReadOnlyDictionary<System.String,Textalonia.MailMerge.MailMergeSchema> Children { public get; }
+  property System.Collections.Generic.IReadOnlyList<Textalonia.MailMerge.MailMergeFieldSchema> Fields { public get; }
 type Textalonia.MailMerge.MissingFieldBehavior : System.Enum sealed
   interface System.IComparable
   interface System.IConvertible
@@ -1776,7 +1898,9 @@ type Textalonia.Model.Fields.FieldEvaluationOptions : System.Object sealed
   property System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> MergeValues { public get; public set; }
   property System.DateTimeOffset Clock { public get; public set; }
   property System.Func<Textalonia.Model.DocumentAnchor,System.Nullable<System.Int32>> AnchorPageResolver { public get; public set; }
+  property System.Func<Textalonia.Model.DocumentField,System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object>> MergeValuesResolver { public get; public set; }
   property System.Func<Textalonia.Model.DocumentField,Textalonia.Model.Fields.FieldPageContext> PageContextResolver { public get; public set; }
+  property System.Func<Textalonia.Model.Fields.FieldResolveContext,Textalonia.Model.Fields.FieldPictureResult> PictureResourceResolver { public get; public set; }
   property System.Func<Textalonia.Model.Fields.FieldResolveContext,Textalonia.Model.FlowDocument> DocumentVariableResolver { public get; public set; }
   property System.Func<Textalonia.Model.Fields.FieldResolveContext,Textalonia.Model.FlowDocument> PictureResolver { public get; public set; }
   property System.Globalization.CultureInfo Culture { public get; public set; }
@@ -1870,6 +1994,20 @@ type Textalonia.Model.Fields.FieldPaginationContext : System.Object sealed
   property System.Func<Textalonia.Model.DocumentAnchor,System.Nullable<System.Int32>> ResolveAnchorPage { public get; public set; }
   property System.Func<Textalonia.Model.DocumentField,Textalonia.Model.Fields.FieldPageContext> ResolvePage { public get; public set; }
   property System.String Signature { public get; public set; }
+type Textalonia.Model.Fields.FieldPictureResult : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.Fields.FieldPictureResult>
+  ctor public (Textalonia.Model.DocumentResource Resource)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.Fields.FieldPictureResult other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(Textalonia.Model.DocumentResource& Resource)
+  method public Textalonia.Model.Fields.FieldPictureResult <Clone>$()
+  property System.Double Height { public get; public set; }
+  property System.Double Width { public get; public set; }
+  property System.String AltText { public get; public set; }
+  property Textalonia.Model.DocumentResource Resource { public get; public set; }
+  property Textalonia.Model.ImagePlacement Placement { public get; public set; }
 type Textalonia.Model.Fields.FieldProjectionSpan : System.Object sealed
   interface System.IEquatable<Textalonia.Model.Fields.FieldProjectionSpan>
   ctor public (System.Int32 DocumentStart, System.Int32 DocumentLength, System.Int32 DisplayStart, System.Int32 DisplayLength, System.Nullable<System.Guid> FieldId)
@@ -1893,6 +2031,7 @@ type Textalonia.Model.Fields.FieldResolveContext : System.Object sealed
   method public System.String ToString() virtual
   method public System.Void Deconstruct(Textalonia.Model.FlowDocument& Document, Textalonia.Model.DocumentField& Field, Textalonia.Model.Fields.FieldInstruction& Instruction, System.String& Argument, System.Globalization.CultureInfo& Culture)
   method public Textalonia.Model.Fields.FieldResolveContext <Clone>$()
+  property System.Collections.Generic.IReadOnlyDictionary<System.String,System.Object> MergeValues { public get; public set; }
   property System.Globalization.CultureInfo Culture { public get; public set; }
   property System.String Argument { public get; public set; }
   property Textalonia.Model.DocumentField Field { public get; public set; }

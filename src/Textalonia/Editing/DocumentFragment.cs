@@ -364,14 +364,17 @@ internal static class DocumentFragments
             var copy = font with { ResourceId = Resource(font.ResourceId) };
             if (!fonts.Contains(copy)) fonts.Add(copy);
         }
-        ImmutableArray<Block> Clone(IEnumerable<Block> blocks) => blocks.Select(CloneBlock).ToImmutableArray();
-        Block CloneBlock(Block block)
+        ImmutableArray<Block> Clone(IEnumerable<Block> blocks, bool retainedBackup = false) =>
+            blocks.Select(block => CloneBlock(block, retainedBackup)).ToImmutableArray();
+        Block CloneBlock(Block block, bool retainedBackup)
         {
             switch (block)
             {
                 case Paragraph p:
                     var paragraphId = Guid.NewGuid();
-                    paragraphIds.Add(p.Id, paragraphId);
+                    // Historical merged-cell backups may reuse IDs from live content. They
+                    // still need fresh cloned IDs, but anchors only target visible paragraphs.
+                    if (!retainedBackup) paragraphIds.Add(p.Id, paragraphId);
                     var style = p.Style;
                     if (resolver.ResolveParagraphStyle(style).ListId is { } id)
                     {
@@ -394,9 +397,9 @@ internal static class DocumentFragments
                         if (payload is FormControlInlinePayload form) payload = form with { ControlId = controlIds[form.ControlId] };
                         return run with { Inline = inline with { Id = Guid.NewGuid(), Payload = payload } };
                     }).ToImmutableArray() };
-                case Section s: return s with { Id = Guid.NewGuid(), Blocks = Clone(s.Blocks) };
+                case Section s: return s with { Id = Guid.NewGuid(), Blocks = Clone(s.Blocks, retainedBackup) };
                 case Table t: return t with { Id = Guid.NewGuid(), Rows = t.Rows.Select(row => row.Select(cell => cell with
-                { Id = Guid.NewGuid(), Blocks = Clone(cell.Blocks), MergeOriginalBlocks = Clone(cell.MergeOriginalBlocks) }).ToImmutableArray()).ToImmutableArray() };
+                { Id = Guid.NewGuid(), Blocks = Clone(cell.Blocks, retainedBackup), MergeOriginalBlocks = Clone(cell.MergeOriginalBlocks, true) }).ToImmutableArray()).ToImmutableArray() };
                 default: throw new FormatException("Unknown clipboard block.");
             }
         }
