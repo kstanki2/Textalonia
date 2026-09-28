@@ -32,6 +32,10 @@ These features are excluded from implementation, dedicated preservation support,
 UI, dependencies and release gates; they are not deferred milestones. DOCM/DOTM
 support is also removed from the format backlog because macro support is excluded.
 
+Comments/replies and tracked revisions are outside the current plan. DX-08 has been
+removed, including its model, UI, preservation and release requirements. They can be
+reconsidered in a future scope revision, but are not scheduled milestones or dependencies.
+
 Images (including placement/cropping), text/image watermarks and OLE previews remain
 in scope. They should use focused image/resource APIs without a general shape engine.
 Importing excluded content should produce a clear unsupported-content diagnostic;
@@ -40,7 +44,7 @@ conversion rejects the loss. No preview generator or round-trip guarantee is req
 for excluded content. The scope applies to every workstream and source comparison below.
 
 The largest gaps are a real page engine, multiple document stories, reusable styles,
-general fields, printing/PDF, review, and protected forms. These require coordinated
+general fields, printing/PDF, and protected forms. These require coordinated
 model, editing, layout, serialization, and UI changes. Adding toolbar buttons alone
 cannot close them.
 
@@ -78,10 +82,6 @@ Status terminology:
   PDF export does not turn them into PDF forms. [Content controls][dx-controls]
 - OLE objects display a preview; users cannot activate or edit their embedded files.
   [OLE][dx-ole]
-- Track Changes supports All Markup, Simple Markup, and No Markup. Its limitations
-  exclude Original mode, ODT revisions, revision balloons, and revisions in the
-  Reviewing Pane. Comments do have a pane and margin balloons. Model the two UI
-  workflows separately. [Track Changes][dx-revisions], [comments][dx-comments]
 - The overview separately identifies async document-server operations, document
   comparison, Word digital signing, and page-to-image export as Office File API
   capabilities. They are a possible later server/tooling track, not prerequisites
@@ -94,7 +94,7 @@ Status terminology:
 | --- | --- |
 | [FlowDocument.cs](../src/Textalonia/Model/FlowDocument.cs), [Blocks.cs](../src/Textalonia/Model/Blocks.cs) | Immutable paragraphs, nested decorative sections and tables, stable block/cell IDs, inline resources. There are no page sections or independent header/note stories. |
 | [TextStyle.cs](../src/Textalonia/Model/TextStyle.cs), [ListNumbering.cs](../src/Textalonia/Model/ListNumbering.cs) | Direct character/paragraph formatting, heading levels, bidi paragraphs, nine-level identified lists, starts/restarts and marker definitions. `TextStyle` and `ParagraphStyle` are value records, not a named document style catalog. |
-| [EditorSession.cs](../src/Textalonia/Editing/EditorSession.cs), [DocumentTree.cs](../src/Textalonia/Model/DocumentTree.cs) | Persistent indexed edits, grapheme-safe UTF-16 selection, undo/redo, read-only, literal find/replace, structural editing. `CreatePosition` handles deliberately expire on revision changes; they cannot serve as durable bookmark/comment anchors. |
+| [EditorSession.cs](../src/Textalonia/Editing/EditorSession.cs), [DocumentTree.cs](../src/Textalonia/Model/DocumentTree.cs) | Persistent indexed edits, grapheme-safe UTF-16 selection, undo/redo, read-only, literal find/replace, structural editing. `CreatePosition` handles deliberately expire on revision changes; they cannot serve as durable bookmark anchors. |
 | [DocumentLayout.cs](../src/Textalonia/Controls/DocumentLayout.cs), [ParagraphLayout.cs](../src/Textalonia/Controls/ParagraphLayout.cs) | Virtualized flow layout and bounded shaping caches. The internal `ParagraphLayout.Page` is a shaping window, not a sheet of paper. Existing navigation, hit testing and IME geometry are valuable foundations. |
 | [TextaloniaEditor.Tables.cs](../src/Textalonia/Controls/TextaloniaEditor.Tables.cs), [DocumentLayout.Tables.cs](../src/Textalonia/Controls/DocumentLayout.Tables.cs) | Nested/merged tables, row policies, relative column widths, cell styling, rectangular selection and interactive resizing already exist. Preserve the covered-cell and merge-restoration rules. |
 | [InlineContent.cs](../src/Textalonia/Model/InlineContent.cs), [inline guide](INLINE-CONTENT.md) | Atomic images and registered Avalonia controls, resources and bounded view lifecycles. Structured content controls, image placement and OLE previews still need dedicated semantics. |
@@ -116,7 +116,8 @@ Workstream IDs point to the implementation sections below. A row closes only at 
 specified support level: model/API, UI, rendering and each advertised format are
 separate acceptance dimensions.
 
-Existing IDs are retained for traceability; G16 was removed with chart support.
+Existing IDs are retained for traceability; G16 was removed with chart support,
+and G17/G18 with comments and tracked revisions. Workstream DX-08 is also retired.
 
 | Gap | Reference capability | Textalonia status and missing behavior | Workstreams |
 | --- | --- | --- | --- |
@@ -135,8 +136,6 @@ Existing IDs are retained for traceability; G16 was removed with chart support.
 | G13 | [TOC, captions and reference lists][dx-toc] | **Missing.** Build/update contents from headings/outline/TC entries; caption sequences and lists of figures/tables; linked entries and page numbers. | DX-01, DX-02, DX-05 |
 | G14 | [Images and placement][dx-images] | **Partial.** Inline raster images exist; add image anchors/wrapping, crop/rotation, sizing and broader image-format support. | DX-07 |
 | G15 | [Text/image watermarks][dx-watermarks] | **Missing.** Section/header-associated backgrounds and editing commands. | DX-03, DX-07 |
-| G17 | [Comments and replies][dx-comments] | **Missing.** Range attachment, author/date, rich comment content, replies, author filtering and review pane/balloons. Offset highlights are not comments. | DX-00, DX-08 |
-| G18 | [Track Changes][dx-revisions] | **Missing.** Persistent insertion/deletion/format/move revisions, accept/reject, author filters and markup projections. Undo history cannot substitute for revisions. | DX-08 |
 | G19 | [Editing restrictions and encryption][dx-protection] | **Partial.** Global read-only exists; missing capability policy, protected sections/ranges, user/group permissions, allowed-edit modes, password protection and encrypted Office files. | DX-09, DX-12 |
 | G20 | [Structured content controls][dx-controls] and [legacy form fields][dx-features] | **Missing.** Typed form state, locks, placeholders and OOXML semantics; Avalonia host controls have a different purpose. | DX-09 |
 | G21 | [Spell checking][dx-spelling], [AutoCorrect][dx-autocorrect], [hyphenation][dx-hyphenation] | **Missing.** Dictionary services, diagnostics/suggestions, committed-input correction and language-aware discretionary breaks. | DX-10 |
@@ -145,7 +144,7 @@ Existing IDs are retained for traceability; G16 was removed with chart support.
 | G24 | [Document properties][dx-properties] and [custom XML][dx-custom-xml] | **Missing.** Typed built-in/custom metadata, retained XML parts and APIs. Application theme settings are not document themes. | DX-00, DX-01, DX-12 |
 | G25 | [OLE previews and embedded data][dx-ole] | **Missing; limited reference support.** Preserve OLE data, relationships and supplied previews; insert/extract/remove objects without activating embedded applications. | DX-07, DX-12 |
 | G26 | [Math interchange, frames and compatibility settings][dx-features] | **Missing.** Preserve equation data; implement paragraph frames and relevant text/table compatibility rules. Interchange-only support must be labelled separately from rendering. | DX-02, DX-12 |
-| G27 | [Command UI, rulers and dialogs][dx-ui] | **Partial.** Add reusable command routing, contextual tools/menus, page/style/object/review dialogs, localization and interactive rulers. Existing toolbar/retemplating is retained. | DX-13, feature owners |
+| G27 | [Command UI, rulers and dialogs][dx-ui] | **Partial.** Add reusable command routing, contextual tools/menus, page/style/object/form dialogs, localization and interactive rulers. Existing toolbar/retemplating is retained. | DX-13, feature owners |
 | G28 | [Find/replace panel][dx-search] | **Partial.** Literal APIs and toolbar find exist; add a reusable replace panel and navigation integrated with stories, bookmarks and page views. | DX-05, DX-13 |
 
 Markdown, registered inline Avalonia controls, and cross-platform/mobile integrations
@@ -167,7 +166,7 @@ Touch `Model/FlowDocument.cs`, `DocumentIndex.cs`, `DocumentTree.cs`, `BlockOper
 XAML and clipboard serializers. Add `Model/DocumentStory.cs`, `DocumentAnchor.cs`,
 `DocumentSection.cs` and `Editing/DocumentTransaction.cs`.
 
-1. Introduce immutable secondary stories for headers, footers, notes and comments,
+1. Introduce immutable secondary stories for headers, footers and notes,
    owned by the document with a shared resource catalog. Keep `Blocks`
    and `FlowDocument.Text` as the main-body view. Add story-specific indexes and
    explicit story/range APIs; retain existing main-body integer APIs. The control
@@ -189,7 +188,7 @@ XAML and clipboard serializers. Add `Model/DocumentStory.cs`, `DocumentAnchor.cs
    a boundary combines section properties. Page/column break tokens remain separate
    from the existing soft-line-break character.
 5. Extend validation, cloning, resource pruning and retention accounting to every
-   story, annotation, package part and hidden merge backup. Bound nesting, anchor
+   story, anchored range, package part and hidden merge backup. Bound nesting, anchor
    counts and binary resources. Add document metadata and an opaque-part catalog
    with content type, owner and relationship IDs for in-scope codecs and payloads.
 6. Establish a versioned schema decision before merging the model expansion. The
@@ -383,8 +382,8 @@ behind host adapters; the default Avalonia library must not acquire a WPF depend
    Verify its distribution terms and supported platforms. Use supplied glyphs and
    positions; an independent HTML-to-PDF reflow is not sufficient for shared layout.
 3. Add preview, quick print and a host print dialog with page ranges, copies and
-   printer capabilities. Snapshot before output, finalize relevant fields and
-   markup settings, report progress/cancellation, and handle output failures without
+   printer capabilities. Snapshot before output, finalize relevant fields,
+   report progress/cancellation, and handle output failures without
    mutating the live document or taking ownership of caller streams.
 4. First ship selectable/searchable PDF text, images, links, metadata and page boxes.
    Then add logical reading order, heading/list/table structure, alt text, decorative
@@ -559,51 +558,20 @@ mappings. Add focused `ImagePlacement`, image editing controls and shared
 text paginates consistently, watermarks respect sections, and OLE previews/resources
 round-trip and print correctly. Only in-scope image/OLE relationships are required.
 
-### DX-08 — Comments and tracked revisions
-
-**Priority: review. Size: XL. Dependencies: DX-00; paged markup uses DX-02/03.**
-
-Add `Model/Annotations.cs`, `Model/Revisions.cs`, revision-aware transactions and
-display projections, plus `Controls/ReviewingPane.cs`. Extend DOCX/RTF review mappings.
-
-1. Comments store anchor range, author/date, rich story and reply relationships.
-   Add create/edit/delete/navigate/filter, range highlights, margin balloons and a
-   virtualized comment pane. Specify anchor collapse when text is removed and
-   enforce supported story locations; the reference excludes header/footer comments.
-2. Record inserted/deleted content and before/after formatting with author/time,
-   revision grouping and move relationships. Retained deletions must be persisted
-   independently of undo history; clearing undo must not discard revisions.
-3. Build All Markup, Simple Markup and No Markup projections with explicit mappings
-   between storage, visible text, layout and editable positions. Selection, search,
-   clipboard, IME and accessibility must use the same projection. Hidden deleted
-   content remains available to rejection, serialization and retention accounting.
-4. Implement accept/reject by revision, selection, author or entire document as
-   undoable transactions. Handle overlapping edits, paragraph/row deletion and move
-   conflicts with a deterministic policy and host notification. Stage insertion/
-   deletion first, formatting next, then structural/move revisions; mark interim
-   support precisely instead of flattening unsupported revisions.
-5. Persist DOCX comments/replies/revision nodes and RTF annotations/revision metadata;
-   apply the requested markup view to PDF/print. The reference's comments pane is
-   not a revisions list; a combined revisions pane would be an optional enhancement.
-
-**Exit evidence:** multiple authors, adjacent/overlapping revisions, accept/reject
-after unrelated edits, tracked moves with conflicts, table edits and cross-story
-revisions. Reopen Word files with history intact and verify each display projection.
-
 ### DX-09 — Capability policies, protected editing and forms
 
-**Priority: forms/protection. Size: L/XL. Dependencies: DX-00; tracked-only mode needs DX-08.**
+**Priority: forms/protection. Size: L/XL. Dependencies: DX-00.**
 
 Add `Editing/EditPolicy.cs`, protection and content-control models, story-aware form
 interaction and codec support. Extend command state through DX-13.
 
 1. Centralize operation capabilities and editing permissions. Support hidden/disabled
    commands, read-only ranges, section form protection, user/group permission ranges,
-   and document modes that permit only comments, forms or tracked edits. Keep host
+   and a document mode that permits only form filling. Keep host
    identity resolution explicit; the editor does not authenticate users itself.
 2. Enforce policies in the transaction/session layer, not just the toolbar. Cover
    paste/drop, replace-all, IME commit, table changes, inline updates, arbitrary
-   `Execute`, accept/reject and undo/redo. Mixed permitted/forbidden edits need a
+   `Execute` and undo/redo. Mixed permitted/forbidden edits need a
    documented atomic rejection or partition rule. Host load remains distinct.
 3. Model plain/rich text, checkbox, combo box, dropdown and date controls with
    placeholders, tags, IDs, data, locks and ranges. Use inline values for atomic
@@ -680,7 +648,7 @@ and one combined document whose sections/page numbers survive DOCX/PDF output.
 **Priority: continuous fidelity, then format breadth. Size: XL. Dependencies: DX-00 and each model feature.**
 
 Refactor `Serialization/DocxDocumentFormat.cs` into package, relationship, style,
-story, field, image and review readers/writers. Extend `DocumentFormats.cs`,
+story, field, image and form readers/writers. Extend `DocumentFormats.cs`,
 `DocumentConversion.cs`, RTF/HTML codecs and conversion reports.
 
 1. Introduce a bounded package layer: content types, relationships, shared resources,
@@ -690,11 +658,11 @@ story, field, image and review readers/writers. Extend `DocumentFormats.cs`,
    Apply the scope exclusions to opaque parts too; generic package preservation
    must not create an implicit requirement to retain excluded features.
 2. Deliver DOCX mappings with their owning workstreams: real section properties,
-   stories, named styles, numbering, fields, images, comments, revisions, controls,
+   stories, named styles, numbering, fields, images, controls,
    protection, themes/fonts and core/custom properties. Preserve custom XML and
    compatibility settings. Resolve the current `Textalonia.Section` content-control
    encoding so decorative groups cannot be confused with actual Word form controls.
-3. Extend RTF headers/notes/styles/fields/revisions/images and HTML resource/style
+3. Extend RTF headers/notes/styles/fields/images and HTML resource/style
    handling. Keep strict versus tolerant conversion. Each feature/format combination
    has an explicit capability and loss code; adding a model feature must not make
    existing codecs silently lose it. Test strict rejection before writing output.
@@ -705,7 +673,7 @@ story, field, image and review readers/writers. Extend `DocumentFormats.cs`,
    | DOTX | Reuse the OOXML package layer with correct template content types and loading semantics. |
    | Flat OPC XML, WordML | Separate codecs: Flat OPC packages OOXML parts in XML; Word 2003 XML has its own vocabulary. Neither maps to Textalonia XAML. |
    | MHTML | MIME/resource packaging over the HTML codec, with bounded parts, charset handling and resource identity. |
-   | ODT | Implement package, style/list, page/master-page, table and object mappings; report losses by capability. Do not promise ODT revisions absent from the reference. |
+   | ODT | Implement package, style/list, page/master-page, table and object mappings; report losses by capability. |
    | DOC/DOT | Dedicated binary-format workstream: compound storage, text pieces, styles, numbering, fields and embedded objects. Evaluate a maintained compatible provider first; if unsuitable, implement/test the binary reader/writer separately. Renaming DOCX files is never support. |
    | Encrypted Office files | Add a password-provider/options API and standard/agile encryption adapters. Cover correct/incorrect/missing passwords and integrity failures without altering the active document. Include encrypted binary-format cases when DOC support exists. |
 
@@ -735,7 +703,7 @@ Avalonia view models/templates, not a hard dependency on a commercial ribbon.
    capability state and localization keys. Existing ICommand properties delegate
    to it. Route toolbar, keyboard, menus and automation through the same operations.
 2. Provide an optional tabbed command surface with File/Home/Insert/Page Layout/
-   References/Review/Mailings/View and contextual table/picture/header-footer tools.
+   References/Proofing/Mailings/View and contextual table/picture/header-footer tools.
    Keep the compact toolbar and host retemplating. Add dialogs alongside each model
    slice, rather than a late UI-only milestone with inaccessible functionality.
 3. Add horizontal/vertical rulers tied to page, paragraph, tab, column and table
@@ -767,10 +735,10 @@ Do not replace the open [roadmap](ROADMAP.md) qualification tasks with this plan
    result; "DOCX supported" is too broad to be an acceptance criterion. Excluded
    content needs loss-diagnostic coverage, not preservation/rendering/editing parity.
 2. Test invariants across all new stories and overlays: IDs, UTF-16/graphemes, directional
-   selection, resource retention, undo, field/annotation mappings, protected edits,
+   selection, resource retention, undo, field/anchor mappings, protected edits,
    stream ownership and cancellation. Preserve public API baselines deliberately
    with migration examples and the independent package consumer.
-3. Add a provenance-tracked corpus of letters, reports, legal/review documents,
+3. Add a provenance-tracked corpus of letters, reports, legal documents,
    forms, mixed scripts, multi-page tables and templates. Record application version,
    fonts, expected semantics and rendering references. If a licensed DevExpress
    reference environment is available, record its version and differential results;
@@ -781,7 +749,7 @@ Do not replace the open [roadmap](ROADMAP.md) qualification tasks with this plan
    platform. Extend native accessibility bridges for stories, pages, tables and forms.
 5. Retain existing PERF-01/PERF-06 gates and add first-page/full-pagination time,
    edit-to-visible-update p50/p95, export throughput, and peak/retained memory for
-   documents with notes/positioned images/revisions. Establish numerical budgets from reproducible
+   documents with notes/positioned images/forms. Establish numerical budgets from reproducible
    baselines before optimization; do not invent a latency guarantee in the plan.
 6. Update feature guides, release notes and support limits at each slice. Keep INT-01,
    INT-02, P4.6, NATIVE-06, MOB-01 and release/publication work open until their own
@@ -798,7 +766,7 @@ architecture/interoperability risk. Re-estimate after the foundational prototype
 | M0: contracts and prototypes | DX-00 contracts; DX-01 shaping/style prototype; DX-02 line-fragment prototype; DX-04 backend feasibility; DX-12 package design; DX-13 command skeleton. | Reviewed model/coordinate/schema decisions; old fixtures/API consumers retained; a page can be laid out and drawn by the proposed output path. No broad parity claim. |
 | M1: editable page document | DX-00 implementation, DX-01 core styles/tabs, DX-02 single-column pagination, DX-03 headers/footers, DX-05 basic page fields, DX-04 basic PDF/print, accompanying DX-12/13. | Author, save, reopen and print a multi-section letter with different first-page header, page numbers, a style change and matching PDF pages. |
 | M2: long documents | Complete columns/page rules, DX-03 notes, DX-06 tables/lists, DX-05 bookmarks/TOC/captions, DX-07 image placement/watermarks. | A report with columns, notes, a multi-page table, positioned images and a linked TOC updates consistently after edits. |
-| M3: review and forms | DX-08 comments/revisions in stages, DX-09 policies/forms, DX-10 proofing; supporting UI/codecs. Some model/proofing work can proceed after M0 without waiting for M2. | Two-author review with accept/reject; protected fillable DOCX; suggestions/corrections; files retain semantics after reopening. |
+| M3: forms and proofing | DX-09 policies/forms, DX-10 proofing; supporting UI/codecs. Some model/proofing work can proceed after M0 without waiting for M2. | Protected fillable DOCX; suggestions/corrections; files retain semantics after reopening. |
 | M4: document automation | Complete DX-05 field language and DX-11 regions/rich merge; properties/custom XML and DOTX templates from DX-12. | Generate a master-detail invoice batch and combined paginated output with images, computed values and cancellation. |
 | M5: broader compatibility | DX-07 broader image formats/OLE, DX-12 remaining in-scope formats/encryption/compatibility, DX-01 advanced font/grid completion, DX-04 accessible/archival PDF. | Selected feature/API/UI/format claims pass their corpus and external validators; excluded content has clear loss diagnostics. |
 | M6: qualified release | DX-14 native/platform/performance/package gates, documentation and existing release procedure. | Publishable candidate whose advertised scope has retained evidence; all unclosed parity rows remain visible. |
@@ -828,7 +796,7 @@ These are design work items, not blockers to this planning document.
 | Decision | Proposed default and required evidence |
 | --- | --- |
 | Native schema/API evolution | Adopt explicit v5 expansion and a v4 conversion path; review against the current unpublished-schema policy before implementation. Keep old model construction and main-body APIs usable. |
-| Field and revision coordinates | Approve storage-to-visible projection rules in DX-00/05/08 together; test selection/copy/IME before committing to representations. |
+| Field coordinates | Approve storage-to-visible projection rules in DX-00/05 together; test selection/copy/IME before committing to representations. |
 | Physical layout and shaping | Reuse Avalonia shaping through an adapter initially. Prove tabs, run typography, bidi, image/table wrapping and headless/thread behavior; replace internals only where the prototype shows a gap. |
 | PDF/font/image/binary-format backends | Select using concrete format fixtures, platform availability, maintenance and dependency terms. No specific package is committed by this plan. Keep capabilities explicit if a backend is optional. |
 | Pagination/field/image/footnote convergence | Set deterministic precedence and bounded retry policies, with diagnostic output and minimized failure fixtures. This is a major correctness risk, not just a rendering optimization. |
@@ -852,7 +820,7 @@ engineering recommendations based on the repository audit.
 | Page/document structure | [Sections][dx-sections], [headers/footers][dx-headers], [notes][dx-notes], [views][dx-views], [shared view API][dx-view-api] |
 | Formatting and images | [Text formatting][dx-formatting], [tables][dx-tables], [image capabilities][dx-images], [watermarks][dx-watermarks] |
 | Fields and automation | [Fields][dx-fields], [field codes][dx-field-codes], [bookmarks][dx-bookmarks], [TOC][dx-toc], [mail merge][dx-mailmerge] |
-| Review and forms | [Comments][dx-comments], [Track Changes][dx-revisions], [protection][dx-protection], [content controls][dx-controls] |
+| Protection and forms | [Protection][dx-protection], [content controls][dx-controls] |
 | Proofing and UI | [Spelling][dx-spelling], [AutoCorrect][dx-autocorrect], [hyphenation][dx-hyphenation], [visual elements][dx-ui], [rulers][dx-rulers], [dialogs][dx-dialogs], [find/replace][dx-search] |
 | Output and package content | [Printing][dx-print], [PDF][dx-pdf], [properties][dx-properties], [custom XML][dx-custom-xml], [OLE][dx-ole] |
 
@@ -872,8 +840,6 @@ engineering recommendations based on the repository audit.
 [dx-fields]: https://docs.devexpress.com/WPF/10296/controls-and-libraries/rich-text-editor/fields
 [dx-field-codes]: https://docs.devexpress.com/WPF/17175/controls-and-libraries/rich-text-editor/fields/field-codes
 [dx-toc]: https://docs.devexpress.com/WPF/9562/controls-and-libraries/rich-text-editor/page-layout/table-of-contents
-[dx-comments]: https://docs.devexpress.com/WPF/114105/controls-and-libraries/rich-text-editor/rich-edit-control-document/comments
-[dx-revisions]: https://docs.devexpress.com/WPF/401249/controls-and-libraries/rich-text-editor/track-changes
 [dx-protection]: https://docs.devexpress.com/WPF/9111/controls-and-libraries/rich-text-editor/restrictions-and-protection
 [dx-controls]: https://docs.devexpress.com/WPF/404746/controls-and-libraries/rich-text-editor/rich-edit-control-document/content-controls
 [dx-spelling]: https://docs.devexpress.com/WPF/8937/controls-and-libraries/spell-checker/examples/how-to-enable-spelling-check-as-you-type-for-the-rich-edit-control
