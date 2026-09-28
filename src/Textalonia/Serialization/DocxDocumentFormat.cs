@@ -997,6 +997,8 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
     private static ParagraphStyle ReadParagraphStyle(XElement? properties, ParagraphStyle style, Dictionary<string, NumberingInfo> numbering)
     {
         if (properties is null) return style;
+        if (properties.Attribute(Tx + "hyphenateCaps") is { } caps)
+            style = style with { HyphenateCaps = caps.Value is "1" or "true" };
         foreach (var p in properties.Elements())
             switch (p.Name.LocalName)
             {
@@ -1037,6 +1039,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                     }
                     style = style with { TabStops = tabs.Values.OrderBy(t => t.Position).ToImmutableArray() }; break;
                 case "contextualSpacing": style = style with { ContextualSpacing = On(p) }; break;
+                case "suppressAutoHyphens": style = style with { SuppressHyphenation = On(p) }; break;
                 case "pBdr": style = style with { Borders = ReadBorders(p) }; break;
                 case "shd": style = style with { Shading = ReadColor((string?)p.Attribute(W + "fill")) }; break;
                 case "pageBreakBefore": style = style with { PageBreakBefore = On(p) }; break;

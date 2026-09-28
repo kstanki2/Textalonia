@@ -322,3 +322,7 @@ Image placement, cropping, section watermarks and OLE previews are documented in
 DX-09 adds protected forms, host editing capabilities, permission ranges and typed
 content controls, with session enforcement, keyboard interaction and DOCX/native
 persistence. See [forms and protection](docs/FORMS.md) for APIs and format limits.
+
+DX-10 adds host dictionary spelling with suggestions, committed-input AutoCorrect,
+and discretionary hyphenation in Simple and paginated output. See the
+[proofing guide](docs/PROOFING.md) for service APIs, undo behavior and limits.

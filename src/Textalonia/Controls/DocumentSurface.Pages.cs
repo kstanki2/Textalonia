@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Media;
 using Textalonia.Layout;
 using Textalonia.Model;
+using Textalonia.Proofing;
 
 namespace Textalonia.Controls;
 
@@ -13,6 +14,8 @@ public partial class DocumentSurface
     private PaginationOptions? _paginationOptions;
     private FontFamily? _pageFont;
     private IBrush? _pageForeground, _pageBorder;
+    private IHyphenationService? _pageHyphenation;
+    private long _pageHyphenationRevision;
     internal bool HasPagedLayout => _pagedLayout is not null;
     internal PageLayoutSnapshot? PagedLayout => _pagedLayout;
     internal double ViewZoom => Editor?.Zoom ?? 1;
@@ -37,13 +40,17 @@ public partial class DocumentSurface
         var foreground = editor.Foreground ?? Brushes.Black;
         var border = editor.BorderBrush ?? Brushes.Gray;
         if (_pagedLayout is null || !ReferenceEquals(_pagedDocument, document) || options != _paginationOptions ||
+            !ReferenceEquals(_pageHyphenation, editor.HyphenationService) ||
+            _pageHyphenationRevision != (editor.HyphenationService?.Revision ?? 0) ||
             !Equals(_pageFont, editor.FontFamily) || !Equals(_pageForeground, foreground) || !Equals(_pageBorder, border))
         {
+            _pagination.HyphenationService = editor.HyphenationService;
             var snapshot = _pagination.Paginate(document, editor.FontFamily, foreground, border, options);
             _pagedLayout?.Dispose();
             _pagedLayout = snapshot;
             _pagedDocument = document; _paginationOptions = options;
             _pageFont = editor.FontFamily; _pageForeground = foreground; _pageBorder = border;
+            _pageHyphenation = editor.HyphenationService; _pageHyphenationRevision = editor.HyphenationService?.Revision ?? 0;
         }
         if (editor.ActiveStoryId != Guid.Empty && _pagedLayout.StoryRegions.FirstOrDefault(r => r.StoryId == editor.ActiveStoryId) is { } first &&
             !_pagedLayout.StoryRegions.Any(r => r.StoryId == editor.ActiveStoryId && r.PageIndex == editor.ActiveStoryPageIndex))
@@ -59,6 +66,8 @@ public partial class DocumentSurface
     {
         _pagedLayout?.Dispose(); _pagedLayout = null; _pagedDocument = null;
         _paginationOptions = null;
+        _pageHyphenation = null; _pageHyphenationRevision = 0;
+        _pagination.HyphenationService = null;
         _pagination.Clear();
     }
 

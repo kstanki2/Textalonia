@@ -41,6 +41,10 @@ public sealed partial record TextStyle
 
 public sealed partial record ParagraphStyle
 {
+    /// <summary>Suppress automatic dictionary breaks. Explicit soft hyphens remain available.</summary>
+    public bool SuppressHyphenation { get; init; }
+    /// <summary>Allow automatic dictionary breaks in words made entirely of capitals.</summary>
+    public bool HyphenateCaps { get; init; }
     public ImmutableArray<TabStop> TabStops { get; init; } = [];
     /// <summary>Default tab interval in device-independent pixels; zero preserves automatic font-based tabs.</summary>
     public double DefaultTabWidth { get; init; }

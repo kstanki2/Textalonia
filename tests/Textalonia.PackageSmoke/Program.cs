@@ -224,7 +224,8 @@ internal static class Program
                     ?? throw new InvalidOperationException("Packaged theme did not render.");
                 await StoryExample.VerifyAsync(editor, window);
                 await ExtensionExamples.VerifyAsync(window);
-                Console.WriteLine("Package consumer passed: general fields/bookmarks, custom codecs/resources/input/viewer lifecycle, compiled XAML, themes, input, formatting, native v11, DX-09 protected forms and DOCX password round trips, DX-07 image/watermark/OLE round trips, DX-06 table/list formatting and repeated headers, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, editable header/note stories, DOCX stories, page regions, and rendering.");
+                await ProofingExample.VerifyAsync(editor);
+                Console.WriteLine("Package consumer passed: general fields/bookmarks, custom codecs/resources/input/viewer lifecycle, compiled XAML, themes, input, formatting, native v11, DX-09 protected forms and DOCX password round trips, DX-10 proofing APIs, DX-07 image/watermark/OLE round trips, DX-06 table/list formatting and repeated headers, nested/merged tables, range/position APIs, document mode, history budget, shaping limits, inline descriptors, input components, accessibility contract, strict conversion reports, structured fragments, visual bidi, table interaction APIs, Markdown/XAML integrations, optional highlighting, editable header/note stories, DOCX stories, page regions, and rendering.");
             }
             finally { window.Close(); }
             return true;

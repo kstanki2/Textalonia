@@ -32,7 +32,7 @@ public partial class TextaloniaEditor
     public DocumentRenderer CreateOutputRenderer()
     {
         Dispatcher.UIThread.VerifyAccess();
-        using var engine = new PaginationEngine();
+        using var engine = new PaginationEngine { HyphenationService = HyphenationService };
         var document = Document;
         if (OutputFieldOptions is { } fieldOptions)
         {

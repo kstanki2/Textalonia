@@ -261,7 +261,8 @@ public sealed partial class PageLayoutSnapshot : IDisposable
                                 BaselineAlignment.Subscript => line.Height - inline.Size.Height,
                                 _ => line.Baseline - inline.Baseline
                             })), inline.Size);
-                        yield return new(inline.Descriptor, fragment.SourceStart + run.TextSourceCharacterIndex,
+                        yield return new(inline.Descriptor, fragment.SourceStart +
+                            (line is HyphenatedTextLine hyphenated ? hyphenated.SourceRunIndex(run.TextSourceCharacterIndex) : run.TextSourceCharacterIndex),
                             inlineBounds, fragment.Clip) { StoryId = fragment.StoryKey, PageIndex = fragment.PageIndex };
                     }
         }

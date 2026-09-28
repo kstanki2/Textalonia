@@ -69,24 +69,12 @@ public partial class DocumentSurface : Control
         {
             if (ReferenceEquals(_editor, value)) return;
             DetachInputComponents();
+            if (_editor is not null) { _layout.Clear(releaseHyphenation: true); ClearPagedLayout(); }
             _pendingAnchorAdjustment = 0;
             ResetInlineViews();
             _editor = value;
             UpdateInputComponents();
-            ContextMenu = value is null ? null : new ContextMenu
-            {
-                ItemsSource = new object[]
-                {
-                    new MenuItem { Header = "Undo", Command = value.UndoCommand },
-                    new MenuItem { Header = "Redo", Command = value.RedoCommand },
-                    new Separator(),
-                    new MenuItem { Header = "Cut", Command = value.CutCommand },
-                    new MenuItem { Header = "Copy", Command = value.CopyCommand },
-                    new MenuItem { Header = "Paste", Command = value.PasteCommand },
-                    new Separator(),
-                    new MenuItem { Header = "Select all", Command = value.SelectAllCommand }
-                }
-            };
+            ContextMenu = value is null ? null : CreateEditorContextMenu(value);
             Refresh();
         }
     }
@@ -154,7 +142,7 @@ public partial class DocumentSurface : Control
                 _layout.Build(document, width / ViewZoom, Editor.FontFamily, Editor.Foreground ?? Brushes.Black,
                     Editor.BorderBrush ?? Brushes.Gray, Editor.DocumentPadding,
                     ToDocument(_viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, Editor.Scroller?.Offset.Y ?? 0, width, 500)),
-                    Editor.MaxShapingCharacters);
+                    Editor.MaxShapingCharacters, Editor.HyphenationService);
                 Editor.UpdatePageStatus(1, 1);
             }
             else
@@ -169,7 +157,8 @@ public partial class DocumentSurface : Control
                     ClearPagedLayout();
                     _layout.Build(ProjectStory(document, Editor.ActiveStoryId), width / ViewZoom, Editor.FontFamily,
                         Editor.Foreground ?? Brushes.Black, Editor.BorderBrush ?? Brushes.Gray, Editor.DocumentPadding,
-                        ToDocument(_viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, 0, width, 500)), Editor.MaxShapingCharacters);
+                        ToDocument(_viewport.Width > 0 && _viewport.Height > 0 ? _viewport : new Rect(0, 0, width, 500)), Editor.MaxShapingCharacters,
+                        Editor.HyphenationService);
                 }
             }
         }
@@ -293,6 +282,7 @@ public partial class DocumentSurface : Control
                         paragraph.MarkerDefinition ?? new(), paragraph.Page.Owner.Paragraph, paragraph.Origin, Editor.FontFamily, Editor.Foreground, paragraph.Clip, fonts: paragraph.MarkerFonts);
                 }
             }
+            DrawProofingUnderlines(context, viewport);
             if (Editor.Session.Index.Length == 0 && !HasComposition && Editor.Session.ActiveDocument.Blocks is [Paragraph])
             {
                 var origin = _pagedLayout is { } emptyPages ? emptyPages.Caret(GeometryStoryId, 0, GeometryStoryPage).Position : new Point(Editor.DocumentPadding.Left, Editor.DocumentPadding.Top);
@@ -419,7 +409,7 @@ public partial class DocumentSurface : Control
         _pendingAnchorAdjustment = 0;
         ClearDropPreview();
         DetachInputComponents(); ResetInlineViews();
-        _layout.Clear(); ClearPagedLayout(); ClearStoryProjections(); _layoutDocument = null; _dirty = true;
+        _layout.Clear(releaseHyphenation: true); ClearPagedLayout(); ClearStoryProjections(); _layoutDocument = null; _dirty = true;
         base.OnDetachedFromVisualTree(e);
     }
     protected override void OnTextInput(TextInputEventArgs e)
@@ -435,6 +425,7 @@ public partial class DocumentSurface : Control
     }
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
+        if (ReferenceEquals(e.Source, this)) CaptureProofingContextClick(e);
         base.OnPointerPressed(e);
         if (!e.Handled && ReferenceEquals(e.Source, this) && _inputContext is not null)
         {

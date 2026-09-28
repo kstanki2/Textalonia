@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 using Textalonia.Model;
+using Textalonia.Proofing;
 
 namespace Textalonia.Controls;
 
@@ -117,6 +118,8 @@ internal sealed partial class DocumentLayout : IDisposable
     private double _previousViewportY = double.NaN;
     private long _clock;
     private int _maxShapingCharacters;
+    private IHyphenationService? _hyphenation;
+    private long _hyphenationRevision;
     public int ShapedParagraphs { get; private set; }
     public int DisposedLayouts { get; private set; }
     public int CachedParagraphs => _cache.Count;
@@ -133,8 +136,10 @@ internal sealed partial class DocumentLayout : IDisposable
     internal event Action<double>? AnchorShifted;
 
     public void Build(FlowDocument document, double width, FontFamily font, IBrush foreground, IBrush border,
-        Thickness padding, Rect? viewport = null, int maxShapingCharacters = 0)
+        Thickness padding, Rect? viewport = null, int maxShapingCharacters = 0, IHyphenationService? hyphenation = null)
     {
+        if (!ReferenceEquals(hyphenation, _hyphenation) || (hyphenation?.Revision ?? 0) != _hyphenationRevision)
+        { Clear(); _hyphenation = hyphenation; _hyphenationRevision = hyphenation?.Revision ?? 0; }
         if (maxShapingCharacters != _maxShapingCharacters) { Clear(); _maxShapingCharacters = maxShapingCharacters; }
         _building = true;
         try { BuildCore(document, width, font, foreground, border, padding, viewport); }
@@ -241,7 +246,7 @@ internal sealed partial class DocumentLayout : IDisposable
             {
                 ShapedParagraphs++; ShapedCharacters += text.Length;
                 LargestShapingWindow = Math.Max(LargestShapingWindow, text.Length);
-                return CreateTextLayout(p, width, _font, _foreground, start, text, _fonts);
+                return CreateTextLayout(p, width, _font, _foreground, start, text, _fonts, _hyphenation, _maxShapingCharacters);
             }, () => DisposedLayouts++, _glyphs, _maxShapingCharacters));
             _cache[paragraph.Id] = cached;
         }
@@ -368,8 +373,9 @@ internal sealed partial class DocumentLayout : IDisposable
     }
 
     internal static ShapingTextLayout CreateTextLayout(Paragraph paragraph, double width, FontFamily font, IBrush foreground,
-        int start = 0, string? text = null, DocumentFontService? fonts = null) =>
-        ShapingTextLayout.Create(paragraph, width, font, foreground, start, text, fonts);
+        int start = 0, string? text = null, DocumentFontService? fonts = null, IHyphenationService? hyphenation = null,
+        int maxShapingCharacters = 0) =>
+        ShapingTextLayout.Create(paragraph, width, font, foreground, start, text, fonts, hyphenation, maxShapingCharacters);
 
     internal static TextLayout CreateNativeTextLayout(Paragraph paragraph, double width, FontFamily font, IBrush foreground,
         int start = 0, string? text = null)
@@ -528,7 +534,8 @@ internal sealed partial class DocumentLayout : IDisposable
                 foreach (var bounds in line.GetTextBounds(line.FirstTextSourceIndex, line.Length))
                     foreach (var run in bounds.TextRunBounds)
                         if (run.TextRun is InlineObjectRun inline)
-                            yield return new(inline.Descriptor, visual.TextStart + run.TextSourceCharacterIndex,
+                            yield return new(inline.Descriptor, visual.TextStart +
+                                (line is HyphenatedTextLine hyphenated ? hyphenated.SourceRunIndex(run.TextSourceCharacterIndex) : run.TextSourceCharacterIndex),
                                 new Rect(visual.Origin.X + run.Rectangle.X, top + line.Baseline - inline.Baseline,
                                     inline.Size.Width, inline.Size.Height), visual.Clip);
                 top += line.Height;
@@ -536,7 +543,7 @@ internal sealed partial class DocumentLayout : IDisposable
         }
     }
 
-    public void Clear()
+    public void Clear(bool releaseHyphenation = false)
     {
         foreach (var cached in _cache.Values) cached.Layout.Dispose();
         _glyphs.Clear();
@@ -544,6 +551,7 @@ internal sealed partial class DocumentLayout : IDisposable
         _heights = new(); _index = null; _document = null; _resolver = null;
         _fonts?.Dispose(); _fonts = null;
         _previousViewportY = double.NaN;
+        if (releaseHyphenation) { _hyphenation = null; _hyphenationRevision = 0; }
     }
-    public void Dispose() => Clear();
+    public void Dispose() => Clear(releaseHyphenation: true);
 }

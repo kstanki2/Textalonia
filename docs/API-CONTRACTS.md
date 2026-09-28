@@ -2,7 +2,7 @@
 
 The 0.1 preview contract is the exported API in public-api.txt plus the nullable,
 attribute and modifier baseline in public-api-contracts.txt (both under
-tests/Textalonia.Tests/Fixtures). Additive merge-field and mail-merge APIs are included in these baselines.
+tests/Textalonia.Tests/Fixtures). Additive merge-field, mail-merge, and proofing APIs are included in these baselines.
 The model, session, commands, input, resources, diagnostics, editor, viewers,
 toolbar and codecs are all captured. Generated record members and protected
 extension members participate in the checks.
@@ -27,6 +27,7 @@ describe the build mechanisms.
 | Text / Document binding | Text is eager by default. SynchronizeText=false stops publishing full text after edits; use Document.Text or Session.Index.ReadText for current content. Assigning Text replaces rich structure and resets history. Bind one authoritative source, avoiding competing Text and Document bindings. Document assignment is a host load, even while read-only. |
 | Selection | Directional UTF-16 Anchor/Active, sorted Start/End, clamped grapheme boundaries; one U+FFFC represents an inline object. PlainText/clipboard substitute its alternative text. Undo restores directional selection. Default key navigation is visual bidi; explicit session offsets remain logical. Highlights are snapshot offsets and need updating after edits. |
 | Input components | UI thread; one attached surface per instance. Replacing a component or detaching the view calls Detach; release captures, timers and subscriptions there. The host owns injected service objects; they are not automatically disposed. |
+| Proofing services | The editor calls AutoCorrect synchronously on its UI thread after committed input; callbacks should finish promptly. Spelling checks run asynchronously with cancellation and revision checks. Host spelling and hyphenation services own dictionaries, persistence, change notifications and their own thread safety. The editor does not dispose host services. See [PROOFING.md](PROOFING.md). |
 | Inline resources | Resolver runs on a worker and must honor cancellation. A returned stream transfers ownership to the image loader, which disposes it. Embedded-only resolution is the default. UI-thread InlineImageCache owns bitmaps; returned bitmaps are borrowed until eviction/reset/disposal. Dispose a cache created directly by the host. |
 | Inline control factories | UI thread, explicitly registered type keys only. Return a new unparented control for each Create. Each successful creation is paired with Release on eviction/detach. Release owns view resources; unregister/replacement does not dispose the factory service itself. |
 | MarkdownViewer / ICodeHighlighter | Source updates originate on UI thread; parsing/tokenization may run on workers. Adapters must tolerate cancellation and concurrent calls. Latest revision wins; await WaitForParsingAsync/WaitForHighlightingAsync. Detachment cancels pending work/releases caches; the host retains ownership of its highlighter. Parsing/highlighting errors are reported separately, with canonical document text preserved. |
@@ -76,4 +77,4 @@ fidelity rather than silently promising losslessness.
 
 The executable examples in tests/Textalonia.PackageSmoke cover these APIs against
 a freshly restored NuGet package, including custom codecs, replacement keyboard,
-host resource streams, control factories, editor/viewer and optional highlighting.
+host resource streams, control factories, proofing services, editor/viewer and optional highlighting.

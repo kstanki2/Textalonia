@@ -199,6 +199,8 @@ public sealed record TextStyleOverrides
 /// <summary>Sparse direct formatting. An unset property inherits; a set null clears a value.</summary>
 public sealed record ParagraphStyleOverrides
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<bool> SuppressHyphenation { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<bool> HyphenateCaps { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<ParagraphAlignment> Alignment { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<ListKind> List { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public StyleValue<int> ListLevel { get; init; }
@@ -234,6 +236,8 @@ public sealed record ParagraphStyleOverrides
 
     public ParagraphStyle Apply(ParagraphStyle value) => value with
     {
+        SuppressHyphenation = SuppressHyphenation.IsSet ? SuppressHyphenation.Value : value.SuppressHyphenation,
+        HyphenateCaps = HyphenateCaps.IsSet ? HyphenateCaps.Value : value.HyphenateCaps,
         Alignment = Alignment.IsSet ? Alignment.Value : value.Alignment,
         List = List.IsSet ? List.Value : value.List,
         ListLevel = ListLevel.IsSet ? ListLevel.Value : value.ListLevel,
@@ -270,6 +274,8 @@ public sealed record ParagraphStyleOverrides
 
     public static ParagraphStyleOverrides FromStyle(ParagraphStyle style) => new()
     {
+        SuppressHyphenation = new(style.SuppressHyphenation),
+        HyphenateCaps = new(style.HyphenateCaps),
         Alignment = new(style.Alignment),
         List = new(style.List),
         ListLevel = new(style.ListLevel),
@@ -310,6 +316,8 @@ public sealed record ParagraphStyleOverrides
         basis ??= new();
         return basis with
         {
+            SuppressHyphenation = before.SuppressHyphenation == after.SuppressHyphenation ? basis.SuppressHyphenation : new(after.SuppressHyphenation),
+            HyphenateCaps = before.HyphenateCaps == after.HyphenateCaps ? basis.HyphenateCaps : new(after.HyphenateCaps),
             Alignment = EqualityComparer<ParagraphAlignment>.Default.Equals(before.Alignment, after.Alignment) ? basis.Alignment : new(after.Alignment),
             List = EqualityComparer<ListKind>.Default.Equals(before.List, after.List) ? basis.List : new(after.List),
             ListLevel = EqualityComparer<int>.Default.Equals(before.ListLevel, after.ListLevel) ? basis.ListLevel : new(after.ListLevel),
@@ -348,6 +356,8 @@ public sealed record ParagraphStyleOverrides
     /// <summary>Clears one direct property using its TextStyle/ParagraphStyle property name.</summary>
     public ParagraphStyleOverrides Clear(string propertyName) => propertyName switch
     {
+        nameof(SuppressHyphenation) => this with { SuppressHyphenation = default },
+        nameof(HyphenateCaps) => this with { HyphenateCaps = default },
         nameof(Alignment) => this with { Alignment = default },
         nameof(List) => this with { List = default },
         nameof(ListLevel) => this with { ListLevel = default },

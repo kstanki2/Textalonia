@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Textalonia.Model;
+using Textalonia.Proofing;
 
 namespace Textalonia.Controls;
 
@@ -14,6 +15,7 @@ internal sealed class ShapingTextLayout : IDisposable
     private readonly TextLayout? _shaped;
     private readonly TextLayout? _formatted;
     private readonly TextLayout? _trailing;
+    private readonly ShapingTextLayout? _projected;
     private readonly List<TextLine> _lines = [];
     public IReadOnlyList<TextLine> TextLines => _native?.TextLines ?? _lines;
     public double Height => _native?.Height ?? _lines.Sum(l => l.Height);
@@ -21,7 +23,7 @@ internal sealed class ShapingTextLayout : IDisposable
     public double WidthIncludingTrailingWhitespace => _native?.WidthIncludingTrailingWhitespace ?? _lines.Select(l => l.WidthIncludingTrailingWhitespace).DefaultIfEmpty().Max();
     // Conservative retained-buffer estimate: original shape, adjusted shape, and
     // optional drawing copy. This is cache accounting, not a process-memory guarantee.
-    internal int CacheByteMultiplier => _shaped is null ? 1 : 3;
+    internal int CacheByteMultiplier => _projected is not null ? _projected.CacheByteMultiplier + 1 : _shaped is null ? 1 : 3;
     internal int ContextCharacters { get; }
 
     public double LetterSpacing { get; }
@@ -29,6 +31,14 @@ internal sealed class ShapingTextLayout : IDisposable
 
     private ShapingTextLayout(TextLayout native, double letterSpacing, double lineHeight)
     { _native = native; LetterSpacing = letterSpacing; LineHeight = lineHeight; }
+
+    private ShapingTextLayout(ShapingTextLayout projected, HyphenationProjection projection,
+        int projectedOffset = 0, int sourceOffset = 0)
+    {
+        _projected = projected; LetterSpacing = projected.LetterSpacing; LineHeight = projected.LineHeight;
+        ContextCharacters = projected.ContextCharacters;
+        foreach (var line in projected.TextLines) _lines.Add(new HyphenatedTextLine(line, projection, projectedOffset, sourceOffset));
+    }
 
     private ShapingTextLayout(Paragraph paragraph, double width, FontFamily font, IBrush foreground,
         int start, string text, DocumentFontService? fonts, bool paragraphContext = false)
@@ -91,9 +101,12 @@ internal sealed class ShapingTextLayout : IDisposable
     }
 
     public static ShapingTextLayout Create(Paragraph paragraph, double width, FontFamily font, IBrush foreground,
-        int start = 0, string? text = null, DocumentFontService? fonts = null)
+        int start = 0, string? text = null, DocumentFontService? fonts = null, IHyphenationService? hyphenation = null,
+        int maxShapingCharacters = 0)
     {
         text ??= ParagraphText.For(paragraph).ToString();
+        if (HyphenationProjection.Create(paragraph, start, text, hyphenation, maxShapingCharacters) is { } projection)
+            return new(Create(projection.Paragraph, width, font, foreground, 0, null, fonts), projection);
         var style = paragraph.Style;
         var characterGrid = style.SnapToGrid && style.EastAsianGrid is { CharacterSpacing: > 0 };
         if ((!text.Contains('\t') || style.TabStops.IsEmpty && style.DefaultTabWidth == 0) && style.LineSpacingMode == LineSpacingMode.Natural &&
@@ -115,8 +128,17 @@ internal sealed class ShapingTextLayout : IDisposable
     // Rewrap the prepared runs of the whole paragraph so a width change retains
     // the direction and contextual shaping of text preceding this continuation.
     internal static ShapingTextLayout CreateContinuation(Paragraph paragraph, double width, FontFamily font,
-        IBrush foreground, int start, string text, DocumentFontService? fonts) =>
-        new(paragraph, Math.Max(16, width), font, foreground, start, text, fonts, paragraphContext: true);
+        IBrush foreground, int start, string text, DocumentFontService? fonts,
+        IHyphenationService? hyphenation = null, int maxShapingCharacters = 0)
+    {
+        var projection = HyphenationProjection.Create(paragraph, 0, ParagraphText.For(paragraph).ToString(),
+            hyphenation, maxShapingCharacters);
+        if (projection is null) return new(paragraph, Math.Max(16, width), font, foreground, start, text, fonts, paragraphContext: true);
+        var projectedStart = projection.ToProjected(start);
+        var projectedText = ParagraphText.For(projection.Paragraph).Read(projectedStart, projection.Paragraph.Length - projectedStart);
+        return new(new ShapingTextLayout(projection.Paragraph, Math.Max(16, width), font, foreground,
+            projectedStart, projectedText, fonts, paragraphContext: true), projection, projectedStart, start);
+    }
 
     private static bool Extended(TextStyle style) => style.EastAsianFontFamily is not null || style.ComplexScriptFontFamily is not null ||
         style.UnderlineKind != UnderlineKind.None || style.StrikeKind != StrikeKind.None ||
@@ -169,7 +191,7 @@ internal sealed class ShapingTextLayout : IDisposable
     public void Draw(DrawingContext context, Point origin)
     { foreach (var line in TextLines) { line.Draw(context, origin); origin += new Vector(0, line.Height); } }
     public void Dispose()
-    { _native?.Dispose(); foreach (var line in _lines) line.Dispose(); _formatted?.Dispose(); _trailing?.Dispose(); _shaped?.Dispose(); }
+    { _native?.Dispose(); foreach (var line in _lines) line.Dispose(); _formatted?.Dispose(); _trailing?.Dispose(); _shaped?.Dispose(); _projected?.Dispose(); }
 
     private sealed class ParagraphProperties(ParagraphStyle style, TextRunProperties defaults, TextWrapping wrapping, double height) : TextParagraphProperties
     {

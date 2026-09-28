@@ -115,7 +115,13 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
                     Context.PreferredCaretX = null; break;
                 case Key.Back: Context.CancelComposition(); if (Context.Editor.CellSelection is not null) Context.Editor.ClearSelectedTableCellContents(); else session.DeleteBackward(word); Context.PreferredCaretX = null; break;
                 case Key.Delete: Context.CancelComposition(); if (Context.Editor.CellSelection is not null) Context.Editor.ClearSelectedTableCellContents(); else session.DeleteForward(word); Context.PreferredCaretX = null; break;
-                case Key.Enter: Context.CancelComposition(); if (shift) session.InsertText("\u2028"); else session.InsertParagraph(); Context.PreferredCaretX = null; break;
+                case Key.Enter:
+                    Context.CancelComposition();
+                    var enterRevision = session.Revision;
+                    if (shift) session.InsertText("\u2028"); else session.InsertParagraph();
+                    Context.Editor.HandleCommittedBoundary('\n', enterRevision);
+                    Context.PreferredCaretX = null;
+                    break;
                 case Key.Tab:
                     if (session.CurrentCell() is { } cell)
                     {
@@ -144,7 +150,12 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
                         }
                         else return;
                     }
-                    else if (Context.Editor.AcceptsTab) session.InsertText("\t");
+                    else if (Context.Editor.AcceptsTab)
+                    {
+                        var tabRevision = session.Revision;
+                        session.InsertText("\t");
+                        Context.Editor.HandleCommittedBoundary('\t', tabRevision);
+                    }
                     else return;
                     Context.PreferredCaretX = null;
                     break;

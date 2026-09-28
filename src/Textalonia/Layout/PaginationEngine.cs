@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Media;
 using Textalonia.Controls;
 using Textalonia.Model;
+using Textalonia.Proofing;
 
 namespace Textalonia.Layout;
 
@@ -23,6 +24,10 @@ public sealed partial class PaginationEngine : IDisposable
     private ConditionalWeakTable<Paragraph, Paragraph> _resolvedParagraphs = new();
     private Builder? _previous;
     private bool _disposed;
+    private IHyphenationService? _usedHyphenation;
+    private long _usedHyphenationRevision;
+    /// <summary>Optional host dictionary service used by page, print and PDF layout.</summary>
+    public IHyphenationService? HyphenationService { get; set; }
     public int CachedMeasurements => _measurements.Count;
     public int MeasuredParagraphs { get; private set; }
     public long CachedLayoutBytes => _environment?.Cache.Bytes ?? 0;
@@ -42,12 +47,19 @@ public sealed partial class PaginationEngine : IDisposable
             options.MaxShapingCharacters < 0 || options.MaxShapingCharacters is > 0 and < ParagraphLayout.WindowLength)
             throw new ArgumentOutOfRangeException(nameof(options));
         document.Validate();
+        if (!ReferenceEquals(_usedHyphenation, HyphenationService) || _usedHyphenationRevision != (HyphenationService?.Revision ?? 0))
+        {
+            Clear(); _usedHyphenation = HyphenationService;
+            _usedHyphenationRevision = HyphenationService?.Revision ?? 0;
+        }
         if (_environment is null || !Equals(font, _environment.Font) || !Equals(foreground, _environment.Foreground) ||
             _document?.Styles != document.Styles || _document?.Defaults != document.Defaults || _document?.Theme != document.Theme ||
             _document?.Fonts != document.Fonts || !document.Fonts.IsEmpty && !ReferenceEquals(_document?.Resources, document.Resources))
         {
-            Clear(); _environment = new(document, font, foreground);
+            Clear(); _environment = new(document, font, foreground, HyphenationService);
         }
+        _usedHyphenation = HyphenationService;
+        _usedHyphenationRevision = HyphenationService?.Revision ?? 0;
         _document = document;
         var previous = _previous;
         var builder = new Builder(this, document, options, border, previous);
@@ -78,7 +90,8 @@ public sealed partial class PaginationEngine : IDisposable
     {
         _previous?.Release(); _previous = null;
         foreach (var cached in _measurements.Values) cached.Value.Release();
-        _measurements.Clear(); _lru.Clear(); _environment?.Dispose(); _environment = null; _document = null; _resolvedParagraphs = new();
+        _measurements.Clear(); _lru.Clear(); _environment?.Retire(); _environment?.Dispose(); _environment = null;
+        _document = null; _resolvedParagraphs = new(); _usedHyphenation = null; _usedHyphenationRevision = 0;
     }
     public void Dispose() { if (_disposed) return; _disposed = true; Clear(); }
 

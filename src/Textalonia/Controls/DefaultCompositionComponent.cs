@@ -79,7 +79,9 @@ public class DefaultCompositionComponent : DocumentInputComponent, ICompositionC
     {
         if (e.Handled || AttachedContext is null || Context.Session.GetCapability(EditOperation.Text) != CommandCapability.Enabled || string.IsNullOrEmpty(e.Text)) return;
         SetPreedit(null, null);
+        var revision = Context.Session.Revision;
         Context.Session.InsertText(e.Text, true);
+        Context.Editor.HandleCommittedText(e.Text, revision);
         Context.PreferredCaretX = null;
         e.Handled = true;
     }

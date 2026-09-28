@@ -2,7 +2,7 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **implementation plan; DX-01 through DX-07 and DX-09 implementation and
+candidate. Status: **implementation plan; DX-01 through DX-07, DX-09 and DX-10 implementation and
 qualification status is recorded below. Other workstreams remain proposed unless explicitly noted.**
 
 The audit tables in sections 2-3 describe the baseline commit above; the DX-01
@@ -20,7 +20,9 @@ findings for table layout, conditional styles, table pagination and marker forma
 The DX-07 implementation entry and [image/object guide](IMAGES.md) supersede baseline
 findings for images, watermarks and OLE previews. The DX-09 implementation entry
 and [forms/protection guide](FORMS.md) supersede baseline findings for protected
-editing and structured form controls.
+editing and structured form controls. The DX-10 implementation entry and
+[proofing guide](PROOFING.md) supersede baseline findings for spelling,
+AutoCorrect and hyphenation.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -613,6 +615,19 @@ range permissions follow structural edits; exported PDF shows form values withou
 claiming interactive PDF-form support.
 
 ### DX-10 — Spelling, AutoCorrect and hyphenation
+
+**Implementation status (2026-09-28):** implemented for the supported subset in
+[PROOFING.md](PROOFING.md): host-supplied asynchronous spelling dictionaries,
+language- and `NoProof`-aware diagnostics, cancellation/revision checks,
+suggestions, ignore and add-to-dictionary workflows; committed-input
+AutoCorrect with replacement tables, two-initial-capital correction, URL links,
+host text/fragment/image replacements, policy checks and separate correction
+undo; and host-supplied discretionary hyphenation shared by Simple and
+paginated output, with source-offset mapping, soft hyphens, paragraph settings
+and dictionary-revision invalidation. Native JSON, data XAML and the supported
+DOCX paragraph settings retain hyphenation controls. Dictionaries and user
+terms remain host-owned; external reference and native qualification remain
+open.
 
 **Priority: editing quality. Size: M/L. Dependencies: DX-01 language metadata and DX-00 transactions.**
 
