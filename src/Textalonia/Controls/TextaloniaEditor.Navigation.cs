@@ -15,18 +15,12 @@ public partial class TextaloniaEditor
 
     private void InitializeNavigationCommands()
     {
-        FindCommand = NavigationAction(RequestFind);
-        ReplaceCommand = NavigationAction(RequestReplace);
-        NavigationCommand = NavigationAction(() =>
-        { _toolbar?.OpenNavigation(); NavigationRequested?.Invoke(this, EventArgs.Empty); });
-    }
-    private EditorCommand NavigationAction(Action action)
-    {
-        var command = new EditorCommand(() => { _surface?.Composition.Cancel(); action(); return Task.CompletedTask; }, () => true);
-        _commands.Add(command); return command;
+        FindCommand = Commands[EditorCommandId.Find];
+        ReplaceCommand = Commands[EditorCommandId.Replace];
+        NavigationCommand = Commands[EditorCommandId.Navigation];
     }
     internal void RequestReplace()
-    { _toolbar?.OpenFind(replace: true); ReplaceRequested?.Invoke(this, EventArgs.Empty); }
+    { if (ShowToolbar) _toolbar?.OpenFind(replace: true); ReplaceRequested?.Invoke(this, EventArgs.Empty); }
 
     public ImmutableArray<DocumentSearchResult> Search(string query, bool matchCase = false, bool allStories = true) => Session.Search(query, matchCase, allStories);
     public ImmutableArray<DocumentOutlineEntry> GetOutline(bool allStories = false) => Session.GetOutline(allStories);

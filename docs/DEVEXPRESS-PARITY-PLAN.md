@@ -774,6 +774,17 @@ comparisons, malformed/encrypted/package-limit cases and stable strict-mode repo
 
 **Priority: incremental with every feature. Size: L. Dependencies: DX-00 contracts and feature APIs.**
 
+**Implementation status (2026-09-28):** the managed DX-13 command and UI slice is
+implemented. The editor exposes a permission-aware, localizable command catalog;
+the compact toolbar, keyboard and context menu share its operations. An optional
+tabbed surface and the desktop demo expose the current feature APIs, including
+contextual tools. Horizontal/vertical rulers use page zoom and scroll geometry,
+preview drag changes, commit once and support keyboard adjustment/cancellation.
+Paste Special, symbol and document-property editing, search/navigation, page and
+selection status, host dialog replacement and completion/mode events are available.
+See [command/UI contracts](COMMAND-UI.md). Managed tests cover these contracts;
+native multi-DPI and screen-reader qualification remains part of DX-14.
+
 Extend `TextaloniaEditor*.cs`, `TextaloniaToolbar.cs`, `DocumentSurface.cs`,
 `Themes/Generic.axaml` and the desktop demo. Add command descriptors and reusable
 Avalonia view models/templates, not a hard dependency on a commercial ribbon.

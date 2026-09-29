@@ -153,6 +153,14 @@ type Textalonia.Controls.DocumentInputContext
   property Surface Textalonia.Controls.DocumentSurface[NotNull/Unknown]
   property ViewportHeight System.Double[NotNull/Unknown]
   set_PreferredCaretX(value: System.Nullable<System.Double>[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+type Textalonia.Controls.DocumentIoCompletedEventArgs
+  .ctor(format: Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] in=False out=False modreq() modopt() , document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , report: Textalonia.Serialization.ConversionReport[Nullable/Nullable] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
+  get_Document() return Textalonia.Model.FlowDocument[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Format() return Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Report() return Textalonia.Serialization.ConversionReport[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  property Document Textalonia.Model.FlowDocument[NotNull/Unknown]
+  property Format Textalonia.Serialization.IDocumentFormat[NotNull/Unknown]
+  property Report Textalonia.Serialization.ConversionReport[Nullable/Unknown]
 type Textalonia.Controls.DocumentPrintPreview
   .ctor()  abstract=False virtual=False final=False
   MeasureOverride(availableSize: Avalonia.Size[NotNull/NotNull] in=False out=False modreq() modopt() ) return Avalonia.Size[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
@@ -169,6 +177,40 @@ type Textalonia.Controls.DocumentPrintPreview
   set_PageIndex(value: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_Renderer(value: Textalonia.Rendering.DocumentRenderer[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_Zoom(value: System.Double[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+type Textalonia.Controls.DocumentRuler
+  .ctor()  abstract=False virtual=False final=False
+  MeasureOverride(availableSize: Avalonia.Size[NotNull/NotNull] in=False out=False modreq() modopt() ) return Avalonia.Size[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OnGotFocus(e: Avalonia.Input.FocusChangedEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OnKeyDown(e: Avalonia.Input.KeyEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OnPointerCaptureLost(e: Avalonia.Input.PointerCaptureLostEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OnPointerMoved(e: Avalonia.Input.PointerEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OnPointerPressed(e: Avalonia.Input.PointerPressedEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OnPointerReleased(e: Avalonia.Input.PointerReleasedEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OnPropertyChanged(change: Avalonia.AvaloniaPropertyChangedEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Render(context: Avalonia.Media.DrawingContext[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  field OrientationProperty Avalonia.StyledProperty<Textalonia.Controls.RulerOrientation>[NotNull/NotNull] args(Textalonia.Controls.RulerOrientation[NotNull/NotNull])
+  field PaperBackgroundProperty Avalonia.StyledProperty<Avalonia.Media.IBrush>[NotNull/NotNull] args(Avalonia.Media.IBrush[Nullable/Nullable])
+  field RulerBackgroundProperty Avalonia.StyledProperty<Avalonia.Media.IBrush>[NotNull/NotNull] args(Avalonia.Media.IBrush[Nullable/Nullable])
+  field RulerBorderProperty Avalonia.StyledProperty<Avalonia.Media.IBrush>[NotNull/NotNull] args(Avalonia.Media.IBrush[Nullable/Nullable])
+  field RulerForegroundProperty Avalonia.StyledProperty<Avalonia.Media.IBrush>[NotNull/NotNull] args(Avalonia.Media.IBrush[Nullable/Nullable])
+  get_Editor() return Textalonia.Controls.TextaloniaEditor[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Orientation() return Textalonia.Controls.RulerOrientation[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_PaperBackground() return Avalonia.Media.IBrush[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_RulerBackground() return Avalonia.Media.IBrush[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_RulerBorder() return Avalonia.Media.IBrush[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_RulerForeground() return Avalonia.Media.IBrush[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  property Editor Textalonia.Controls.TextaloniaEditor[Nullable/Nullable]
+  property Orientation Textalonia.Controls.RulerOrientation[NotNull/NotNull]
+  property PaperBackground Avalonia.Media.IBrush[Nullable/Nullable]
+  property RulerBackground Avalonia.Media.IBrush[Nullable/Nullable]
+  property RulerBorder Avalonia.Media.IBrush[Nullable/Nullable]
+  property RulerForeground Avalonia.Media.IBrush[Nullable/Nullable]
+  set_Editor(value: Textalonia.Controls.TextaloniaEditor[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_Orientation(value: Textalonia.Controls.RulerOrientation[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_PaperBackground(value: Avalonia.Media.IBrush[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_RulerBackground(value: Avalonia.Media.IBrush[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_RulerBorder(value: Avalonia.Media.IBrush[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_RulerForeground(value: Avalonia.Media.IBrush[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
 type Textalonia.Controls.DocumentSurface
   .ctor()  abstract=False virtual=False final=False
   ArrangeOverride(finalSize: Avalonia.Size[NotNull/NotNull] in=False out=False modreq() modopt() ) return Avalonia.Size[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
@@ -268,10 +310,158 @@ type Textalonia.Controls.DocumentViewMode
   field PrintLayout Textalonia.Controls.DocumentViewMode[NotNull/NotNull]
   field Simple Textalonia.Controls.DocumentViewMode[NotNull/NotNull]
   field value__ System.Int32[NotNull/NotNull]
+type Textalonia.Controls.EditingModeChangedEventArgs
+  .ctor(isReadOnly: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() , protection: Textalonia.Model.DocumentProtection[NotNull/NotNull] in=False out=False modreq() modopt() , policy: Textalonia.Editing.EditPolicy[NotNull/NotNull] in=False out=False modreq() modopt() , identity: Textalonia.Editing.EditIdentity[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
+  get_Identity() return Textalonia.Editing.EditIdentity[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_IsReadOnly() return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Policy() return Textalonia.Editing.EditPolicy[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Protection() return Textalonia.Model.DocumentProtection[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property Identity Textalonia.Editing.EditIdentity[NotNull/Unknown]
+  property IsReadOnly System.Boolean[NotNull/Unknown]
+  property Policy Textalonia.Editing.EditPolicy[NotNull/Unknown]
+  property Protection Textalonia.Model.DocumentProtection[NotNull/Unknown]
+type Textalonia.Controls.EditorBookmarkRename
+  .ctor(Name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , NewName: System.String[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
+  <Clone>$() return Textalonia.Controls.EditorBookmarkRename[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Deconstruct(Name: System.String&[NotNull/NotNull] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()], NewName: System.String&[NotNull/NotNull] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.Controls.EditorBookmarkRename[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_NewName() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.Controls.EditorBookmarkRename[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Controls.EditorBookmarkRename[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.Controls.EditorBookmarkRename[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Controls.EditorBookmarkRename[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property Name System.String[NotNull/NotNull]
+  property NewName System.String[NotNull/NotNull]
+  set_Name(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_NewName(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.Controls.EditorCommandDescriptor
+  .ctor(Id: Textalonia.Controls.EditorCommandId[NotNull/NotNull] in=False out=False modreq() modopt() , LocalizationKey: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , DefaultText: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , Group: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , ParameterType: System.Type[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], Shortcuts: System.Collections.Generic.IReadOnlyList<Avalonia.Input.KeyGesture>[Nullable/Nullable] args(Avalonia.Input.KeyGesture[NotNull/NotNull]) in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()])  abstract=False virtual=False final=False
+  <Clone>$() return Textalonia.Controls.EditorCommandDescriptor[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Deconstruct(Id: Textalonia.Controls.EditorCommandId&[NotNull/NotNull] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()], LocalizationKey: System.String&[NotNull/NotNull] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()], DefaultText: System.String&[NotNull/NotNull] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()], Group: System.String&[NotNull/NotNull] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()], ParameterType: System.Type&[Nullable/Nullable] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()], Shortcuts: System.Collections.Generic.IReadOnlyList`1[[Avalonia.Input.KeyGesture, Avalonia.Base, Version=12.1.3.0, Culture=neutral, PublicKeyToken=c8d484a7012f9a8b]]&[Nullable/Nullable] args(Avalonia.Input.KeyGesture[NotNull/NotNull]) in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.Controls.EditorCommandDescriptor[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_DefaultText() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Group() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Id() return Textalonia.Controls.EditorCommandId[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_LocalizationKey() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_ParameterType() return System.Type[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Shortcut() return Avalonia.Input.KeyGesture[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Shortcuts() return System.Collections.Generic.IReadOnlyList<Avalonia.Input.KeyGesture>[Nullable/Nullable] args(Avalonia.Input.KeyGesture[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.Controls.EditorCommandDescriptor[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Controls.EditorCommandDescriptor[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.Controls.EditorCommandDescriptor[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Controls.EditorCommandDescriptor[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property DefaultText System.String[NotNull/NotNull]
+  property Group System.String[NotNull/NotNull]
+  property Id Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  property LocalizationKey System.String[NotNull/NotNull]
+  property ParameterType System.Type[Nullable/Nullable]
+  property Shortcut Avalonia.Input.KeyGesture[Nullable/Unknown]
+  property Shortcuts System.Collections.Generic.IReadOnlyList<Avalonia.Input.KeyGesture>[Nullable/Nullable] args(Avalonia.Input.KeyGesture[NotNull/NotNull])
+  set_DefaultText(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Group(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Id(value: Textalonia.Controls.EditorCommandId[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_LocalizationKey(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_ParameterType(value: System.Type[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Shortcuts(value: System.Collections.Generic.IReadOnlyList<Avalonia.Input.KeyGesture>[Nullable/Nullable] args(Avalonia.Input.KeyGesture[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.Controls.EditorCommandId
+  field Bold Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field CloseStory Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Copy Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Cut Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field DeleteBookmark Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field DocumentProperties Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field EditFooter Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field EditHeader Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field EndnoteOptions Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field ExportPdf Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Find Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field FitPage Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field FitWidth Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Font Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field FootnoteOptions Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field GoToPage Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field HeaderFooterOptions Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field InsertBookmark Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field InsertEndnote Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field InsertFootnote Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field InsertMergeField Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field InsertPageField Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field InsertPicture Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field InsertSymbol Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field InsertTable Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Italic Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field NavigateToBookmark Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field NavigateToOutline Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Navigation Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field PageNumbering Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field PageSetup Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Paragraph Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Paste Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field PasteSpecial Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field PictureProperties Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Print Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field PrintPreview Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Proofing Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Redo Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field RemovePicture Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field RenameBookmark Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Replace Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field SelectAll Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field SetPageGap Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field SetPagesPerRow Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field SetZoom Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Strikethrough Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Styles Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field TableDeleteColumns Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field TableDeleteRows Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field TableInsertColumn Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field TableInsertRow Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field TableMergeCells Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field TableProperties Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field TableSplitCells Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Tabs Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field ToggleRulers Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Underline Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Undo Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field UpdateFields Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field ViewDraft Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field ViewPrintLayout Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field ViewSimple Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field Watermark Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field ZoomIn Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field ZoomOut Textalonia.Controls.EditorCommandId[NotNull/NotNull]
+  field value__ System.Int32[NotNull/NotNull]
 type Textalonia.Controls.EditorErrorEventArgs
   .ctor(exception: System.Exception[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
   get_Exception() return System.Exception[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   property Exception System.Exception[NotNull/Unknown]
+type Textalonia.Controls.EditorLayoutCompletedEventArgs
+  .ctor(revision: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() , viewMode: Textalonia.Controls.DocumentViewMode[NotNull/NotNull] in=False out=False modreq() modopt() , pageCount: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
+  get_PageCount() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Revision() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_ViewMode() return Textalonia.Controls.DocumentViewMode[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property PageCount System.Int32[NotNull/Unknown]
+  property Revision System.Int32[NotNull/Unknown]
+  property ViewMode Textalonia.Controls.DocumentViewMode[NotNull/Unknown]
+type Textalonia.Controls.EditorTableSize
+  .ctor(Rows: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() , Columns: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
+  <Clone>$() return Textalonia.Controls.EditorTableSize[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Deconstruct(Rows: System.Int32&[NotNull/NotNull] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()], Columns: System.Int32&[NotNull/NotNull] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.Controls.EditorTableSize[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_Columns() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Rows() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.Controls.EditorTableSize[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Controls.EditorTableSize[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.Controls.EditorTableSize[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Controls.EditorTableSize[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property Columns System.Int32[NotNull/NotNull]
+  property Rows System.Int32[NotNull/NotNull]
+  set_Columns(value: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Rows(value: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
 type Textalonia.Controls.EmbeddedInlineResourceResolver
   .ctor()  abstract=False virtual=False final=False
   OpenReadAsync(resourceId: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , resource: Textalonia.Model.DocumentResource[Nullable/Nullable] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Threading.Tasks.ValueTask<System.IO.Stream>[NotNull/NotNull] args(System.IO.Stream[Nullable/Nullable]) modreq() modopt()  abstract=False virtual=True final=True
@@ -305,6 +495,8 @@ type Textalonia.Controls.ICompositionComponent
 type Textalonia.Controls.IDocumentInputComponent
   Attach(context: Textalonia.Controls.DocumentInputContext[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=True virtual=True final=False
   Detach() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=True virtual=True final=False
+type Textalonia.Controls.IEditorDialogService
+  ShowAsync(dialog: Avalonia.Controls.Window[NotNull/NotNull] in=False out=False modreq() modopt() , owner: Avalonia.Controls.Window[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Threading.Tasks.Task<TResult>[NotNull/NotNull] args(TResult[Nullable/Nullable]) modreq() modopt()  abstract=True virtual=True final=False  where TResult: None
 type Textalonia.Controls.IInlineControlFactory
   Create(descriptor: Textalonia.Model.InlineDescriptor[NotNull/NotNull] in=False out=False modreq() modopt() ) return Avalonia.Controls.Control[NotNull/NotNull] modreq() modopt()  abstract=True virtual=True final=False
   Release(control: Avalonia.Controls.Control[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
@@ -409,6 +601,15 @@ type Textalonia.Controls.MarkdownViewer
   set_CodeHighlighter(value: Textalonia.Controls.ICodeHighlighter[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_ConversionOptions(value: Textalonia.Serialization.ConversionOptions[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_Markdown(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+type Textalonia.Controls.PasteSpecialFormat
+  field Html Textalonia.Controls.PasteSpecialFormat[NotNull/NotNull]
+  field NativeFragment Textalonia.Controls.PasteSpecialFormat[NotNull/NotNull]
+  field PlainText Textalonia.Controls.PasteSpecialFormat[NotNull/NotNull]
+  field value__ System.Int32[NotNull/NotNull]
+type Textalonia.Controls.RulerOrientation
+  field Horizontal Textalonia.Controls.RulerOrientation[NotNull/NotNull]
+  field Vertical Textalonia.Controls.RulerOrientation[NotNull/NotNull]
+  field value__ System.Int32[NotNull/NotNull]
 type Textalonia.Controls.ShapingLimitExceededException
   .ctor(paragraphId: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , characterLimit: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() , requestedCharacters: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
   get_CharacterLimit() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -478,10 +679,54 @@ type Textalonia.Controls.TextHighlight
   set_Brush(value: Avalonia.Media.IBrush[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Length(value: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Start(value: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
-type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePartAttribute("PART_ScrollViewer", typeof(Avalonia.Controls.ScrollViewer), IsRequired = True)] [Avalonia.Controls.Metadata.TemplatePartAttribute("PART_Surface", typeof(Textalonia.Controls.DocumentSurface), IsRequired = True)] [Avalonia.Controls.Metadata.TemplatePartAttribute("PART_Toolbar", typeof(Textalonia.Controls.TextaloniaToolbar))]
+type Textalonia.Controls.TextaloniaCommand
+  CanExecute(parameter: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  Execute(parameter: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaCommand+<Execute>d__40))]
+  ExecuteAsync(parameter: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaCommand+<ExecuteAsync>d__41))]
+  add_CanExecuteChanged(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  add_PropertyChanged(value: System.ComponentModel.PropertyChangedEventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  event CanExecuteChanged System.EventHandler[Nullable/Nullable]
+  event PropertyChanged System.ComponentModel.PropertyChangedEventHandler[Nullable/Nullable]
+  get_Capability() return Textalonia.Editing.CommandCapability[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Descriptor() return Textalonia.Controls.EditorCommandDescriptor[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_DisplayText() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Id() return Textalonia.Controls.EditorCommandId[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_IsChecked() return System.Nullable<System.Boolean>[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_IsMixed() return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_IsRunning() return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_IsVisible() return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_LocalizationKey() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Shortcut() return Avalonia.Input.KeyGesture[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  property Capability Textalonia.Editing.CommandCapability[NotNull/Unknown]
+  property Descriptor Textalonia.Controls.EditorCommandDescriptor[NotNull/Unknown]
+  property DisplayText System.String[NotNull/Unknown]
+  property Id Textalonia.Controls.EditorCommandId[NotNull/Unknown]
+  property IsChecked System.Nullable<System.Boolean>[Nullable/Unknown]
+  property IsMixed System.Boolean[NotNull/Unknown]
+  property IsRunning System.Boolean[NotNull/Unknown]
+  property IsVisible System.Boolean[NotNull/Unknown]
+  property LocalizationKey System.String[NotNull/Unknown]
+  property Shortcut Avalonia.Input.KeyGesture[Nullable/Unknown]
+  remove_CanExecuteChanged(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  remove_PropertyChanged(value: System.ComponentModel.PropertyChangedEventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+type Textalonia.Controls.TextaloniaCommandCatalog [System.Reflection.DefaultMemberAttribute("Item")]
+  CanExecute(id: Textalonia.Controls.EditorCommandId[NotNull/NotNull] in=False out=False modreq() modopt() , parameter: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Execute(id: Textalonia.Controls.EditorCommandId[NotNull/NotNull] in=False out=False modreq() modopt() , parameter: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  ExecuteAsync(id: Textalonia.Controls.EditorCommandId[NotNull/NotNull] in=False out=False modreq() modopt() , parameter: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
+  Refresh() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  TryExecuteShortcut(key: Avalonia.Input.Key[NotNull/NotNull] in=False out=False modreq() modopt() , modifiers: Avalonia.Input.KeyModifiers[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  TryGet(id: Textalonia.Controls.EditorCommandId[NotNull/NotNull] in=False out=False modreq() modopt() , command: Textalonia.Controls.TextaloniaCommand&[Nullable/Nullable] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()]) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_All() return System.Collections.Generic.IReadOnlyCollection<Textalonia.Controls.TextaloniaCommand>[NotNull/NotNull] args(Textalonia.Controls.TextaloniaCommand[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
+  get_Item(id: Textalonia.Controls.EditorCommandId[NotNull/NotNull] in=False out=False modreq() modopt() ) return Textalonia.Controls.TextaloniaCommand[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Localize() return System.Func<System.String,System.String>[Nullable/Nullable] args(System.String[NotNull/NotNull],System.String[Nullable/Nullable]) modreq() modopt()  abstract=False virtual=False final=False
+  property All System.Collections.Generic.IReadOnlyCollection<Textalonia.Controls.TextaloniaCommand>[NotNull/Unknown] args(Textalonia.Controls.TextaloniaCommand[NotNull/NotNull])
+  property Item Textalonia.Controls.TextaloniaCommand[NotNull/Unknown]
+  property Localize System.Func<System.String,System.String>[Nullable/Nullable] args(System.String[NotNull/NotNull],System.String[Nullable/Nullable])
+  set_Localize(value: System.Func<System.String,System.String>[Nullable/Nullable] args(System.String[NotNull/NotNull],System.String[Nullable/Nullable]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePartAttribute("PART_HorizontalRuler", typeof(Textalonia.Controls.DocumentRuler))] [Avalonia.Controls.Metadata.TemplatePartAttribute("PART_ScrollViewer", typeof(Avalonia.Controls.ScrollViewer), IsRequired = True)] [Avalonia.Controls.Metadata.TemplatePartAttribute("PART_Surface", typeof(Textalonia.Controls.DocumentSurface), IsRequired = True)] [Avalonia.Controls.Metadata.TemplatePartAttribute("PART_Toolbar", typeof(Textalonia.Controls.TextaloniaToolbar))] [Avalonia.Controls.Metadata.TemplatePartAttribute("PART_VerticalRuler", typeof(Textalonia.Controls.DocumentRuler))]
   .ctor()  abstract=False virtual=False final=False
   AddBookmark(name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
-  AddSpellingToDictionaryAsync(diagnostic: Textalonia.Proofing.SpellingDiagnostic[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<AddSpellingToDictionaryAsync>d__405))]
+  AddSpellingToDictionaryAsync(diagnostic: Textalonia.Proofing.SpellingDiagnostic[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<AddSpellingToDictionaryAsync>d__455))]
   ApplyNamedCharacterStyle(id: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , clearDirectFormatting: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   ApplyNamedParagraphStyle(id: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , clearDirectFormatting: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   ApplyNamedTableStyle(styleId: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -489,15 +734,16 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   ApplyParagraphStyle(change: System.Func<Textalonia.Model.ParagraphStyle,Textalonia.Model.ParagraphStyle>[NotNull/NotNull] args(Textalonia.Model.ParagraphStyle[NotNull/NotNull],Textalonia.Model.ParagraphStyle[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   ApplyStyle(change: System.Func<Textalonia.Model.TextStyle,Textalonia.Model.TextStyle>[NotNull/NotNull] args(Textalonia.Model.TextStyle[NotNull/NotNull],Textalonia.Model.TextStyle[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   BeginTableResize(tableId: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , axis: Textalonia.Controls.TableResizeAxis[NotNull/NotNull] in=False out=False modreq() modopt() , index: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() , initialSize: System.Double[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  CancelActiveDialogs() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   CancelTableResize() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   ClearSelectedTableCellContents() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   ClearTableCellSelection() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   CloseStory() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   CommitTableResize() return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   ContinuePreviousList() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
-  CopyAsync() return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<CopyAsync>d__173))]
+  CopyAsync() return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<CopyAsync>d__186))]
   CreateOutputRenderer() return Textalonia.Rendering.DocumentRenderer[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
-  CutAsync() return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<CutAsync>d__175))]
+  CutAsync() return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<CutAsync>d__188))]
   DeleteBookmark(name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   DeleteSelectedTable() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   DeleteTableColumns() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -506,7 +752,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   EditHeader() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   EditHeaderFooter(footer: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() , variant: Textalonia.Model.HeaderFooterVariant[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], sectionId: System.Nullable<System.Guid>[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   EditNote(noteId: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
-  ExportPdfAsync(destination: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , options: Textalonia.Export.PagedExportOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], progress: System.IProgress<Textalonia.Export.PagedOutputProgress>[Nullable/Nullable] args(Textalonia.Export.PagedOutputProgress[NotNull/NotNull]) in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Export.PagedOutputResult>[NotNull/NotNull] args(Textalonia.Export.PagedOutputResult[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<ExportPdfAsync>d__320))]
+  ExportPdfAsync(destination: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , options: Textalonia.Export.PagedExportOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], progress: System.IProgress<Textalonia.Export.PagedOutputProgress>[Nullable/Nullable] args(Textalonia.Export.PagedOutputProgress[NotNull/NotNull]) in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Export.PagedOutputResult>[NotNull/NotNull] args(Textalonia.Export.PagedOutputResult[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<ExportPdfAsync>d__369))]
   ExtendTableCellSelection(rows: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() , columns: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   ExtractOle(id: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() ) return Textalonia.Model.DocumentResource[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
   FindNext(text: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , matchCase: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -523,22 +769,24 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   InsertMergeField(name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , format: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], fallbackText: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertOle(descriptor: Textalonia.Model.InlineDescriptor[NotNull/NotNull] in=False out=False modreq() modopt() , package: Textalonia.Model.DocumentResource[NotNull/NotNull] in=False out=False modreq() modopt() , preview: Textalonia.Model.DocumentResource[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertPageField(field: Textalonia.Model.PageFieldKind[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  InsertSymbol(symbol: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertTable(rows: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], columns: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertTableColumn(after: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertTableRow(after: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   InsertText(text: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   LinkHeaderFooterToPrevious(linked: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
-  LoadAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , format: Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<LoadAsync>d__162))]
-  LoadWithReportAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , format: Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] in=False out=False modreq() modopt() , options: Textalonia.Serialization.ConversionOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult>[NotNull/NotNull] args(Textalonia.Serialization.DocumentLoadResult[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<LoadWithReportAsync>d__164))]
+  LoadAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , format: Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<LoadAsync>d__175))]
+  LoadWithReportAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , format: Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] in=False out=False modreq() modopt() , options: Textalonia.Serialization.ConversionOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult>[NotNull/NotNull] args(Textalonia.Serialization.DocumentLoadResult[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<LoadWithReportAsync>d__177))]
   MergeSelectedTableCells() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   NavigateToBookmark(name: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   NavigateToOutline(entry: Textalonia.Editing.DocumentOutlineEntry[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   NavigateToSearchResult(result: Textalonia.Editing.DocumentSearchResult[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   OnApplyTemplate(e: Avalonia.Controls.Primitives.TemplateAppliedEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
   OnPropertyChanged(change: Avalonia.AvaloniaPropertyChangedEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
-  PasteAsync() return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<PasteAsync>d__176))]
+  PasteAsync() return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<PasteAsync>d__189))]
+  PasteSpecialAsync(format: Textalonia.Controls.PasteSpecialFormat[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<PasteSpecialAsync>d__419))]
   PreviewTableResize(size: System.Double[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
-  PrintAsync(options: Textalonia.Printing.PrintOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], showDialog: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], progress: System.IProgress<Textalonia.Export.PagedOutputProgress>[Nullable/Nullable] args(Textalonia.Export.PagedOutputProgress[NotNull/NotNull]) in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Export.PagedOutputResult>[NotNull/NotNull] args(Textalonia.Export.PagedOutputResult[Nullable/Nullable]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<PrintAsync>d__321))]
+  PrintAsync(options: Textalonia.Printing.PrintOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], showDialog: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], progress: System.IProgress<Textalonia.Export.PagedOutputProgress>[Nullable/Nullable] args(Textalonia.Export.PagedOutputProgress[NotNull/NotNull]) in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Export.PagedOutputResult>[NotNull/NotNull] args(Textalonia.Export.PagedOutputResult[Nullable/Nullable]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<PrintAsync>d__370))]
   QuickPrintAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   Redo() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   RefreshSpelling() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -549,8 +797,8 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   ReplaceAll(find: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , replace: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , matchCase: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   ReplaceSpelling(diagnostic: Textalonia.Proofing.SpellingDiagnostic[NotNull/NotNull] in=False out=False modreq() modopt() , replacement: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   ResizeCurrentTableTrack(axis: Textalonia.Controls.TableResizeAxis[NotNull/NotNull] in=False out=False modreq() modopt() , delta: System.Double[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
-  SaveAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , format: Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
-  SaveWithReportAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , format: Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] in=False out=False modreq() modopt() , options: Textalonia.Serialization.ConversionOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Serialization.DocumentSaveResult>[NotNull/NotNull] args(Textalonia.Serialization.DocumentSaveResult[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<SaveWithReportAsync>d__165))]
+  SaveAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , format: Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<SaveAsync>d__176))]
+  SaveWithReportAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , format: Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] in=False out=False modreq() modopt() , options: Textalonia.Serialization.ConversionOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Serialization.DocumentSaveResult>[NotNull/NotNull] args(Textalonia.Serialization.DocumentSaveResult[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<SaveWithReportAsync>d__178))]
   Search(query: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , matchCase: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], allStories: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Collections.Immutable.ImmutableArray<Textalonia.Editing.DocumentSearchResult>[NotNull/NotNull] args(Textalonia.Editing.DocumentSearchResult[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   SelectAll() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   SelectContentControl(id: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -576,6 +824,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   SetTableRowsAllowSplit(allowSplit: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   SetWatermark(sectionId: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , watermark: Textalonia.Model.DocumentWatermark[Nullable/Nullable] in=False out=False modreq() modopt() , resource: Textalonia.Model.DocumentResource[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   ShowContentControlValueDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
+  ShowDocumentPropertiesDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowExportPdfDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowExtractOleDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowFontDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
@@ -584,12 +833,13 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   ShowImageWatermarkDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowInsertImageDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowInsertOleDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
+  ShowInsertSymbolDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowNoteSettingsDialogAsync(kind: Textalonia.Model.DocumentNoteKind[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowPageNumberingDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowPageSetupDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowParagraphDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowPrintDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
-  ShowPrintPreviewDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<ShowPrintPreviewDialogAsync>d__322))]
+  ShowPrintPreviewDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Controls.TextaloniaEditor+<ShowPrintPreviewDialogAsync>d__371))]
   ShowStylesDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowTablePropertiesDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   ShowTabsDialogAsync() return System.Threading.Tasks.Task<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
@@ -606,20 +856,28 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   add_ActiveStoryChanged(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_ConversionCompleted(value: System.EventHandler<Textalonia.Controls.ConversionCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.ConversionCompletedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_DocumentChanged(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  add_EditingModeChanged(value: System.EventHandler<Textalonia.Controls.EditingModeChangedEventArgs>[NotNull/NotNull] args(Textalonia.Controls.EditingModeChangedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_FindRequested(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_HyperlinkActivated(value: System.EventHandler<Textalonia.Controls.HyperlinkEventArgs>[Nullable/Nullable] args(Textalonia.Controls.HyperlinkEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  add_LayoutCompleted(value: System.EventHandler<Textalonia.Controls.EditorLayoutCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.EditorLayoutCompletedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  add_LoadCompleted(value: System.EventHandler<Textalonia.Controls.DocumentIoCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.DocumentIoCompletedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_NavigationRequested(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_OperationFailed(value: System.EventHandler<Textalonia.Controls.EditorErrorEventArgs>[Nullable/Nullable] args(Textalonia.Controls.EditorErrorEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_ReplaceRequested(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  add_SaveCompleted(value: System.EventHandler<Textalonia.Controls.DocumentIoCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.DocumentIoCompletedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   add_SelectionChanged(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   event ActiveStoryChanged System.EventHandler[Nullable/Nullable]
   event ConversionCompleted System.EventHandler<Textalonia.Controls.ConversionCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.ConversionCompletedEventArgs[NotNull/NotNull])
   event DocumentChanged System.EventHandler[Nullable/Nullable]
+  event EditingModeChanged System.EventHandler<Textalonia.Controls.EditingModeChangedEventArgs>[NotNull/NotNull] args(Textalonia.Controls.EditingModeChangedEventArgs[NotNull/NotNull])
   event FindRequested System.EventHandler[Nullable/Nullable]
   event HyperlinkActivated System.EventHandler<Textalonia.Controls.HyperlinkEventArgs>[Nullable/Nullable] args(Textalonia.Controls.HyperlinkEventArgs[NotNull/NotNull])
+  event LayoutCompleted System.EventHandler<Textalonia.Controls.EditorLayoutCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.EditorLayoutCompletedEventArgs[NotNull/NotNull])
+  event LoadCompleted System.EventHandler<Textalonia.Controls.DocumentIoCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.DocumentIoCompletedEventArgs[NotNull/NotNull])
   event NavigationRequested System.EventHandler[Nullable/Nullable]
   event OperationFailed System.EventHandler<Textalonia.Controls.EditorErrorEventArgs>[Nullable/Nullable] args(Textalonia.Controls.EditorErrorEventArgs[NotNull/NotNull])
   event ReplaceRequested System.EventHandler[Nullable/Nullable]
+  event SaveCompleted System.EventHandler<Textalonia.Controls.DocumentIoCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.DocumentIoCompletedEventArgs[NotNull/NotNull])
   event SelectionChanged System.EventHandler[Nullable/Nullable]
   field AcceptsTabProperty Avalonia.StyledProperty<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull])
   field CaretComponentProperty Avalonia.StyledProperty<Textalonia.Controls.ICaretComponent>[NotNull/NotNull] args(Textalonia.Controls.ICaretComponent[Nullable/Nullable])
@@ -643,6 +901,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   field SelectionBrushProperty Avalonia.StyledProperty<Avalonia.Media.IBrush>[NotNull/NotNull] args(Avalonia.Media.IBrush[NotNull/NotNull])
   field SelectionEndProperty Avalonia.StyledProperty<System.Int32>[NotNull/NotNull] args(System.Int32[NotNull/NotNull])
   field SelectionStartProperty Avalonia.StyledProperty<System.Int32>[NotNull/NotNull] args(System.Int32[NotNull/NotNull])
+  field ShowRulersProperty Avalonia.StyledProperty<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull])
   field ShowToolbarProperty Avalonia.StyledProperty<System.Boolean>[NotNull/NotNull] args(System.Boolean[NotNull/NotNull])
   field SpellCheckErrorProperty Avalonia.DirectProperty<Textalonia.Controls.TextaloniaEditor,System.Exception>[NotNull/NotNull] args(Textalonia.Controls.TextaloniaEditor[NotNull/NotNull],System.Exception[Nullable/Nullable])
   field SpellingDiagnosticsProperty Avalonia.DirectProperty<Textalonia.Controls.TextaloniaEditor,System.Collections.Generic.IReadOnlyList<Textalonia.Proofing.SpellingDiagnostic>>[NotNull/NotNull] args(Textalonia.Controls.TextaloniaEditor[NotNull/NotNull],System.Collections.Generic.IReadOnlyList<Textalonia.Proofing.SpellingDiagnostic>[NotNull/NotNull] args(Textalonia.Proofing.SpellingDiagnostic[NotNull/NotNull]))
@@ -658,6 +917,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   get_BoldCommand() return System.Windows.Input.ICommand[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_CaretComponent() return Textalonia.Controls.ICaretComponent[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
   get_CellSelection() return Textalonia.Controls.TableCellSelection[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Commands() return Textalonia.Controls.TextaloniaCommandCatalog[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_CompositionComponent() return Textalonia.Controls.ICompositionComponent[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
   get_CopyCommand() return System.Windows.Input.ICommand[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_CurrentContentControl() return Textalonia.Model.DocumentContentControl[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
@@ -668,8 +928,10 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   get_CurrentPageNumber() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_CurrentPageSettings() return Textalonia.Model.PageSettings[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_CutCommand() return System.Windows.Input.ICommand[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_DialogService() return Textalonia.Controls.IEditorDialogService[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_Document() return Textalonia.Model.FlowDocument[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_DocumentPadding() return Avalonia.Thickness[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_FieldOptions() return Textalonia.Model.Fields.FieldEvaluationOptions[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
   get_FindCommand() return System.Windows.Input.ICommand[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_FontDiagnostics() return System.Collections.Generic.IReadOnlyList<Textalonia.Controls.DocumentFontDiagnostic>[NotNull/NotNull] args(Textalonia.Controls.DocumentFontDiagnostic[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   get_FormattingState() return Textalonia.Editing.SelectionFormattingState[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -706,6 +968,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   get_SelectionEnd() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_SelectionStart() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_Session() return Textalonia.Editing.EditorSession[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_ShowRulers() return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_ShowToolbar() return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_SpellCheckError() return System.Exception[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
   get_SpellChecker() return Textalonia.Proofing.ISpellChecker[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
@@ -725,6 +988,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   property BoldCommand System.Windows.Input.ICommand[NotNull/Unknown]
   property CaretComponent Textalonia.Controls.ICaretComponent[Nullable/Nullable]
   property CellSelection Textalonia.Controls.TableCellSelection[Nullable/Unknown]
+  property Commands Textalonia.Controls.TextaloniaCommandCatalog[NotNull/NotNull]
   property CompositionComponent Textalonia.Controls.ICompositionComponent[Nullable/Nullable]
   property CopyCommand System.Windows.Input.ICommand[NotNull/Unknown]
   property CurrentContentControl Textalonia.Model.DocumentContentControl[Nullable/Unknown]
@@ -735,8 +999,10 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   property CurrentPageNumber System.Int32[NotNull/Unknown]
   property CurrentPageSettings Textalonia.Model.PageSettings[NotNull/Unknown]
   property CutCommand System.Windows.Input.ICommand[NotNull/Unknown]
+  property DialogService Textalonia.Controls.IEditorDialogService[NotNull/NotNull]
   property Document Textalonia.Model.FlowDocument[NotNull/NotNull]
   property DocumentPadding Avalonia.Thickness[NotNull/NotNull]
+  property FieldOptions Textalonia.Model.Fields.FieldEvaluationOptions[Nullable/Nullable]
   property FindCommand System.Windows.Input.ICommand[NotNull/NotNull]
   property FontDiagnostics System.Collections.Generic.IReadOnlyList<Textalonia.Controls.DocumentFontDiagnostic>[NotNull/Unknown] args(Textalonia.Controls.DocumentFontDiagnostic[NotNull/NotNull])
   property FormattingState Textalonia.Editing.SelectionFormattingState[NotNull/Unknown]
@@ -773,6 +1039,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   property SelectionEnd System.Int32[NotNull/NotNull]
   property SelectionStart System.Int32[NotNull/NotNull]
   property Session Textalonia.Editing.EditorSession[NotNull/Unknown]
+  property ShowRulers System.Boolean[NotNull/NotNull]
   property ShowToolbar System.Boolean[NotNull/NotNull]
   property SpellCheckError System.Exception[Nullable/Unknown]
   property SpellChecker Textalonia.Proofing.ISpellChecker[Nullable/Nullable]
@@ -787,18 +1054,24 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   remove_ActiveStoryChanged(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   remove_ConversionCompleted(value: System.EventHandler<Textalonia.Controls.ConversionCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.ConversionCompletedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   remove_DocumentChanged(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  remove_EditingModeChanged(value: System.EventHandler<Textalonia.Controls.EditingModeChangedEventArgs>[NotNull/NotNull] args(Textalonia.Controls.EditingModeChangedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   remove_FindRequested(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   remove_HyperlinkActivated(value: System.EventHandler<Textalonia.Controls.HyperlinkEventArgs>[Nullable/Nullable] args(Textalonia.Controls.HyperlinkEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  remove_LayoutCompleted(value: System.EventHandler<Textalonia.Controls.EditorLayoutCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.EditorLayoutCompletedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  remove_LoadCompleted(value: System.EventHandler<Textalonia.Controls.DocumentIoCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.DocumentIoCompletedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   remove_NavigationRequested(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   remove_OperationFailed(value: System.EventHandler<Textalonia.Controls.EditorErrorEventArgs>[Nullable/Nullable] args(Textalonia.Controls.EditorErrorEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   remove_ReplaceRequested(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  remove_SaveCompleted(value: System.EventHandler<Textalonia.Controls.DocumentIoCompletedEventArgs>[Nullable/Nullable] args(Textalonia.Controls.DocumentIoCompletedEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   remove_SelectionChanged(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_AcceptsTab(value: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_AutoCorrectService(value: Textalonia.Proofing.IAutoCorrectService[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_CaretComponent(value: Textalonia.Controls.ICaretComponent[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_CompositionComponent(value: Textalonia.Controls.ICompositionComponent[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_DialogService(value: Textalonia.Controls.IEditorDialogService[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_Document(value: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_DocumentPadding(value: Avalonia.Thickness[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_FieldOptions(value: Textalonia.Model.Fields.FieldEvaluationOptions[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_HyphenationService(value: Textalonia.Proofing.IHyphenationService[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_InlineControlFactories(value: Textalonia.Controls.InlineControlFactoryRegistry[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_InlineImageOptions(value: Textalonia.Controls.InlineImageOptions[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -817,6 +1090,7 @@ type Textalonia.Controls.TextaloniaEditor [Avalonia.Controls.Metadata.TemplatePa
   set_SelectionBrush(value: Avalonia.Media.IBrush[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_SelectionEnd(value: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_SelectionStart(value: System.Int32[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_ShowRulers(value: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_ShowToolbar(value: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_SpellChecker(value: Textalonia.Proofing.ISpellChecker[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_SynchronizeText(value: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -854,6 +1128,49 @@ type Textalonia.Controls.TextaloniaFindReplacePanel
   set_MatchCase(value: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_Query(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   set_Replacement(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+type Textalonia.Controls.TextaloniaHostAction
+  field MailMerge Textalonia.Controls.TextaloniaHostAction[NotNull/NotNull]
+  field New Textalonia.Controls.TextaloniaHostAction[NotNull/NotNull]
+  field Open Textalonia.Controls.TextaloniaHostAction[NotNull/NotNull]
+  field Save Textalonia.Controls.TextaloniaHostAction[NotNull/NotNull]
+  field value__ System.Int32[NotNull/NotNull]
+type Textalonia.Controls.TextaloniaHostActionEventArgs
+  .ctor(action: Textalonia.Controls.TextaloniaHostAction[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
+  get_Action() return Textalonia.Controls.TextaloniaHostAction[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property Action Textalonia.Controls.TextaloniaHostAction[NotNull/Unknown]
+type Textalonia.Controls.TextaloniaNavigationPanel
+  .ctor()  abstract=False virtual=False final=False
+  FocusNavigation() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  OnAttachedToVisualTree(e: Avalonia.VisualTreeAttachmentEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OnDetachedFromVisualTree(e: Avalonia.VisualTreeAttachmentEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OnPropertyChanged(change: Avalonia.AvaloniaPropertyChangedEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  RefreshItems() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  add_CloseRequested(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  event CloseRequested System.EventHandler[Nullable/Nullable]
+  field EditorProperty Avalonia.StyledProperty<Textalonia.Controls.TextaloniaEditor>[NotNull/NotNull] args(Textalonia.Controls.TextaloniaEditor[Nullable/Nullable])
+  get_Editor() return Textalonia.Controls.TextaloniaEditor[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Localize() return System.Func<System.String,System.String>[Nullable/Nullable] args(System.String[NotNull/NotNull],System.String[Nullable/Nullable]) modreq() modopt()  abstract=False virtual=False final=False
+  property Editor Textalonia.Controls.TextaloniaEditor[Nullable/Nullable]
+  property Localize System.Func<System.String,System.String>[Nullable/Nullable] args(System.String[NotNull/NotNull],System.String[Nullable/Nullable])
+  remove_CloseRequested(value: System.EventHandler[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_Editor(value: Textalonia.Controls.TextaloniaEditor[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_Localize(value: System.Func<System.String,System.String>[Nullable/Nullable] args(System.String[NotNull/NotNull],System.String[Nullable/Nullable]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+type Textalonia.Controls.TextaloniaTabbedCommandSurface [Avalonia.Controls.Metadata.TemplatePartAttribute("PART_Tabs", typeof(Avalonia.Controls.TabControl), IsRequired = True)]
+  .ctor()  abstract=False virtual=False final=False
+  OnApplyTemplate(e: Avalonia.Controls.Primitives.TemplateAppliedEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OnPropertyChanged(change: Avalonia.AvaloniaPropertyChangedEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  OpenFind(replace: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  OpenNavigation() return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  add_HostActionRequested(value: System.EventHandler<Textalonia.Controls.TextaloniaHostActionEventArgs>[Nullable/Nullable] args(Textalonia.Controls.TextaloniaHostActionEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  event HostActionRequested System.EventHandler<Textalonia.Controls.TextaloniaHostActionEventArgs>[Nullable/Nullable] args(Textalonia.Controls.TextaloniaHostActionEventArgs[NotNull/NotNull])
+  field EditorProperty Avalonia.StyledProperty<Textalonia.Controls.TextaloniaEditor>[NotNull/NotNull] args(Textalonia.Controls.TextaloniaEditor[Nullable/Nullable])
+  get_Editor() return Textalonia.Controls.TextaloniaEditor[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Localize() return System.Func<System.String,System.String>[Nullable/Nullable] args(System.String[NotNull/NotNull],System.String[Nullable/Nullable]) modreq() modopt()  abstract=False virtual=False final=False
+  property Editor Textalonia.Controls.TextaloniaEditor[Nullable/Nullable]
+  property Localize System.Func<System.String,System.String>[Nullable/Nullable] args(System.String[NotNull/NotNull],System.String[Nullable/Nullable])
+  remove_HostActionRequested(value: System.EventHandler<Textalonia.Controls.TextaloniaHostActionEventArgs>[Nullable/Nullable] args(Textalonia.Controls.TextaloniaHostActionEventArgs[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_Editor(value: Textalonia.Controls.TextaloniaEditor[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  set_Localize(value: System.Func<System.String,System.String>[Nullable/Nullable] args(System.String[NotNull/NotNull],System.String[Nullable/Nullable]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
 type Textalonia.Controls.TextaloniaToolbar
   .ctor()  abstract=False virtual=False final=False
   OnPropertyChanged(change: Avalonia.AvaloniaPropertyChangedEventArgs[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
@@ -1079,6 +1396,7 @@ type Textalonia.Editing.EditorSession
   SelectSearchResult(result: Textalonia.Editing.DocumentSearchResult[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   SetContentControlValue(controlId: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   SetDefaults(defaults: Textalonia.Model.DocumentDefaults[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  SetDocumentProperties(coreProperties: Textalonia.Model.DocumentCoreProperties[NotNull/NotNull] in=False out=False modreq() modopt() , customProperties: System.Collections.Generic.IEnumerable<Textalonia.Model.DocumentCustomProperty>[NotNull/NotNull] args(Textalonia.Model.DocumentCustomProperty[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   SetFieldInstruction(fieldId: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , instruction: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   SetFieldLocked(fieldId: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , locked: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   SetFieldShowCode(fieldId: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() , showCode: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False

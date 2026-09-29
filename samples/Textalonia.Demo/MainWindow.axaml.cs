@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
+using Textalonia.Controls;
 using Textalonia.Model;
 using Textalonia.Serialization;
 
@@ -22,6 +23,7 @@ public partial class MainWindow : Window
         };
         Editor.KeyboardComponent = new DemoKeyboardComponent();
         Editor.CaretComponent = new DemoCaretComponent();
+        TabbedCommands.Editor = Editor;
         SampleInlineControls.Configure(Editor);
         Editor.Document = SampleDocument.Create();
         Editor.DocumentChanged += (_, _) =>
@@ -35,14 +37,26 @@ public partial class MainWindow : Window
         ConversionReportButton.Click += async (_, _) => await ShowConversionReportAsync(_lastConversionReport);
         Editor.HyperlinkActivated += (_, e) => Status.Text = "Link selected: " + e.Uri;
         ReadOnlyToggle.IsCheckedChanged += (_, _) => Editor.IsReadOnly = ReadOnlyToggle.IsChecked == true;
-        ThemeToggle.IsCheckedChanged += (_, _) => RequestedThemeVariant = ThemeToggle.IsChecked == true ? ThemeVariant.Dark : ThemeVariant.Light;
-        NewButton.Click += async (_, _) =>
+        CommandSurfaceToggle.IsCheckedChanged += (_, _) =>
         {
-            if (!await ConfirmDiscardAsync()) return;
-            ReplaceDocument(new FlowDocument()); Status.Text = "New document"; Editor.FocusDocument();
+            var tabs = CommandSurfaceToggle.IsChecked == true;
+            TabbedCommands.IsVisible = tabs;
+            Editor.ShowToolbar = !tabs;
         };
+        ThemeToggle.IsCheckedChanged += (_, _) => RequestedThemeVariant = ThemeToggle.IsChecked == true ? ThemeVariant.Dark : ThemeVariant.Light;
+        NewButton.Click += async (_, _) => await NewAsync();
         OpenButton.Click += async (_, _) => await OpenAsync();
         SaveButton.Click += async (_, _) => await SaveAsync();
+        TabbedCommands.HostActionRequested += async (_, e) =>
+        {
+            switch (e.Action)
+            {
+                case TextaloniaHostAction.New: await NewAsync(); break;
+                case TextaloniaHostAction.Open: await OpenAsync(); break;
+                case TextaloniaHostAction.Save: await SaveAsync(); break;
+                case TextaloniaHostAction.MailMerge: new MailMergeWindow(Editor.Document).Show(this); break;
+            }
+        };
         IntegrationsButton.Click += (_, _) => new IntegrationWindow().Show(this);
         MailMergeButton.Click += (_, _) => new MailMergeWindow(Editor.Document).Show(this);
         FormsButton.Click += (_, _) => new FormWindow().Show(this);
@@ -58,6 +72,12 @@ public partial class MainWindow : Window
 
     private static IReadOnlyList<FilePickerFileType> FileTypes => DocumentFormats.BuiltIn.Select(format =>
         new FilePickerFileType(format.Name) { Patterns = format.Extensions.Select(ext => "*" + ext).ToArray() }).ToArray();
+
+    private async Task NewAsync()
+    {
+        if (!await ConfirmDiscardAsync()) return;
+        ReplaceDocument(new FlowDocument()); Status.Text = "New document"; Editor.FocusDocument();
+    }
 
     private async Task OpenAsync()
     {

@@ -32,19 +32,52 @@
                     BorderThickness="{TemplateBinding BorderThickness}"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     ClipToBounds="True">
-              <Grid RowDefinitions="Auto,*">
+              <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,*">
                 <Border Grid.Row="0"
+                        Grid.ColumnSpan="2"
                         IsVisible="{TemplateBinding ShowToolbar}"
                         Background="{DynamicResource TextaloniaToolbarBackground}"
                         BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,0,0,1">
                   <local:TextaloniaToolbar x:Name="PART_Toolbar" />
                 </Border>
-                <ScrollViewer Grid.Row="1" x:Name="PART_ScrollViewer"
+                <Border Grid.Row="1" Grid.Column="0" Width="24" Height="24"
+                        IsVisible="{TemplateBinding ShowRulers}"
+                        Background="{DynamicResource TextaloniaToolbarBackground}" />
+                <local:DocumentRuler x:Name="PART_HorizontalRuler" Grid.Row="1" Grid.Column="1"
+                                     Orientation="Horizontal" Height="24"
+                                     RulerBackground="{DynamicResource TextaloniaToolbarBackground}"
+                                     PaperBackground="{DynamicResource TextaloniaBackground}"
+                                     RulerForeground="{DynamicResource TextaloniaForeground}"
+                                     RulerBorder="{DynamicResource TextaloniaBorder}"
+                                     IsVisible="{TemplateBinding ShowRulers}" />
+                <local:DocumentRuler x:Name="PART_VerticalRuler" Grid.Row="2" Grid.Column="0"
+                                     Orientation="Vertical" Width="24"
+                                     RulerBackground="{DynamicResource TextaloniaToolbarBackground}"
+                                     PaperBackground="{DynamicResource TextaloniaBackground}"
+                                     RulerForeground="{DynamicResource TextaloniaForeground}"
+                                     RulerBorder="{DynamicResource TextaloniaBorder}"
+                                     IsVisible="{TemplateBinding ShowRulers}" />
+                <ScrollViewer Grid.Row="2" Grid.Column="1" x:Name="PART_ScrollViewer"
                               HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Auto">
                   <local:DocumentSurface x:Name="PART_Surface" />
                 </ScrollViewer>
               </Grid>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+      <ControlTheme x:Key="{x:Type local:TextaloniaTabbedCommandSurface}" TargetType="local:TextaloniaTabbedCommandSurface">
+        <Setter Property="Background" Value="{DynamicResource TextaloniaToolbarBackground}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextaloniaForeground}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource TextaloniaBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}">
+              <TabControl x:Name="PART_Tabs" />
             </Border>
           </ControlTemplate>
         </Setter>

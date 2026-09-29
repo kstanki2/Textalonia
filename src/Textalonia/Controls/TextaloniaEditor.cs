@@ -22,6 +22,8 @@ public sealed class ConversionCompletedEventArgs(ConversionReport report) : Even
 [TemplatePart("PART_Surface", typeof(DocumentSurface), IsRequired = true)]
 [TemplatePart("PART_ScrollViewer", typeof(ScrollViewer), IsRequired = true)]
 [TemplatePart("PART_Toolbar", typeof(TextaloniaToolbar))]
+[TemplatePart("PART_HorizontalRuler", typeof(DocumentRuler))]
+[TemplatePart("PART_VerticalRuler", typeof(DocumentRuler))]
 public partial class TextaloniaEditor : TemplatedControl
 {
     public static readonly StyledProperty<FlowDocument?> DocumentProperty =
@@ -37,6 +39,7 @@ public partial class TextaloniaEditor : TemplatedControl
         AvaloniaProperty.RegisterDirect<TextaloniaEditor, ShapingLimitExceededException?>(nameof(LayoutError), editor => editor.LayoutError);
     public static readonly StyledProperty<bool> IsReadOnlyProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(IsReadOnly));
     public static readonly StyledProperty<bool> ShowToolbarProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(ShowToolbar), true);
+    public static readonly StyledProperty<bool> ShowRulersProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(ShowRulers));
     public static readonly StyledProperty<bool> AcceptsTabProperty = AvaloniaProperty.Register<TextaloniaEditor, bool>(nameof(AcceptsTab));
     public static readonly StyledProperty<string> PlaceholderTextProperty = AvaloniaProperty.Register<TextaloniaEditor, string>(nameof(PlaceholderText), "Start writing...");
     public static readonly StyledProperty<IBrush> SelectionBrushProperty =
@@ -56,26 +59,30 @@ public partial class TextaloniaEditor : TemplatedControl
     private bool _preservingView;
     private int _textRevision = -1;
     private ShapingLimitExceededException? _layoutError;
-    private readonly List<EditorCommand> _commands = [];
     private DocumentSurface? _surface;
     private TextaloniaToolbar? _toolbar;
+    private DocumentRuler? _horizontalRuler;
+    private DocumentRuler? _verticalRuler;
     internal ScrollViewer? Scroller { get; private set; }
 
     public TextaloniaEditor()
     {
+        Commands = CreateCommandCatalog();
         InitializeNavigationCommands();
         Session.Changed += OnSessionChanged;
+        TableCellSelectionChanged += (_, _) => Commands.Refresh();
+        PropertyChanged += OnCommandRelevantPropertyChanged;
         Highlights.CollectionChanged += (_, _) => _surface?.InvalidateVisual();
-        BoldCommand = Command(ToggleSelectedBold, () => CanEdit(EditOperation.Formatting));
-        ItalicCommand = Command(ToggleSelectedItalic, () => CanEdit(EditOperation.Formatting));
-        UnderlineCommand = Command(ToggleSelectedUnderline, () => CanEdit(EditOperation.Formatting));
-        StrikethroughCommand = Command(ToggleSelectedStrikethrough, () => CanEdit(EditOperation.Formatting));
-        UndoCommand = Command(Session.Undo, () => Session.CanUndo && CanEdit(EditOperation.Undo));
-        RedoCommand = Command(Session.Redo, () => Session.CanRedo && CanEdit(EditOperation.Redo));
-        CutCommand = AsyncCommand(CutAsync, () => CanEdit(EditOperation.Clipboard) && (!Session.Selection.IsEmpty || CellSelection is not null));
-        CopyCommand = AsyncCommand(CopyAsync, () => !Session.Selection.IsEmpty || CellSelection is not null);
-        PasteCommand = AsyncCommand(PasteAsync, () => CanEdit(EditOperation.Clipboard));
-        SelectAllCommand = Command(Session.SelectAll, () => true);
+        BoldCommand = Commands[EditorCommandId.Bold];
+        ItalicCommand = Commands[EditorCommandId.Italic];
+        UnderlineCommand = Commands[EditorCommandId.Underline];
+        StrikethroughCommand = Commands[EditorCommandId.Strikethrough];
+        UndoCommand = Commands[EditorCommandId.Undo];
+        RedoCommand = Commands[EditorCommandId.Redo];
+        CutCommand = Commands[EditorCommandId.Cut];
+        CopyCommand = Commands[EditorCommandId.Copy];
+        PasteCommand = Commands[EditorCommandId.Paste];
+        SelectAllCommand = Commands[EditorCommandId.SelectAll];
         SetCurrentValue(DocumentProperty, Session.Document);
     }
 
@@ -91,6 +98,8 @@ public partial class TextaloniaEditor : TemplatedControl
     public ShapingLimitExceededException? LayoutError => _layoutError;
     public bool IsReadOnly { get => GetValue(IsReadOnlyProperty); set => SetValue(IsReadOnlyProperty, value); }
     public bool ShowToolbar { get => GetValue(ShowToolbarProperty); set => SetValue(ShowToolbarProperty, value); }
+    /// <summary>Displays page-aware rulers around the document viewport.</summary>
+    public bool ShowRulers { get => GetValue(ShowRulersProperty); set => SetValue(ShowRulersProperty, value); }
     public bool AcceptsTab { get => GetValue(AcceptsTabProperty); set => SetValue(AcceptsTabProperty, value); }
     public string PlaceholderText { get => GetValue(PlaceholderTextProperty); set => SetValue(PlaceholderTextProperty, value); }
     public IBrush SelectionBrush { get => GetValue(SelectionBrushProperty); set => SetValue(SelectionBrushProperty, value); }
@@ -122,11 +131,17 @@ public partial class TextaloniaEditor : TemplatedControl
     {
         if (_surface is not null) _surface.Editor = null;
         if (_toolbar is not null) _toolbar.Editor = null;
+        if (_horizontalRuler is not null) _horizontalRuler.Editor = null;
+        if (_verticalRuler is not null) _verticalRuler.Editor = null;
         base.OnApplyTemplate(e);
         _surface = e.NameScope.Get<DocumentSurface>("PART_Surface");
         Scroller = e.NameScope.Get<ScrollViewer>("PART_ScrollViewer");
         _toolbar = e.NameScope.Find<TextaloniaToolbar>("PART_Toolbar");
+        _horizontalRuler = e.NameScope.Find<DocumentRuler>("PART_HorizontalRuler");
+        _verticalRuler = e.NameScope.Find<DocumentRuler>("PART_VerticalRuler");
         _surface.Editor = this;
+        if (_horizontalRuler is not null) _horizontalRuler.Editor = this;
+        if (_verticalRuler is not null) _verticalRuler.Editor = this;
         UpdatePageView();
         if (_toolbar is not null) _toolbar.Editor = this;
     }
@@ -175,12 +190,13 @@ public partial class TextaloniaEditor : TemplatedControl
             SetCurrentValue(IsReadOnlyProperty, Session.IsReadOnly);
         }
         finally { _synchronizing = false; }
-        foreach (var command in _commands) command.RaiseCanExecuteChanged();
+        Commands.Refresh();
         _surface?.Refresh(!_preservingView && (selectionChanged || documentChanged && Session.LastEdit is { Reset: false }), invalidateLayout: documentChanged || storyChanged);
         OnProofingSessionChanged();
         if (selectionChanged && SpellingDiagnostics.Count > 0) _surface?.RefreshProofingContextMenu();
         if (documentChanged) DocumentChanged?.Invoke(this, EventArgs.Empty);
         if (selectionChanged) SelectionChanged?.Invoke(this, EventArgs.Empty);
+        PublishEditingModeChanged();
     }
 
     public void FocusDocument() => _surface?.Focus();
@@ -211,9 +227,14 @@ public partial class TextaloniaEditor : TemplatedControl
         var document = await format.LoadAsync(stream, cancellationToken);
         if (Session.Revision != revision) throw new InvalidOperationException("The document changed while the file was loading.");
         Document = document;
+        PublishLoadCompleted(format, document, null);
     }
-    public Task SaveAsync(Stream stream, IDocumentFormat format, CancellationToken cancellationToken = default) =>
-        format.SaveAsync(Session.Document, stream, cancellationToken);
+    public async Task SaveAsync(Stream stream, IDocumentFormat format, CancellationToken cancellationToken = default)
+    {
+        var document = Session.Document;
+        await format.SaveAsync(document, stream, cancellationToken);
+        PublishSaveCompleted(format, document, null);
+    }
 
     public async Task<DocumentLoadResult> LoadWithReportAsync(Stream stream, IDocumentFormat format,
         ConversionOptions? options = null, CancellationToken cancellationToken = default)
@@ -223,14 +244,17 @@ public partial class TextaloniaEditor : TemplatedControl
         if (Session.Revision != revision) throw new InvalidOperationException("The document changed while the file was loading.");
         Document = result.Document;
         PublishConversion(result.Report);
+        PublishLoadCompleted(format, result.Document, result.Report);
         return result;
     }
 
     public async Task<DocumentSaveResult> SaveWithReportAsync(Stream stream, IDocumentFormat format,
         ConversionOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var result = await format.SaveWithReportAsync(Session.Document, stream, options, cancellationToken);
+        var document = Session.Document;
+        var result = await format.SaveWithReportAsync(document, stream, options, cancellationToken);
         PublishConversion(result.Report);
+        PublishSaveCompleted(format, document, result.Report);
         return result;
     }
 
@@ -334,7 +358,7 @@ public partial class TextaloniaEditor : TemplatedControl
     internal void OpenLink(string uri) => HyperlinkActivated?.Invoke(this, new(uri));
     internal void RequestFind()
     {
-        _toolbar?.OpenFind();
+        if (ShowToolbar) _toolbar?.OpenFind();
         FindRequested?.Invoke(this, EventArgs.Empty);
     }
     internal void ReportError(Exception exception)
@@ -357,33 +381,6 @@ public partial class TextaloniaEditor : TemplatedControl
     }
     internal bool CanEdit(EditOperation operation) => Session.GetCapability(operation) == CommandCapability.Enabled;
 
-    private EditorCommand Command(Action execute, Func<bool>? canExecute = null) =>
-        AsyncCommand(() => { execute(); return Task.CompletedTask; }, canExecute ?? (() => !IsReadOnly));
-    private EditorCommand AsyncCommand(Func<Task> execute, Func<bool> canExecute)
-    {
-        var command = new EditorCommand(async () =>
-        {
-            LastError = null;
-            try { await execute(); FocusDocument(); }
-            catch (Exception ex) { ReportError(ex); }
-        }, canExecute);
-        _commands.Add(command); return command;
-    }
-}
-
-internal sealed class EditorCommand(Func<Task> execute, Func<bool> canExecute) : ICommand
-{
-    private bool _running;
-    public bool CanExecute(object? parameter) => !_running && canExecute();
-    public async void Execute(object? parameter)
-    {
-        if (!CanExecute(parameter)) return;
-        _running = true; RaiseCanExecuteChanged();
-        try { await execute(); }
-        finally { _running = false; RaiseCanExecuteChanged(); }
-    }
-    public event EventHandler? CanExecuteChanged;
-    public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 }
 
 public class TextaloniaViewer : TextaloniaEditor

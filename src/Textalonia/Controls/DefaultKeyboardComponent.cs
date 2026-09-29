@@ -59,16 +59,8 @@ public class DefaultKeyboardComponent : DocumentInputComponent, IKeyboardCompone
         }
         if (command)
         {
-            System.Windows.Input.ICommand? action = e.Key switch
-            {
-                Key.B => Context.Editor.BoldCommand, Key.I => Context.Editor.ItalicCommand, Key.U => Context.Editor.UnderlineCommand,
-                Key.Z => shift ? Context.Editor.RedoCommand : Context.Editor.UndoCommand,
-                Key.Y => Context.Editor.RedoCommand, Key.C => Context.Editor.CopyCommand, Key.X => Context.Editor.CutCommand,
-                Key.V => Context.Editor.PasteCommand, Key.A => Context.Editor.SelectAllCommand, _ => null
-            };
-            if (action is not null) { Context.CancelComposition(); if (action.CanExecute(null)) action.Execute(null); e.Handled = true; return; }
-            if (e.Key == Key.F) { Context.CancelComposition(); Context.Editor.FindCommand.Execute(null); e.Handled = true; return; }
-            if (e.Key == Key.H) { Context.CancelComposition(); Context.Editor.ReplaceCommand.Execute(null); e.Handled = true; return; }
+            if (Context.Editor.Commands.TryExecuteShortcut(e.Key, e.KeyModifiers))
+            { e.Handled = true; return; }
         }
         Context.Surface.EnsureLayout(Context.Surface.Bounds.Width);
         try

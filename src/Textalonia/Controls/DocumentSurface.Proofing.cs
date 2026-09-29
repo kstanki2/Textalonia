@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Textalonia.Editing;
 using Textalonia.Proofing;
 
 namespace Textalonia.Controls;
@@ -111,19 +112,48 @@ public partial class DocumentSurface
         }
         if (editor.SpellingDiagnostics.Count > 0)
         {
-            var next = new MenuItem { Header = "Next spelling error" };
-            next.Click += (_, _) => editor.SelectNextSpellingError();
-            items.Add(next);
+            AddCommand(EditorCommandId.Proofing);
             items.Add(new Separator());
         }
-        items.Add(new MenuItem { Header = "Undo", Command = editor.UndoCommand });
-        items.Add(new MenuItem { Header = "Redo", Command = editor.RedoCommand });
+        AddCommand(EditorCommandId.Undo);
+        AddCommand(EditorCommandId.Redo);
         items.Add(new Separator());
-        items.Add(new MenuItem { Header = "Cut", Command = editor.CutCommand });
-        items.Add(new MenuItem { Header = "Copy", Command = editor.CopyCommand });
-        items.Add(new MenuItem { Header = "Paste", Command = editor.PasteCommand });
+        AddCommand(EditorCommandId.Cut);
+        AddCommand(EditorCommandId.Copy);
+        AddCommand(EditorCommandId.Paste);
+        var pasteSpecialCommand = editor.Commands[EditorCommandId.PasteSpecial];
+        if (pasteSpecialCommand.IsVisible)
+        {
+            var pasteSpecial = new MenuItem { Header = pasteSpecialCommand.DisplayText, IsEnabled = pasteSpecialCommand.Capability == CommandCapability.Enabled };
+            pasteSpecial.ItemsSource = new object[]
+            {
+                PasteChoice("Textalonia.UI.PasteSpecial.NativeFragment", "Textalonia fragment", PasteSpecialFormat.NativeFragment),
+                PasteChoice("Textalonia.UI.PasteSpecial.Html", "HTML", PasteSpecialFormat.Html),
+                PasteChoice("Textalonia.UI.PasteSpecial.PlainText", "Plain text", PasteSpecialFormat.PlainText)
+            };
+            items.Add(pasteSpecial);
+        }
         items.Add(new Separator());
-        items.Add(new MenuItem { Header = "Select all", Command = editor.SelectAllCommand });
+        AddCommand(EditorCommandId.InsertSymbol);
+        AddCommand(EditorCommandId.DocumentProperties);
+        if (editor.Session.CurrentCell() is not null)
+            AddCommand(EditorCommandId.TableProperties);
+        if (editor.CurrentImageOrOle is not null)
+            AddCommand(EditorCommandId.PictureProperties);
+        items.Add(new Separator());
+        AddCommand(EditorCommandId.SelectAll);
         return items.ToArray();
+
+        void AddCommand(EditorCommandId id)
+        {
+            var command = editor.Commands[id];
+            if (command.IsVisible) items.Add(new MenuItem { Header = command.DisplayText, Command = command });
+        }
+
+        MenuItem PasteChoice(string key, string fallback, PasteSpecialFormat format)
+        {
+            return new MenuItem { Header = editor.Commands.Localize?.Invoke(key) is { Length: > 0 } localized ? localized : fallback,
+                Command = pasteSpecialCommand, CommandParameter = format };
+        }
     }
 }

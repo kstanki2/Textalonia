@@ -13,7 +13,7 @@ dotnet restore Textalonia.sln --configfile NuGet.Config
 dotnet run --project samples/Textalonia.Demo
 ```
 
-The demo includes bookmarks, outline navigation, story-aware find/replace, general fields, TOCs and captions (see [fields and navigation](docs/FIELDS.md)), editable sample content, light/dark themes, read-only mode, search, tables, page setup and numbering dialogs, document views, zoom, page navigation, print preview, PDF export, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
+The demo includes bookmarks, outline navigation, story-aware find/replace, general fields, TOCs and captions (see [fields and navigation](docs/FIELDS.md)), editable sample content, light/dark themes, read-only mode, search, tables, page setup and numbering dialogs, document views, zoom, page navigation, rulers, compact or tabbed commands, print preview, PDF export, and open/save dialogs. Use **Textalonia (.textalonia)** for lossless storage; the interchange formats support the subsets described below.
 
 ## Build, test, and pack
 
@@ -84,6 +84,11 @@ page, column and section breaks. **View** switches between Simple, Draft and Pri
 Layout and provides zoom, fit and page navigation. These view changes leave document
 content and undo history unchanged. See [pagination and page setup](docs/PAGINATION.md)
 for APIs, persistence, table behavior and qualification limits.
+
+The optional tabbed command surface and the compact toolbar share
+`TextaloniaEditor.Commands`. Rulers, Paste Special, symbol insertion and document
+properties are available in the demo. See [commands and document UI](docs/COMMAND-UI.md)
+for host integration and command state.
 
 ## Structured documents and MVVM
 

@@ -31,6 +31,8 @@ public class TextaloniaToolbar : WrapPanel
     private NumericUpDown? _pageGap;
     private NumericUpDown? _pageNumber;
     private TextBlock? _pageStatus;
+    private TextBlock? _selectionStatus;
+    private CheckBox? _showRulers;
     private TextBlock? _storyStatus;
     private Button? _pictureProperties;
     private Button? _pictureRemove;
@@ -50,17 +52,20 @@ public class TextaloniaToolbar : WrapPanel
     {
         base.OnPropertyChanged(change);
         if (change.Property != EditorProperty) return;
-        if (change.OldValue is TextaloniaEditor old) { old.Session.Changed -= SessionChanged; old.TableCellSelectionChanged -= SessionChanged; old.PropertyChanged -= EditorPropertyChanged; }
-        if (change.NewValue is TextaloniaEditor editor) { editor.Session.Changed += SessionChanged; editor.TableCellSelectionChanged += SessionChanged; editor.PropertyChanged += EditorPropertyChanged; }
+        if (change.OldValue is TextaloniaEditor old) { old.Session.Changed -= SessionChanged; old.TableCellSelectionChanged -= SessionChanged; old.PropertyChanged -= EditorPropertyChanged; old.Commands.LocalizationChanged -= LocalizationChanged; }
+        if (change.NewValue is TextaloniaEditor editor) { editor.Session.Changed += SessionChanged; editor.TableCellSelectionChanged += SessionChanged; editor.PropertyChanged += EditorPropertyChanged; editor.Commands.LocalizationChanged += LocalizationChanged; }
         Build(); Refresh();
     }
     private void SessionChanged(object? sender, EventArgs e) => Refresh();
+    private void LocalizationChanged(object? sender, EventArgs e) { Build(); Refresh(); }
+    private string UiText(string key, string fallback) => Editor?.Commands.Localize?.Invoke("Textalonia.UI.Toolbar." + key) is { Length: > 0 } localized
+        ? localized : fallback;
     private void EditorPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == TextaloniaEditor.ViewModeProperty || e.Property == TextaloniaEditor.ZoomProperty ||
             e.Property == TextaloniaEditor.PagesPerRowProperty || e.Property == TextaloniaEditor.PageGapProperty ||
             e.Property == TextaloniaEditor.PageCountProperty || e.Property == TextaloniaEditor.CurrentPageNumberProperty ||
-            e.Property == TextaloniaEditor.IsReadOnlyProperty) Refresh();
+            e.Property == TextaloniaEditor.IsReadOnlyProperty || e.Property == TextaloniaEditor.ShowRulersProperty) Refresh();
     }
 
     private void Build()
@@ -70,6 +75,7 @@ public class TextaloniaToolbar : WrapPanel
         _mergeFieldUpdate = null; _mergeFieldId = null; _storyStatus = null;
         _pictureProperties = null; _pictureRemove = null; _objectExtract = null; _formValue = null;
         _viewMode = null; _zoom = null; _pagesPerRow = null; _pageGap = null; _pageNumber = null; _pageStatus = null;
+        _selectionStatus = null; _showRulers = null;
         if (Editor is not { } editor) return;
         _heading = Choice(["Body", "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Heading 5", "Heading 6"], 128, "Paragraph style");
         _heading.SelectionChanged += (_, _) => { if (!_updating) editor.Run(() => editor.SetSelectedHeading(_heading.SelectedIndex)); };
@@ -93,16 +99,18 @@ public class TextaloniaToolbar : WrapPanel
         AddFlyout("Highlight", "Text highlight", Palette(true));
         AddFlyout("Typography", "Typography and spacing", TypographyMenu());
         AddFlyout("Paragraph", "Paragraph formatting", ParagraphMenu());
-        DialogButton("Styles", "Create, edit or apply named styles", editor.ShowStylesDialogAsync);
-        DialogButton("Font…", "Font dialog", editor.ShowFontDialogAsync);
-        DialogButton("Paragraph…", "Paragraph dialog", editor.ShowParagraphDialogAsync);
-        DialogButton("Tabs…", "Tabs dialog", editor.ShowTabsDialogAsync);
-        DialogButton("Page setup…", "Page setup dialog", editor.ShowPageSetupDialogAsync, EditOperation.Structure);
-        DialogButton("Page numbering…", "Page numbering dialog", editor.ShowPageNumberingDialogAsync, EditOperation.Structure);
+        CatalogButton("Styles", "Create, edit or apply named styles", EditorCommandId.Styles);
+        CatalogButton("Properties…", "Document properties", EditorCommandId.DocumentProperties, EditOperation.Metadata);
+        CatalogButton("Font…", "Font dialog", EditorCommandId.Font);
+        CatalogButton("Paragraph…", "Paragraph dialog", EditorCommandId.Paragraph);
+        CatalogButton("Tabs…", "Tabs dialog", EditorCommandId.Tabs);
+        CatalogButton("Page setup…", "Page setup dialog", EditorCommandId.PageSetup, EditOperation.Structure);
+        CatalogButton("Page numbering…", "Page numbering dialog", EditorCommandId.PageNumbering, EditOperation.Structure);
         var viewButton = AddFlyout("View", "Document view, zoom and page navigation", ViewMenu(), editing: false);
         viewButton.Flyout!.Opened += (_, _) => Refresh();
         AddOutputFlyout();
         AddFlyout("Insert", "Insert link or table", InsertMenu(), editing: false);
+        CatalogButton("Symbol…", "Insert Unicode symbol", EditorCommandId.InsertSymbol, EditOperation.Text);
         AddPicturesFlyout();
         DialogButton("Table\u2026", "Table properties", editor.ShowTablePropertiesDialogAsync, EditOperation.Tables);
         AddFlyout("Stories", "Headers, footers and notes", StoriesMenu(), editing: false);
@@ -145,6 +153,15 @@ public class TextaloniaToolbar : WrapPanel
     {
         var button = MakeButton(text, name);
         button.Click += async (_, _) => await show();
+        Children.Add(button); _editingControls.Add(button, operation);
+    }
+    private void CatalogButton(string text, string name, EditorCommandId id, EditOperation operation = EditOperation.Formatting)
+    {
+        var command = Editor!.Commands[id];
+        var localized = Editor.Commands.Localize?.Invoke(command.LocalizationKey);
+        var button = MakeButton(localized is { Length: > 0 } ? localized : text,
+            localized is { Length: > 0 } ? localized : name);
+        button.Command = command;
         Children.Add(button); _editingControls.Add(button, operation);
     }
     private static Button MakeButton(string text, string name)
@@ -208,9 +225,9 @@ public class TextaloniaToolbar : WrapPanel
                 print.IsEnabled ? null : "Printing requires a host print service."
             }.Where(value => value is not null));
         };
-        preview.Click += async (_, _) => { button.Flyout.Hide(); if (Editor is { } editor) await editor.ShowPrintPreviewDialogAsync(); };
-        export.Click += async (_, _) => { button.Flyout.Hide(); if (Editor is { } editor) await editor.ShowExportPdfDialogAsync(); };
-        print.Click += async (_, _) => { button.Flyout.Hide(); if (Editor is { } editor) await editor.ShowPrintDialogAsync(); };
+        preview.Click += (_, _) => { button.Flyout.Hide(); Editor?.Commands.Execute(EditorCommandId.PrintPreview); };
+        export.Click += (_, _) => { button.Flyout.Hide(); Editor?.Commands.Execute(EditorCommandId.ExportPdf); };
+        print.Click += (_, _) => { button.Flyout.Hide(); Editor?.Commands.Execute(EditorCommandId.Print); };
         quick.Click += async (_, _) => { button.Flyout.Hide(); if (Editor is { } editor) await editor.QuickPrintAsync(); };
     }
 
@@ -417,38 +434,51 @@ public class TextaloniaToolbar : WrapPanel
     private Control ViewMenu()
     {
         var panel = new StackPanel { Width = 260, Spacing = 6 };
-        panel.Children.Add(Label("Document view"));
+        panel.Children.Add(Label(UiText("DocumentView", "Document view")));
         _viewMode = new ComboBox { ItemsSource = Enum.GetValues<DocumentViewMode>(), HorizontalAlignment = HorizontalAlignment.Stretch };
-        AutomationProperties.SetName(_viewMode, "Document view"); panel.Children.Add(_viewMode);
+        AutomationProperties.SetName(_viewMode, UiText("DocumentView", "Document view")); panel.Children.Add(_viewMode);
         _viewMode.SelectionChanged += (_, _) =>
         {
-            if (!_updating && _viewMode.SelectedItem is DocumentViewMode mode) Editor?.Run(() => Editor.ViewMode = mode, focusDocument: false);
+            if (!_updating && _viewMode.SelectedItem is DocumentViewMode mode && Editor is { } editor)
+                editor.Commands.Execute(mode switch
+                {
+                    DocumentViewMode.Simple => EditorCommandId.ViewSimple,
+                    DocumentViewMode.Draft => EditorCommandId.ViewDraft,
+                    _ => EditorCommandId.ViewPrintLayout
+                });
         };
-        panel.Children.Add(Label("Zoom (%)"));
-        _zoom = Number("Zoom (%)", 100, 10, 500); panel.Children.Add(_zoom);
+        panel.Children.Add(Label(UiText("ZoomPercent", "Zoom (%)")));
+        _zoom = Number(UiText("ZoomPercent", "Zoom (%)"), 100, 10, 500); panel.Children.Add(_zoom);
         _zoom.ValueChanged += (_, _) =>
         {
-            if (!_updating && _zoom.Value is { } value) Editor?.Run(() => Editor.Zoom = (double)value / 100, focusDocument: false);
+            if (!_updating && _zoom.Value is { } value) Editor?.Commands.Execute(EditorCommandId.SetZoom, (double)value / 100);
         };
-        panel.Children.Add(MenuAction("Fit page width", () => Editor!.FitWidth(), editing: false));
-        panel.Children.Add(MenuAction("Fit whole page", () => Editor!.FitPage(), editing: false));
-        panel.Children.Add(Label("Pages per row"));
-        _pagesPerRow = Number("Pages per row", 1, 1, 8); panel.Children.Add(_pagesPerRow);
+        panel.Children.Add(MenuAction(UiText("FitWidth", "Fit page width"), () => Editor!.Commands.Execute(EditorCommandId.FitWidth), editing: false));
+        panel.Children.Add(MenuAction(UiText("FitPage", "Fit whole page"), () => Editor!.Commands.Execute(EditorCommandId.FitPage), editing: false));
+        _showRulers = new CheckBox { Content = UiText("ShowRulers", "Show rulers") };
+        AutomationProperties.SetName(_showRulers, UiText("ShowRulers", "Show rulers")); panel.Children.Add(_showRulers);
+        _showRulers.IsCheckedChanged += (_, _) =>
+        {
+            if (!_updating) Editor?.Commands.Execute(EditorCommandId.ToggleRulers);
+        };
+        panel.Children.Add(Label(UiText("PagesPerRow", "Pages per row")));
+        _pagesPerRow = Number(UiText("PagesPerRow", "Pages per row"), 1, 1, 8); panel.Children.Add(_pagesPerRow);
         _pagesPerRow.ValueChanged += (_, _) =>
         {
-            if (!_updating && _pagesPerRow.Value is { } value) Editor?.Run(() => Editor.PagesPerRow = (int)value, focusDocument: false);
+            if (!_updating && _pagesPerRow.Value is { } value) Editor?.Commands.Execute(EditorCommandId.SetPagesPerRow, (int)value);
         };
-        panel.Children.Add(Label("Page gap (DIP)"));
-        _pageGap = Number("Page gap (DIP)", 24, 0, 1000); panel.Children.Add(_pageGap);
+        panel.Children.Add(Label(UiText("PageGap", "Page gap (DIP)")));
+        _pageGap = Number(UiText("PageGap", "Page gap (DIP)"), 24, 0, 1000); panel.Children.Add(_pageGap);
         _pageGap.ValueChanged += (_, _) =>
         {
-            if (!_updating && _pageGap.Value is { } value) Editor?.Run(() => Editor.PageGap = (double)value, focusDocument: false);
+            if (!_updating && _pageGap.Value is { } value) Editor?.Commands.Execute(EditorCommandId.SetPageGap, (double)value);
         };
-        _pageStatus = new TextBlock(); AutomationProperties.SetName(_pageStatus, "Page status"); panel.Children.Add(_pageStatus);
-        _pageNumber = Number("Page number", 1, 1, 1000000); panel.Children.Add(_pageNumber);
-        panel.Children.Add(MenuAction("Go to page", () => Editor!.GoToPage((int)(_pageNumber.Value ?? 1) - 1), editing: false));
-        panel.Children.Add(MenuAction("Previous page", () => Editor!.GoToPage(Math.Max(0, Editor.CurrentPageNumber - 2)), editing: false));
-        panel.Children.Add(MenuAction("Next page", () => Editor!.GoToPage(Math.Min(Editor.PageCount - 1, Editor.CurrentPageNumber)), editing: false));
+        _pageStatus = new TextBlock(); AutomationProperties.SetName(_pageStatus, UiText("PageStatus", "Page status")); panel.Children.Add(_pageStatus);
+        _selectionStatus = new TextBlock(); AutomationProperties.SetName(_selectionStatus, UiText("SelectionStatus", "Selection status")); panel.Children.Add(_selectionStatus);
+        _pageNumber = Number(UiText("PageNumber", "Page number"), 1, 1, 1000000); panel.Children.Add(_pageNumber);
+        panel.Children.Add(MenuAction(UiText("GoToPage", "Go to page"), () => Editor!.Commands.Execute(EditorCommandId.GoToPage, (int)(_pageNumber.Value ?? 1)), editing: false));
+        panel.Children.Add(MenuAction(UiText("PreviousPage", "Previous page"), () => Editor!.Commands.Execute(EditorCommandId.GoToPage, Math.Max(1, Editor.CurrentPageNumber - 1)), editing: false));
+        panel.Children.Add(MenuAction(UiText("NextPage", "Next page"), () => Editor!.Commands.Execute(EditorCommandId.GoToPage, Math.Min(Editor.PageCount, Editor.CurrentPageNumber + 1)), editing: false));
         return new ScrollViewer { Content = panel, MaxHeight = 520 };
     }
 
@@ -684,10 +714,14 @@ public class TextaloniaToolbar : WrapPanel
             if (_font is not null) _font.SelectedItem = state.FontFamily.IsMixed ? null : state.FontFamily.Value ?? "Default";
             if (_size is not null) _size.SelectedItem = state.FontSize.IsMixed ? null : state.FontSize.Value.ToString("0", System.Globalization.CultureInfo.InvariantCulture);
             if (_viewMode is not null) _viewMode.SelectedItem = editor.ViewMode;
+            if (_showRulers is not null) _showRulers.IsChecked = editor.ShowRulers;
             if (_zoom is not null && !_zoom.IsKeyboardFocusWithin) _zoom.Value = (decimal)(editor.Zoom * 100);
             if (_pagesPerRow is not null && !_pagesPerRow.IsKeyboardFocusWithin) _pagesPerRow.Value = editor.PagesPerRow;
             if (_pageGap is not null && !_pageGap.IsKeyboardFocusWithin) _pageGap.Value = (decimal)editor.PageGap;
-            if (_pageStatus is not null) _pageStatus.Text = $"Page {editor.CurrentPageNumber} of {editor.PageCount}";
+            if (_pageStatus is not null) _pageStatus.Text = FormatStatus("PageFormat", "Page {0} of {1}", editor.CurrentPageNumber, editor.PageCount);
+            if (_selectionStatus is not null) _selectionStatus.Text = editor.Session.Selection.IsEmpty
+                ? FormatStatus("CaretFormat", "Caret {0} of {1}", editor.Session.Selection.Active + 1, editor.Session.Index.Length + 1)
+                : FormatStatus("SelectionFormat", "Selected {0} character(s)", editor.Session.Selection.Length);
             if (_pageNumber is not null)
             {
                 _pageNumber.Maximum = Math.Max(1, editor.PageCount);
@@ -695,5 +729,12 @@ public class TextaloniaToolbar : WrapPanel
             }
         }
         finally { _updating = false; }
+    }
+
+    private string FormatStatus(string key, string fallback, params object[] values)
+    {
+        var format = UiText(key, fallback);
+        try { return string.Format(System.Globalization.CultureInfo.CurrentUICulture, format, values); }
+        catch (FormatException) { return string.Format(System.Globalization.CultureInfo.CurrentUICulture, fallback, values); }
     }
 }

@@ -16,10 +16,20 @@ namespace Textalonia.Controls;
 
 public partial class TextaloniaEditor
 {
+    private IPagedDocumentExporter? _pdfExporter;
+    private IPrintService? _printService;
     /// <summary>Optional PDF backend. The editor never disposes this host-owned service.</summary>
-    public IPagedDocumentExporter? PdfExporter { get; set; }
+    public IPagedDocumentExporter? PdfExporter
+    {
+        get => _pdfExporter;
+        set { if (ReferenceEquals(_pdfExporter, value)) return; _pdfExporter = value; Commands.Refresh(); }
+    }
     /// <summary>Optional platform print adapter. The editor never disposes this host-owned service.</summary>
-    public IPrintService? PrintService { get; set; }
+    public IPrintService? PrintService
+    {
+        get => _printService;
+        set { if (ReferenceEquals(_printService, value)) return; _printService = value; Commands.Refresh(); }
+    }
     /// <summary>Output representations and unsupported-content policy, captured when output begins.</summary>
     public DocumentRenderOptions? OutputRenderOptions { get; set; }
     /// <summary>Null preserves cached field results. Otherwise output updates a detached snapshot using this explicit clock and resolver policy.</summary>
@@ -77,9 +87,10 @@ public partial class TextaloniaEditor
             LastError = null;
             using var renderer = CreateOutputRenderer();
             var dialog = new OutputPreviewWindow(this, renderer);
-            await dialog.ShowDialog(owner);
+            await ShowEditorDialogAsync<bool>(dialog, owner, cancellationReturnsDefault: false);
             return true;
         }
+        catch (OperationCanceledException) { return false; }
         catch (Exception exception) { ReportError(exception); await ShowOutputErrorAsync(owner, exception); return false; }
         finally { FocusDocument(); }
     }
@@ -144,17 +155,17 @@ public partial class TextaloniaEditor
         Func<IProgress<PagedOutputProgress>, CancellationToken, Task<PagedOutputResult?>> operation)
     {
         var dialog = new OutputProgressWindow(title, operation, ReportError);
-        return await dialog.ShowDialog<bool>(owner);
+        return await ShowEditorDialogAsync<bool>(dialog, owner);
     }
 
-    private static async Task ShowOutputErrorAsync(Window owner, Exception exception, string title = "Document output")
+    private async Task ShowOutputErrorAsync(Window owner, Exception exception, string title = "Document output")
     {
         var dialog = new Window { Title = title, Width = 480, SizeToContent = SizeToContent.Height,
             WindowStartupLocation = WindowStartupLocation.CenterOwner };
         var close = OutputButton("Close"); close.IsCancel = true; close.Click += (_, _) => dialog.Close();
         dialog.Content = new StackPanel { Margin = new Thickness(20), Spacing = 12, Children =
         { new TextBlock { Text = exception.Message, TextWrapping = TextWrapping.Wrap }, close } };
-        await dialog.ShowDialog(owner);
+        await ShowEditorDialogAsync<bool>(dialog, owner);
     }
 
     private static Button OutputButton(string text)
@@ -236,10 +247,10 @@ public partial class TextaloniaEditor
             var cancel = OutputButton("Cancel"); cancel.IsCancel = true;
             Content = new StackPanel { Margin = new Thickness(20), Spacing = 14, Children =
             { new ScrollViewer { Content = status, MaxHeight = 160 }, bar, cancel } };
-            var cancellation = new CancellationTokenSource(); var running = true; var succeeded = false;
+            var cancellation = new CancellationTokenSource(); var running = true; var succeeded = false; var closeRequested = false;
             void Cancel() { cancellation.Cancel(); status.Text = "Cancelling output…"; cancel.IsEnabled = false; }
             cancel.Click += (_, _) => { if (running) Cancel(); else Close(succeeded); };
-            Closing += (_, args) => { if (running) { args.Cancel = true; Cancel(); } };
+            Closing += (_, args) => { if (running) { args.Cancel = true; closeRequested = true; Cancel(); } };
             Closed += (_, _) => cancellation.Dispose();
             Opened += async (_, _) =>
             {
@@ -260,7 +271,11 @@ public partial class TextaloniaEditor
                 }
                 catch (OperationCanceledException) { status.Text = "Output cancelled."; }
                 catch (Exception exception) { reportError(exception); status.Text = exception.Message; }
-                finally { running = false; bar.IsIndeterminate = false; cancel.Content = "Close"; cancel.IsEnabled = true; }
+                finally
+                {
+                    running = false; bar.IsIndeterminate = false; cancel.Content = "Close"; cancel.IsEnabled = true;
+                    if (closeRequested) Close(false);
+                }
             };
         }
     }

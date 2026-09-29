@@ -186,7 +186,7 @@ public partial class TextaloniaEditor
         Session.Select(caret, caret);
         _cellSelection = new(tableId, anchorRow, anchorColumn, activeRow, activeColumn, top, left, bottom - top + 1, right - left + 1);
         _tableTextSelection = Session.Selection; _tableRevision = Session.Revision;
-        foreach (var command in _commands) command.RaiseCanExecuteChanged();
+        Commands.Refresh();
         TableCellSelectionChanged?.Invoke(this, EventArgs.Empty);
         _surface?.InvalidateVisual();
     }
@@ -194,7 +194,7 @@ public partial class TextaloniaEditor
     public void ClearTableCellSelection()
     {
         _cellSelection = null;
-        foreach (var command in _commands) command.RaiseCanExecuteChanged();
+        Commands.Refresh();
         TableCellSelectionChanged?.Invoke(this, EventArgs.Empty);
         _surface?.InvalidateVisual();
     }
@@ -324,7 +324,7 @@ public partial class TextaloniaEditor
     /// <summary>Starts a resize without editing the session. Initial size is the rendered track size in device-independent pixels.</summary>
     public bool BeginTableResize(Guid tableId, TableResizeAxis axis, int index, double initialSize)
     {
-        if (Session.IsReadOnly) return false;
+        if (!CanEdit(EditOperation.Tables)) return false;
         if (!Enum.IsDefined(axis) || !double.IsFinite(initialSize) || initialSize <= 0) throw new ArgumentOutOfRangeException(nameof(initialSize));
         var table = FindTable(tableId) ?? throw new ArgumentException("The table is not in this document.", nameof(tableId));
         if (index < 0 || index >= (axis == TableResizeAxis.Column ? table.ColumnCount : table.Rows.Length)) throw new ArgumentOutOfRangeException(nameof(index));
@@ -349,7 +349,7 @@ public partial class TextaloniaEditor
     public void PreviewTableResize(double size)
     {
         if (_tableResize is not { } resize) return;
-        if (Session.IsReadOnly || Session.Revision != resize.Revision) { CancelTableResize(); return; }
+        if (!CanEdit(EditOperation.Tables) || Session.Revision != resize.Revision) { CancelTableResize(); return; }
         if (!double.IsFinite(size)) throw new ArgumentOutOfRangeException(nameof(size));
         size = Math.Clamp(size, 1, 100000);
         if (Math.Abs(size - resize.InitialSize) < .001) _tablePreviewDocument = null;
@@ -382,7 +382,7 @@ public partial class TextaloniaEditor
     {
         var resize = _tableResize; var preview = _tablePreviewDocument;
         _tableResize = null; _tablePreviewDocument = null;
-        if (resize is null || preview is null || Session.IsReadOnly || Session.Revision != resize.Revision)
+        if (resize is null || preview is null || !CanEdit(EditOperation.Tables) || Session.Revision != resize.Revision)
         { _surface?.Refresh(); return false; }
         Session.Execute(_ => preview); return true;
     }

@@ -256,12 +256,13 @@ public partial class TextaloniaEditor
         var revision = Session.Revision; var selection = Session.Selection; var cells = CellSelection; var story = ActiveStoryId;
         dialog.ValidateCommit = () =>
         {
+            if (IsDialogCancellationRequested(dialog)) throw new InvalidOperationException("The dialog was canceled.");
             if (Session.IsReadOnly) throw new InvalidOperationException("The document is read-only.");
             if (Session.Revision != revision || Session.Selection != selection || CellSelection != cells || ActiveStoryId != story)
                 throw new InvalidOperationException("The document or selection changed. Close and reopen this dialog.");
         };
         dialog.Apply = apply;
-        try { return await dialog.ShowDialog<bool>(owner); }
+        try { return await ShowEditorDialogAsync<bool>(dialog, owner); }
         finally { FocusDocument(); }
     }
 
@@ -277,7 +278,7 @@ internal sealed class FormattingDialog : Window
     internal Action? ValidateCommit { get; set; }
     private readonly TextBlock _error = new() { TextWrapping = Avalonia.Media.TextWrapping.Wrap, Foreground = Avalonia.Media.Brushes.Firebrick };
 
-    internal FormattingDialog(string title, string applyLabel = "Apply")
+    internal FormattingDialog(string title, string applyLabel = "Apply", Func<string, string?>? localize = null)
     {
         Title = title; Width = 460; Height = 620; MinWidth = 360; MinHeight = 300;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -285,9 +286,11 @@ internal sealed class FormattingDialog : Window
         var footer = new StackPanel { Spacing = 8, Margin = new Avalonia.Thickness(16) };
         DockPanel.SetDock(footer, Dock.Bottom); root.Children.Add(footer); footer.Children.Add(_error);
         var actions = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 8 };
-        var cancel = new Button { Content = "Cancel", IsCancel = true };
+        var cancel = new Button { Content = localize?.Invoke("Textalonia.UI.Cancel") is { Length: > 0 } cancelText ? cancelText : "Cancel", IsCancel = true };
         cancel.Click += (_, _) => Close(false);
-        var apply = new Button { Content = applyLabel, IsDefault = true };
+        var applyText = applyLabel == "Apply" && localize?.Invoke("Textalonia.UI.Apply") is { Length: > 0 } localizedApply
+            ? localizedApply : applyLabel;
+        var apply = new Button { Content = applyText, IsDefault = true };
         apply.Click += (_, _) => Attempt(() => Commit(() => Apply?.Invoke()));
         actions.Children.Add(cancel); actions.Children.Add(apply); footer.Children.Add(actions);
         root.Children.Add(new ScrollViewer { Content = Body }); Content = root;

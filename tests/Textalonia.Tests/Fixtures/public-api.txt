@@ -119,6 +119,11 @@ type Textalonia.Controls.DocumentInputContext : System.Object sealed
   property Textalonia.Controls.DocumentSurface Surface { public get; }
   property Textalonia.Controls.TextaloniaEditor Editor { public get; }
   property Textalonia.Editing.EditorSession Session { public get; }
+type Textalonia.Controls.DocumentIoCompletedEventArgs : System.EventArgs sealed
+  ctor public (Textalonia.Serialization.IDocumentFormat format, Textalonia.Model.FlowDocument document, Textalonia.Serialization.ConversionReport report)
+  property Textalonia.Model.FlowDocument Document { public get; }
+  property Textalonia.Serialization.ConversionReport Report { public get; }
+  property Textalonia.Serialization.IDocumentFormat Format { public get; }
 type Textalonia.Controls.DocumentPrintPreview : Avalonia.Controls.Control sealed
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.Visual>
@@ -147,6 +152,46 @@ type Textalonia.Controls.DocumentPrintPreview : Avalonia.Controls.Control sealed
   property System.Double Zoom { public get; public set; }
   property System.Int32 PageIndex { public get; public set; }
   property Textalonia.Rendering.DocumentRenderer Renderer { public get; public set; }
+type Textalonia.Controls.DocumentRuler : Avalonia.Controls.Control sealed
+  interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
+  interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.Visual>
+  interface Avalonia.Controls.IResourceHost
+  interface Avalonia.Controls.IResourceNode
+  interface Avalonia.Controls.ISetInheritanceParent
+  interface Avalonia.Controls.ISetLogicalParent
+  interface Avalonia.Controls.Templates.IDataTemplateHost
+  interface Avalonia.Diagnostics.IAvaloniaObjectDebug
+  interface Avalonia.IDataContextProvider
+  interface Avalonia.INamed
+  interface Avalonia.Input.IInputElement
+  interface Avalonia.LogicalTree.ILogical
+  interface Avalonia.Rendering.IVisualBrushInitialize
+  interface Avalonia.Styling.ISetterValue
+  interface Avalonia.Styling.IStyleHost
+  interface Avalonia.Styling.IThemeVariantHost
+  interface System.ComponentModel.INotifyPropertyChanged
+  interface System.ComponentModel.ISupportInitialize
+  ctor public ()
+  field Avalonia.StyledProperty<Avalonia.Media.IBrush> PaperBackgroundProperty static readonly
+  field Avalonia.StyledProperty<Avalonia.Media.IBrush> RulerBackgroundProperty static readonly
+  field Avalonia.StyledProperty<Avalonia.Media.IBrush> RulerBorderProperty static readonly
+  field Avalonia.StyledProperty<Avalonia.Media.IBrush> RulerForegroundProperty static readonly
+  field Avalonia.StyledProperty<Textalonia.Controls.RulerOrientation> OrientationProperty static readonly
+  method protected Avalonia.Size MeasureOverride(Avalonia.Size availableSize) virtual
+  method protected System.Void OnGotFocus(Avalonia.Input.FocusChangedEventArgs e) virtual
+  method protected System.Void OnKeyDown(Avalonia.Input.KeyEventArgs e) virtual
+  method protected System.Void OnPointerCaptureLost(Avalonia.Input.PointerCaptureLostEventArgs e) virtual
+  method protected System.Void OnPointerMoved(Avalonia.Input.PointerEventArgs e) virtual
+  method protected System.Void OnPointerPressed(Avalonia.Input.PointerPressedEventArgs e) virtual
+  method protected System.Void OnPointerReleased(Avalonia.Input.PointerReleasedEventArgs e) virtual
+  method protected System.Void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) virtual
+  method public System.Void Render(Avalonia.Media.DrawingContext context) virtual
+  property Avalonia.Media.IBrush PaperBackground { public get; public set; }
+  property Avalonia.Media.IBrush RulerBackground { public get; public set; }
+  property Avalonia.Media.IBrush RulerBorder { public get; public set; }
+  property Avalonia.Media.IBrush RulerForeground { public get; public set; }
+  property Textalonia.Controls.RulerOrientation Orientation { public get; public set; }
+  property Textalonia.Controls.TextaloniaEditor Editor { public get; public set; }
 type Textalonia.Controls.DocumentSurface : Avalonia.Controls.Control
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.Visual>
@@ -245,9 +290,130 @@ type Textalonia.Controls.DocumentViewMode : System.Enum sealed
   field Textalonia.Controls.DocumentViewMode Draft static = 1
   field Textalonia.Controls.DocumentViewMode PrintLayout static = 2
   field Textalonia.Controls.DocumentViewMode Simple static = 0
+type Textalonia.Controls.EditingModeChangedEventArgs : System.EventArgs sealed
+  ctor public (System.Boolean isReadOnly, Textalonia.Model.DocumentProtection protection, Textalonia.Editing.EditPolicy policy, Textalonia.Editing.EditIdentity identity)
+  property System.Boolean IsReadOnly { public get; }
+  property Textalonia.Editing.EditIdentity Identity { public get; }
+  property Textalonia.Editing.EditPolicy Policy { public get; }
+  property Textalonia.Model.DocumentProtection Protection { public get; }
+type Textalonia.Controls.EditorBookmarkRename : System.Object sealed
+  interface System.IEquatable<Textalonia.Controls.EditorBookmarkRename>
+  ctor public (System.String Name, System.String NewName)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Controls.EditorBookmarkRename other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Name, System.String& NewName)
+  method public Textalonia.Controls.EditorBookmarkRename <Clone>$()
+  property System.String Name { public get; public set; }
+  property System.String NewName { public get; public set; }
+type Textalonia.Controls.EditorCommandDescriptor : System.Object sealed
+  interface System.IEquatable<Textalonia.Controls.EditorCommandDescriptor>
+  ctor public (Textalonia.Controls.EditorCommandId Id, System.String LocalizationKey, System.String DefaultText, System.String Group, System.Type ParameterType = , System.Collections.Generic.IReadOnlyList<Avalonia.Input.KeyGesture> Shortcuts = )
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Controls.EditorCommandDescriptor other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(Textalonia.Controls.EditorCommandId& Id, System.String& LocalizationKey, System.String& DefaultText, System.String& Group, System.Type& ParameterType, System.Collections.Generic.IReadOnlyList`1[[Avalonia.Input.KeyGesture, Avalonia.Base, Version=12.1.3.0, Culture=neutral, PublicKeyToken=c8d484a7012f9a8b]]& Shortcuts)
+  method public Textalonia.Controls.EditorCommandDescriptor <Clone>$()
+  property Avalonia.Input.KeyGesture Shortcut { public get; }
+  property System.Collections.Generic.IReadOnlyList<Avalonia.Input.KeyGesture> Shortcuts { public get; public set; }
+  property System.String DefaultText { public get; public set; }
+  property System.String Group { public get; public set; }
+  property System.String LocalizationKey { public get; public set; }
+  property System.Type ParameterType { public get; public set; }
+  property Textalonia.Controls.EditorCommandId Id { public get; public set; }
+type Textalonia.Controls.EditorCommandId : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Controls.EditorCommandId Bold static = 7
+  field Textalonia.Controls.EditorCommandId CloseStory static = 38
+  field Textalonia.Controls.EditorCommandId Copy static = 3
+  field Textalonia.Controls.EditorCommandId Cut static = 2
+  field Textalonia.Controls.EditorCommandId DeleteBookmark static = 63
+  field Textalonia.Controls.EditorCommandId DocumentProperties static = 25
+  field Textalonia.Controls.EditorCommandId EditFooter static = 37
+  field Textalonia.Controls.EditorCommandId EditHeader static = 36
+  field Textalonia.Controls.EditorCommandId EndnoteOptions static = 33
+  field Textalonia.Controls.EditorCommandId ExportPdf static = 43
+  field Textalonia.Controls.EditorCommandId Find static = 11
+  field Textalonia.Controls.EditorCommandId FitPage static = 52
+  field Textalonia.Controls.EditorCommandId FitWidth static = 51
+  field Textalonia.Controls.EditorCommandId Font static = 20
+  field Textalonia.Controls.EditorCommandId FootnoteOptions static = 32
+  field Textalonia.Controls.EditorCommandId GoToPage static = 55
+  field Textalonia.Controls.EditorCommandId HeaderFooterOptions static = 31
+  field Textalonia.Controls.EditorCommandId InsertBookmark static = 16
+  field Textalonia.Controls.EditorCommandId InsertEndnote static = 35
+  field Textalonia.Controls.EditorCommandId InsertFootnote static = 34
+  field Textalonia.Controls.EditorCommandId InsertMergeField static = 17
+  field Textalonia.Controls.EditorCommandId InsertPageField static = 18
+  field Textalonia.Controls.EditorCommandId InsertPicture static = 26
+  field Textalonia.Controls.EditorCommandId InsertSymbol static = 15
+  field Textalonia.Controls.EditorCommandId InsertTable static = 14
+  field Textalonia.Controls.EditorCommandId Italic static = 8
+  field Textalonia.Controls.EditorCommandId NavigateToBookmark static = 64
+  field Textalonia.Controls.EditorCommandId NavigateToOutline static = 65
+  field Textalonia.Controls.EditorCommandId Navigation static = 13
+  field Textalonia.Controls.EditorCommandId PageNumbering static = 24
+  field Textalonia.Controls.EditorCommandId PageSetup static = 23
+  field Textalonia.Controls.EditorCommandId Paragraph static = 21
+  field Textalonia.Controls.EditorCommandId Paste static = 4
+  field Textalonia.Controls.EditorCommandId PasteSpecial static = 5
+  field Textalonia.Controls.EditorCommandId PictureProperties static = 27
+  field Textalonia.Controls.EditorCommandId Print static = 42
+  field Textalonia.Controls.EditorCommandId PrintPreview static = 41
+  field Textalonia.Controls.EditorCommandId Proofing static = 40
+  field Textalonia.Controls.EditorCommandId Redo static = 1
+  field Textalonia.Controls.EditorCommandId RemovePicture static = 28
+  field Textalonia.Controls.EditorCommandId RenameBookmark static = 62
+  field Textalonia.Controls.EditorCommandId Replace static = 12
+  field Textalonia.Controls.EditorCommandId SelectAll static = 6
+  field Textalonia.Controls.EditorCommandId SetPageGap static = 54
+  field Textalonia.Controls.EditorCommandId SetPagesPerRow static = 53
+  field Textalonia.Controls.EditorCommandId SetZoom static = 50
+  field Textalonia.Controls.EditorCommandId Strikethrough static = 10
+  field Textalonia.Controls.EditorCommandId Styles static = 19
+  field Textalonia.Controls.EditorCommandId TableDeleteColumns static = 59
+  field Textalonia.Controls.EditorCommandId TableDeleteRows static = 58
+  field Textalonia.Controls.EditorCommandId TableInsertColumn static = 57
+  field Textalonia.Controls.EditorCommandId TableInsertRow static = 56
+  field Textalonia.Controls.EditorCommandId TableMergeCells static = 60
+  field Textalonia.Controls.EditorCommandId TableProperties static = 30
+  field Textalonia.Controls.EditorCommandId TableSplitCells static = 61
+  field Textalonia.Controls.EditorCommandId Tabs static = 22
+  field Textalonia.Controls.EditorCommandId ToggleRulers static = 47
+  field Textalonia.Controls.EditorCommandId Underline static = 9
+  field Textalonia.Controls.EditorCommandId Undo static = 0
+  field Textalonia.Controls.EditorCommandId UpdateFields static = 39
+  field Textalonia.Controls.EditorCommandId ViewDraft static = 45
+  field Textalonia.Controls.EditorCommandId ViewPrintLayout static = 46
+  field Textalonia.Controls.EditorCommandId ViewSimple static = 44
+  field Textalonia.Controls.EditorCommandId Watermark static = 29
+  field Textalonia.Controls.EditorCommandId ZoomIn static = 48
+  field Textalonia.Controls.EditorCommandId ZoomOut static = 49
 type Textalonia.Controls.EditorErrorEventArgs : System.EventArgs sealed
   ctor public (System.Exception exception)
   property System.Exception Exception { public get; }
+type Textalonia.Controls.EditorLayoutCompletedEventArgs : System.EventArgs sealed
+  ctor public (System.Int32 revision, Textalonia.Controls.DocumentViewMode viewMode, System.Int32 pageCount)
+  property System.Int32 PageCount { public get; }
+  property System.Int32 Revision { public get; }
+  property Textalonia.Controls.DocumentViewMode ViewMode { public get; }
+type Textalonia.Controls.EditorTableSize : System.Object sealed
+  interface System.IEquatable<Textalonia.Controls.EditorTableSize>
+  ctor public (System.Int32 Rows, System.Int32 Columns)
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Controls.EditorTableSize other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.Int32& Rows, System.Int32& Columns)
+  method public Textalonia.Controls.EditorTableSize <Clone>$()
+  property System.Int32 Columns { public get; public set; }
+  property System.Int32 Rows { public get; public set; }
 type Textalonia.Controls.EmbeddedInlineResourceResolver : System.Object sealed
   interface Textalonia.Controls.IInlineResourceResolver
   ctor public ()
@@ -278,6 +444,8 @@ type Textalonia.Controls.ICompositionComponent : none abstract
 type Textalonia.Controls.IDocumentInputComponent : none abstract
   method public System.Void Attach(Textalonia.Controls.DocumentInputContext context) virtual
   method public System.Void Detach() virtual
+type Textalonia.Controls.IEditorDialogService : none abstract
+  method public System.Threading.Tasks.Task<TResult> ShowAsync(Avalonia.Controls.Window dialog, Avalonia.Controls.Window owner, System.Threading.CancellationToken cancellationToken) virtual
 type Textalonia.Controls.IInlineControlFactory : none abstract
   method public Avalonia.Controls.Control Create(Textalonia.Model.InlineDescriptor descriptor) virtual
   method public System.Void Release(Avalonia.Controls.Control control) virtual
@@ -369,6 +537,23 @@ type Textalonia.Controls.MarkdownViewer : Textalonia.Controls.TextaloniaViewer
   property Textalonia.Controls.ICodeHighlighter CodeHighlighter { public get; public set; }
   property Textalonia.Serialization.ConversionOptions ConversionOptions { public get; public set; }
   property Textalonia.Serialization.ConversionReport ParseReport { public get; }
+type Textalonia.Controls.PasteSpecialFormat : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Controls.PasteSpecialFormat Html static = 1
+  field Textalonia.Controls.PasteSpecialFormat NativeFragment static = 0
+  field Textalonia.Controls.PasteSpecialFormat PlainText static = 2
+type Textalonia.Controls.RulerOrientation : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Controls.RulerOrientation Horizontal static = 0
+  field Textalonia.Controls.RulerOrientation Vertical static = 1
 type Textalonia.Controls.ShapingLimitExceededException : System.InvalidOperationException sealed
   interface System.Runtime.Serialization.ISerializable
   ctor public (System.Guid paragraphId, System.Int32 characterLimit, System.Int32 requestedCharacters)
@@ -414,6 +599,34 @@ type Textalonia.Controls.TextHighlight : System.Object sealed
   property Avalonia.Media.IBrush Brush { public get; public set; }
   property System.Int32 Length { public get; public set; }
   property System.Int32 Start { public get; public set; }
+type Textalonia.Controls.TextaloniaCommand : System.Object sealed
+  interface System.ComponentModel.INotifyPropertyChanged
+  interface System.Windows.Input.ICommand
+  event System.ComponentModel.PropertyChangedEventHandler PropertyChanged
+  event System.EventHandler CanExecuteChanged
+  method public System.Boolean CanExecute(System.Object parameter) virtual
+  method public System.Threading.Tasks.Task<System.Boolean> ExecuteAsync(System.Object parameter = )
+  method public System.Void Execute(System.Object parameter) virtual
+  property Avalonia.Input.KeyGesture Shortcut { public get; }
+  property System.Boolean IsMixed { public get; }
+  property System.Boolean IsRunning { public get; }
+  property System.Boolean IsVisible { public get; }
+  property System.Nullable<System.Boolean> IsChecked { public get; }
+  property System.String DisplayText { public get; }
+  property System.String LocalizationKey { public get; }
+  property Textalonia.Controls.EditorCommandDescriptor Descriptor { public get; }
+  property Textalonia.Controls.EditorCommandId Id { public get; }
+  property Textalonia.Editing.CommandCapability Capability { public get; }
+type Textalonia.Controls.TextaloniaCommandCatalog : System.Object sealed
+  method public System.Boolean CanExecute(Textalonia.Controls.EditorCommandId id, System.Object parameter = )
+  method public System.Boolean TryExecuteShortcut(Avalonia.Input.Key key, Avalonia.Input.KeyModifiers modifiers)
+  method public System.Boolean TryGet(Textalonia.Controls.EditorCommandId id, Textalonia.Controls.TextaloniaCommand& command)
+  method public System.Threading.Tasks.Task<System.Boolean> ExecuteAsync(Textalonia.Controls.EditorCommandId id, System.Object parameter = )
+  method public System.Void Execute(Textalonia.Controls.EditorCommandId id, System.Object parameter = )
+  method public System.Void Refresh()
+  property System.Collections.Generic.IReadOnlyCollection<Textalonia.Controls.TextaloniaCommand> All { public get; }
+  property System.Func<System.String,System.String> Localize { public get; public set; }
+  property Textalonia.Controls.TextaloniaCommand Item { public get; }
 type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.TemplatedControl
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.Visual>
@@ -441,7 +654,11 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   event System.EventHandler ReplaceRequested
   event System.EventHandler SelectionChanged
   event System.EventHandler<Textalonia.Controls.ConversionCompletedEventArgs> ConversionCompleted
+  event System.EventHandler<Textalonia.Controls.DocumentIoCompletedEventArgs> LoadCompleted
+  event System.EventHandler<Textalonia.Controls.DocumentIoCompletedEventArgs> SaveCompleted
+  event System.EventHandler<Textalonia.Controls.EditingModeChangedEventArgs> EditingModeChanged
   event System.EventHandler<Textalonia.Controls.EditorErrorEventArgs> OperationFailed
+  event System.EventHandler<Textalonia.Controls.EditorLayoutCompletedEventArgs> LayoutCompleted
   event System.EventHandler<Textalonia.Controls.HyperlinkEventArgs> HyperlinkActivated
   field Avalonia.DirectProperty<Textalonia.Controls.TextaloniaEditor,System.Boolean> IsSpellCheckingProperty static readonly
   field Avalonia.DirectProperty<Textalonia.Controls.TextaloniaEditor,System.Collections.Generic.IReadOnlyList<Textalonia.Proofing.SpellingDiagnostic>> SpellingDiagnosticsProperty static readonly
@@ -453,6 +670,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   field Avalonia.StyledProperty<Avalonia.Thickness> DocumentPaddingProperty static readonly
   field Avalonia.StyledProperty<System.Boolean> AcceptsTabProperty static readonly
   field Avalonia.StyledProperty<System.Boolean> IsReadOnlyProperty static readonly
+  field Avalonia.StyledProperty<System.Boolean> ShowRulersProperty static readonly
   field Avalonia.StyledProperty<System.Boolean> ShowToolbarProperty static readonly
   field Avalonia.StyledProperty<System.Boolean> SynchronizeTextProperty static readonly
   field Avalonia.StyledProperty<System.Double> PageGapProperty static readonly
@@ -478,6 +696,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Boolean CommitTableResize()
   method public System.Boolean FindNext(System.String text, System.Boolean matchCase = False)
   method public System.Boolean IgnoreSpelling(Textalonia.Proofing.SpellingDiagnostic diagnostic)
+  method public System.Boolean InsertSymbol(System.String symbol)
   method public System.Boolean NavigateToBookmark(System.String name)
   method public System.Boolean NavigateToOutline(Textalonia.Editing.DocumentOutlineEntry entry)
   method public System.Boolean NavigateToSearchResult(Textalonia.Editing.DocumentSearchResult result)
@@ -498,8 +717,10 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Threading.Tasks.Task SaveAsync(System.IO.Stream stream, Textalonia.Serialization.IDocumentFormat format, System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task WaitForSpellCheckAsync(System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task<System.Boolean> AddSpellingToDictionaryAsync(Textalonia.Proofing.SpellingDiagnostic diagnostic, System.Threading.CancellationToken cancellationToken = )
+  method public System.Threading.Tasks.Task<System.Boolean> PasteSpecialAsync(Textalonia.Controls.PasteSpecialFormat format, System.Threading.CancellationToken cancellationToken = )
   method public System.Threading.Tasks.Task<System.Boolean> QuickPrintAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowContentControlValueDialogAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowDocumentPropertiesDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowExportPdfDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowExtractOleDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowFontDialogAsync()
@@ -508,6 +729,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Threading.Tasks.Task<System.Boolean> ShowImageWatermarkDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowInsertImageDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowInsertOleDialogAsync()
+  method public System.Threading.Tasks.Task<System.Boolean> ShowInsertSymbolDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowNoteSettingsDialogAsync(Textalonia.Model.DocumentNoteKind kind)
   method public System.Threading.Tasks.Task<System.Boolean> ShowPageNumberingDialogAsync()
   method public System.Threading.Tasks.Task<System.Boolean> ShowPageSetupDialogAsync()
@@ -529,6 +751,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   method public System.Void ApplyPageSettings(Textalonia.Model.PageSettings settings)
   method public System.Void ApplyParagraphStyle(System.Func<Textalonia.Model.ParagraphStyle,Textalonia.Model.ParagraphStyle> change)
   method public System.Void ApplyStyle(System.Func<Textalonia.Model.TextStyle,Textalonia.Model.TextStyle> change)
+  method public System.Void CancelActiveDialogs()
   method public System.Void CancelTableResize()
   method public System.Void ClearSelectedTableCellContents()
   method public System.Void ClearTableCellSelection()
@@ -601,6 +824,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property System.Boolean IsReadOnly { public get; public set; }
   property System.Boolean IsResizingTable { public get; }
   property System.Boolean IsSpellChecking { public get; }
+  property System.Boolean ShowRulers { public get; public set; }
   property System.Boolean ShowToolbar { public get; public set; }
   property System.Boolean SynchronizeText { public get; public set; }
   property System.Collections.Generic.IReadOnlyList<Textalonia.Controls.DocumentFontDiagnostic> FontDiagnostics { public get; }
@@ -638,6 +862,7 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property Textalonia.Controls.DocumentViewMode ViewMode { public get; public set; }
   property Textalonia.Controls.ICaretComponent CaretComponent { public get; public set; }
   property Textalonia.Controls.ICompositionComponent CompositionComponent { public get; public set; }
+  property Textalonia.Controls.IEditorDialogService DialogService { public get; public set; }
   property Textalonia.Controls.IInlineResourceResolver InlineResourceResolver { public get; public set; }
   property Textalonia.Controls.IKeyboardComponent KeyboardComponent { public get; public set; }
   property Textalonia.Controls.IPointerComponent PointerComponent { public get; public set; }
@@ -645,10 +870,12 @@ type Textalonia.Controls.TextaloniaEditor : Avalonia.Controls.Primitives.Templat
   property Textalonia.Controls.InlineImageOptions InlineImageOptions { public get; public set; }
   property Textalonia.Controls.ShapingLimitExceededException LayoutError { public get; }
   property Textalonia.Controls.TableCellSelection CellSelection { public get; }
+  property Textalonia.Controls.TextaloniaCommandCatalog Commands { public get; }
   property Textalonia.Editing.EditorSession Session { public get; }
   property Textalonia.Editing.SelectionFormattingState FormattingState { public get; }
   property Textalonia.Export.IPagedDocumentExporter PdfExporter { public get; public set; }
   property Textalonia.Model.DocumentContentControl CurrentContentControl { public get; }
+  property Textalonia.Model.Fields.FieldEvaluationOptions FieldOptions { public get; public set; }
   property Textalonia.Model.Fields.FieldEvaluationOptions OutputFieldOptions { public get; public set; }
   property Textalonia.Model.FlowDocument Document { public get; public set; }
   property Textalonia.Model.InlineDescriptor CurrentImage { public get; }
@@ -700,6 +927,79 @@ type Textalonia.Controls.TextaloniaFindReplacePanel : Avalonia.Controls.StackPan
   property System.Collections.Immutable.ImmutableArray<Textalonia.Editing.DocumentSearchResult> Results { public get; }
   property System.String Query { public get; public set; }
   property System.String Replacement { public get; public set; }
+  property Textalonia.Controls.TextaloniaEditor Editor { public get; public set; }
+type Textalonia.Controls.TextaloniaHostAction : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Controls.TextaloniaHostAction MailMerge static = 3
+  field Textalonia.Controls.TextaloniaHostAction New static = 0
+  field Textalonia.Controls.TextaloniaHostAction Open static = 1
+  field Textalonia.Controls.TextaloniaHostAction Save static = 2
+type Textalonia.Controls.TextaloniaHostActionEventArgs : System.EventArgs sealed
+  ctor public (Textalonia.Controls.TextaloniaHostAction action)
+  property Textalonia.Controls.TextaloniaHostAction Action { public get; }
+type Textalonia.Controls.TextaloniaNavigationPanel : Avalonia.Controls.StackPanel sealed
+  interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
+  interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.Visual>
+  interface Avalonia.Controls.IResourceHost
+  interface Avalonia.Controls.IResourceNode
+  interface Avalonia.Controls.ISetInheritanceParent
+  interface Avalonia.Controls.ISetLogicalParent
+  interface Avalonia.Controls.Primitives.IScrollSnapPointsInfo
+  interface Avalonia.Controls.Templates.IDataTemplateHost
+  interface Avalonia.Diagnostics.IAvaloniaObjectDebug
+  interface Avalonia.IDataContextProvider
+  interface Avalonia.INamed
+  interface Avalonia.Input.IInputElement
+  interface Avalonia.Input.INavigableContainer
+  interface Avalonia.LogicalTree.IChildIndexProvider
+  interface Avalonia.LogicalTree.ILogical
+  interface Avalonia.Rendering.IVisualBrushInitialize
+  interface Avalonia.Styling.ISetterValue
+  interface Avalonia.Styling.IStyleHost
+  interface Avalonia.Styling.IThemeVariantHost
+  interface System.ComponentModel.INotifyPropertyChanged
+  interface System.ComponentModel.ISupportInitialize
+  ctor public ()
+  event System.EventHandler CloseRequested
+  field Avalonia.StyledProperty<Textalonia.Controls.TextaloniaEditor> EditorProperty static readonly
+  method protected System.Void OnAttachedToVisualTree(Avalonia.VisualTreeAttachmentEventArgs e) virtual
+  method protected System.Void OnDetachedFromVisualTree(Avalonia.VisualTreeAttachmentEventArgs e) virtual
+  method protected System.Void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) virtual
+  method public System.Void FocusNavigation()
+  method public System.Void RefreshItems()
+  property System.Func<System.String,System.String> Localize { public get; public set; }
+  property Textalonia.Controls.TextaloniaEditor Editor { public get; public set; }
+type Textalonia.Controls.TextaloniaTabbedCommandSurface : Avalonia.Controls.Primitives.TemplatedControl
+  interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
+  interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.Visual>
+  interface Avalonia.Controls.IResourceHost
+  interface Avalonia.Controls.IResourceNode
+  interface Avalonia.Controls.ISetInheritanceParent
+  interface Avalonia.Controls.ISetLogicalParent
+  interface Avalonia.Controls.Templates.IDataTemplateHost
+  interface Avalonia.Diagnostics.IAvaloniaObjectDebug
+  interface Avalonia.IDataContextProvider
+  interface Avalonia.INamed
+  interface Avalonia.Input.IInputElement
+  interface Avalonia.LogicalTree.ILogical
+  interface Avalonia.Rendering.IVisualBrushInitialize
+  interface Avalonia.Styling.ISetterValue
+  interface Avalonia.Styling.IStyleHost
+  interface Avalonia.Styling.IThemeVariantHost
+  interface System.ComponentModel.INotifyPropertyChanged
+  interface System.ComponentModel.ISupportInitialize
+  ctor public ()
+  event System.EventHandler<Textalonia.Controls.TextaloniaHostActionEventArgs> HostActionRequested
+  field Avalonia.StyledProperty<Textalonia.Controls.TextaloniaEditor> EditorProperty static readonly
+  method protected System.Void OnApplyTemplate(Avalonia.Controls.Primitives.TemplateAppliedEventArgs e) virtual
+  method protected System.Void OnPropertyChanged(Avalonia.AvaloniaPropertyChangedEventArgs change) virtual
+  method public System.Void OpenFind(System.Boolean replace = False)
+  method public System.Void OpenNavigation()
+  property System.Func<System.String,System.String> Localize { public get; public set; }
   property Textalonia.Controls.TextaloniaEditor Editor { public get; public set; }
 type Textalonia.Controls.TextaloniaToolbar : Avalonia.Controls.WrapPanel
   interface Avalonia.Collections.IAvaloniaListItemValidator<Avalonia.LogicalTree.ILogical>
@@ -866,6 +1166,7 @@ type Textalonia.Editing.EditorSession : System.Object sealed
   method public System.Boolean SelectNextContentControl(System.Boolean backwards = False)
   method public System.Boolean SelectSearchResult(Textalonia.Editing.DocumentSearchResult result)
   method public System.Boolean SetContentControlValue(System.Guid controlId, System.String value)
+  method public System.Boolean SetDocumentProperties(Textalonia.Model.DocumentCoreProperties coreProperties, System.Collections.Generic.IEnumerable<Textalonia.Model.DocumentCustomProperty> customProperties)
   method public System.Boolean ToggleContentControl(System.Guid controlId)
   method public System.Boolean TryApplyAutoCorrect(System.Int32 start, System.Int32 end, Textalonia.Proofing.AutoCorrectReplacement replacement)
   method public System.Boolean TryResolvePosition(Textalonia.Editing.DocumentPosition position, System.Int32& offset)

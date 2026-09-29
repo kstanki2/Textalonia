@@ -2,6 +2,7 @@
 
 ## 0.1.0-preview.1
 
+- Added DX-13 shared command catalog, localized optional tabbed command surface, page-aware rulers, Paste Special, symbol and document-property dialogs, and host dialog/lifecycle integration. The compact toolbar and retemplating remain available. See [commands and document UI](docs/COMMAND-UI.md).
 - Added DX-09 protected editing and structured forms: host capabilities/identity, atomic session enforcement, permission ranges, typed values and locks, keyboard/value-dialog interaction, native v11/XAML v6 and supported DOCX mappings. See [forms contracts](docs/FORMS.md) for interoperability and qualification limits.
 - Added DX-07 image placement/crop/rotation and wrapping, section text/image watermarks, bounded image decoding, OLE package/preview APIs and picture editing UI. Native v10, XAML v5 and clipboard v6 retain the model; DOCX maps supported objects and other formats diagnose losses. See [image contracts](docs/IMAGES.md) for support and qualification boundaries.
 

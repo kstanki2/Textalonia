@@ -166,6 +166,7 @@ public partial class DocumentSurface : Control
         Editor.SetLayoutError(null);
         if (_pagedLayout is null) ApplyAnchorAdjustment(_layout.AnchorAdjustment * ViewZoom);
         UpdateInlineViews();
+        Editor.PublishLayoutCompleted();
     }
     internal void RejectLayout(ShapingLimitExceededException error)
     {
