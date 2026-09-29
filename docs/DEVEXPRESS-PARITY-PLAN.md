@@ -2,7 +2,7 @@
 
 Research date: **2026-09-27**. Textalonia baseline: commit
 `97e8573ef362197f33b97ae27667f5ee52b79508`, the unpublished `0.1.0-preview.1`
-candidate. Status: **implementation plan; DX-01 through DX-07 and DX-09 through DX-11 implementation and
+candidate. Status: **implementation plan; DX-01 through DX-07 and DX-09 through DX-12 implementation and
 qualification status is recorded below. Other workstreams remain proposed unless explicitly noted.**
 
 The audit tables in sections 2-3 describe the baseline commit above; the DX-01
@@ -25,6 +25,9 @@ editing and structured form controls. The DX-10 implementation entry and
 AutoCorrect and hyphenation.
 The DX-11 implementation entry and [mail-merge guide](MAIL-MERGE.md) supersede
 baseline findings for hierarchical recipients, repeating regions and combined output.
+The DX-12 implementation entry and [interchange guide](INTERCHANGE.md) supersede
+baseline findings for document metadata, selected package retention and the added
+format subsets. Binary Office fidelity and broader encrypted-file support remain open.
 
 The intended reference is [DevExpress WPF Rich Text Editor / RichEditControl][dx-home].
 Textalonia remains an independent Avalonia control. The goal is comparable behavior
@@ -694,6 +697,34 @@ and one combined document whose sections/page numbers survive DOCX/PDF output.
 ### DX-12 — Office fidelity, additional formats and package preservation
 
 **Priority: continuous fidelity, then format breadth. Size: XL. Dependencies: DX-00 and each model feature.**
+
+**Implementation status (2026-09-28): partial, selected subsets.** DOCX/DOTX now
+validate bounded package names, content types, relationship targets and IDs, and
+report unsupported or scope-excluded parts without copying them back. Digital
+signatures are diagnosed as invalidated. The document model has core properties,
+typed custom properties, bounded custom XML items and stored Word compatibility
+settings; native JSON v12, data XAML v7 and DOCX/DOTX retain this supported
+metadata. Decorative `Section` groups carry an explicit Textalonia marker so a
+Word content control with the same tag is not interpreted as a group.
+
+DOTX shares the DOCX mapping with a template main-part type. Separate bounded
+Flat OPC XML, Word 2003 XML, MHTML and ODT codecs ship at the feature levels in
+[INTERCHANGE.md](INTERCHANGE.md#additional-dx-12-formats-and-package-boundaries).
+HTML import also applies a bounded subset of embedded stylesheet rules with
+simple type, class and ID selectors and diagnoses unsupported CSS.
+ODT currently covers basic styled text, lists, tables, one page layout and
+bounded internal raster images. SVG and OLE use diagnosed alternative-text
+fallback. Office Math `m:oMath` and `m:oMathPara` are retained as bounded atomic
+interchange payloads in DOCX, native JSON and data XAML, with text fallback for
+display; equation layout and editing are not claimed. DOC/DOT are available only
+through an explicit, optional LibreOffice executable adapter. Its conversions always report
+unverified fidelity, so strict mode rejects them. There is no default binary
+provider. Standard AES password-encrypted OOXML imports through a bounded,
+explicit password load path; Agile encryption, encrypted export and encrypted
+DOC/DOT are unsupported. Full DX-12 completion still requires broader opaque
+payload ownership, further RTF/HTML and format mappings, additional encryption
+variants, DOC/DOT fidelity qualification, a broader external Word/LibreOffice
+corpus and rendered comparisons. The exit evidence below has not been met.
 
 Refactor `Serialization/DocxDocumentFormat.cs` into package, relationship, style,
 story, field, image and form readers/writers. Extend `DocumentFormats.cs`,

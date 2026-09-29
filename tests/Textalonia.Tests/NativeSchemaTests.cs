@@ -14,20 +14,28 @@ public class NativeSchemaTests
     private static string Fixture(string name) => File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", name));
     private static string Encode(FlowDocument document) => DocumentFormats.Json.Serialize(document);
 
+    [Fact]
+    public void Previous_v11_document_remains_readable_after_v12_schema_expansion()
+    {
+        var current = Encode(FlowDocument.FromText("legacy content"));
+        var previous = current.Replace("\"version\": 12", "\"version\": 11", StringComparison.Ordinal);
+        Assert.Equal("legacy content", DocumentFormats.Json.Parse(previous).PlainText);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
     [InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
-    [InlineData(12)]
+    [InlineData(13)]
     [InlineData(int.MaxValue)]
     public void Unsupported_versions_are_reported_before_decoding_future_members(int version)
     {
         var error = Assert.Throws<NotSupportedException>(() => DocumentFormats.Json.Parse(
             JsonSerializer.Serialize(new { version, futureEnvelope = true, document = new { futureNode = new { arbitrary = 42 } } })));
         Assert.Contains(version.ToString(), error.Message);
-        Assert.Equal($"Document version {version} is not supported. Supported version is 11.", error.Message);
+        Assert.Equal($"Document version {version} is not supported. Supported version is 12.", error.Message);
     }
 
     [Theory]
@@ -54,7 +62,7 @@ public class NativeSchemaTests
         var json = Encode(document);
         Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"columnSpan\": 1", "\"columnSpan\": 1, \"paragraphs\": []")));
         Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"columnSpan\": 1", "\"columnSpan\": 1, \"mergeOriginal\": []")));
-        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 11", "\"version\": 11, \"unknown\": true")));
+        Assert.Throws<JsonException>(() => DocumentFormats.Json.Parse(json.Replace("\"version\": 12", "\"version\": 12, \"unknown\": true")));
         using var parsed = JsonDocument.Parse(json);
         var cell = parsed.RootElement.GetProperty("document").GetProperty("blocks")[0].GetProperty("rows")[0][0];
         Assert.False(cell.TryGetProperty("paragraphs", out _));

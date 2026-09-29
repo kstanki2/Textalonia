@@ -41,7 +41,7 @@ public class FormInterchangeTests
         var loaded = format.Parse(serialized);
         Assert.Equal(DocumentFormats.Json.Serialize(document), DocumentFormats.Json.Serialize(loaded));
         Assert.True(loaded.Protection.Password!.Verify("forms password"));
-        Assert.Contains(xaml ? "Version=\"6\"" : "\"version\": 11", serialized);
+        Assert.Contains(xaml ? "Version=\"7\"" : "\"version\": 12", serialized);
     }
 
     [Fact]

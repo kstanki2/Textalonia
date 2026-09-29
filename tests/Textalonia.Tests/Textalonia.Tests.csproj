@@ -14,7 +14,7 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="Fixtures/**/*.json;Fixtures/**/*.txt;Fixtures/**/*.html;Fixtures/**/*.rtf;Fixtures/**/*.xml;Fixtures/**/*.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/**/*.json;Fixtures/**/*.txt;Fixtures/**/*.html;Fixtures/**/*.rtf;Fixtures/**/*.xml;Fixtures/**/*.md;Fixtures/**/*.docx;Fixtures/**/*.odt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Textalonia.Pdf.Skia\Textalonia.Pdf.Skia.csproj" />

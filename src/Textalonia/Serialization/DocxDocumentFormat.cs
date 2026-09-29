@@ -12,11 +12,19 @@ namespace Textalonia.Serialization;
 /// <summary>Bounded WordprocessingML interchange; page layout and revision history are diagnosed flow-model losses.</summary>
 public sealed partial class DocxDocumentFormat : IDocumentFormat
 {
+    private const string DocumentMainContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml";
+    private const string TemplateMainContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml";
+    private readonly bool _template;
+
+    public DocxDocumentFormat() { }
+    internal DocxDocumentFormat(bool template) => _template = template;
+
     private static readonly XNamespace W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
     private static readonly XNamespace R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
     private static readonly XNamespace Rel = "http://schemas.openxmlformats.org/package/2006/relationships";
     private static readonly XNamespace Ct = "http://schemas.openxmlformats.org/package/2006/content-types";
     private static readonly XNamespace A = "http://schemas.openxmlformats.org/drawingml/2006/main";
+    private static readonly XNamespace M = "http://schemas.openxmlformats.org/officeDocument/2006/math";
     private static readonly XNamespace Wp = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing";
     private static readonly XNamespace Pic = "http://schemas.openxmlformats.org/drawingml/2006/picture";
     private static readonly uint[] CrcTable = Enumerable.Range(0, 256).Select(index =>
@@ -28,17 +36,25 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
     private const string ListNamePrefix = "Textalonia.List.";
     private const string SectionTag = "Textalonia.Section";
     private const string CellEndStyle = "TextaloniaCellEnd";
-    public string Name => "Word document";
-    public IReadOnlyList<string> Extensions => [".docx"];
+    public string Name => _template ? "Word template" : "Word document";
+    public IReadOnlyList<string> Extensions => _template ? [".dotx"] : [".docx"];
     public async Task<FlowDocument> LoadAsync(Stream stream, CancellationToken cancellationToken = default)
     {
         var bytes = await DocumentFormats.ReadLimitedAsync(stream, cancellationToken);
-        return await Task.Run(() => Read(bytes, cancellationToken), cancellationToken);
+        return await Task.Run(() => Read(bytes, cancellationToken, _template), cancellationToken);
+    }
+    /// <summary>Loads a DOCX or DOTX protected with Standard Office AES password encryption.</summary>
+    public async Task<FlowDocument> LoadWithPasswordAsync(Stream stream, string password, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(password);
+        var bytes = await DocumentFormats.ReadLimitedAsync(stream, cancellationToken);
+        return await Task.Run(() => Read(OfficeEncryptedPackage.Decrypt(bytes, password, cancellationToken),
+            cancellationToken, _template), cancellationToken);
     }
     public async Task SaveAsync(FlowDocument document, Stream stream, CancellationToken cancellationToken = default)
     {
         document.Validate();
-        var bytes = await Task.Run(() => Write(document, cancellationToken), cancellationToken);
+        var bytes = await Task.Run(() => Write(document, cancellationToken, _template), cancellationToken);
         await stream.WriteAsync(bytes, cancellationToken);
     }
     private sealed record NumberingInfo(Guid Identity, ListDefinition Definition, Dictionary<int, int> Starts);
@@ -58,17 +74,24 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         ConversionDiagnostics.Report("docx." + code, feature, fallback, id,
             source is IXmlLineInfo info && info.HasLineInfo() ? $"{source.Document?.Annotation<string>() ?? "word/document.xml"}:{info.LineNumber}:{info.LinePosition}" : null);
 
-    private static FlowDocument Read(byte[] bytes, CancellationToken token)
+    private static FlowDocument Read(byte[] bytes, CancellationToken token, bool template)
     {
+        if (OfficeEncryptedPackage.IsEncrypted(bytes))
+            throw new NotSupportedException("Password-encrypted Office package. Use LoadWithPasswordAsync for supported Standard AES packages.");
+        if (OfficeEncryptedPackage.IsCompoundFile(bytes))
+            throw new FormatException("DOCX input is a compound file, not an Open XML ZIP package.");
         using var archive = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read);
         if (archive.Entries.Count > 4096 || archive.Entries.Sum(e => e.Length) > 128L * 1024 * 1024)
             throw new FormatException("DOCX package is too large.");
         if (archive.Entries.GroupBy(e => e.FullName, StringComparer.Ordinal).Any(g => g.Count() > 1))
             throw new FormatException("DOCX package contains duplicate parts.");
         long packageReadBytes = 0;
+        var verifiedParts = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         byte[] ReadPart(ZipArchiveEntry entry, int limit)
         {
+            token.ThrowIfCancellationRequested();
             if (entry.Length > limit) throw new FormatException("DOCX package part exceeds its size limit.");
+            if (verifiedParts.TryGetValue(entry.FullName, out var verified)) return verified;
             using var input = entry.Open(); using var output = new MemoryStream();
             var buffer = new byte[81920];
             var crc = uint.MaxValue;
@@ -84,7 +107,9 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             }
             // ZipArchive may truncate deflate output to a forged declared size; validate integrity as well as budgets.
             if (output.Length != entry.Length || ~crc != entry.Crc32) throw new FormatException("DOCX package part has an inconsistent size or checksum.");
-            return output.ToArray();
+            verified = output.ToArray();
+            verifiedParts.Add(entry.FullName, verified);
+            return verified;
         }
         XDocument? Xml(string path, bool required = false)
         {
@@ -107,12 +132,18 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             PrepareGeneralFields(xml);
             return xml;
         }
+        ValidateImportPackage(archive, path => Xml(path), token);
+        var contentTypes = Xml("[Content_Types].xml", required: template)?.Root;
+        if (template && (string?)contentTypes?.Elements(Ct + "Override")
+                .FirstOrDefault(e => (string?)e.Attribute("PartName") == "/word/document.xml")
+                ?.Attribute("ContentType") != TemplateMainContentType)
+            throw new FormatException("DOTX package must declare a Word template main document part.");
         var relationships = Xml("word/_rels/document.xml.rels")?.Root?.Elements(Rel + "Relationship")
             .Where(e => e.Attribute("Id") is not null).ToDictionary(e => (string)e.Attribute("Id")!, e => e) ?? [];
         var mainRelationships = relationships;
         var currentPart = "word/document.xml";
         var settings = Xml("word/settings.xml");
-        var glossaryRelationship = relationships.Values.FirstOrDefault(e => ((string?)e.Attribute("Type"))?.EndsWith("/glossaryDocument", StringComparison.Ordinal) == true && (string?)e.Attribute("TargetMode") != "External");
+        var glossaryRelationship = relationships.Values.FirstOrDefault(e => (string?)e.Attribute("Type") == R.NamespaceName + "/glossaryDocument" && (string?)e.Attribute("TargetMode") != "External");
         var glossaryPart = glossaryRelationship is null ? null : ResolvePart((string?)glossaryRelationship.Attribute("Target") ?? "");
         var placeholderTexts = (glossaryPart is null ? null : Xml(glossaryPart))?.Descendants(W + "docPart").Where(e => Value(e.Element(W + "docPartPr")?.Element(W + "name")) is not null)
             .GroupBy(e => Value(e.Element(W + "docPartPr")?.Element(W + "name"))!, StringComparer.Ordinal).ToDictionary(g => g.Key, g => string.Concat(g.First().Element(W + "docPartBody")?.Descendants(W + "t").Select(e => e.Value) ?? []), StringComparer.Ordinal) ?? [];
@@ -145,16 +176,15 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         if (settings?.Root?.Element(W + "defaultTabStop") is { } defaultTabs) defaultParagraph = defaultParagraph with { DefaultTabWidth = Bounded(Number(defaultTabs) / 15d, 1, 100000, defaultTabs) };
         var defaultParagraphId = styles.Values.FirstOrDefault(e => (string?)e.Attribute(W + "type") == "paragraph" && OnAttribute(e, "default"))?.Attribute(W + "styleId")?.Value;
         var catalog = ReadStyleCatalog(styles, numbering);
-        var themeRelationship = relationships.Values.FirstOrDefault(e => ((string?)e.Attribute("Type"))?.EndsWith("/theme", StringComparison.Ordinal) == true && (string?)e.Attribute("TargetMode") != "External");
+        var themeRelationship = relationships.Values.FirstOrDefault(e => (string?)e.Attribute("Type") == R.NamespaceName + "/theme" && (string?)e.Attribute("TargetMode") != "External");
         var themePart = themeRelationship is null ? null : ResolvePart((string?)themeRelationship.Attribute("Target") ?? "");
         var theme = ReadTheme(themePart is null ? null : Xml(themePart)?.Root);
         var resources = ImmutableDictionary.CreateBuilder<string, DocumentResource>();
         var fonts = ReadEmbeddedFonts(Xml("word/fontTable.xml")?.Root, Xml("word/_rels/fontTable.xml.rels"),
-            (path, limit) => ReadPart(archive.GetEntry(path) ?? throw new FormatException("Missing DOCX embedded font part."), limit), resources);
+            (path, limit) => (byte[])ReadPart(archive.GetEntry(path) ?? throw new FormatException("Missing DOCX embedded font part."), limit).Clone(), resources);
         var imageResources = new Dictionary<string, string>();
         var startsUsed = new HashSet<(string, int)>();
         var resourceBytes = resources.Values.Sum(resource => (long)resource.Data.Length);
-        var contentTypes = Xml("[Content_Types].xml")?.Root;
         (TextStyle Text, ParagraphStyle Paragraph) ResolveStyle(string? id, HashSet<string>? visited = null)
         {
             if (id is null) return (defaultText, defaultParagraph);
@@ -187,7 +217,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         string? ReadResource(string? relationshipId, string kind, XElement source)
         {
             if (relationshipId is null || !relationships.TryGetValue(relationshipId, out var relationship) ||
-                ((string?)relationship.Attribute("Type"))?.EndsWith("/" + kind, StringComparison.Ordinal) != true || (string?)relationship.Attribute("TargetMode") == "External")
+                (string?)relationship.Attribute("Type") != R.NamespaceName + "/" + kind || (string?)relationship.Attribute("TargetMode") == "External")
             { Loss(kind + "-unavailable", "Missing, external or unsupported " + kind + " relationship", "Alternative text retained; no resource fetched.", source); return null; }
             var part = ResolvePart((string?)relationship.Attribute("Target") ?? "", currentPart);
             if (part is null || archive.GetEntry(part) is not { } entry)
@@ -234,14 +264,35 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             var data = source.Element(O + "OLEObject");
             if (data is null || (string?)data.Attribute("Type") != "Embed")
             { Loss("ole-linked", "Linked or unsupported OLE object", "Alternative text retained; no linked data accessed.", source); return new RichRun(alt, style); }
-            var resourceId = ReadResource((string?)data.Attribute(R + "id"), "oleObject", source);
+            var relationId = (string?)data.Attribute(R + "id");
+            var relationshipKind = relationId is not null && relationships.TryGetValue(relationId, out var relation) &&
+                (string?)relation.Attribute("Type") == R.NamespaceName + "/package" ? OleRelationshipKind.Package : OleRelationshipKind.OleObject;
             var previewId = ReadResource((string?)shape?.Element(V + "imagedata")?.Attribute(R + "id"), "image", source);
-            if (resourceId is null || previewId is null) return new RichRun(alt, style);
+            if (previewId is null) return new RichRun(alt, style);
+            var resourceId = ReadResource(relationId, relationshipKind == OleRelationshipKind.Package ? "package" : "oleObject", source);
+            if (resourceId is null) return new RichRun(alt, style);
             var width = Dimension(source, W + "dxaOrig", 480) / 15;
             var height = Dimension(source, W + "dyaOrig", 480) / 15;
             return new RichRun(new InlineDescriptor { AltText = alt, Width = width, Height = height,
                 Placement = source.Attribute(Tx + "placement") is { } placement ? System.Text.Json.JsonSerializer.Deserialize<ImagePlacement>(placement.Value, JsonDocumentFormat.Options) : null,
-                Payload = new OleInlinePayload(resourceId, previewId) { ProgramId = (string?)data.Attribute("ProgID") ?? "", FileName = (string?)source.Attribute(Tx + "fileName") ?? "" } }, style);
+                Payload = new OleInlinePayload(resourceId, previewId) { ProgramId = (string?)data.Attribute("ProgID") ?? "", FileName = (string?)source.Attribute(Tx + "fileName") ?? "",
+                    RelationshipKind = relationshipKind } }, style);
+        }
+        RichRun ReadEquation(XElement source, TextStyle style)
+        {
+            var alt = EquationMarkup.AlternativeText(source);
+            try
+            {
+                var xml = source.ToString(SaveOptions.DisableFormatting);
+                EquationMarkup.Parse(xml);
+                return new RichRun(new InlineDescriptor { AltText = alt, Width = 32, Height = 24,
+                    Payload = new EquationInlinePayload(xml) }, style);
+            }
+            catch (FormatException)
+            {
+                Loss("equation-invalid", "Unsupported or oversized Office Math equation", "Equation text retained without its Math ML payload.", source);
+                return new RichRun(alt, style);
+            }
         }
         Paragraph ReadParagraph(XElement element)
         {
@@ -249,7 +300,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             foreach (var child in element.Elements().Where(e => e.Annotation<FieldBoundary>() is null && e.Name != W + "pPr" && e.Name != W + "r" && e.Name != W + "hyperlink" &&
                 e.Name != W + "ins" && e.Name != W + "del" && e.Name != W + "moveFrom" && e.Name != W + "moveTo" &&
                 e.Name != W + "bookmarkStart" && e.Name != W + "bookmarkEnd" && e.Name != W + "proofErr" && e.Name != W + "fldSimple" && e.Name != W + "sdt" &&
-                e.Name != W + "permStart" && e.Name != W + "permEnd" && e.Name.Namespace != Tx))
+                e.Name != W + "permStart" && e.Name != W + "permEnd" && e.Name != M + "oMath" && e.Name != M + "oMathPara" && e.Name.Namespace != Tx))
                 Loss("paragraph-content", child.Name.LocalName, "Recognized run content retained; unsupported paragraph content omitted.", child);
             var pp = element.Element(W + "pPr");
             var styleId = Value(pp?.Element(W + "pStyle")) ?? defaultParagraphId;
@@ -405,6 +456,8 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             {
                 if (ReadRangeBoundary(node)) return;
                 if (node.Name == W + "del" || node.Name == W + "moveFrom" || node.Name == W + "pPr" || node.Name == W + "p") return;
+                if (node.Name == M + "oMath" || node.Name == M + "oMathPara")
+                { AddRun(ReadEquation(node, paragraphText)); return; }
                 if (node.Name == W + "sdt")
                 {
                     var control = ReadContentControl(node, name => placeholderTexts.GetValueOrDefault(name));
@@ -483,6 +536,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                     else if (content.Name == W + "footnoteRef" || content.Name == W + "endnoteRef") { }
                     else if (content.Name == W + "drawing") AddRun(ReadDrawing(content, style));
                     else if (content.Name == W + "object") AddRun(ReadOle(content, style));
+                    else if (content.Name == M + "oMath" || content.Name == M + "oMathPara") AddRun(ReadEquation(content, style));
                     else if (content.Name == W + "pict" && content.Descendants().Any(e => e.Attribute(Tx + "watermark") is not null)) { }
                     else if (content.Name == W + "t") AddRun(new RichRun(content.Value.Replace('\n', '\u2028').Replace("\r", ""), style));
                     else if (content.Name == W + "tab") AddRun(new RichRun("\t", style));
@@ -637,7 +691,8 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 else if (element.Name == W + "sdt")
                 {
                     var children = ReadBlocks(element.Element(W + "sdtContent")?.Elements() ?? [], depth + 1).ToImmutableArray();
-                    if (Value(element.Element(W + "sdtPr")?.Element(W + "tag")) == SectionTag)
+                    if (Value(element.Element(W + "sdtPr")?.Element(W + "tag")) == SectionTag &&
+                        (string?)element.Element(W + "sdtPr")?.Attribute(Tx + "decorativeSection") == "1")
                     { if (!children.IsEmpty) yield return new Section { Blocks = children, Padding = 0 }; continue; }
                     var control = ReadContentControl(element, name => placeholderTexts.GetValueOrDefault(name));
                     children = FlowDocument.EnsureBlocks(children);
@@ -679,7 +734,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         foreach (var endnote in new[] { false, true })
         {
             var kind = endnote ? "endnotes" : "footnotes";
-            var relation = mainRelationships.Values.FirstOrDefault(e => ((string?)e.Attribute("Type"))?.EndsWith("/" + kind, StringComparison.Ordinal) == true);
+            var relation = mainRelationships.Values.FirstOrDefault(e => (string?)e.Attribute("Type") == R.NamespaceName + "/" + kind);
             if (relation is null) continue;
             if ((string?)relation.Attribute("TargetMode") == "External")
             { Loss("note-external", "External note relationship", "Notes omitted; no resource fetched.", relation); continue; }
@@ -721,7 +776,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         {
             var relationshipId = (string?)reference.Attribute(R + "id") ?? "";
             if (!mainRelationships.TryGetValue(relationshipId, out var relation) || (string?)relation.Attribute("TargetMode") == "External" ||
-                !((string?)relation.Attribute("Type") ?? "").EndsWith(footer ? "/footer" : "/header", StringComparison.Ordinal))
+                (string?)relation.Attribute("Type") != R.NamespaceName + (footer ? "/footer" : "/header"))
             { Loss("header-footer-reference", "Missing or external header/footer relationship", "Unlinked empty story applied; no resource fetched.", reference); return new() { LinkToPrevious = false }; }
             var part = ResolvePart((string?)relation.Attribute("Target") ?? "");
             if (part is null) { Loss("header-footer-reference", "Unsafe header/footer part", "Unlinked empty story applied.", reference); return new() { LinkToPrevious = false }; }
@@ -800,9 +855,13 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         }
         foreach (var note in notes.Values.Where(n => !referencedNotes.Contains(n.Id)))
         { Loss("note-unreferenced", "Note without a main-story reference", "Unused note story omitted."); stories.Remove(note.StoryId); }
+        var customPropertiesXml = Xml("docProps/custom.xml");
         var document = new FlowDocument(blocks) { Resources = resources.ToImmutable(), Styles = catalog, Theme = theme, Fonts = fonts,
             Stories = stories.ToImmutable(), Notes = notes.Values.Where(n => referencedNotes.Contains(n.Id)).ToImmutableArray(), Sections = sections.ToImmutable(),
-            FootnoteSettings = footnoteSettings, EndnoteSettings = endnoteSettings, Properties = ReadDocumentProperties(Xml("docProps/custom.xml")),
+            FootnoteSettings = footnoteSettings, EndnoteSettings = endnoteSettings, Properties = ReadDocumentProperties(customPropertiesXml),
+            CustomProperties = ReadTypedProperties(customPropertiesXml), CoreProperties = ReadCoreProperties(Xml("docProps/core.xml")),
+            CustomXmlParts = ReadCustomXmlParts(relationships.Values, path => Xml(path)),
+            CompatibilitySettings = new DocumentCompatibilitySettings { Xml = settings?.Root?.Element(W + "compat")?.ToString(SaveOptions.DisableFormatting) },
             Defaults = new DocumentDefaults { Text = defaultText, Paragraph = defaultParagraph } };
         foreach (var property in body.Descendants().Concat(styleRoot?.Descendants() ?? []))
         {
@@ -827,6 +886,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
         document = RangeInterchange.ResolveStories(document with { Bookmarks = bookmarks.ToImmutableArray(), Fields = generalFields.ToImmutableArray(),
             ContentControls = contentControls.ToImmutableArray(), PermissionRanges = permissionRanges.ToImmutableArray(), Protection = protection });
         document = ContentControlValidation.SynchronizeValues(document);
+        document = document.PruneUnusedResources();
         document.Validate();
         return document;
     }
@@ -1132,7 +1192,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
     }
     private static XElement WriteBorders(BlockBorders borders, Guid id) => new(W + "tcBorders",
         new[] { ("top", borders.Top), ("left", borders.Left), ("bottom", borders.Bottom), ("right", borders.Right) }.Select(s => WriteBorder(s.Item1, s.Item2, id)));
-    private static byte[] Write(FlowDocument document, CancellationToken token)
+    private static byte[] Write(FlowDocument document, CancellationToken token, bool template)
     {
         document = MapStyleIdentifiers(document);
         using var result = new MemoryStream();
@@ -1160,6 +1220,13 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 using var stream = archive.CreateEntry(name, CompressionLevel.Optimal).Open();
                 new XDocument(new XDeclaration("1.0", "utf-8", "yes"), element).Save(stream);
             }
+            void RawPart(string name, string xml)
+            {
+                token.ThrowIfCancellationRequested();
+                using var stream = archive.CreateEntry(name, CompressionLevel.Optimal).Open();
+                using var writer = XmlWriter.Create(stream, new XmlWriterSettings { Encoding = new UTF8Encoding(false), CloseOutput = false });
+                XDocument.Parse(xml, LoadOptions.PreserveWhitespace).Save(writer);
+            }
             var relationships = new List<XElement>
             {
                 new(Rel + "Relationship", new XAttribute("Id", "styles"), new XAttribute("Type", R.NamespaceName + "/styles"), new XAttribute("Target", "styles.xml")),
@@ -1173,7 +1240,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             var resolver = new DocumentStyleResolver(document);
             var numbering = new XElement(W + "numbering"); var numbers = new List<XElement>();
             var identities = new Dictionary<Guid, (int Abstract, int Number, ListDefinition Definition, ListKind Kind)>();
-            var imageIds = new Dictionary<string, string>(); var mediaTypes = new Dictionary<string, string>();
+            var resourceIds = new Dictionary<(string Id, string Kind), string>(); var mediaTypes = new Dictionary<string, string>();
             var nextNumber = 0; var nextAbstract = 0; var drawingId = 0;
             int NumberFor(Paragraph paragraph, Guid anonymousIdentity)
             {
@@ -1223,17 +1290,20 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 identities[identity] = current;
                 return current.Number;
             }
-            string? WriteResource(string resourceId, bool image)
+            bool HasResource(string resourceId, bool image) => document.Resources.TryGetValue(resourceId, out var resource) &&
+                resource.Kind == DocumentResourceKind.Embedded && (!image || ImageExtension(resource.MediaType) is not null);
+            string? WriteResource(string resourceId, bool image, string oleKind = "oleObject")
             {
-                if (!document.Resources.TryGetValue(resourceId, out var resource) || resource.Kind != DocumentResourceKind.Embedded ||
-                    image && ImageExtension(resource.MediaType) is null) return null;
-                if (imageIds.TryGetValue(resourceId, out var existing)) return existing;
+                if (!HasResource(resourceId, image)) return null;
+                var resource = document.Resources[resourceId];
+                var kind = image ? "image" : oleKind;
+                if (resourceIds.TryGetValue((resourceId, kind), out var existing)) return existing;
                 var extension = image ? ImageExtension(resource.MediaType)! : "bin";
-                var relationshipId = (image ? "image" : "ole") + imageIds.Count;
+                var relationshipId = kind + resourceIds.Count;
                 var name = (image ? "media/" : "embeddings/") + relationshipId + "." + extension;
                 using (var target = archive.CreateEntry("word/" + name, CompressionLevel.Optimal).Open()) target.Write(resource.Data.AsSpan());
-                relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", relationshipId), new XAttribute("Type", R.NamespaceName + (image ? "/image" : "/oleObject")), new XAttribute("Target", name)));
-                imageIds[resourceId] = relationshipId;
+                relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", relationshipId), new XAttribute("Type", R.NamespaceName + "/" + kind), new XAttribute("Target", name)));
+                resourceIds[(resourceId, kind)] = relationshipId;
                 storyContentTypes.Add(new XElement(Ct + "Override", new XAttribute("PartName", "/word/" + name), new XAttribute("ContentType", resource.MediaType)));
                 return relationshipId;
             }
@@ -1242,7 +1312,9 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 if (inline.Payload is OleInlinePayload ole)
                 {
                     if (inline.Placement is not null) Loss("ole-placement", "OLE preview placement, crop and rotation", "Placement retained in a Textalonia extension; other editors show an inline untransformed preview.", id: inline.Id);
-                    if (WriteResource(ole.ResourceId, false) is { } packageId && WriteResource(ole.PreviewResourceId, true) is { } olePreviewId)
+                    if (HasResource(ole.ResourceId, false) && HasResource(ole.PreviewResourceId, true) &&
+                        WriteResource(ole.ResourceId, false, ole.RelationshipKind == OleRelationshipKind.Package ? "package" : "oleObject") is { } packageId &&
+                        WriteResource(ole.PreviewResourceId, true) is { } olePreviewId)
                         return WriteOleObject(inline, ole, packageId, olePreviewId, ++drawingId);
                     Loss("ole-unavailable", "Unavailable embedded OLE data or preview", "Alternative text retained; no resource fetched.", id: inline.Id); return null;
                 }
@@ -1291,12 +1363,13 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                             new XAttribute(W + "id", noteNumbers[note.Id]), note.CustomMark is not null ? new XAttribute(W + "customMarkFollows", 1) : null));
                         if (note.CustomMark is not null) r.Add(new XElement(W + "t", note.CustomMark));
                     }
-                    else if (mergeField is null && pageField is null && run.Inline is { Payload: not FormControlInlinePayload } inline && WriteImage(inline) is { } drawing) r.Add(drawing);
+                    else if (mergeField is null && pageField is null && run.Inline is { Payload: not FormControlInlinePayload and not EquationInlinePayload } inline && WriteImage(inline) is { } drawing) r.Add(drawing);
                     else foreach (var segment in Regex.Split(run.PlainText, "([\t\u2028])"))
                         if (segment == "\t") r.Add(new XElement(W + "tab"));
                         else if (segment == "\u2028") r.Add(new XElement(W + "br"));
                         else if (segment.Length > 0) r.Add(new XElement(W + "t", new XAttribute(XNamespace.Xml + "space", "preserve"), segment));
-                    var content = pageField is not null ? new XElement(W + "fldSimple", new XAttribute(W + "instr", pageField.Field switch { PageFieldKind.NumPages => "NUMPAGES", PageFieldKind.SectionPages => "SECTIONPAGES", _ => "PAGE" }), r) :
+                    var content = run.Inline?.Payload is EquationInlinePayload equation ? EquationMarkup.Parse(equation.Xml) :
+                        pageField is not null ? new XElement(W + "fldSimple", new XAttribute(W + "instr", pageField.Field switch { PageFieldKind.NumPages => "NUMPAGES", PageFieldKind.SectionPages => "SECTIONPAGES", _ => "PAGE" }), r) :
                         mergeField is null ? r : new XElement(W + "fldSimple", new XAttribute(W + "instr", MergeFieldInstructions.Write(mergeField.Name)), r);
                     if (run.Inline?.Payload is FormControlInlinePayload form)
                         content = new XElement(W + "sdt", WriteContentControlProperties(document.ContentControls.First(c => c.Id == form.ControlId)), new XElement(W + "sdtContent", content));
@@ -1330,7 +1403,7 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                     {
                         if (section.Background is not null || section.BorderColor is not null || section.Borders is not null || section.PaddingEdges is not null || section.Padding != 0)
                             Loss("section-decoration", "Section background, border, or padding", "Section grouping and content retained.", id: section.Id);
-                        yield return new XElement(W + "sdt", new XElement(W + "sdtPr", Val("tag", SectionTag)), new XElement(W + "sdtContent", WriteBlocks(section.Blocks)));
+                        yield return new XElement(W + "sdt", new XElement(W + "sdtPr", new XAttribute(Tx + "decorativeSection", "1"), Val("tag", SectionTag)), new XElement(W + "sdtContent", WriteBlocks(section.Blocks)));
                     }
                     else if (block is Table table)
                     {
@@ -1494,13 +1567,18 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             }
             var stylesXml = WriteStyles(document, style => NumberFor(new Paragraph() { Style = style }, style.ListId ?? Guid.NewGuid()));
             Part("word/document.xml", new XElement(W + "document", new XAttribute(XNamespace.Xmlns + "w", W), new XAttribute(XNamespace.Xmlns + "r", R), body));
+            var hasCoreProperties = document.CoreProperties != new DocumentCoreProperties();
+            var hasCustomProperties = document.Properties.Count != 0 || !document.CustomProperties.IsEmpty;
             Part("_rels/.rels", new XElement(Rel + "Relationships", new XElement(Rel + "Relationship", new XAttribute("Id", "document"), new XAttribute("Type", R.NamespaceName + "/officeDocument"), new XAttribute("Target", "word/document.xml")),
-                document.Properties.Count == 0 ? null : new XElement(Rel + "Relationship", new XAttribute("Id", "properties"), new XAttribute("Type", R.NamespaceName + "/custom-properties"), new XAttribute("Target", "docProps/custom.xml"))));
-            if (document.Properties.Count != 0) Part("docProps/custom.xml", WriteDocumentProperties(document.Properties));
+                hasCoreProperties ? new XElement(Rel + "Relationship", new XAttribute("Id", "core"), new XAttribute("Type", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"), new XAttribute("Target", "docProps/core.xml")) : null,
+                hasCustomProperties ? new XElement(Rel + "Relationship", new XAttribute("Id", "properties"), new XAttribute("Type", R.NamespaceName + "/custom-properties"), new XAttribute("Target", "docProps/custom.xml")) : null));
+            if (hasCoreProperties) Part("docProps/core.xml", WriteCoreProperties(document.CoreProperties));
+            if (hasCustomProperties) Part("docProps/custom.xml", WriteTypedProperties(document));
             Part("word/settings.xml", new XElement(W + "settings", WriteProtection(document), document.Defaults.Paragraph.DefaultTabWidth > 0 ? Val("defaultTabStop", Twips(document.Defaults.Paragraph.DefaultTabWidth)) : null,
                 document.Sections.Any(s => s.HeaderFooter.DifferentOddEvenPages) ? new XElement(W + "evenAndOddHeaders") : null,
                 document.Sections.Any(s => s.PageSettings.MirrorMargins) ? new XElement(W + "mirrorMargins") : null,
-                WriteNoteSettings(document.FootnoteSettings, false, document.Notes.Any(n => n.Kind == DocumentNoteKind.Footnote)), WriteNoteSettings(document.EndnoteSettings, true, document.Notes.Any(n => n.Kind == DocumentNoteKind.Endnote))));
+                WriteNoteSettings(document.FootnoteSettings, false, document.Notes.Any(n => n.Kind == DocumentNoteKind.Footnote)), WriteNoteSettings(document.EndnoteSettings, true, document.Notes.Any(n => n.Kind == DocumentNoteKind.Endnote)),
+                document.CompatibilitySettings.Xml is { } compatibilityXml ? XElement.Parse(compatibilityXml, LoadOptions.PreserveWhitespace) : null));
             relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", "settings"), new XAttribute("Type", R.NamespaceName + "/settings"), new XAttribute("Target", "settings.xml")));
             var hasFonts = WriteEmbeddedFonts(document, archive, Part);
             if (hasFonts) relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", "fontTable"), new XAttribute("Type", R.NamespaceName + "/fontTable"), new XAttribute("Target", "fontTable.xml")));
@@ -1509,6 +1587,18 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
             {
                 relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", "theme"), new XAttribute("Type", R.NamespaceName + "/theme"), new XAttribute("Target", "theme/theme1.xml")));
                 Part("word/theme/theme1.xml", WriteTheme(document.Theme));
+            }
+            foreach (var item in document.CustomXmlParts.Select((part, index) => (part, index)))
+            {
+                RawPart(item.part.PartName, item.part.Xml);
+                relationships.Add(new XElement(Rel + "Relationship", new XAttribute("Id", "customXml" + (item.index + 1)), new XAttribute("Type", R.NamespaceName + "/customXml"), new XAttribute("Target", "../" + item.part.PartName)));
+                if (item.part.PropertiesPartName is { } propertiesName)
+                {
+                    RawPart(propertiesName, item.part.PropertiesXml!);
+                    Part("customXml/_rels/" + item.part.PartName["customXml/".Length..] + ".rels", new XElement(Rel + "Relationships",
+                        new XElement(Rel + "Relationship", new XAttribute("Id", "itemProps"), new XAttribute("Type", R.NamespaceName + "/customXmlProps"),
+                            new XAttribute("Target", propertiesName["customXml/".Length..]))));
+                }
             }
             Part("word/_rels/document.xml.rels", new XElement(Rel + "Relationships", relationships));
             Part("word/styles.xml", stylesXml);
@@ -1520,10 +1610,13 @@ public sealed partial class DocxDocumentFormat : IDocumentFormat
                 hasFonts ? new XElement(Ct + "Override", new XAttribute("PartName", "/word/fontTable.xml"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml")) : null,
                 hasTheme ? new XElement(Ct + "Override", new XAttribute("PartName", "/word/theme/theme1.xml"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.theme+xml")) : null,
                 storyContentTypes,
-                document.Properties.Count == 0 ? null : new XElement(Ct + "Override", new XAttribute("PartName", "/docProps/custom.xml"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.custom-properties+xml")),
+                hasCoreProperties ? new XElement(Ct + "Override", new XAttribute("PartName", "/docProps/core.xml"), new XAttribute("ContentType", "application/vnd.openxmlformats-package.core-properties+xml")) : null,
+                hasCustomProperties ? new XElement(Ct + "Override", new XAttribute("PartName", "/docProps/custom.xml"), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.custom-properties+xml")) : null,
+                document.CustomXmlParts.Where(part => part.PropertiesPartName is not null).Select(part => new XElement(Ct + "Override", new XAttribute("PartName", "/" + part.PropertiesPartName), new XAttribute("ContentType", "application/vnd.openxmlformats-officedocument.customXmlProperties+xml"))),
                 mediaTypes.Select(m => new XElement(Ct + "Default", new XAttribute("Extension", m.Key), new XAttribute("ContentType", m.Value))),
-                new[] { ("document", "document.main"), ("styles", "styles"), ("numbering", "numbering"), ("settings", "settings") }.Select(p => new XElement(Ct + "Override", new XAttribute("PartName", $"/word/{p.Item1}.xml"), new XAttribute("ContentType", $"application/vnd.openxmlformats-officedocument.wordprocessingml.{p.Item2}+xml")))));
+                new XElement(Ct + "Override", new XAttribute("PartName", "/word/document.xml"), new XAttribute("ContentType", template ? TemplateMainContentType : DocumentMainContentType)),
+                new[] { "styles", "numbering", "settings" }.Select(part => new XElement(Ct + "Override", new XAttribute("PartName", $"/word/{part}.xml"), new XAttribute("ContentType", $"application/vnd.openxmlformats-officedocument.wordprocessingml.{part}+xml")))));
         }
-        return result.ToArray();
+        return ValidateWrittenPackage(result.ToArray(), token);
     }
 }

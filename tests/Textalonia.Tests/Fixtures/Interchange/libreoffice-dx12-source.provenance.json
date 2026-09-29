@@ -1,0 +1,11 @@
+{
+  "generator": "LibreOffice Writer/Web conversion filter",
+  "generatorVersion": "25.8.1.1",
+  "created": "2026-09-28",
+  "sourceFile": "libreoffice-dx12-source.html",
+  "outputFile": "libreoffice-dx12-source.docx",
+  "command": "soffice.com -env:UserInstallation=file:///<isolated-profile> --headless --convert-to \"docx:Office Open XML Text\" --outdir <fixtures> <source>",
+  "sourceSha256": "36cfe8d4310b088e1279920d86d8be602d18db4590b46ab5ea3c43ea9f3021c8",
+  "outputSha256": "e7e047236e75d328c0d3d2f62c0cee7b1e145b432578ce62a77021eb264c804c",
+  "qualification": "External writer specimen for import/edit/export/reopen text, table, and package metadata checks; no rendering or Microsoft Word repair-prompt evidence."
+}

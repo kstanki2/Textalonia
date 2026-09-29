@@ -356,8 +356,26 @@ public static class FieldEvaluator
         }
         private string Value(FieldArgument argument, DocumentField field, int depth) => string.Concat(argument.Parts.Select(part => part switch
         { FieldLiteral literal => literal.Value, FieldNested nested => Evaluate(nested.Instruction, field, depth).PlainText, _ => "" }));
-        private string Property(string name) => _document.Properties.FirstOrDefault(pair => pair.Key.Equals(name, StringComparison.OrdinalIgnoreCase)).Value ??
-            throw new FieldFailure("field.missing-property", $"Document property {name} is unavailable.");
+        private string Property(string name)
+        {
+            var legacy = _document.Properties.FirstOrDefault(pair => pair.Key.Equals(name, StringComparison.OrdinalIgnoreCase)).Value;
+            if (legacy is not null) return legacy;
+            var custom = _document.CustomProperties.FirstOrDefault(property => property.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+            if (custom is not null) return custom.Value;
+            var core = _document.CoreProperties;
+            var value = name.ToUpperInvariant() switch
+            {
+                "TITLE" => core.Title, "SUBJECT" => core.Subject, "AUTHOR" or "CREATOR" => core.Creator,
+                "KEYWORDS" => core.Keywords, "COMMENTS" or "DESCRIPTION" => core.Description,
+                "LASTSAVEDBY" or "LASTMODIFIEDBY" => core.LastModifiedBy, "REVNUM" or "REVISION" => core.Revision,
+                "CATEGORY" => core.Category, "CONTENTSTATUS" => core.ContentStatus,
+                "IDENTIFIER" => core.Identifier, "LANGUAGE" => core.Language, "VERSION" => core.Version,
+                "CREATEDATE" => core.Created?.ToString("O", CultureInfo.InvariantCulture),
+                "SAVEDATE" => core.Modified?.ToString("O", CultureInfo.InvariantCulture),
+                _ => null
+            };
+            return value ?? throw new FieldFailure("field.missing-property", $"Document property {name} is unavailable.");
+        }
         private DocumentBookmark Bookmark(string name) => _document.Bookmarks.FirstOrDefault(b => b.Name.Equals(name, StringComparison.Ordinal)) ??
             throw new FieldFailure("field.missing-bookmark", $"Bookmark {name} does not exist.");
         private string Reference(string name)

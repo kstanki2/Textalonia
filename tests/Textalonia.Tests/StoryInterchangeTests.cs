@@ -44,7 +44,7 @@ public class StoryInterchangeTests
         var encoded = format.Serialize(original);
         var loaded = format.Parse(encoded);
         Assert.Equal(DocumentFormats.Json.Serialize(original), DocumentFormats.Json.Serialize(loaded));
-        Assert.Contains(xaml ? "Version=\"6\"" : "\"version\": 11", encoded);
+        Assert.Contains(xaml ? "Version=\"7\"" : "\"version\": 12", encoded);
     }
 
     [Fact]

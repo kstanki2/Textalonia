@@ -96,6 +96,9 @@ Native JSON v10, data XAML v5 and clipboard v6 retain the expanded model. Reader
 continue accepting native v4–v9, XAML v1–v4 and clipboard v1–v5. Existing models
 need no changes; new optional properties have defaults. DOCX maps supported picture
 anchors, wrapping, crop/rotation, watermark headers and embedded OLE relationships.
+DX-12 distinguishes the Office oleObject and package relationship kinds in the
+OLE descriptor; native JSON v12 and data XAML v7 retain that kind. DOCX export
+writes embedded bytes only for live OLE inline owners with a usable preview.
 Positioned OLE preview geometry survives DOCX through Textalonia metadata; external
 OLE display is inline and the export reports this loss. Watermark reconstruction
 also uses Textalonia metadata alongside visible VML header content.

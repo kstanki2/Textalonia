@@ -116,6 +116,72 @@ public class HtmlInterchangeTests
     }
 
     [Fact]
+    public async Task Embedded_stylesheet_applies_simple_selectors_specificity_and_inline_overrides()
+    {
+        const string html = """
+            <style>
+              p { color:#111111; }
+              .notice { color:#222222; font-weight:bold; }
+              #message { color:#333333; }
+              p.notice { margin-left:25px; }
+              span.emphasis { font-style:italic; }
+              img.photo { width:48px; height:19px; }
+            </style>
+            <p id="message" class="notice"><span class="emphasis">styled</span><span style="color:#444444">inline</span><img class="photo" src="data:image/png;base64,AQ==" alt="photo"></p>
+            """;
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(html));
+        var result = await DocumentFormats.Html.LoadWithReportAsync(stream);
+        var paragraph = Assert.Single(Paragraphs(result.Document));
+        Assert.Empty(result.Report.Diagnostics);
+        Assert.Equal(25, paragraph.Style.Indent);
+        Assert.Equal("#333333", paragraph.DefaultStyle.Foreground);
+        Assert.True(paragraph.DefaultStyle.Bold);
+        Assert.Equal("#333333", paragraph.Runs[0].Style.Foreground);
+        Assert.True(paragraph.Runs[0].Style.Italic);
+        Assert.Equal("#444444", paragraph.Runs[1].Style.Foreground);
+        var image = Assert.Single(paragraph.Runs.Where(run => run.Inline is not null)).Inline!;
+        Assert.Equal(48, image.Width);
+        Assert.Equal(19, image.Height);
+        Assert.Single(result.Document.Resources);
+
+        // Parse-local CSS must not affect a later document on the same thread.
+        Assert.Null(Assert.Single(Paragraphs(DocumentFormats.Html.Parse("<p class='notice'>plain</p>"))).DefaultStyle.Foreground);
+    }
+
+    [Fact]
+    public async Task Unsupported_stylesheet_constructs_report_loss_and_strict_import_rejects()
+    {
+        const string html = """
+            <style>
+              @media print { p { color:#111111; } }
+              p span { color:#222222; }
+              .kept { color:#333333; font-size:40px !important; }
+            </style>
+            <p class="kept"><span>text</span></p>
+            """;
+        using var tolerant = new MemoryStream(Encoding.UTF8.GetBytes(html));
+        var result = await DocumentFormats.Html.LoadWithReportAsync(tolerant);
+        Assert.Equal(new[] { "html.stylesheet-at-rule", "html.stylesheet-selector", "html.stylesheet-declaration" },
+            result.Report.Diagnostics.Select(d => d.Code));
+        Assert.Equal("#333333", Assert.Single(Paragraphs(result.Document)).DefaultStyle.Foreground);
+        Assert.Equal(TextStyle.Default.FontSize, Assert.Single(Paragraphs(result.Document)).DefaultStyle.FontSize);
+        using var strict = new MemoryStream(Encoding.UTF8.GetBytes(html));
+        await Assert.ThrowsAsync<DocumentConversionException>(() => DocumentFormats.Html.LoadWithReportAsync(strict, new() { Mode = ConversionMode.Strict }));
+    }
+
+    [Fact]
+    public async Task Many_unclosed_css_comment_starts_are_bounded_and_keep_prior_rules()
+    {
+        var html = "<style>p { color:#123456; }" + string.Concat(Enumerable.Repeat("/*a", 30000)) +
+            "</style><p>text</p>";
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(html));
+        var result = await DocumentFormats.Html.LoadWithReportAsync(stream);
+        Assert.Equal("text", result.Document.Text);
+        Assert.Equal("#123456", Assert.Single(Paragraphs(result.Document)).DefaultStyle.Foreground);
+        Assert.Equal(new[] { "html.stylesheet-syntax" }, result.Report.Diagnostics.Select(d => d.Code));
+    }
+
+    [Fact]
     public async Task Unsupported_inline_and_browser_approximations_are_reported_on_export()
     {
         var paragraph = new Paragraph([new RichRun(new InlineDescriptor { AltText = "control", Payload = new ControlInlinePayload("widget") })])

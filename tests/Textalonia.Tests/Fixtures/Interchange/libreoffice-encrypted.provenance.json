@@ -1,0 +1,10 @@
+{
+  "file": "libreoffice-encrypted.docx",
+  "sourceApplication": "LibreOffice Writer",
+  "sourceApplicationVersion": "25.8.1.1",
+  "created": "2026-09-28",
+  "generation": "Locally generated through LibreOffice UNO storeAsURL with FilterName=Office Open XML Text and Password=Textalonia fixture password.",
+  "purpose": "Verify detection, password verification, and decryption of a real Standard v3.2 AES-128 OOXML package. The format has no authenticated package integrity tag.",
+  "password": "Textalonia fixture password",
+  "redistribution": "Original test text authored for this repository and encrypted locally."
+}

@@ -24,6 +24,10 @@ public sealed record FlowDocument
     public DocumentProtection Protection { get; init; } = new();
     public ImmutableArray<DocumentPermissionRange> PermissionRanges { get; init; } = [];
     public ImmutableDictionary<string, string> Properties { get; init; } = ImmutableDictionary<string, string>.Empty;
+    public DocumentCoreProperties CoreProperties { get; init; } = new();
+    public ImmutableArray<DocumentCustomProperty> CustomProperties { get; init; } = [];
+    public ImmutableArray<DocumentCustomXmlPart> CustomXmlParts { get; init; } = [];
+    public DocumentCompatibilitySettings CompatibilitySettings { get; init; } = new();
     public NoteSettings FootnoteSettings { get; init; } = new();
     public NoteSettings EndnoteSettings { get; init; } = new() { Placement = NotePlacement.DocumentEnd };
 
@@ -146,6 +150,32 @@ public sealed record FlowDocument
     /// <summary>Checks document invariants before accepting external data.</summary>
     public void Validate()
     {
+        if (CoreProperties is null || CompatibilitySettings is null || CustomProperties.IsDefault || CustomXmlParts.IsDefault ||
+            CustomProperties.Length > 1024 || CustomXmlParts.Length > 256 || Properties is null || Properties.Count > 1024)
+            throw new FormatException("Invalid document package metadata.");
+        CoreProperties.Validate();
+        CompatibilitySettings.Validate();
+        var propertyNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var property in CustomProperties)
+        {
+            if (property is null) throw new FormatException("Null custom document property.");
+            property.Validate();
+            if (!propertyNames.Add(property.Name)) throw new FormatException("Duplicate custom document property.");
+        }
+        var partNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        long customXmlBytes = 0;
+        foreach (var part in CustomXmlParts)
+        {
+            if (part is null) throw new FormatException("Null custom XML part.");
+            part.Validate();
+            if (!partNames.Add(part.PartName) || part.PropertiesPartName is { } propertiesPart && !partNames.Add(propertiesPart))
+                throw new FormatException("Duplicate custom XML part name.");
+            customXmlBytes += System.Text.Encoding.UTF8.GetByteCount(part.Xml) + System.Text.Encoding.UTF8.GetByteCount(part.PropertiesXml ?? "");
+        }
+        if (customXmlBytes > 8L * 1024 * 1024) throw new FormatException("Custom XML parts exceed the size limit.");
+        foreach (var property in Properties)
+            if (string.IsNullOrWhiteSpace(property.Key) || property.Key.Length > 255 || property.Value is null || property.Value.Length > 16384)
+                throw new FormatException("Invalid document property.");
         if (Resources is null || Resources.Count > 4096) throw new FormatException("Invalid document resources.");
         long resourceBytes = 0;
         foreach (var resource in Resources)

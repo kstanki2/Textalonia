@@ -70,6 +70,31 @@ public class ConversionDiagnosticsTests
     }
 
     [Fact]
+    public async Task Odt_reports_new_office_metadata_losses_and_strict_export_is_atomic()
+    {
+        var document = FlowDocument.FromText("metadata") with
+        {
+            CoreProperties = new DocumentCoreProperties { Title = "Report" },
+            CustomProperties = [new DocumentCustomProperty { Name = "Case", Value = "42" }],
+            CustomXmlParts = [new DocumentCustomXmlPart { PartName = "customXml/item1.xml", Xml = "<root/>" }],
+            CompatibilitySettings = new DocumentCompatibilitySettings
+            { Xml = "<w:compat xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"/>" }
+        };
+        using var tolerant = new MemoryStream();
+        var result = await DocumentFormats.Odt.SaveWithReportAsync(document, tolerant);
+        Assert.Contains(result.Report.Diagnostics, d => d.Code == "conversion.core-properties");
+        Assert.Contains(result.Report.Diagnostics, d => d.Code == "conversion.custom-properties");
+        Assert.Contains(result.Report.Diagnostics, d => d.Code == "conversion.custom-xml");
+        Assert.Contains(result.Report.Diagnostics, d => d.Code == "conversion.compatibility-settings");
+        using var destination = new MemoryStream([1, 2, 3]);
+        destination.Position = 1;
+        await Assert.ThrowsAsync<DocumentConversionException>(() => DocumentFormats.Odt.SaveWithReportAsync(
+            document, destination, new() { Mode = ConversionMode.Strict }));
+        Assert.Equal(1, destination.Position);
+        Assert.Equal(new byte[] { 1, 2, 3 }, destination.ToArray());
+    }
+
+    [Fact]
     public async Task Explicit_plain_text_degradation_is_reported_and_does_not_mutate_source()
     {
         var document = new FlowDocument([new Section { Blocks = [new Paragraph("value", new() { Italic = true })] }]);

@@ -1559,6 +1559,15 @@ type Textalonia.Model.DocumentBookmark : System.Object sealed
   property System.String Name { public get; public set; }
   property Textalonia.Model.DocumentAnchor End { public get; public set; }
   property Textalonia.Model.DocumentAnchor Start { public get; public set; }
+type Textalonia.Model.DocumentCompatibilitySettings : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentCompatibilitySettings>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentCompatibilitySettings other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentCompatibilitySettings <Clone>$()
+  property System.String Xml { public get; public set; }
 type Textalonia.Model.DocumentContentControl : System.Object sealed
   interface System.IEquatable<Textalonia.Model.DocumentContentControl>
   ctor public ()
@@ -1587,6 +1596,51 @@ type Textalonia.Model.DocumentContentControl : System.Object sealed
   property Textalonia.Model.ContentControlKind Kind { public get; public set; }
   property Textalonia.Model.DocumentAnchor End { public get; public set; }
   property Textalonia.Model.DocumentAnchor Start { public get; public set; }
+type Textalonia.Model.DocumentCoreProperties : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentCoreProperties>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentCoreProperties other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentCoreProperties <Clone>$()
+  property System.Nullable<System.DateTimeOffset> Created { public get; public set; }
+  property System.Nullable<System.DateTimeOffset> Modified { public get; public set; }
+  property System.String Category { public get; public set; }
+  property System.String ContentStatus { public get; public set; }
+  property System.String Creator { public get; public set; }
+  property System.String Description { public get; public set; }
+  property System.String Identifier { public get; public set; }
+  property System.String Keywords { public get; public set; }
+  property System.String Language { public get; public set; }
+  property System.String LastModifiedBy { public get; public set; }
+  property System.String Revision { public get; public set; }
+  property System.String Subject { public get; public set; }
+  property System.String Title { public get; public set; }
+  property System.String Version { public get; public set; }
+type Textalonia.Model.DocumentCustomProperty : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentCustomProperty>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentCustomProperty other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentCustomProperty <Clone>$()
+  property System.String Name { public get; public set; }
+  property System.String Value { public get; public set; }
+  property Textalonia.Model.DocumentPropertyType Type { public get; public set; }
+type Textalonia.Model.DocumentCustomXmlPart : System.Object sealed
+  interface System.IEquatable<Textalonia.Model.DocumentCustomXmlPart>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.DocumentCustomXmlPart other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Model.DocumentCustomXmlPart <Clone>$()
+  property System.String PartName { public get; public set; }
+  property System.String PropertiesPartName { public get; public set; }
+  property System.String PropertiesXml { public get; public set; }
+  property System.String Xml { public get; public set; }
 type Textalonia.Model.DocumentDefaults : System.Object sealed
   interface System.IEquatable<Textalonia.Model.DocumentDefaults>
   ctor public ()
@@ -1675,6 +1729,17 @@ type Textalonia.Model.DocumentPermissionRange : System.Object sealed
   property System.String User { public get; public set; }
   property Textalonia.Model.DocumentAnchor End { public get; public set; }
   property Textalonia.Model.DocumentAnchor Start { public get; public set; }
+type Textalonia.Model.DocumentPropertyType : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.DocumentPropertyType Boolean static = 3
+  field Textalonia.Model.DocumentPropertyType DateTime static = 4
+  field Textalonia.Model.DocumentPropertyType Decimal static = 2
+  field Textalonia.Model.DocumentPropertyType Integer static = 1
+  field Textalonia.Model.DocumentPropertyType Text static = 0
 type Textalonia.Model.DocumentProtection : System.Object sealed
   interface System.IEquatable<Textalonia.Model.DocumentProtection>
   ctor public ()
@@ -1855,6 +1920,20 @@ type Textalonia.Model.EdgeInsets : System.Object sealed
   property System.Double Left { public get; public set; }
   property System.Double Right { public get; public set; }
   property System.Double Top { public get; public set; }
+type Textalonia.Model.EquationInlinePayload : Textalonia.Model.InlinePayload sealed
+  interface System.IEquatable<Textalonia.Model.EquationInlinePayload>
+  interface System.IEquatable<Textalonia.Model.InlinePayload>
+  ctor public (System.String Xml)
+  method protected System.Boolean PrintMembers(System.Text.StringBuilder builder) virtual
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Model.EquationInlinePayload other) virtual
+  method public System.Boolean Equals(Textalonia.Model.InlinePayload other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public System.Void Deconstruct(System.String& Xml)
+  method public Textalonia.Model.EquationInlinePayload <Clone>$() virtual
+  property System.String Xml { public get; public set; }
+  property System.Type EqualityContract { protected get; }
 type Textalonia.Model.Fields.FieldArgument : System.Object sealed
   interface System.IEquatable<Textalonia.Model.Fields.FieldArgument>
   ctor public (System.Collections.Immutable.ImmutableArray<Textalonia.Model.Fields.FieldExpression> Parts, System.Boolean IsQuoted = False)
@@ -2092,6 +2171,8 @@ type Textalonia.Model.FlowDocument : System.Object sealed
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.Block> Blocks { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentBookmark> Bookmarks { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentContentControl> ContentControls { public get; public set; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentCustomProperty> CustomProperties { public get; public set; }
+  property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentCustomXmlPart> CustomXmlParts { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentField> Fields { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentFontDefinition> Fonts { public get; public set; }
   property System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentNote> Notes { public get; public set; }
@@ -2102,6 +2183,8 @@ type Textalonia.Model.FlowDocument : System.Object sealed
   property System.Collections.Immutable.ImmutableDictionary<System.String,Textalonia.Model.DocumentResource> Resources { public get; public set; }
   property System.String PlainText { public get; }
   property System.String Text { public get; }
+  property Textalonia.Model.DocumentCompatibilitySettings CompatibilitySettings { public get; public set; }
+  property Textalonia.Model.DocumentCoreProperties CoreProperties { public get; public set; }
   property Textalonia.Model.DocumentDefaults Defaults { public get; public set; }
   property Textalonia.Model.DocumentProtection Protection { public get; public set; }
   property Textalonia.Model.DocumentStyleCatalog Styles { public get; public set; }
@@ -2485,6 +2568,15 @@ type Textalonia.Model.OleInlinePayload : Textalonia.Model.InlinePayload sealed
   property System.String ProgramId { public get; public set; }
   property System.String ResourceId { public get; public set; }
   property System.Type EqualityContract { protected get; }
+  property Textalonia.Model.OleRelationshipKind RelationshipKind { public get; public set; }
+type Textalonia.Model.OleRelationshipKind : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Model.OleRelationshipKind OleObject static = 0
+  field Textalonia.Model.OleRelationshipKind Package static = 1
 type Textalonia.Model.PageColumn : System.Object sealed
   interface System.IEquatable<Textalonia.Model.PageColumn>
   ctor public (System.Double Width = 1)
@@ -3470,6 +3562,14 @@ type Textalonia.Rendering.UnsupportedContentPolicy : System.Enum sealed
   field System.Int32 value__
   field Textalonia.Rendering.UnsupportedContentPolicy Strict static = 0
   field Textalonia.Rendering.UnsupportedContentPolicy Tolerant static = 1
+type Textalonia.Serialization.BinaryWordFormat : System.Enum sealed
+  interface System.IComparable
+  interface System.IConvertible
+  interface System.IFormattable
+  interface System.ISpanFormattable
+  field System.Int32 value__
+  field Textalonia.Serialization.BinaryWordFormat Document static = 0
+  field Textalonia.Serialization.BinaryWordFormat Template static = 1
 type Textalonia.Serialization.ConversionDiagnostic : System.Object sealed
   interface System.IEquatable<Textalonia.Serialization.ConversionDiagnostic>
   ctor public (System.String Code, Textalonia.Serialization.ConversionDiagnosticSeverity Severity, System.String UnsupportedFeature, System.String Fallback, System.Nullable<System.Guid> ModelId = , System.String SourceLocation = )
@@ -3529,11 +3629,16 @@ type Textalonia.Serialization.DocumentFormats : System.Object sealed abstract
   method public static Textalonia.Serialization.IDocumentFormat ForPath(System.String path)
   property System.Collections.Generic.IReadOnlyList<Textalonia.Serialization.IDocumentFormat> BuiltIn { public static get; }
   property Textalonia.Serialization.DocxDocumentFormat Docx { public static get; }
+  property Textalonia.Serialization.DocxDocumentFormat Dotx { public static get; }
+  property Textalonia.Serialization.FlatOpcDocumentFormat FlatOpc { public static get; }
   property Textalonia.Serialization.HtmlDocumentFormat Html { public static get; }
   property Textalonia.Serialization.JsonDocumentFormat Json { public static get; }
   property Textalonia.Serialization.MarkdownDocumentFormat Markdown { public static get; }
+  property Textalonia.Serialization.MhtmlDocumentFormat Mhtml { public static get; }
+  property Textalonia.Serialization.OdtDocumentFormat Odt { public static get; }
   property Textalonia.Serialization.PlainTextDocumentFormat PlainText { public static get; }
   property Textalonia.Serialization.RtfDocumentFormat Rtf { public static get; }
+  property Textalonia.Serialization.WordMlDocumentFormat WordMl { public static get; }
   property Textalonia.Serialization.XamlDocumentFormat Xaml { public static get; }
 type Textalonia.Serialization.DocumentLoadResult : System.Object sealed
   interface System.IEquatable<Textalonia.Serialization.DocumentLoadResult>
@@ -3557,6 +3662,14 @@ type Textalonia.Serialization.DocumentSaveResult : System.Object sealed
   method public Textalonia.Serialization.DocumentSaveResult <Clone>$()
   property Textalonia.Serialization.ConversionReport Report { public get; public set; }
 type Textalonia.Serialization.DocxDocumentFormat : System.Object sealed
+  interface Textalonia.Serialization.IDocumentFormat
+  ctor public ()
+  method public System.Threading.Tasks.Task SaveAsync(Textalonia.Model.FlowDocument document, System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadWithPasswordAsync(System.IO.Stream stream, System.String password, System.Threading.CancellationToken cancellationToken = )
+  property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
+  property System.String Name { public get; }
+type Textalonia.Serialization.FlatOpcDocumentFormat : System.Object sealed
   interface Textalonia.Serialization.IDocumentFormat
   ctor public ()
   method public System.Threading.Tasks.Task SaveAsync(Textalonia.Model.FlowDocument document, System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
@@ -3586,6 +3699,28 @@ type Textalonia.Serialization.JsonDocumentFormat : Textalonia.Serialization.Text
   method public Textalonia.Model.FlowDocument Parse(System.String text) virtual
   property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
   property System.String Name { public get; }
+type Textalonia.Serialization.LibreOfficeBinaryDocumentFormat : System.Object sealed
+  interface Textalonia.Serialization.IDocumentFormat
+  interface Textalonia.Serialization.IReportingDocumentFormat
+  ctor public (Textalonia.Serialization.LibreOfficeBinaryOptions options)
+  method public System.Threading.Tasks.Task SaveAsync(Textalonia.Model.FlowDocument document, System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult> LoadWithReportAsync(System.IO.Stream stream, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = ) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Serialization.DocumentSaveResult> SaveWithReportAsync(Textalonia.Model.FlowDocument document, System.IO.Stream stream, Textalonia.Serialization.ConversionOptions options = , System.Threading.CancellationToken cancellationToken = ) virtual
+  property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
+  property System.String Name { public get; }
+type Textalonia.Serialization.LibreOfficeBinaryOptions : System.Object sealed
+  interface System.IEquatable<Textalonia.Serialization.LibreOfficeBinaryOptions>
+  ctor public ()
+  method public System.Boolean Equals(System.Object obj) virtual
+  method public System.Boolean Equals(Textalonia.Serialization.LibreOfficeBinaryOptions other) virtual
+  method public System.Int32 GetHashCode() virtual
+  method public System.String ToString() virtual
+  method public Textalonia.Serialization.LibreOfficeBinaryOptions <Clone>$()
+  property System.String ExecutablePath { public get; public set; }
+  property System.String TemporaryDirectory { public get; public set; }
+  property System.TimeSpan Timeout { public get; public set; }
+  property Textalonia.Serialization.BinaryWordFormat Format { public get; public set; }
 type Textalonia.Serialization.MarkdownDocumentFormat : Textalonia.Serialization.TextDocumentFormat sealed
   interface Textalonia.Serialization.IDocumentFormat
   ctor public ()
@@ -3593,6 +3728,20 @@ type Textalonia.Serialization.MarkdownDocumentFormat : Textalonia.Serialization.
   method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
   method public Textalonia.Model.FlowDocument Parse(System.String text) virtual
   method public Textalonia.Model.FlowDocument Parse(System.String text, System.Threading.CancellationToken cancellationToken)
+  property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
+  property System.String Name { public get; }
+type Textalonia.Serialization.MhtmlDocumentFormat : System.Object sealed
+  interface Textalonia.Serialization.IDocumentFormat
+  ctor public ()
+  method public System.Threading.Tasks.Task SaveAsync(Textalonia.Model.FlowDocument document, System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
+  property System.String Name { public get; }
+type Textalonia.Serialization.OdtDocumentFormat : System.Object sealed
+  interface Textalonia.Serialization.IDocumentFormat
+  ctor public ()
+  method public System.Threading.Tasks.Task SaveAsync(Textalonia.Model.FlowDocument document, System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
   property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
   property System.String Name { public get; }
 type Textalonia.Serialization.PlainTextDocumentFormat : Textalonia.Serialization.TextDocumentFormat sealed
@@ -3615,6 +3764,15 @@ type Textalonia.Serialization.TextDocumentFormat : System.Object abstract
   ctor protected ()
   method public System.String Serialize(Textalonia.Model.FlowDocument document) virtual
   method public System.Threading.Tasks.Task SaveAsync(Textalonia.Model.FlowDocument document, System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
+  method public Textalonia.Model.FlowDocument Parse(System.String text) virtual
+  property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }
+  property System.String Name { public get; }
+type Textalonia.Serialization.WordMlDocumentFormat : Textalonia.Serialization.TextDocumentFormat sealed
+  interface Textalonia.Serialization.IDocumentFormat
+  ctor public ()
+  field System.String NamespaceUri static = http://schemas.microsoft.com/office/word/2003/wordml
+  method public System.String Serialize(Textalonia.Model.FlowDocument document) virtual
   method public System.Threading.Tasks.Task<Textalonia.Model.FlowDocument> LoadAsync(System.IO.Stream stream, System.Threading.CancellationToken cancellationToken = ) virtual
   method public Textalonia.Model.FlowDocument Parse(System.String text) virtual
   property System.Collections.Generic.IReadOnlyList<System.String> Extensions { public get; }

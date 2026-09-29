@@ -1,7 +1,7 @@
-# Document semantics and schema v11
+# Document semantics and schema v12
 
 The document model is independent of Avalonia controls. Native JSON reads and
-writes schema version 11. Versions 4, 5, 6, 7, 8, 9 and 10 remain readable; version 4 migrates concrete styles as
+writes schema version 12. Versions 4 through 11 remain readable; version 4 migrates concrete styles as
 explicit direct formatting. Versions 1-3 were unused development formats and have no migration support. See [integration semantics](INTEGRATIONS.md)
 for quote/code metadata and [inline content](INLINE-CONTENT.md) for descriptors,
 resources and the coordinate/export contract. The version is checked before
@@ -14,6 +14,35 @@ Model defaults include: null explicit weight uses
 height is automatic, list identity/definitions/start are absent, restart is false,
 column widths are equal, and rows size automatically. Null container padding and
 borders use the default geometry. Current-schema fixtures exercise these contracts.
+
+## Office package metadata
+
+`FlowDocument.Properties` remains the string property catalog for existing callers.
+`CoreProperties` holds built-in Office metadata such as title, author, revision and
+creation/modification dates. `CustomProperties` carries a name, type and invariant
+lexical value for text, integer, decimal, Boolean or date/time properties. A typed
+property keeps its Office type when an edit through the legacy string catalog
+remains compatible. An incompatible edit is exported as text with a loss
+diagnostic. Names, values and dates are validated; DOCX serializes core dates as UTC.
+
+`CustomXmlParts` retains bounded `customXml/*.xml` items with optional item-properties
+parts. The parser rejects duplicate or traversing paths, DTDs and oversized or
+deep XML. These parts are document-owned interchange data, not live XPath bindings.
+`CompatibilitySettings.Xml` stores bounded Word `w:compat` XML for round trips;
+preserving it does not enable every Word compatibility layout rule. Unknown package
+members, macros, ActiveX, shapes, charts, comments and revisions are not silently
+copied to a new package. Imported digital signatures are invalidated by editing.
+
+Native JSON v12 and Textalonia data XAML v7 preserve these metadata fields. XAML
+continues to read versions 1 through 6. DOCX/DOTX map the supported Office parts;
+other codecs report losses for metadata they do not carry. See
+[conversion and package limits](INTERCHANGE.md#additional-dx-12-formats-and-package-boundaries).
+
+`EquationInlinePayload` stores validated, bounded Office Math XML (`m:oMath` or
+`m:oMathPara`) as one atomic inline. DOCX and native JSON v12/data XAML v7 preserve
+the payload. The derived alternative text supplies display, selection and copy
+fallback; no equation layout or symbol editing is provided. Other codecs report
+`conversion.equation` when flattening the payload to text.
 
 See [named styles, themes and typography](STYLES.md) for the DX-01 cascade, sparse
 overrides, font ownership, dialogs and format support.
@@ -42,7 +71,7 @@ partition; they cannot silently detach boundaries. Clipboard extraction and past
 remap paragraph/section identities. Whole-document paste adopts source page settings;
 partial paste keeps the destination initial settings and source interior boundaries.
 
-Native v7 and data XAML retain all page metadata; old native documents default to
+Native JSON v12 and data XAML v7 retain all page metadata; old native documents default to
 an implicit page section. Other formats currently report `conversion.page-sections`,
 `conversion.column-break` and `conversion.paragraph-frame` losses when applicable.
 Strict conversion rejects these losses before writing the destination stream.

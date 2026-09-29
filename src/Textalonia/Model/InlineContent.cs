@@ -39,8 +39,12 @@ public sealed record InlineDescriptor
             case ImageInlinePayload image when ValidKey(image.ResourceId) &&
                 (image.PreviewResourceId is null || ValidKey(image.PreviewResourceId)): break;
             case OleInlinePayload ole when ValidKey(ole.ResourceId) && ValidKey(ole.PreviewResourceId) &&
+                Enum.IsDefined(ole.RelationshipKind) &&
                 ole.ProgramId is not null && ole.ProgramId.Length <= 256 && !ole.ProgramId.Any(char.IsControl) &&
                 ole.FileName is not null && ole.FileName.Length <= 256 && !ole.FileName.Any(char.IsControl): break;
+            case EquationInlinePayload equation:
+                EquationMarkup.Parse(equation.Xml);
+                break;
             case MergeFieldInlinePayload field:
                 field.Validate();
                 break;
@@ -60,6 +64,7 @@ public sealed record InlineDescriptor
 [JsonDerivedType(typeof(NoteInlinePayload), "note")]
 [JsonDerivedType(typeof(PageFieldInlinePayload), "pageField")]
 [JsonDerivedType(typeof(OleInlinePayload), "ole")]
+[JsonDerivedType(typeof(EquationInlinePayload), "equation")]
 [JsonDerivedType(typeof(FormControlInlinePayload), "formControl")]
 public abstract record InlinePayload;
 
@@ -72,12 +77,20 @@ public sealed record ImageInlinePayload(string ResourceId) : InlinePayload
     public string? PreviewResourceId { get; init; }
 }
 
+/// <summary>Relationship family for inert embedded Office data.</summary>
+public enum OleRelationshipKind { OleObject, Package }
+
 /// <summary>Opaque embedded package with a supplied image preview. Never activates an application.</summary>
 public sealed record OleInlinePayload(string ResourceId, string PreviewResourceId) : InlinePayload
 {
     public string ProgramId { get; init; } = "";
     public string FileName { get; init; } = "";
+    /// <summary>Relationship family used by the owning OOXML story for the embedded bytes.</summary>
+    public OleRelationshipKind RelationshipKind { get; init; }
 }
+
+/// <summary>Bounded, inert Office Math ML for DOCX interchange. Editing and rendering use only the inline alternative text.</summary>
+public sealed record EquationInlinePayload(string Xml) : InlinePayload;
 
 /// <summary>The host maps Type to a registered factory; serialized names never activate CLR types.</summary>
 public sealed record ControlInlinePayload(string Type) : InlinePayload

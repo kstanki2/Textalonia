@@ -20,13 +20,19 @@ public static class DocumentFormats
     public static JsonDocumentFormat Json { get; } = new();
     public static PlainTextDocumentFormat PlainText { get; } = new();
     public static HtmlDocumentFormat Html { get; } = new();
+    public static MhtmlDocumentFormat Mhtml { get; } = new();
     public static RtfDocumentFormat Rtf { get; } = new();
     public static DocxDocumentFormat Docx { get; } = new();
+    public static DocxDocumentFormat Dotx { get; } = new(template: true);
+    public static FlatOpcDocumentFormat FlatOpc { get; } = new();
+    public static WordMlDocumentFormat WordMl { get; } = new();
+    public static OdtDocumentFormat Odt { get; } = new();
     public static XamlDocumentFormat Xaml { get; } = new();
     public static MarkdownDocumentFormat Markdown { get; } = new();
-    public static IReadOnlyList<IDocumentFormat> BuiltIn { get; } = [Json, PlainText, Html, Rtf, Docx, Xaml, Markdown];
+    public static IReadOnlyList<IDocumentFormat> BuiltIn { get; } = [Json, PlainText, Html, Mhtml, Rtf, Docx, Dotx, FlatOpc, WordMl, Odt, Xaml, Markdown];
 
     public static IDocumentFormat ForPath(string path) =>
+        path.EndsWith(".flatopc.xml", StringComparison.OrdinalIgnoreCase) ? FlatOpc :
         BuiltIn.FirstOrDefault(f => f.Extensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase))
         ?? throw new NotSupportedException($"Unsupported document extension: {Path.GetExtension(path)}");
 
@@ -99,7 +105,7 @@ public sealed class PlainTextDocumentFormat : TextDocumentFormat
 /// <summary>Versioned, lossless native storage, including hidden cells retained by table merges.</summary>
 public sealed class JsonDocumentFormat : TextDocumentFormat
 {
-    private const int CurrentVersion = 11;
+    private const int CurrentVersion = 12;
     private sealed record Envelope(int Version, FlowDocument Document);
     internal static readonly JsonSerializerOptions Options = new()
     {
@@ -125,7 +131,7 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
     public override FlowDocument Parse(string text)
     {
         // Version 4 concrete styles migrate as explicit direct formatting. Version 5
-        // adds sparse formatting, named styles and physical document themes; version 6 adds page sections; version 7 adds secondary stories and notes; version 8 adds bookmarks and general fields; version 9 adds extended tables and list markers; version 10 adds image placement, watermarks and OLE previews; version 11 adds content controls and editing protection.
+        // adds sparse formatting, named styles and physical document themes; version 6 adds page sections; version 7 adds secondary stories and notes; version 8 adds bookmarks and general fields; version 9 adds extended tables and list markers; version 10 adds image placement, watermarks and OLE previews; version 11 adds content controls and editing protection; version 12 adds document metadata, custom XML and compatibility settings.
         using var json = JsonDocument.Parse(text, new JsonDocumentOptions { MaxDepth = Options.MaxDepth });
         if (json.RootElement.ValueKind != JsonValueKind.Object) throw new FormatException("Missing document envelope.");
         var versions = json.RootElement.EnumerateObject().Where(p => p.NameEquals("version")).ToArray();
@@ -133,7 +139,7 @@ public sealed class JsonDocumentFormat : TextDocumentFormat
         if (versions.Length != 1 || versions[0].Value.ValueKind != JsonValueKind.Number ||
             !versions[0].Value.TryGetInt32(out var version))
             throw new FormatException("Document version must be one integer.");
-        if (version is not (4 or 5 or 6 or 7 or 8 or 9 or 10 or CurrentVersion))
+        if (version is not (4 or 5 or 6 or 7 or 8 or 9 or 10 or 11 or CurrentVersion))
             throw new NotSupportedException($"Document version {version} is not supported. Supported version is {CurrentVersion}.");
         ValidateUniqueMembers(json.RootElement);
         var document = json.RootElement.Deserialize<Envelope>(Options)?.Document

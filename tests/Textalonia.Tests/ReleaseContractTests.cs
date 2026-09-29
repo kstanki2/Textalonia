@@ -17,7 +17,7 @@ public class ReleaseContractTests
         var fixture = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Fixtures", path));
         var original = DocumentFormats.Json.Parse(fixture);
         var current = DocumentFormats.Json.Serialize(original);
-        Assert.Contains("\"version\": 11", current);
+        Assert.Contains("\"version\": 12", current);
         Assert.Equal(current, DocumentFormats.Json.Serialize(DocumentFormats.Json.Parse(current)));
         var session = new EditorSession(original);
         session.Select(session.Index.Length, 0);

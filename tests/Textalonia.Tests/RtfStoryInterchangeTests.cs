@@ -133,4 +133,65 @@ public class RtfStoryInterchangeTests
         Assert.Equal("12", run.Inline!.AltText);
         Assert.Equal(PageFieldKind.NumPages, Assert.IsType<PageFieldInlinePayload>(run.Inline.Payload).Field);
     }
+
+    [Fact]
+    public void Document_page_defaults_and_section_overrides_import_separately()
+    {
+        const string rtf = "{\\rtf1\\paperw12000\\paperh16000\\margl1200\\margr1500\\margt1800\\margb2100\\gutter300\\margmirror" +
+            "\\sectd\\pgwsxn14000\\pghsxn18000\\marglsxn900\\guttersxn450\\lndscpsxn First\\par\\sect\\sectd Second\\par}";
+        var document = DocumentFormats.Rtf.Parse(rtf);
+        Assert.Equal(2, document.Sections.Length);
+        var first = document.Sections[0].PageSettings;
+        Assert.Equal(14000 / 15d, first.Width);
+        Assert.Equal(18000 / 15d, first.Height);
+        Assert.Equal(900 / 15d, first.Margins.Left);
+        Assert.Equal(1500 / 15d, first.Margins.Right);
+        Assert.Equal(450 / 15d, first.Gutter);
+        Assert.Equal(PageOrientation.Landscape, first.Orientation);
+        Assert.True(first.MirrorMargins);
+        var second = document.Sections[1].PageSettings;
+        Assert.Equal(12000 / 15d, second.Width);
+        Assert.Equal(16000 / 15d, second.Height);
+        Assert.Equal(1200 / 15d, second.Margins.Left);
+        Assert.Equal(1800 / 15d, second.Margins.Top);
+        Assert.Equal(2100 / 15d, second.Margins.Bottom);
+        Assert.Equal(300 / 15d, second.Gutter);
+        Assert.Equal(PageOrientation.Portrait, second.Orientation);
+        Assert.True(second.MirrorMargins);
+    }
+
+    [Fact]
+    public async Task Supported_page_geometry_round_trips_without_conversion_loss()
+    {
+        var first = new Paragraph("First");
+        var second = new Paragraph("Second");
+        var document = new FlowDocument([first, second])
+        {
+            Sections = [new() { PageSettings = new() { Width = 760, Height = 1120, Orientation = PageOrientation.Landscape,
+                Margins = new(54, 60, 72, 78), Gutter = 18, MirrorMargins = true } },
+                new() { StartParagraphId = second.Id, PageSettings = new() { Width = 816, Height = 1056,
+                    Margins = new(90, 96, 102, 108), Gutter = 12 } }]
+        };
+        using var stream = new MemoryStream();
+        var saved = await DocumentFormats.Rtf.SaveWithReportAsync(document, stream, new() { Mode = ConversionMode.Strict });
+        Assert.Empty(saved.Report.Diagnostics);
+        stream.Position = 0;
+        var restored = await DocumentFormats.Rtf.LoadAsync(stream);
+        Assert.Equal(document.Sections.Select(s => s.PageSettings), restored.Sections.Select(s => s.PageSettings));
+    }
+
+    [Fact]
+    public async Task Unsupported_page_decoration_is_reported_and_strict_export_rejects_it()
+    {
+        var document = new FlowDocument([new Paragraph("Body")])
+        {
+            Sections = [new() { PageSettings = new() { Background = "#FFEEDD" } }]
+        };
+        using var stream = new MemoryStream();
+        var saved = await DocumentFormats.Rtf.SaveWithReportAsync(document, stream);
+        Assert.Contains(saved.Report.Diagnostics, diagnostic => diagnostic.Code == "rtf.physical-page-settings");
+        using var strict = new MemoryStream();
+        await Assert.ThrowsAsync<DocumentConversionException>(() => DocumentFormats.Rtf.SaveWithReportAsync(document, strict,
+            new() { Mode = ConversionMode.Strict }));
+    }
 }

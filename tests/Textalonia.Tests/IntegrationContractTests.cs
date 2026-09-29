@@ -18,6 +18,15 @@ public class IntegrationContractTests
     [InlineData("test.MARKDOWN")]
     public void Markdown_extensions_select_codec(string path) => Assert.Same(DocumentFormats.Markdown, DocumentFormats.ForPath(path));
 
+    [Fact]
+    public void Xml_format_extensions_select_unambiguous_codecs()
+    {
+        Assert.Same(DocumentFormats.FlatOpc, DocumentFormats.ForPath("template.flatopc.xml"));
+        Assert.Same(DocumentFormats.FlatOpc, DocumentFormats.ForPath("template.FLATOPC"));
+        Assert.Same(DocumentFormats.WordMl, DocumentFormats.ForPath("legacy.xml"));
+        Assert.Same(DocumentFormats.Mhtml, DocumentFormats.ForPath("archive.mhtml"));
+    }
+
     [Theory]
     [InlineData(".txaml")]
     [InlineData(".md")]

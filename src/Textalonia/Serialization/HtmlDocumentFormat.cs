@@ -21,6 +21,42 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
     private static readonly HashSet<string> SupportedStyles = ["font-weight", "font-style", "font-family", "font-size", "font-stretch", "color", "background", "background-color", "text-decoration", "text-decoration-line", "vertical-align", "text-align", "direction", "margin", "margin-top", "margin-bottom", "margin-left", "margin-right", "text-indent", "line-height", "letter-spacing", "white-space", "padding", "padding-left", "padding-top", "padding-right", "padding-bottom", "border", "border-left", "border-top", "border-right", "border-bottom", "border-collapse", "width", "height", "min-height", "list-style-type", "table-layout", "break-inside"];
     private static readonly string[] StretchNames = ["ultra-condensed", "extra-condensed", "condensed", "semi-condensed", "normal", "semi-expanded", "expanded", "extra-expanded", "ultra-expanded"];
     private const string Metadata = "data-textalonia-";
+    private static readonly AsyncLocal<StylesheetScope?> ActiveStylesheet = new();
+    private sealed record StyleSelector(string? Tag, string? Class, string? Id)
+    {
+        public int Specificity => (Id is null ? 0 : 100) + (Class is null ? 0 : 10) + (Tag is null ? 0 : 1);
+        public bool Matches(IElement element) =>
+            (Tag is null || element.LocalName == Tag) &&
+            (Id is null || element.Id == Id) &&
+            (Class is null || (element.GetAttribute("class") ?? "").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Contains(Class, StringComparer.Ordinal));
+    }
+    private sealed record StyleRule(StyleSelector Selector, IReadOnlyDictionary<string, string> Declarations, int Order);
+    private sealed class StylesheetScope(IReadOnlyList<StyleRule> rules)
+    {
+        private readonly Dictionary<IElement, Dictionary<string, string>> _cache = [];
+        public Dictionary<string, string> Css(IElement element)
+        {
+            if (!_cache.TryGetValue(element, out var resolved))
+            {
+                var choices = new Dictionary<string, (string Value, int Specificity, int Order)>(StringComparer.OrdinalIgnoreCase);
+                foreach (var rule in rules)
+                {
+                    if (!rule.Selector.Matches(element)) continue;
+                    foreach (var (name, value) in rule.Declarations)
+                    {
+                        if (!choices.TryGetValue(name, out var old) || rule.Selector.Specificity > old.Specificity ||
+                            rule.Selector.Specificity == old.Specificity && rule.Order >= old.Order)
+                            choices[name] = (value, rule.Selector.Specificity, rule.Order);
+                    }
+                }
+                resolved = choices.ToDictionary(pair => pair.Key, pair => pair.Value.Value, StringComparer.OrdinalIgnoreCase);
+                foreach (var (name, value) in ParseDeclarations(element.GetAttribute("style") ?? "")) resolved[name] = value;
+                _cache.Add(element, resolved);
+            }
+            // Callers may add inherited properties to their local copy.
+            return new Dictionary<string, string>(resolved, StringComparer.OrdinalIgnoreCase);
+        }
+    }
     private sealed class ImportContext
     {
         public readonly Dictionary<string, DocumentResource> Resources = new(StringComparer.Ordinal);
@@ -40,24 +76,33 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
         if (text.Length > 32 * 1024 * 1024) throw new FormatException("HTML is too large.");
         var html = new HtmlParser().ParseDocument(text);
         var pending = new Stack<(INode Node, int Depth)>();
+        var elements = new List<IElement>();
         pending.Push((html, 0));
         var nodes = 0;
         while (pending.TryPop(out var item))
         {
             if (item.Depth > 64 || ++nodes > 100_000) throw new FormatException("HTML structure exceeds the import limits.");
-            if (item.Node is IElement element) Inspect(element);
+            if (item.Node is IElement element) elements.Add(element);
             foreach (var child in item.Node.ChildNodes.Reverse()) pending.Push((child, item.Depth + 1));
         }
-        var context = new ImportContext();
-        var document = new FlowDocument(ReadBlocks(html.Body!, ReadStyle(html.Body!, TextStyle.Default), context))
-        { Resources = context.Resources.ToImmutableDictionary(StringComparer.Ordinal) };
-        document.Validate();
-        return document;
+        var previous = ActiveStylesheet.Value;
+        ActiveStylesheet.Value = ReadStylesheets(elements);
+        try
+        {
+            foreach (var element in elements) Inspect(element);
+            var context = new ImportContext();
+            var document = new FlowDocument(ReadBlocks(html.Body!, ReadStyle(html.Body!, TextStyle.Default), context))
+            { Resources = context.Resources.ToImmutableDictionary(StringComparer.Ordinal) };
+            document.Validate();
+            return document;
+        }
+        finally { ActiveStylesheet.Value = previous; }
     }
 
     private static void Inspect(IElement element)
     {
         var tag = element.LocalName;
+        if (tag == "style") return; // Embedded rules were inspected by ReadStylesheets.
         if (IgnoredTags.Contains(tag)) Report("html.unsupported-element", tag, "Element and its contents were omitted.", element);
         else if (!SupportedTags.Contains(tag)) Report("html.unsupported-element", tag, "Child content was retained without the element's semantics.", element);
         foreach (var (name, value) in Css(element))
@@ -84,7 +129,6 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
         }
         if ((element.HasAttribute("width") && tag is not ("img" or "col" or "table" or "td" or "th")) || (element.HasAttribute("height") && tag is not ("img" or "tr")))
             Report("html.unsupported-style", "Element width or height attribute", "Container size was determined by document flow.", element);
-        if (element.HasAttribute("class")) Report("html.unsupported-style", "CSS class rules", "Only inline CSS and semantic HTML tags were applied.", element);
         if (tag == "a" && element.GetAttribute("href") is { } href && !FlowDocument.IsSafeHyperlink(href))
             Report("html.unsafe-link", "Unsafe or relative hyperlink", "Link text was retained without the hyperlink.", element);
         if (tag == "ol" && element.HasAttribute("reversed"))
@@ -383,10 +427,133 @@ public sealed class HtmlDocumentFormat : TextDocumentFormat
         return style;
     }
 
-    private static Dictionary<string, string> Css(IElement element)
+    private static StylesheetScope ReadStylesheets(IEnumerable<IElement> elements)
+    {
+        var rules = new List<StyleRule>();
+        var totalLength = 0;
+        foreach (var element in elements.Where(e => e.LocalName == "style"))
+        {
+            if (element.GetAttribute("type") is { Length: > 0 } type && !type.Equals("text/css", StringComparison.OrdinalIgnoreCase))
+            {
+                Report("html.stylesheet-type", "Embedded stylesheet type " + type, "Stylesheet was omitted.", element);
+                continue;
+            }
+            var source = element.TextContent;
+            totalLength += source.Length;
+            if (totalLength > 256_000) throw new FormatException("Embedded HTML stylesheets exceed the size limit.");
+            source = StripComments(source, element);
+            var position = 0;
+            while (position < source.Length)
+            {
+                while (position < source.Length && char.IsWhiteSpace(source[position])) position++;
+                if (position == source.Length) break;
+                var open = source.IndexOf('{', position);
+                if (open < 0)
+                {
+                    Report("html.stylesheet-syntax", "CSS text outside a rule", "Trailing stylesheet text was omitted.", element);
+                    break;
+                }
+                var prelude = source[position..open].Trim();
+                if (prelude.StartsWith('@'))
+                {
+                    var semicolon = source.IndexOf(';', position, open - position);
+                    if (semicolon >= 0)
+                    {
+                        Report("html.stylesheet-at-rule", "CSS at-rule", "The at-rule was omitted; later rules were retained.", element);
+                        position = semicolon + 1;
+                        continue;
+                    }
+                }
+                var depth = 1;
+                var close = open + 1;
+                while (close < source.Length && depth > 0)
+                {
+                    if (source[close] == '{') depth++;
+                    else if (source[close] == '}') depth--;
+                    close++;
+                }
+                if (depth != 0)
+                {
+                    Report("html.stylesheet-syntax", "Unclosed CSS rule", "The incomplete rule was omitted.", element);
+                    break;
+                }
+                var body = source[(open + 1)..(close - 1)];
+                position = close;
+                if (prelude.StartsWith('@'))
+                {
+                    Report("html.stylesheet-at-rule", "CSS at-rule " + prelude, "The at-rule and its nested rules were omitted.", element);
+                    continue;
+                }
+                if (prelude.Contains('}') || body.Contains('{'))
+                {
+                    Report("html.stylesheet-syntax", "Nested or malformed CSS rule", "The rule was omitted.", element);
+                    continue;
+                }
+                var declarations = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var item in body.Split(';', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (string.IsNullOrWhiteSpace(item)) continue;
+                    var colon = item.IndexOf(':');
+                    if (colon <= 0 || item[(colon + 1)..].Trim().Length == 0)
+                    {
+                        Report("html.stylesheet-declaration", "Malformed CSS declaration", "The declaration was omitted.", element);
+                        continue;
+                    }
+                    var name = item[..colon].Trim().ToLowerInvariant();
+                    var value = item[(colon + 1)..].Trim();
+                    if (!Regex.IsMatch(name, "^[a-z-]+$", RegexOptions.CultureInvariant) || value.Contains("!important", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Report("html.stylesheet-declaration", "Unsupported CSS declaration " + name, "The declaration was omitted.", element);
+                        continue;
+                    }
+                    declarations[name] = value;
+                }
+                foreach (var item in prelude.Split(','))
+                {
+                    var selector = item.Trim();
+                    var match = Regex.Match(selector, @"^(?<tag>[a-z][a-z0-9-]*)?(?<qual>[.#][A-Za-z_][A-Za-z0-9_-]*)?$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+                    if (!match.Success || selector.Length == 0)
+                    {
+                        Report("html.stylesheet-selector", "Unsupported CSS selector " + selector, "The selector's declarations were omitted.", element);
+                        continue;
+                    }
+                    var qualifier = match.Groups["qual"].Value;
+                    var parsed = new StyleSelector(match.Groups["tag"].Success ? match.Groups["tag"].Value.ToLowerInvariant() : null,
+                        qualifier.StartsWith('.') ? qualifier[1..] : null, qualifier.StartsWith('#') ? qualifier[1..] : null);
+                    if (rules.Count >= 512) throw new FormatException("Embedded HTML stylesheets contain too many selectors.");
+                    rules.Add(new(parsed, declarations, rules.Count));
+                }
+            }
+        }
+        return new(rules);
+    }
+
+    private static string StripComments(string source, IElement element)
+    {
+        var result = new StringBuilder(source.Length);
+        var position = 0;
+        while (position < source.Length)
+        {
+            var start = source.IndexOf("/*", position, StringComparison.Ordinal);
+            if (start < 0) { result.Append(source, position, source.Length - position); break; }
+            result.Append(source, position, start - position);
+            var end = source.IndexOf("*/", start + 2, StringComparison.Ordinal);
+            if (end < 0)
+            {
+                Report("html.stylesheet-syntax", "Unclosed CSS comment", "Text after the comment was omitted.", element);
+                break;
+            }
+            position = end + 2;
+        }
+        return result.ToString();
+    }
+
+    private static Dictionary<string, string> Css(IElement element) => ActiveStylesheet.Value?.Css(element) ?? ParseDeclarations(element.GetAttribute("style") ?? "");
+
+    private static Dictionary<string, string> ParseDeclarations(string text)
     {
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var pair in (element.GetAttribute("style") ?? "").Split(';'))
+        foreach (var pair in text.Split(';'))
         {
             var colon = pair.IndexOf(':');
             if (colon > 0) result[pair[..colon].Trim().ToLowerInvariant()] = pair[(colon + 1)..].Trim();

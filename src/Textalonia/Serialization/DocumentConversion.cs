@@ -81,6 +81,7 @@ public static class DocumentFormatExtensions
         cancellationToken.ThrowIfCancellationRequested();
         document.Validate();
         document = UpdateFields(document, options, cancellationToken);
+        if (options.PlainTextOnly) ReportEquationLosses(document);
         if (options.PlainTextOnly) document = Flatten(document);
         cancellationToken.ThrowIfCancellationRequested();
         var report = diagnostics.ToReport();
@@ -99,6 +100,7 @@ public static class DocumentFormatExtensions
         document.Validate();
         using var diagnostics = ConversionDiagnostics.Begin();
         document = UpdateFields(document, options, cancellationToken);
+        if (options.PlainTextOnly) ReportEquationLosses(document);
         if (options.PlainTextOnly) document = Flatten(document);
         ReportExportLosses(format, document);
         using var buffer = new MemoryStream();
@@ -132,7 +134,20 @@ public static class DocumentFormatExtensions
 
     internal static void ReportExportLosses(IDocumentFormat format, FlowDocument document)
     {
-        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat))
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat))
+            ReportEquationLosses(document);
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat))
+        {
+            if (document.CoreProperties != new DocumentCoreProperties())
+                ConversionDiagnostics.Report("conversion.core-properties", "Built-in Office document properties", "Document metadata was omitted.");
+            if (!document.CustomProperties.IsEmpty)
+                ConversionDiagnostics.Report("conversion.custom-properties", "Typed custom Office properties", "Custom property names, values and types were omitted.");
+            if (!document.CustomXmlParts.IsEmpty)
+                ConversionDiagnostics.Report("conversion.custom-xml", "Document-owned custom XML parts", "Custom XML parts were omitted.");
+            if (document.CompatibilitySettings.Xml is not null)
+                ConversionDiagnostics.Report("conversion.compatibility-settings", "Word compatibility settings", "Stored compatibility XML was omitted.");
+        }
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat))
         {
             ReportFormLosses(document);
             foreach (var section in document.Sections.Where(section => section.Watermark is not null))
@@ -142,21 +157,21 @@ public static class DocumentFormatExtensions
             foreach (var inline in imageParagraphs.SelectMany(entry => entry.Paragraph.Runs).Select(run => run.Inline).OfType<InlineDescriptor>())
             {
                 if (inline.Placement is not null)
-                    ConversionDiagnostics.Report("conversion.image-placement", "Image anchoring, wrapping, crop, rotation and aspect lock", format is PlainTextDocumentFormat ? "Image replaced by alternative text; placement settings omitted." : "Supported image bytes and display dimensions retained as an untransformed inline image; placement settings omitted.", inline.Id);
+                    ConversionDiagnostics.Report("conversion.image-placement", "Image anchoring, wrapping, crop, rotation and aspect lock", format is PlainTextDocumentFormat or WordMlDocumentFormat ? "Image replaced by alternative text; placement settings omitted." : "Supported image bytes and display dimensions retained as an untransformed inline image; placement settings omitted.", inline.Id);
                 if (inline.Payload is ImageInlinePayload { PreviewResourceId: not null })
-                    ConversionDiagnostics.Report("conversion.image-preview", "Separate image original and preview", "Only the supported original image is exported; preview relationship omitted.", inline.Id);
+                    ConversionDiagnostics.Report("conversion.image-preview", "Separate image original and preview", format is WordMlDocumentFormat ? "Only alternative text is exported; original and preview image bytes are omitted." : "Only the supported original image is exported; preview relationship omitted.", inline.Id);
                 if (inline.Payload is OleInlinePayload)
                     ConversionDiagnostics.Report("conversion.ole", "Embedded OLE package, preview and object metadata", "Object replaced with alternative text; embedded data and preview relationship omitted.", inline.Id);
             }
         }
-        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat))
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat or RtfDocumentFormat))
         {
             if (!document.Fields.IsEmpty) ConversionDiagnostics.Report("conversion.fields", "General fields", "Cached rich results retained; instructions and update semantics omitted.");
             if (!document.Bookmarks.IsEmpty) ConversionDiagnostics.Report("conversion.bookmarks", "Bookmark ranges", "Bookmark destinations omitted.");
             if (new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs).Any(r => r.Style.InternalLink is not null))
                 ConversionDiagnostics.Report("conversion.internal-links", "Internal hyperlinks", "Visible link text retained; destination omitted.");
         }
-        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat) && !document.Properties.IsEmpty)
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat or RtfDocumentFormat) && !document.Properties.IsEmpty)
             ConversionDiagnostics.Report("conversion.document-properties", "Document properties", "Property metadata omitted; cached field results retained.");
         if (format is not (JsonDocumentFormat or XamlDocumentFormat))
         {
@@ -168,28 +183,40 @@ public static class DocumentFormatExtensions
                 if (style.Frame is not null) ConversionDiagnostics.Report("conversion.paragraph-frame", "Legacy paragraph frame", "Paragraph placement is omitted; text remains in normal flow.", entry.Paragraph.Id);
             }
         }
-        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat) && !document.Sections.IsEmpty)
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat or RtfDocumentFormat) &&
+            !(format is OdtDocumentFormat && document.Sections.Length == 1) && !document.Sections.IsEmpty)
             ConversionDiagnostics.Report("conversion.page-sections", "Physical page sections",
                 "Page settings, section boundaries, numbering, columns and page decoration are omitted by this format.");
-        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat) && (!document.Stories.IsEmpty || !document.Notes.IsEmpty))
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat or RtfDocumentFormat) && (!document.Stories.IsEmpty || !document.Notes.IsEmpty))
             ConversionDiagnostics.Report("conversion.stories", "Headers, footers and note stories", "Main story retained with reference alternative text; secondary stories and note semantics omitted.");
-        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or RtfDocumentFormat))
+        if (format is not (JsonDocumentFormat or XamlDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat or RtfDocumentFormat))
             foreach (var inline in new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs).Select(r => r.Inline).OfType<InlineDescriptor>().Where(i => i.Payload is PageFieldInlinePayload))
                 ConversionDiagnostics.Report("conversion.page-field", "Dynamic page field", "Cached alternative text retained.", inline.Id);
-        if (format is HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or MarkdownDocumentFormat)
+        if (format is HtmlDocumentFormat or MhtmlDocumentFormat or OdtDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat or MarkdownDocumentFormat)
         {
             ReportMergeHistory(document.Blocks);
-            if (format is RtfDocumentFormat or DocxDocumentFormat)
+            if (format is RtfDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat)
                 foreach (var story in document.Stories.Values) { ReportMergeHistory(story.Blocks); ReportIntegrationSemantics(story.Blocks); }
-            ReportUnusedResources(document, format is DocxDocumentFormat);
+            ReportUnusedResources(document, format is DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat);
         }
         if (format is PlainTextDocumentFormat) ReportPlainTextLoss(document);
-        if (format is HtmlDocumentFormat or MarkdownDocumentFormat)
+        if (format is HtmlDocumentFormat or MhtmlDocumentFormat or OdtDocumentFormat or MarkdownDocumentFormat)
             foreach (var inline in new DocumentIndex(document).Paragraphs.SelectMany(p => p.Paragraph.Runs)
                 .Select(r => r.Inline).OfType<InlineDescriptor>().Where(inline => inline.Payload is MergeFieldInlinePayload))
-                ReportMergeFieldLoss(inline, format is HtmlDocumentFormat ? "html" : "markdown");
-        if (format is HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat)
+                ReportMergeFieldLoss(inline, format is HtmlDocumentFormat or MhtmlDocumentFormat ? "html" : format is OdtDocumentFormat ? "odt" : "markdown");
+        if (format is HtmlDocumentFormat or MhtmlDocumentFormat or OdtDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat)
             ReportIntegrationSemantics(document.Blocks);
+    }
+
+    private static void ReportEquationLosses(FlowDocument document)
+    {
+        var paragraphs = new DocumentIndex(document).Paragraphs.AsEnumerable();
+        foreach (var story in document.Stories.Values)
+            paragraphs = paragraphs.Concat(new DocumentIndex(new FlowDocument(story.Blocks)).Paragraphs);
+        foreach (var inline in paragraphs.SelectMany(entry => entry.Paragraph.Runs).Select(run => run.Inline)
+            .OfType<InlineDescriptor>().Where(inline => inline.Payload is EquationInlinePayload))
+            ConversionDiagnostics.Report("conversion.equation", "Interchange-only Office Math equation",
+                "Office Math XML is omitted; only alternative text is retained.", inline.Id);
     }
 
     private static void ReportIntegrationSemantics(IEnumerable<Block> blocks)
@@ -229,7 +256,7 @@ public static class DocumentFormatExtensions
 
     private static void ReportLegacyFormat(IDocumentFormat format)
     {
-        if (format is not (JsonDocumentFormat or PlainTextDocumentFormat or HtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or XamlDocumentFormat or MarkdownDocumentFormat))
+        if (format is not (JsonDocumentFormat or PlainTextDocumentFormat or HtmlDocumentFormat or MhtmlDocumentFormat or RtfDocumentFormat or DocxDocumentFormat or FlatOpcDocumentFormat or LibreOfficeBinaryDocumentFormat or WordMlDocumentFormat or OdtDocumentFormat or XamlDocumentFormat or MarkdownDocumentFormat))
             ConversionDiagnostics.Report("conversion.diagnostics-unavailable", "Custom codec fidelity is unknown",
                 "The legacy codec was used; implement IReportingDocumentFormat to provide loss diagnostics.");
     }

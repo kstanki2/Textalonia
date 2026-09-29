@@ -36,6 +36,18 @@ public sealed class GeneralFieldTests
     }
 
     [Fact]
+    public void Office_metadata_feeds_property_fields_without_legacy_projection()
+    {
+        var core = Field("TITLE") with { CoreProperties = new DocumentCoreProperties { Title = "Quarterly report" } };
+        Assert.Equal("Quarterly report", FieldEvaluator.Update(core).Document.Text);
+        var typed = Field("DOCPROPERTY Count") with
+        {
+            CustomProperties = [new DocumentCustomProperty { Name = "Count", Type = DocumentPropertyType.Integer, Value = "42" }]
+        };
+        Assert.Equal("42", FieldEvaluator.Update(typed).Document.Text);
+    }
+
+    [Fact]
     public void Rich_host_result_can_span_blocks_and_cross_story_dependencies_resolve()
     {
         var document = Field("DOCVARIABLE Address");

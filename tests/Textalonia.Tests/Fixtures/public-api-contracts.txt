@@ -2025,6 +2025,18 @@ type Textalonia.Model.DocumentBookmark
   set_Id(value: System.Guid[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Name(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Start(value: Textalonia.Model.DocumentAnchor[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.Model.DocumentCompatibilitySettings
+  .ctor()  abstract=False virtual=False final=False
+  <Clone>$() return Textalonia.Model.DocumentCompatibilitySettings[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.Model.DocumentCompatibilitySettings[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_Xml() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.Model.DocumentCompatibilitySettings[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.DocumentCompatibilitySettings[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.Model.DocumentCompatibilitySettings[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.DocumentCompatibilitySettings[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property Xml System.String[Nullable/Nullable]
+  set_Xml(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
 type Textalonia.Model.DocumentContentControl
   .ctor()  abstract=False virtual=False final=False
   <Clone>$() return Textalonia.Model.DocumentContentControl[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -2089,6 +2101,96 @@ type Textalonia.Model.DocumentContentControl
   set_Tag(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Title(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Value(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.Model.DocumentCoreProperties
+  .ctor()  abstract=False virtual=False final=False
+  <Clone>$() return Textalonia.Model.DocumentCoreProperties[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.Model.DocumentCoreProperties[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_Category() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_ContentStatus() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Created() return System.Nullable<System.DateTimeOffset>[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Creator() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Description() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Identifier() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Keywords() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Language() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_LastModifiedBy() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Modified() return System.Nullable<System.DateTimeOffset>[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Revision() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Subject() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Title() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Version() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.Model.DocumentCoreProperties[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.DocumentCoreProperties[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.Model.DocumentCoreProperties[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.DocumentCoreProperties[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property Category System.String[Nullable/Nullable]
+  property ContentStatus System.String[Nullable/Nullable]
+  property Created System.Nullable<System.DateTimeOffset>[Nullable/Nullable]
+  property Creator System.String[Nullable/Nullable]
+  property Description System.String[Nullable/Nullable]
+  property Identifier System.String[Nullable/Nullable]
+  property Keywords System.String[Nullable/Nullable]
+  property Language System.String[Nullable/Nullable]
+  property LastModifiedBy System.String[Nullable/Nullable]
+  property Modified System.Nullable<System.DateTimeOffset>[Nullable/Nullable]
+  property Revision System.String[Nullable/Nullable]
+  property Subject System.String[Nullable/Nullable]
+  property Title System.String[Nullable/Nullable]
+  property Version System.String[Nullable/Nullable]
+  set_Category(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_ContentStatus(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Created(value: System.Nullable<System.DateTimeOffset>[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Creator(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Description(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Identifier(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Keywords(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Language(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_LastModifiedBy(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Modified(value: System.Nullable<System.DateTimeOffset>[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Revision(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Subject(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Title(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Version(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.Model.DocumentCustomProperty
+  .ctor()  abstract=False virtual=False final=False
+  <Clone>$() return Textalonia.Model.DocumentCustomProperty[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.Model.DocumentCustomProperty[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Type() return Textalonia.Model.DocumentPropertyType[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Value() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.Model.DocumentCustomProperty[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.DocumentCustomProperty[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.Model.DocumentCustomProperty[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.DocumentCustomProperty[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property Name System.String[NotNull/NotNull]
+  property Type Textalonia.Model.DocumentPropertyType[NotNull/NotNull]
+  property Value System.String[NotNull/NotNull]
+  set_Name(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Type(value: Textalonia.Model.DocumentPropertyType[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Value(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.Model.DocumentCustomXmlPart
+  .ctor()  abstract=False virtual=False final=False
+  <Clone>$() return Textalonia.Model.DocumentCustomXmlPart[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.Model.DocumentCustomXmlPart[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_PartName() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_PropertiesPartName() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_PropertiesXml() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Xml() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.Model.DocumentCustomXmlPart[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.DocumentCustomXmlPart[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.Model.DocumentCustomXmlPart[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.DocumentCustomXmlPart[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property PartName System.String[NotNull/NotNull]
+  property PropertiesPartName System.String[Nullable/Nullable]
+  property PropertiesXml System.String[Nullable/Nullable]
+  property Xml System.String[NotNull/NotNull]
+  set_PartName(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_PropertiesPartName(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_PropertiesXml(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Xml(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
 type Textalonia.Model.DocumentDefaults
   .ctor()  abstract=False virtual=False final=False
   <Clone>$() return Textalonia.Model.DocumentDefaults[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -2234,6 +2336,13 @@ type Textalonia.Model.DocumentPermissionRange [System.Runtime.CompilerServices.R
   set_IsReadOnly(value: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Start(value: Textalonia.Model.DocumentAnchor[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_User(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.Model.DocumentPropertyType
+  field Boolean Textalonia.Model.DocumentPropertyType[NotNull/NotNull]
+  field DateTime Textalonia.Model.DocumentPropertyType[NotNull/NotNull]
+  field Decimal Textalonia.Model.DocumentPropertyType[NotNull/NotNull]
+  field Integer Textalonia.Model.DocumentPropertyType[NotNull/NotNull]
+  field Text Textalonia.Model.DocumentPropertyType[NotNull/NotNull]
+  field value__ System.Int32[NotNull/NotNull]
 type Textalonia.Model.DocumentProtection
   .ctor()  abstract=False virtual=False final=False
   <Clone>$() return Textalonia.Model.DocumentProtection[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -2506,6 +2615,23 @@ type Textalonia.Model.EdgeInsets
   set_Left(value: System.Double[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Right(value: System.Double[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Top(value: System.Double[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.Model.EquationInlinePayload
+  .ctor(Xml: System.String[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
+  <Clone>$() return Textalonia.Model.EquationInlinePayload[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False [System.Runtime.CompilerServices.PreserveBaseOverridesAttribute()]
+  Deconstruct(Xml: System.String&[NotNull/NotNull] in=False out=True modreq() modopt() [System.Runtime.InteropServices.OutAttribute()]) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.Model.EquationInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  Equals(other: Textalonia.Model.InlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  PrintMembers(builder: System.Text.StringBuilder[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_EqualityContract() return System.Type[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_Xml() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.Model.EquationInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.EquationInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.Model.EquationInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.EquationInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property EqualityContract System.Type[NotNull/Unknown]
+  property Xml System.String[NotNull/NotNull]
+  set_Xml(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
 type Textalonia.Model.Fields.FieldArgument
   .ctor(Parts: System.Collections.Immutable.ImmutableArray<Textalonia.Model.Fields.FieldExpression>[NotNull/NotNull] args(Textalonia.Model.Fields.FieldExpression[NotNull/NotNull]) in=False out=False modreq() modopt() , IsQuoted: System.Boolean[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()])  abstract=False virtual=False final=False
   <Clone>$() return Textalonia.Model.Fields.FieldArgument[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -2860,7 +2986,11 @@ type Textalonia.Model.FlowDocument
   ValidateColor(color: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_Blocks() return System.Collections.Immutable.ImmutableArray<Textalonia.Model.Block>[NotNull/NotNull] args(Textalonia.Model.Block[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   get_Bookmarks() return System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentBookmark>[NotNull/NotNull] args(Textalonia.Model.DocumentBookmark[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
+  get_CompatibilitySettings() return Textalonia.Model.DocumentCompatibilitySettings[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_ContentControls() return System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentContentControl>[NotNull/NotNull] args(Textalonia.Model.DocumentContentControl[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
+  get_CoreProperties() return Textalonia.Model.DocumentCoreProperties[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_CustomProperties() return System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentCustomProperty>[NotNull/NotNull] args(Textalonia.Model.DocumentCustomProperty[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
+  get_CustomXmlParts() return System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentCustomXmlPart>[NotNull/NotNull] args(Textalonia.Model.DocumentCustomXmlPart[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   get_Defaults() return Textalonia.Model.DocumentDefaults[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_EndnoteSettings() return Textalonia.Model.NoteSettings[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_Fields() return System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentField>[NotNull/NotNull] args(Textalonia.Model.DocumentField[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
@@ -2881,7 +3011,11 @@ type Textalonia.Model.FlowDocument
   op_Inequality(left: Textalonia.Model.FlowDocument[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.FlowDocument[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   property Blocks System.Collections.Immutable.ImmutableArray<Textalonia.Model.Block>[NotNull/NotNull] args(Textalonia.Model.Block[NotNull/NotNull])
   property Bookmarks System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentBookmark>[NotNull/NotNull] args(Textalonia.Model.DocumentBookmark[NotNull/NotNull])
+  property CompatibilitySettings Textalonia.Model.DocumentCompatibilitySettings[NotNull/NotNull]
   property ContentControls System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentContentControl>[NotNull/NotNull] args(Textalonia.Model.DocumentContentControl[NotNull/NotNull])
+  property CoreProperties Textalonia.Model.DocumentCoreProperties[NotNull/NotNull]
+  property CustomProperties System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentCustomProperty>[NotNull/NotNull] args(Textalonia.Model.DocumentCustomProperty[NotNull/NotNull])
+  property CustomXmlParts System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentCustomXmlPart>[NotNull/NotNull] args(Textalonia.Model.DocumentCustomXmlPart[NotNull/NotNull])
   property Defaults Textalonia.Model.DocumentDefaults[NotNull/NotNull]
   property EndnoteSettings Textalonia.Model.NoteSettings[NotNull/NotNull]
   property Fields System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentField>[NotNull/NotNull] args(Textalonia.Model.DocumentField[NotNull/NotNull])
@@ -2900,7 +3034,11 @@ type Textalonia.Model.FlowDocument
   property Theme Textalonia.Model.DocumentTheme[NotNull/NotNull]
   set_Blocks(value: System.Collections.Immutable.ImmutableArray<Textalonia.Model.Block>[NotNull/NotNull] args(Textalonia.Model.Block[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Bookmarks(value: System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentBookmark>[NotNull/NotNull] args(Textalonia.Model.DocumentBookmark[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_CompatibilitySettings(value: Textalonia.Model.DocumentCompatibilitySettings[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_ContentControls(value: System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentContentControl>[NotNull/NotNull] args(Textalonia.Model.DocumentContentControl[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_CoreProperties(value: Textalonia.Model.DocumentCoreProperties[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_CustomProperties(value: System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentCustomProperty>[NotNull/NotNull] args(Textalonia.Model.DocumentCustomProperty[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_CustomXmlParts(value: System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentCustomXmlPart>[NotNull/NotNull] args(Textalonia.Model.DocumentCustomXmlPart[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Defaults(value: Textalonia.Model.DocumentDefaults[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_EndnoteSettings(value: Textalonia.Model.NoteSettings[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Fields(value: System.Collections.Immutable.ImmutableArray<Textalonia.Model.DocumentField>[NotNull/NotNull] args(Textalonia.Model.DocumentField[NotNull/NotNull]) in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
@@ -3127,7 +3265,7 @@ type Textalonia.Model.InlineDescriptor [System.Runtime.CompilerServices.Required
   set_Payload(value: Textalonia.Model.InlinePayload[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Placement(value: Textalonia.Model.ImagePlacement[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_Width(value: System.Double[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
-type Textalonia.Model.InlinePayload [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.ControlInlinePayload), "control")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.FormControlInlinePayload), "formControl")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.ImageInlinePayload), "image")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.MergeFieldInlinePayload), "mergeField")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.NoteInlinePayload), "note")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.OleInlinePayload), "ole")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.PageFieldInlinePayload), "pageField")] [System.Text.Json.Serialization.JsonPolymorphicAttribute(TypeDiscriminatorPropertyName = "kind")]
+type Textalonia.Model.InlinePayload [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.ControlInlinePayload), "control")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.EquationInlinePayload), "equation")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.FormControlInlinePayload), "formControl")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.ImageInlinePayload), "image")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.MergeFieldInlinePayload), "mergeField")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.NoteInlinePayload), "note")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.OleInlinePayload), "ole")] [System.Text.Json.Serialization.JsonDerivedTypeAttribute(typeof(Textalonia.Model.PageFieldInlinePayload), "pageField")] [System.Text.Json.Serialization.JsonPolymorphicAttribute(TypeDiscriminatorPropertyName = "kind")]
   .ctor()  abstract=False virtual=False final=False
   .ctor(original: Textalonia.Model.InlinePayload[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
   <Clone>$() return Textalonia.Model.InlinePayload[NotNull/NotNull] modreq() modopt()  abstract=True virtual=True final=False
@@ -3401,6 +3539,7 @@ type Textalonia.Model.OleInlinePayload
   get_FileName() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_PreviewResourceId() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_ProgramId() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_RelationshipKind() return Textalonia.Model.OleRelationshipKind[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_ResourceId() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   op_Equality(left: Textalonia.Model.OleInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.OleInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   op_Inequality(left: Textalonia.Model.OleInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Model.OleInlinePayload[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -3408,11 +3547,17 @@ type Textalonia.Model.OleInlinePayload
   property FileName System.String[NotNull/NotNull]
   property PreviewResourceId System.String[NotNull/NotNull]
   property ProgramId System.String[NotNull/NotNull]
+  property RelationshipKind Textalonia.Model.OleRelationshipKind[NotNull/NotNull]
   property ResourceId System.String[NotNull/NotNull]
   set_FileName(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_PreviewResourceId(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_ProgramId(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_RelationshipKind(value: Textalonia.Model.OleRelationshipKind[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
   set_ResourceId(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+type Textalonia.Model.OleRelationshipKind
+  field OleObject Textalonia.Model.OleRelationshipKind[NotNull/NotNull]
+  field Package Textalonia.Model.OleRelationshipKind[NotNull/NotNull]
+  field value__ System.Int32[NotNull/NotNull]
 type Textalonia.Model.PageColumn
   .ctor(Width: System.Double[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()])  abstract=False virtual=False final=False
   <Clone>$() return Textalonia.Model.PageColumn[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -5003,6 +5148,10 @@ type Textalonia.Rendering.UnsupportedContentPolicy
   field Strict Textalonia.Rendering.UnsupportedContentPolicy[NotNull/NotNull]
   field Tolerant Textalonia.Rendering.UnsupportedContentPolicy[NotNull/NotNull]
   field value__ System.Int32[NotNull/NotNull]
+type Textalonia.Serialization.BinaryWordFormat
+  field Document Textalonia.Serialization.BinaryWordFormat[NotNull/NotNull]
+  field Template Textalonia.Serialization.BinaryWordFormat[NotNull/NotNull]
+  field value__ System.Int32[NotNull/NotNull]
 type Textalonia.Serialization.ConversionDiagnostic
   .ctor(Code: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , Severity: Textalonia.Serialization.ConversionDiagnosticSeverity[NotNull/NotNull] in=False out=False modreq() modopt() , UnsupportedFeature: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , Fallback: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , ModelId: System.Nullable<System.Guid>[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], SourceLocation: System.String[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()])  abstract=False virtual=False final=False
   <Clone>$() return Textalonia.Serialization.ConversionDiagnostic[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
@@ -5077,19 +5226,29 @@ type Textalonia.Serialization.DocumentFormats
   ForPath(path: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return Textalonia.Serialization.IDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_BuiltIn() return System.Collections.Generic.IReadOnlyList<Textalonia.Serialization.IDocumentFormat>[NotNull/NotNull] args(Textalonia.Serialization.IDocumentFormat[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False
   get_Docx() return Textalonia.Serialization.DocxDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Dotx() return Textalonia.Serialization.DocxDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_FlatOpc() return Textalonia.Serialization.FlatOpcDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_Html() return Textalonia.Serialization.HtmlDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_Json() return Textalonia.Serialization.JsonDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_Markdown() return Textalonia.Serialization.MarkdownDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Mhtml() return Textalonia.Serialization.MhtmlDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Odt() return Textalonia.Serialization.OdtDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_PlainText() return Textalonia.Serialization.PlainTextDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_Rtf() return Textalonia.Serialization.RtfDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_WordMl() return Textalonia.Serialization.WordMlDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   get_Xaml() return Textalonia.Serialization.XamlDocumentFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
   property BuiltIn System.Collections.Generic.IReadOnlyList<Textalonia.Serialization.IDocumentFormat>[NotNull/Unknown] args(Textalonia.Serialization.IDocumentFormat[NotNull/NotNull])
   property Docx Textalonia.Serialization.DocxDocumentFormat[NotNull/Unknown]
+  property Dotx Textalonia.Serialization.DocxDocumentFormat[NotNull/Unknown]
+  property FlatOpc Textalonia.Serialization.FlatOpcDocumentFormat[NotNull/Unknown]
   property Html Textalonia.Serialization.HtmlDocumentFormat[NotNull/Unknown]
   property Json Textalonia.Serialization.JsonDocumentFormat[NotNull/Unknown]
   property Markdown Textalonia.Serialization.MarkdownDocumentFormat[NotNull/Unknown]
+  property Mhtml Textalonia.Serialization.MhtmlDocumentFormat[NotNull/Unknown]
+  property Odt Textalonia.Serialization.OdtDocumentFormat[NotNull/Unknown]
   property PlainText Textalonia.Serialization.PlainTextDocumentFormat[NotNull/Unknown]
   property Rtf Textalonia.Serialization.RtfDocumentFormat[NotNull/Unknown]
+  property WordMl Textalonia.Serialization.WordMlDocumentFormat[NotNull/Unknown]
   property Xaml Textalonia.Serialization.XamlDocumentFormat[NotNull/Unknown]
 type Textalonia.Serialization.DocumentLoadResult
   .ctor(Document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , Report: Textalonia.Serialization.ConversionReport[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
@@ -5122,8 +5281,17 @@ type Textalonia.Serialization.DocumentSaveResult
   set_Report(value: Textalonia.Serialization.ConversionReport[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
 type Textalonia.Serialization.DocxDocumentFormat
   .ctor()  abstract=False virtual=False final=False
-  LoadAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Model.FlowDocument>[NotNull/NotNull] args(Textalonia.Model.FlowDocument[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.DocxDocumentFormat+<LoadAsync>d__15))]
-  SaveAsync(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.DocxDocumentFormat+<SaveAsync>d__16))]
+  LoadAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Model.FlowDocument>[NotNull/NotNull] args(Textalonia.Model.FlowDocument[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.DocxDocumentFormat+<LoadAsync>d__21))]
+  LoadWithPasswordAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , password: System.String[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Model.FlowDocument>[NotNull/NotNull] args(Textalonia.Model.FlowDocument[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=False final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.DocxDocumentFormat+<LoadWithPasswordAsync>d__22))]
+  SaveAsync(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.DocxDocumentFormat+<SaveAsync>d__23))]
+  get_Extensions() return System.Collections.Generic.IReadOnlyList<System.String>[NotNull/NotNull] args(System.String[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True
+  get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  property Extensions System.Collections.Generic.IReadOnlyList<System.String>[NotNull/Unknown] args(System.String[NotNull/NotNull])
+  property Name System.String[NotNull/Unknown]
+type Textalonia.Serialization.FlatOpcDocumentFormat
+  .ctor()  abstract=False virtual=False final=False
+  LoadAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Model.FlowDocument>[NotNull/NotNull] args(Textalonia.Model.FlowDocument[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.FlatOpcDocumentFormat+<LoadAsync>d__11))]
+  SaveAsync(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.FlatOpcDocumentFormat+<SaveAsync>d__12))]
   get_Extensions() return System.Collections.Generic.IReadOnlyList<System.String>[NotNull/NotNull] args(System.String[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True
   get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
   property Extensions System.Collections.Generic.IReadOnlyList<System.String>[NotNull/Unknown] args(System.String[NotNull/NotNull])
@@ -5154,6 +5322,37 @@ type Textalonia.Serialization.JsonDocumentFormat
   get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
   property Extensions System.Collections.Generic.IReadOnlyList<System.String>[NotNull/Unknown] args(System.String[NotNull/NotNull])
   property Name System.String[NotNull/Unknown]
+type Textalonia.Serialization.LibreOfficeBinaryDocumentFormat
+  .ctor(options: Textalonia.Serialization.LibreOfficeBinaryOptions[NotNull/NotNull] in=False out=False modreq() modopt() )  abstract=False virtual=False final=False
+  LoadAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Model.FlowDocument>[NotNull/NotNull] args(Textalonia.Model.FlowDocument[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.LibreOfficeBinaryDocumentFormat+<LoadAsync>d__10))]
+  LoadWithReportAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , options: Textalonia.Serialization.ConversionOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Serialization.DocumentLoadResult>[NotNull/NotNull] args(Textalonia.Serialization.DocumentLoadResult[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.LibreOfficeBinaryDocumentFormat+<LoadWithReportAsync>d__12))]
+  SaveAsync(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.LibreOfficeBinaryDocumentFormat+<SaveAsync>d__11))]
+  SaveWithReportAsync(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , options: Textalonia.Serialization.ConversionOptions[Nullable/Nullable] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()], cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Serialization.DocumentSaveResult>[NotNull/NotNull] args(Textalonia.Serialization.DocumentSaveResult[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.LibreOfficeBinaryDocumentFormat+<SaveWithReportAsync>d__13))]
+  get_Extensions() return System.Collections.Generic.IReadOnlyList<System.String>[NotNull/NotNull] args(System.String[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True
+  get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  property Extensions System.Collections.Generic.IReadOnlyList<System.String>[NotNull/Unknown] args(System.String[NotNull/NotNull])
+  property Name System.String[NotNull/Unknown]
+type Textalonia.Serialization.LibreOfficeBinaryOptions [System.Runtime.CompilerServices.RequiredMemberAttribute()]
+  .ctor()  abstract=False virtual=False final=False [System.ObsoleteAttribute("Constructors of types with required members are not supported in this version of your compiler.", (Boolean)True)] [System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute("RequiredMembers")]
+  <Clone>$() return Textalonia.Serialization.LibreOfficeBinaryOptions[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  Equals(obj: System.Object[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Equals(other: Textalonia.Serialization.LibreOfficeBinaryOptions[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  GetHashCode() return System.Int32[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  ToString() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  get_ExecutablePath() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_Format() return Textalonia.Serialization.BinaryWordFormat[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  get_TemporaryDirectory() return System.String[Nullable/Nullable] modreq() modopt()  abstract=False virtual=False final=False
+  get_Timeout() return System.TimeSpan[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Equality(left: Textalonia.Serialization.LibreOfficeBinaryOptions[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Serialization.LibreOfficeBinaryOptions[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  op_Inequality(left: Textalonia.Serialization.LibreOfficeBinaryOptions[Nullable/Nullable] in=False out=False modreq() modopt() , right: Textalonia.Serialization.LibreOfficeBinaryOptions[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Boolean[NotNull/NotNull] modreq() modopt()  abstract=False virtual=False final=False
+  property ExecutablePath System.String[NotNull/NotNull] [System.Runtime.CompilerServices.RequiredMemberAttribute()]
+  property Format Textalonia.Serialization.BinaryWordFormat[NotNull/NotNull]
+  property TemporaryDirectory System.String[Nullable/Nullable]
+  property Timeout System.TimeSpan[NotNull/NotNull]
+  set_ExecutablePath(value: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Format(value: Textalonia.Serialization.BinaryWordFormat[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_TemporaryDirectory(value: System.String[Nullable/Nullable] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
+  set_Timeout(value: System.TimeSpan[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.Void[NotNull/NotNull] modreq(System.Runtime.CompilerServices.IsExternalInit) modopt()  abstract=False virtual=False final=False
 type Textalonia.Serialization.MarkdownDocumentFormat
   .ctor()  abstract=False virtual=False final=False
   LoadAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Model.FlowDocument>[NotNull/NotNull] args(Textalonia.Model.FlowDocument[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.MarkdownDocumentFormat+<LoadAsync>d__12))]
@@ -5162,6 +5361,22 @@ type Textalonia.Serialization.MarkdownDocumentFormat
   Serialize(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
   get_Extensions() return System.Collections.Generic.IReadOnlyList<System.String>[NotNull/NotNull] args(System.String[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=False
   get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  property Extensions System.Collections.Generic.IReadOnlyList<System.String>[NotNull/Unknown] args(System.String[NotNull/NotNull])
+  property Name System.String[NotNull/Unknown]
+type Textalonia.Serialization.MhtmlDocumentFormat
+  .ctor()  abstract=False virtual=False final=False
+  LoadAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Model.FlowDocument>[NotNull/NotNull] args(Textalonia.Model.FlowDocument[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.MhtmlDocumentFormat+<LoadAsync>d__9))]
+  SaveAsync(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.MhtmlDocumentFormat+<SaveAsync>d__10))]
+  get_Extensions() return System.Collections.Generic.IReadOnlyList<System.String>[NotNull/NotNull] args(System.String[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True
+  get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
+  property Extensions System.Collections.Generic.IReadOnlyList<System.String>[NotNull/Unknown] args(System.String[NotNull/NotNull])
+  property Name System.String[NotNull/Unknown]
+type Textalonia.Serialization.OdtDocumentFormat
+  .ctor()  abstract=False virtual=False final=False
+  LoadAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Model.FlowDocument>[NotNull/NotNull] args(Textalonia.Model.FlowDocument[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.OdtDocumentFormat+<LoadAsync>d__15))]
+  SaveAsync(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() , stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.OdtDocumentFormat+<SaveAsync>d__16))]
+  get_Extensions() return System.Collections.Generic.IReadOnlyList<System.String>[NotNull/NotNull] args(System.String[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=True
+  get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=True
   property Extensions System.Collections.Generic.IReadOnlyList<System.String>[NotNull/Unknown] args(System.String[NotNull/NotNull])
   property Name System.String[NotNull/Unknown]
 type Textalonia.Serialization.PlainTextDocumentFormat
@@ -5189,6 +5404,16 @@ type Textalonia.Serialization.TextDocumentFormat
   Serialize(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.String[NotNull/NotNull] modreq() modopt()  abstract=True virtual=True final=False
   get_Extensions() return System.Collections.Generic.IReadOnlyList<System.String>[NotNull/NotNull] args(System.String[NotNull/NotNull]) modreq() modopt()  abstract=True virtual=True final=False
   get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=True virtual=True final=False
+  property Extensions System.Collections.Generic.IReadOnlyList<System.String>[NotNull/Unknown] args(System.String[NotNull/NotNull])
+  property Name System.String[NotNull/Unknown]
+type Textalonia.Serialization.WordMlDocumentFormat
+  .ctor()  abstract=False virtual=False final=False
+  LoadAsync(stream: System.IO.Stream[NotNull/NotNull] in=False out=False modreq() modopt() , cancellationToken: System.Threading.CancellationToken[NotNull/NotNull] in=False out=False modreq() modopt() [System.Runtime.InteropServices.OptionalAttribute()]) return System.Threading.Tasks.Task<Textalonia.Model.FlowDocument>[NotNull/NotNull] args(Textalonia.Model.FlowDocument[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=False [System.Runtime.CompilerServices.AsyncStateMachineAttribute(typeof(Textalonia.Serialization.WordMlDocumentFormat+<LoadAsync>d__12))]
+  Parse(text: System.String[NotNull/NotNull] in=False out=False modreq() modopt() ) return Textalonia.Model.FlowDocument[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  Serialize(document: Textalonia.Model.FlowDocument[NotNull/NotNull] in=False out=False modreq() modopt() ) return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
+  field NamespaceUri System.String[NotNull/NotNull]
+  get_Extensions() return System.Collections.Generic.IReadOnlyList<System.String>[NotNull/NotNull] args(System.String[NotNull/NotNull]) modreq() modopt()  abstract=False virtual=True final=False
+  get_Name() return System.String[NotNull/NotNull] modreq() modopt()  abstract=False virtual=True final=False
   property Extensions System.Collections.Generic.IReadOnlyList<System.String>[NotNull/Unknown] args(System.String[NotNull/NotNull])
   property Name System.String[NotNull/Unknown]
 type Textalonia.Serialization.XamlDocumentFormat

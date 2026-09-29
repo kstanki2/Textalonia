@@ -148,6 +148,7 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
         private readonly List<DocumentNote> _notes = [];
         private readonly List<DocumentSection> _physicalSections = [];
         private DocumentSection _physicalSection = new();
+        private PageSettings _documentPageSettings = new();
         private bool _hasPhysicalSections;
         private bool _oddEvenHeaders;
         private NoteSettings _footnoteSettings = new();
@@ -656,10 +657,20 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
                 case "ilvl":
                     if (number is < 0 or > 8) throw new FormatException("Invalid RTF list level.");
                     return state with { Paragraph = state.Paragraph with { ListLevel = number } };
+                case "paperw": case "paperh": case "margl": case "margr": case "margt": case "margb": case "gutter":
+                case "landscape": case "margmirror":
+                    _documentPageSettings = SetPageSetting(_documentPageSettings, control);
+                    _physicalSection = _physicalSection with { PageSettings = SetPageSetting(_physicalSection.PageSettings, control) };
+                    _hasPhysicalSections = true; break;
+                case "pgwsxn": case "pghsxn": case "marglsxn": case "margrsxn": case "margtsxn": case "margbsxn":
+                case "guttersxn": case "lndscpsxn": case "margmirsxn":
+                    _physicalSection = _physicalSection with { PageSettings = SetPageSetting(_physicalSection.PageSettings, control) };
+                    _hasPhysicalSections = true; break;
                 case "sectd": PendingParagraph(state); if (_section.Count > 0 || _rows.Count > 0) EndSection(false); _sectionActive = true;
-                    _physicalSection = new() { HeaderFooter = new() { DifferentOddEvenPages = _oddEvenHeaders } }; break;
+                    _physicalSection = new() { PageSettings = _documentPageSettings, HeaderFooter = new() { DifferentOddEvenPages = _oddEvenHeaders } }; break;
                 case "sect": PendingParagraph(state); EndSection(true); _sectionActive = true;
-                    _physicalSection = _physicalSection with { Id = Guid.NewGuid(), HeaderFooter = new() { DifferentOddEvenPages = _oddEvenHeaders,
+                    _physicalSection = _physicalSection with { Id = Guid.NewGuid(), PageSettings = _documentPageSettings,
+                        HeaderFooter = new() { DifferentOddEvenPages = _oddEvenHeaders,
                         HeaderDistance = _physicalSection.HeaderFooter.HeaderDistance, FooterDistance = _physicalSection.HeaderFooter.FooterDistance } }; break;
                 case "trowd":
                     if (_nestedProperties)
@@ -705,6 +716,25 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
                 default: Loss("rtf.unsupported-control", $"RTF control \\{control.Word}", "Ignored this control and retained its text.", control.Offset); break;
             }
             return state;
+        }
+        private PageSettings SetPageSetting(PageSettings page, Control control)
+        {
+            var twips = control.Number ?? 0;
+            double Metric(string feature, double minimum = 0) => Range(twips / 15d, minimum, 100000, feature, control.Offset);
+            var margins = page.Margins;
+            return control.Word switch
+            {
+                "paperw" or "pgwsxn" => page with { Width = Metric("Page width", 1) },
+                "paperh" or "pghsxn" => page with { Height = Metric("Page height", 1) },
+                "margl" or "marglsxn" => page with { Margins = margins with { Left = Metric("Left page margin") } },
+                "margr" or "margrsxn" => page with { Margins = margins with { Right = Metric("Right page margin") } },
+                "margt" or "margtsxn" => page with { Margins = margins with { Top = Metric("Top page margin") } },
+                "margb" or "margbsxn" => page with { Margins = margins with { Bottom = Metric("Bottom page margin") } },
+                "gutter" or "guttersxn" => page with { Gutter = Metric("Page gutter") },
+                "landscape" or "lndscpsxn" => page with { Orientation = control.Number == 0 ? PageOrientation.Portrait : PageOrientation.Landscape },
+                "margmirror" or "margmirsxn" => page with { MirrorMargins = control.Number != 0 },
+                _ => page
+            };
         }
         private TableWidthUnit WidthUnit(int value, int offset)
         {
@@ -947,13 +977,25 @@ public sealed partial class RtfDocumentFormat : TextDocumentFormat
         void WritePhysicalSection(DocumentSection section)
         {
             var settings = section.HeaderFooter;
-            Precision(section.Id, settings.HeaderDistance, settings.FooterDistance);
+            var page = section.PageSettings;
+            Precision(section.Id, settings.HeaderDistance, settings.FooterDistance, page.Width, page.Height,
+                page.Margins.Left, page.Margins.Right, page.Margins.Top, page.Margins.Bottom, page.Gutter);
             b.Append("\\sectd").Append(section.BreakKind switch { SectionBreakKind.Continuous => "\\sbknone", SectionBreakKind.OddPage => "\\sbkodd", SectionBreakKind.EvenPage => "\\sbkeven", SectionBreakKind.NextColumn => "\\sbkcol", _ => "\\sbkpage" })
-                .Append("\\headery").Append(Twips(settings.HeaderDistance)).Append("\\footery").Append(Twips(settings.FooterDistance)).Append(settings.DifferentFirstPage ? "\\titlepg" : "\\titlepg0").Append(' ');
+                .Append("\\pgwsxn").Append(Twips(page.Width)).Append("\\pghsxn").Append(Twips(page.Height))
+                .Append("\\marglsxn").Append(Twips(page.Margins.Left)).Append("\\margrsxn").Append(Twips(page.Margins.Right))
+                .Append("\\margtsxn").Append(Twips(page.Margins.Top)).Append("\\margbsxn").Append(Twips(page.Margins.Bottom))
+                .Append("\\guttersxn").Append(Twips(page.Gutter));
+            if (page.Orientation == PageOrientation.Landscape) b.Append("\\lndscpsxn");
+            if (page.MirrorMargins) b.Append("\\margmirsxn");
+            b.Append("\\headery").Append(Twips(settings.HeaderDistance)).Append("\\footery").Append(Twips(settings.FooterDistance)).Append(settings.DifferentFirstPage ? "\\titlepg" : "\\titlepg0").Append(' ');
             if (!settings.DifferentOddEvenPages && document.Sections.Any(s => s.HeaderFooter.DifferentOddEvenPages))
                 ConversionDiagnostics.Report("rtf.section-odd-even", "Section-specific odd/even header option", "RTF uses a document-wide odd/even header option.", section.Id);
-            if (section.PageSettings != new PageSettings() || section.PageNumberStart is not null || section.PageNumberFormat != PageNumberFormat.Decimal)
-                ConversionDiagnostics.Report("rtf.physical-page-settings", "Physical page metrics and page numbering", "Retained section boundaries and header/footer settings using default page metrics and numbering.", section.Id);
+            var defaults = new PageSettings();
+            if (page with { Width = defaults.Width, Height = defaults.Height, Orientation = defaults.Orientation,
+                    Margins = defaults.Margins, Gutter = defaults.Gutter, MirrorMargins = defaults.MirrorMargins } != defaults ||
+                section.PageNumberStart is not null || section.PageNumberFormat != PageNumberFormat.Decimal)
+                ConversionDiagnostics.Report("rtf.physical-page-settings", "Other physical page settings and page numbering",
+                    "Retained supported page size, orientation, margins, gutter and header/footer settings; omitted other physical page settings and numbering.", section.Id);
             foreach (var item in new[] { ("header", settings.PrimaryHeader), ("headerf", settings.FirstHeader), ("headerl", settings.EvenHeader), ("footer", settings.PrimaryFooter), ("footerf", settings.FirstFooter), ("footerl", settings.EvenFooter) })
             {
                 if (item.Item2.LinkToPrevious) continue;

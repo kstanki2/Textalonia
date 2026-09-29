@@ -62,7 +62,7 @@ and clipboard operations. The demo shows conversion reports after file operation
 All external formats omit hidden physical cells and merge restoration backups with
 `conversion.merge-history`. Resources without supported references produce
 `conversion.unused-resource` (DOCX also recognizes embedded-font references). Native
-JSON v11 preserves the full model and reads v4/v5/v6/v7/v8/v9/v10/v11; earlier versions remain rejected.
+JSON v12 preserves the full model and reads v4 through v12; earlier versions remain rejected.
 Plain text retains visible text/paragraph separators and inline alternative text;
 its `text.*` diagnostics describe discarded formatting, containers and resources.
 
@@ -70,19 +70,63 @@ its `text.*` diagnostics describe discarded formatting, containers and resources
 | --- | --- | --- | --- |
 | Lists | Nested lists, identity, levels, start/restart/continuation; model definition metadata | Standard list tables/overrides and ordinary identity/continuation; restart or format changes use a new instance with `rtf.list-instance` | Abstract definitions, instances/overrides, standard formats, starts, restart/continuation; definition/kind changes preserve counters through start overrides |
 | Custom markers | Model metadata retained; browser presentation approximations report `html.list-marker` | Supported literal prefixes/suffixes and ancestor slots; unsupported patterns/number formats reported | Supported prefixes/suffixes/ancestor slots; unusual patterns, restart rules, marker fonts/indentation reported |
-| Typography | Numeric weights/stretch, font family, baseline, colors, paragraph tracking/line height/indents; inline CSS subset | Common font/color/emphasis/baseline/stretch and paragraph metrics; numeric weights, color alpha and precision have diagnostics | Named/default/character styles, theme references, run tracking/scale/baseline, underline/strike/caps/language, tabs/leaders, outline and paragraph rules; unsupported variants and precision have diagnostics |
+| Typography | Numeric weights/stretch, font family, baseline, colors, paragraph tracking/line height/indents; inline CSS and bounded embedded stylesheets with simple type/class/ID selectors; unsupported CSS is diagnosed | Common font/color/emphasis/baseline/stretch and paragraph metrics; numeric weights, color alpha and precision have diagnostics | Named/default/character styles, theme references, run tracking/scale/baseline, underline/strike/caps/language, tabs/leaders, outline and paragraph rules; unsupported variants and precision have diagnostics |
 | Named styles/themes/fonts | Effective supported appearance; lost identity, overrides, themes and embedded fonts diagnosed | Effective supported appearance; lost identity, overrides, themes and embedded fonts diagnosed | Preserves named style definitions/inheritance/links/next, Office theme slots and permitted embedded TTF/OTF fonts; see [style limits](STYLES.md) |
-| Sections | Styled nested sections with edges/padding | Flow section groups; nested sections and arbitrary mixed section/root grouping have diagnosed normalization; decoration omitted with report | Decorative section groups encoded as block content controls; physical sections and header/footer relationships are mapped; unsupported decoration is reported |
-| Physical page sections | Native page settings and physical sections have diagnosed losses | Native page settings and physical sections have diagnosed losses | Paper, orientation, margins/gutter, columns, breaks and page numbering; unsupported section properties are diagnosed. See [stories](STORIES.md) |
+| Sections | Styled nested sections with edges/padding | Flow section groups; nested sections and arbitrary mixed section/root grouping have diagnosed normalization; decoration omitted with report | Decorative section groups use explicitly marked block content controls, distinct from Word form controls; physical sections and header/footer relationships are mapped; unsupported decoration is reported |
+| Physical page sections | Native page settings and physical sections have diagnosed losses | Document defaults and per-section paper size, orientation, margins/gutter and mirrored margins; other page options, numbering and unsupported section properties are diagnosed | Paper, orientation, margins/gutter, columns, breaks and page numbering; unsupported section properties are diagnosed. See [stories](STORIES.md) |
 | Tables | Nested cell blocks, spans, relative columns, rows, cell edges/padding/background | Rectangular grids, horizontal/vertical merges, relative widths, row policies/background; nested table and cell decoration losses reported | Nested tables, grid/vMerge geometry, relative columns, row policies, cell edges/padding/background; named table shading/padding/borders; conditional styles/layout/position and unsupported cell properties reported |
-| Images | Bounded data-URI PNG/JPEG/GIF/BMP/WebP raster data; dimensions/alt text and deduplication | Embedded PNG/JPEG; alternative text is not retained by standard picture data and is reported | Supported embedded PNG/JPEG/GIF/BMP/TIFF relationships; dimensions/alt text and deduplication; cropping/rotation/floating placement reported |
+| Images | Bounded data-URI PNG/JPEG/GIF/BMP/WebP raster data; dimensions/alt text and deduplication | Embedded PNG/JPEG; alternative text is not retained by standard picture data and is reported | Embedded image relationships, dimensions, alt text, placement, crop and rotation within the [image subset](IMAGES.md); unsupported variants are reported |
 | Headers, footers and notes | Story omission diagnosed | Primary/first/even header/footer destinations, footnotes/endnotes, custom marks/settings and page fields; rich-content and section limitations diagnosed | Rich relationship-scoped stories, linked variants, note markers/settings, separators and page fields; unsupported variants diagnosed. See [STORIES.md](STORIES.md) |
 | Merge fields | Display text with loss diagnostic | Atomic MERGEFIELD compatibility plus general rich result ranges; unsupported atomic switches and native formatting/fallback options diagnosed | Simple/complex atomic MERGEFIELD compatibility plus general rich result ranges; unsupported atomic switches and linked recipient metadata diagnosed |
 | General fields | Cached rich results with loss diagnostic | Standard field instruction/result groups, nested instruction expressions and rich ranges, lock/dirty state and secondary stories; unknown/malformed instructions retained with diagnostics | Simple/complex field import, complex-marker export, nested instruction expressions and rich ranges across paragraphs/stories; unknown/malformed instructions retained with diagnostics |
 | Bookmarks | Range omission diagnosed | Standard bookmark start/end destinations; duplicate names renamed with diagnostics | Standard bookmark start/end markers; duplicate names renamed with diagnostics |
-| Document properties | Metadata omission diagnosed | String property catalog retained in a Textalonia ignorable destination | String property catalog in standard custom-properties part; typed/core property mapping remains outside this subset |
+| Document properties | Metadata omission diagnosed | String property catalog retained in a Textalonia ignorable destination; typed/core additions are diagnosed | Built-in core properties, typed custom properties and the existing string catalog in standard properties parts |
+| Custom XML and compatibility settings | Omitted with loss diagnostics | Omitted with loss diagnostics | Bounded owner-associated custom XML items and Word compatibility XML retained for interchange; stored compatibility metadata does not imply layout-mode parity |
+| Office Math | Math XML omitted with `conversion.equation`; alternative text remains | Math XML omitted with `conversion.equation`; alternative text remains | Bounded `m:oMath`/`m:oMathPara` XML retained as atomic interchange data; alternative text is used for display and copy, without equation layout or editing |
 | Links | Safe absolute http/https/mailto; internal destination omission diagnosed | Safe external HYPERLINK fields and internal bookmark targets with tooltip; activation preference retained in ignorable metadata | Safe external hyperlink relationships and internal bookmark anchors with tooltip; activation preference retained in ignorable metadata |
 | Unsafe/unavailable content | Scripts, unknown elements/CSS, relative or unsafe links, remote/unsupported images produce notices; no fetch | Unknown controls/destinations, unsafe fields, unavailable/unsupported images produce notices; no fetch | Revision history, unsupported field evaluation codes, drawings outside subset, unsupported XML properties, unsafe/external images produce notices; no fetch |
+
+## Additional DX-12 formats and package boundaries
+
+| Format | Registered path(s) | Current supported subset and limits |
+| --- | --- | --- |
+| DOTX | `.dotx` | Uses the DOCX mapping but requires and writes the Word template main-part content type. Loading returns an editable document snapshot; saving writes a template package. |
+| Flat OPC XML | `.flatopc`, `.flatopc.xml` | Converts bounded XML-packaged OOXML parts through the DOCX mapping. A generic `.xml` path selects WordML; callers can select `DocumentFormats.FlatOpc` explicitly for other Flat OPC filenames. |
+| Word 2003 XML | `.wordml`, `.xml` | Separate WordML vocabulary with body paragraphs, alignment and basic bold/italic/underline runs. Sections, tables, styles beyond this subset and other unsupported elements have loss diagnostics. This is unrelated to Textalonia data XAML. |
+| MHTML | `.mht`, `.mhtml` | Bounded MIME packaging over the HTML codec. Local image parts resolve by Content-ID or Content-Location; supported charsets and missing/unused parts are checked and reported. No remote resource is fetched. |
+| ODT | `.odt` | Bounded OpenDocument Text package with basic styled paragraphs/runs, single-level list export and nested list import, tables with spans, and one page size/orientation/margin layout. Manifest-declared internal PNG/JPEG/GIF/BMP/TIFF/WebP images retain bytes, dimensions and alternative text (8 MB/image, 16 MB/document); SVG, OLE, external images, extra package parts and unsupported features are diagnosed with alternative-text fallback. |
+
+`DocumentFormats.BuiltIn` has no binary DOC/DOT codec; encrypted DOCX/DOTX requires the
+explicit password load method.
+An optional `LibreOfficeBinaryDocumentFormat` can be constructed with an explicit
+LibreOffice executable path for `.doc` or `.dot`. It converts through DOCX using
+isolated temporary files, a per-operation profile, cancellation and a bounded
+timeout. Every import and export reports `binary.provider-conversion-unverified`;
+strict mode rejects it before replacing the active document or writing output.
+For example, construct it with `new LibreOfficeBinaryOptions { ExecutablePath =
+"/path/to/soffice", Format = BinaryWordFormat.Document }` and call the usual
+`LoadWithReportAsync` or `SaveWithReportAsync` methods. Provider-dependent tests
+run only when `TEXTALONIA_LIBREOFFICE_PATH` names an installed executable.
+This adapter was probed locally with LibreOffice 25.8.1.1, including real compound
+DOC/DOT output and a DOC-to-DOCX text round trip. It is not a qualified binary
+fidelity provider. LibreOffice lists the relevant [Word 97-2003 conversion
+filters](https://help.libreoffice.org/latest/en-US/text/shared/guide/convertfilters.html).
+Encrypted OOXML compound containers are recognized before ZIP parsing. The normal
+DOCX/DOTX load path rejects them; `LoadWithPasswordAsync` accepts bounded Standard
+Office AES/ECB password-encrypted OOXML and validates the decrypted ZIP before
+returning a document. Wrong passwords fail the verifier. Standard encryption has
+no cryptographic package authentication tag, so damage after the verifier is
+detected only through ZIP structure, consumed-part CRC and package checks. Agile
+encrypted export and encrypted binary DOC/DOT are unsupported.
+
+DOCX/DOTX retain supported core and typed custom properties, custom XML item parts
+and Word compatibility XML with bounded paths and parsing. Compatibility XML is
+interchange metadata; individual compatibility layout modes need separate
+qualification. Scope-excluded package content is diagnosed rather than copied
+into a new package. Digital signatures are not reissued after editing, and generic
+opaque-part preservation is not claimed. DOCX/DOTX Office Math round trips use
+atomic, bounded XML payloads and do not provide editable equation layout. Other
+codecs flatten their alternative text and report `conversion.equation`.
 
 HTML metadata preserves model semantics that CSS cannot exactly render, notably
 custom markers and exact row-height policy. These are still reported as browser
@@ -100,9 +144,9 @@ strict rejection, boundary merging, destination shells and fallback order.
 
 ## Anchored fields, bookmarks and internal links
 
-Native JSON v11 and data XAML v6 retain range identities, story/paragraph anchors,
+Native JSON v12 and data XAML v7 retain range identities, story/paragraph anchors,
 boundary affinity, instructions, lock/dirty/show-code flags, internal-link metadata
-and the string property catalog. Data XAML also reads v1/v2. Existing atomic
+and the string and typed property catalogs. Data XAML also reads v1 through v6. Existing atomic
 `MERGEFIELD` and page-field descriptors remain supported.
 
 A general field's cached result is ordinary rich story content. DOCX and RTF emit
@@ -124,8 +168,8 @@ Evaluation policies and host resolvers are described in [FIELDS.md](FIELDS.md).
 Legacy single atomic MERGEFIELD/page imports retain their earlier result-formatting
 limits and diagnostics. General ranged fields preserve multiple run styles and
 inline results. RTF foreign merge results containing unsupported block controls
-continue to report their legacy fallback. DOCX/RTF property persistence currently
-covers string values; it is not a typed built-in/custom-property API.
+continue to report their legacy fallback. DOCX persists core and typed custom
+properties; RTF retains the older string property catalog only.
 
 ## Corpus and comparison
 
@@ -135,6 +179,13 @@ record locally authored browser-, Writer- and Word-shaped specimens and native
 schema 4 input. DOCX tests package the checked-in XML rather than relying on an
 opaque binary archive. These specimens were not exported by those applications;
 application versions are null and native qualification is explicitly pending.
+Separate LibreOffice 25.8.1.1 generated [DOCX](../tests/Textalonia.Tests/Fixtures/Interchange/libreoffice-dx12-source.docx)
+and [ODT](../tests/Textalonia.Tests/Fixtures/Interchange/libreoffice-dx12-source.odt)
+specimens have checked-in [HTML input](../tests/Textalonia.Tests/Fixtures/Interchange/libreoffice-dx12-source.html)
+with separate [DOCX provenance](../tests/Textalonia.Tests/Fixtures/Interchange/libreoffice-dx12-source.provenance.json)
+and [ODT provenance](../tests/Textalonia.Tests/Fixtures/Interchange/libreoffice-dx12-source-odt.provenance.json). The ODT was converted from the Writer DOCX. Tests exercise import,
+adjacent edit, export and reopen of text and a table. Rendered-page comparison
+and Microsoft Word opening or repair-prompt evidence remain pending.
 
 `InterchangeCorpusTests` asserts exact visible text, declared tree/list/style/link/
 image properties, expected diagnostic codes and malformed-input errors. Dedicated
@@ -216,8 +267,11 @@ DX-06 table/list format mappings and precise loss boundaries are listed in the
 Native v10, XAML v5 and clipboard v6 preserve placement, crop/rotation, supplied
 previews, package resources and section watermarks. DOCX maps image anchors/wraps,
 crop/rotation and OLE image/package relationships; section watermarks are visible
-VML header content with Textalonia metadata for reconstruction. Original image
-bytes and separately supplied previews are retained independently.
+VML header content with Textalonia metadata for reconstruction. DOCX preserves
+both owned oleObject and package relationship kinds for embedded OLE data; an
+embedding with no live inline owner is not copied to output. Native JSON v12 and
+data XAML v7 retain that relationship kind. Original image bytes and separately
+supplied previews are retained independently.
 
 Unsupported external features report `conversion.image-placement`,
 `conversion.image-preview`, `conversion.watermark` and `conversion.ole`. Positioned
@@ -229,7 +283,7 @@ loss before writing. See [image support and limits](IMAGES.md).
 ## Protected forms
 
 DX-09 adds structured controls, protection settings and permission ranges. Native
-JSON v11/XAML v6 retain the model; DOCX maps supported SDTs/locks/permissions and
+JSON v12/XAML v7 retain the model; DOCX maps supported SDTs/locks/permissions and
 reports unsupported range, binding and restriction semantics. Other formats emit
 explicit loss diagnostics. See [forms and protection](FORMS.md) for the matrix and
 strict-mode behavior.

@@ -270,7 +270,7 @@ public sealed class DocumentTextProvider
             {
                 if (run.Inline is { } inline && offset < range.End && offset + 1 > range.Start)
                     result.Add(new(offset, 1, inline.Payload switch
-                        { ImageInlinePayload => "image", OleInlinePayload => "embedded-object", MergeFieldInlinePayload => "merge-field", NoteInlinePayload => "note-reference", PageFieldInlinePayload => "page-field", FormControlInlinePayload => "form-control", _ => "control" },
+                        { ImageInlinePayload => "image", OleInlinePayload => "embedded-object", EquationInlinePayload => "equation", MergeFieldInlinePayload => "merge-field", NoteInlinePayload => "note-reference", PageFieldInlinePayload => "page-field", FormControlInlinePayload => "form-control", _ => "control" },
                         inline.Payload is FormControlInlinePayload form && Session.Document.ContentControls.FirstOrDefault(control => control.Id == form.ControlId) is { } contentControl
                             ? $"{contentControl.Kind} {contentControl.Title}: {contentControl.DisplayText}" :
                         inline.Payload is MergeFieldInlinePayload field ? $"Merge field {field.Name}: {inline.AltText}" :

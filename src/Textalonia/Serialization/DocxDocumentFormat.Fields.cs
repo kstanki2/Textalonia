@@ -144,8 +144,6 @@ public sealed partial class DocxDocumentFormat
             if (string.IsNullOrWhiteSpace(name)) continue;
             if (result.ContainsKey(name)) Loss("property-name", "Duplicate document property", "Kept the last property value.", property);
             var value = property.Elements().FirstOrDefault();
-            if (value is not null && value.Name.LocalName is not ("lpwstr" or "lpstr" or "bstr"))
-                Loss("property-type", "Typed custom document property", "Retained its text value in the string property catalog.", property);
             result[name] = value?.Value ?? "";
         }
         return result.ToImmutable();

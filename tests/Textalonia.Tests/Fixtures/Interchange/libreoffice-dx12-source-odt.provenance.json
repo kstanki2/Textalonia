@@ -1,0 +1,11 @@
+{
+  "generator": "LibreOffice Writer conversion filter",
+  "generatorVersion": "25.8.1.1",
+  "created": "2026-09-28",
+  "sourceFile": "libreoffice-dx12-source.docx",
+  "outputFile": "libreoffice-dx12-source.odt",
+  "command": "soffice.com -env:UserInstallation=file:///<isolated-profile> --headless --convert-to \"odt:writer8\" --outdir <fixtures> <source-docx>",
+  "sourceSha256": "e7e047236e75d328c0d3d2f62c0cee7b1e145b432578ce62a77021eb264c804c",
+  "outputSha256": "cbc1aa16c905acf4ddcace3e8d4347b90f977fd5fe1b611055835af060303537",
+  "qualification": "External writer specimen for import/edit/export/reopen text and table checks; no rendered page comparison."
+}
